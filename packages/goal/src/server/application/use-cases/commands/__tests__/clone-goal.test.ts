@@ -13,10 +13,9 @@ function createOriginalGoalFixture(overrides?: Record<string, any>) {
     id: 'original-id',
     name: overrides?.name ?? 'Original Goal',
     description: overrides?.description ?? 'Original desc',
-    importance: overrides?.importance ?? 'Important',
-    category: overrides?.category ?? 'work',
-    tags: overrides?.tags ?? ['tag1'],
-    } as any;
+    feasibilityAnalysis: overrides?.feasibilityAnalysis ?? 'Feasible',
+    motivation: overrides?.motivation ?? 'Original motivation',
+  } as any;
 }
 
 function createMockCreateGoalUseCase(): CreateGoalUseCase {
@@ -65,24 +64,25 @@ describe('CloneGoalUseCase', () => {
     expect(createPayload.name).toBe('Custom Clone');
   });
 
-  it('inherits importance, category, and tags from original', async () => {
+  it('inherits canonical Direction context without retired taxonomy', async () => {
     const goal = createOriginalGoalFixture({
-      importance: 'Vital',
-      category: 'work',
-      tags: ['fitness', 'health'],
+      feasibilityAnalysis: 'Feasible path',
+      motivation: 'Graduate on time',
     });
     const goalRepo = createMockRepo<IGoalRepository>({
       findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
     const createGoal = createMockCreateGoalUseCase();
-
     const useCase = new CloneGoalUseCase(goalRepo, createGoal);
+
     await useCase.execute('original-id', {}, aContext());
 
     const createPayload = vi.mocked(createGoal.execute).mock.calls[0][0];
-    expect(createPayload.importance).toBe('Vital');
-    expect(createPayload.category).toBe('work');
-    expect(createPayload.tags).toEqual(['fitness', 'health']);
+    expect(createPayload.feasibilityAnalysis).toBe('Feasible path');
+    expect(createPayload.motivation).toBe('Graduate on time');
+    expect('importance' in createPayload).toBe(false);
+    expect('category' in createPayload).toBe(false);
+    expect('tags' in createPayload).toBe(false);
   });
 
   it('returns NOT_FOUND when original goal does not exist', async () => {

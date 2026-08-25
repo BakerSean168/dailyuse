@@ -26,10 +26,10 @@ const GOAL_LEDGER = [
   ['goal:create', 'CreateGoalSchema', 'GoalMutationReceipt'],
   ['goal:update', 'UpdateGoalSchema', 'GoalMutationReceipt'],
   ['goal:delete', 'GoalVersionCommandSchema', 'GoalMutationReceipt'],
-  ['goal:archive-expired', 'void', 'ArchiveExpiredRes'],
   ['goal:archive', 'GoalVersionCommandSchema', 'GoalMutationReceipt'],
   ['goal:activate', 'GoalVersionCommandSchema', 'GoalMutationReceipt'],
   ['goal:complete', 'GoalVersionCommandSchema', 'GoalMutationReceipt'],
+  ['goal:abandon', 'GoalVersionCommandSchema', 'GoalMutationReceipt'],
   ['goal:clone', 'CloneGoalSchema', 'GoalMutationReceipt'],
   ['key-result:add', 'AddKeyResultSchema', 'GoalMutationReceipt'],
   ['key-result:update', 'UpdateKeyResultSchema', 'GoalMutationReceipt'],
@@ -41,12 +41,6 @@ const GOAL_LEDGER = [
   ['goal:review:delete', 'DeleteGoalReviewSchema', 'GoalMutationReceipt'],
   ['goal:record:create', 'CreateGoalRecordSchema', 'GoalMutationReceipt'],
   ['goal:record:delete', 'DeleteGoalRecordSchema', 'GoalMutationReceipt'],
-  ['focus:activate', 'ActivateFocusModeSchema', 'FocusModeDTO'],
-  ['focus:deactivate', 'void', 'FocusModeDTO'],
-  ['focus:extend', 'ExtendFocusModeSchema', 'FocusModeDTO'],
-  ['goal-folder:create', 'CreateGoalFolderSchema', 'GoalFolderClientDTO'],
-  ['goal-folder:update', 'UpdateGoalFolderSchema', 'GoalFolderClientDTO'],
-  ['goal-folder:delete', 'void', 'null'],
 ] as const;
 
 /**
@@ -58,10 +52,10 @@ const GOAL_RPC_TUPLES = [
   ['goal:create', 'CreateGoalReq', 'CreateGoalRes'],
   ['goal:update', 'UpdateGoalInvocation', 'GoalMutationReceipt'],
   ['goal:delete', 'DeleteGoalInvocation', 'GoalMutationReceipt'],
-  ['goal:archive-expired', 'void', 'ArchiveExpiredRes'],
   ['goal:archive', 'GoalStatusCommandInvocation', 'GoalMutationReceipt'],
   ['goal:activate', 'GoalStatusCommandInvocation', 'GoalMutationReceipt'],
   ['goal:complete', 'GoalStatusCommandInvocation', 'GoalMutationReceipt'],
+  ['goal:abandon', 'GoalStatusCommandInvocation', 'GoalMutationReceipt'],
   ['goal:clone', 'CloneGoalInvocation', 'GoalMutationReceipt'],
   ['goal:get', 'GetGoalReq', 'GetGoalRes'],
   ['goal:list', 'ListGoalFilters', 'QueryGoalsRes'],
@@ -76,14 +70,6 @@ const GOAL_RPC_TUPLES = [
   ['goal:review:delete', 'DeleteReviewInvocation', 'GoalMutationReceipt'],
   ['goal:record:create', 'CreateRecordInvocation', 'GoalMutationReceipt'],
   ['goal:record:delete', 'DeleteRecordInvocation', 'GoalMutationReceipt'],
-  ['goal-folder:create', 'CreateGoalFolderReq', 'CreateGoalFolderRes'],
-  ['goal-folder:update', 'UpdateGoalFolderInvocation', 'UpdateGoalFolderRes'],
-  ['goal-folder:delete', 'DeleteGoalFolderInvocation', 'null'],
-  ['goal-folder:list', 'ListGoalFolderFilters', 'QueryGoalFoldersRes'],
-  ['focus:activate', 'ActivateFocusModeReq', 'FocusModeDTO'],
-  ['focus:deactivate', 'void', 'FocusModeDTO'],
-  ['focus:extend', 'ExtendFocusModeReq', 'FocusModeDTO'],
-  ['focus:get-status', 'GetFocusStatusReq', 'GetFocusStatusRes'],
 ] as const;
 
 const API_DTO_FILES = [
@@ -91,8 +77,6 @@ const API_DTO_FILES = [
   'key-result.dto.ts',
   'goal-review.dto.ts',
   'goal-record.dto.ts',
-  'goal-folder.dto.ts',
-  'focus-session.dto.ts',
   'response-schemas.ts',
 ] as const;
 
@@ -116,10 +100,7 @@ describe('goal RPC map surface (Phase 4 ledger)', () => {
   });
 
   it('every ledger request schema is exported from the goal api', () => {
-    const apiSources = [
-      ...API_DTO_FILES.map(readApiFile),
-      readFileSync(resolve(protocolDir, '../value-objects/focus-mode.ts'), 'utf8'),
-    ].join('\n');
+    const apiSources = [...API_DTO_FILES.map(readApiFile)].join('\n');
     for (const [, requestSchema] of GOAL_LEDGER) {
       if (requestSchema === 'void') continue;
       const schemaRegex = new RegExp(`export (const|type) ${requestSchema}\\b`);
@@ -129,17 +110,15 @@ describe('goal RPC map surface (Phase 4 ledger)', () => {
     }
   });
 
-  it('ledger response types resolve to response-schemas or the matching dto', () => {
+  it('ledger response types resolve to the canonical Goal mutation receipt', () => {
     const responseSchemas = readApiFile('response-schemas.ts');
     expect(responseSchemas).toContain('export const GoalMutationReceiptSchema');
     expect(responseSchemas).toContain('export type GoalMutationReceipt =');
-    expect(responseSchemas).toContain('export const ArchiveExpiredResSchema');
     expect(responseSchemas).toContain('export const BatchUpdateKeyResultWeightsReqSchema');
-    expect(readApiFile('goal-folder.dto.ts')).toContain('QueryGoalFoldersResSchema');
-    expect(readApiFile('focus-session.dto.ts')).toContain('FocusSessionClientDTOSchema');
-    expect(readFileSync(resolve(protocolDir, '../value-objects/focus-mode.ts'), 'utf8')).toContain(
-      'export type FocusModeDTO = z.infer<typeof FocusModeClientDTOSchema>',
-    );
+    expect(responseSchemas).not.toContain('ArchiveExpiredResSchema');
+    expect(rpcMap).not.toContain('goal-folder:');
+    expect(rpcMap).not.toContain('focus:');
+    expect(rpcMap).not.toContain('goal:archive-expired');
   });
 
   it('imported names are all referenced by the map body (no dead imports)', () => {

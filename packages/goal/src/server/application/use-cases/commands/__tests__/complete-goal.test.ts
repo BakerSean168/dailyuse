@@ -15,16 +15,10 @@ function createTestGoal(name = 'Test Goal'): Goal {
     identityId: 'test-identity-id' as any,
     name,
     description: null,
-    color: '#3B82F6',
     feasibilityAnalysis: null,
     motivation: null,
-    importance: 'MEDIUM' as any,
-    category: null,
-    tags: [],
     startDate: null,
-    targetDate: null,
-    folderId: null,
-    parentGoalId: null,
+    dueDate: null,
     reminderConfig: null,
   });
 }
@@ -72,9 +66,9 @@ describe('CompleteGoalUseCase', () => {
     const result = await useCase.execute(goal.id, 'identity-1', goal.version);
 
     expect(result.ok).toBe(true);
-    expect(goal.status).toBe('Archived');
+    expect(goal.status).toBe('Completed');
     expect(goal.completedAt).not.toBeNull();
-    expect(goal.archivedAt).not.toBeNull();
+    expect(goal.archivedAt).toBeNull();
     expect(goalRepo.findByIdForIdentity).toHaveBeenCalledWith('identity-1', goal.id, {
       includeChildren: true,
     });
@@ -109,7 +103,7 @@ describe('CompleteGoalUseCase', () => {
 
     if (result1.ok && result2.ok) {
       expect(result1.data.readModel.id).toBe(result2.data.readModel.id);
-      expect(result1.data.version).toBe(result2.data.version);
+      expect(result1.data.goalVersion).toBe(result2.data.goalVersion);
     }
   });
 
@@ -123,7 +117,8 @@ describe('CompleteGoalUseCase', () => {
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.readModel.status).toBe('Archived');
+      expect(result.data.readModel.status).toBe('Completed');
+      expect(result.data.readModel.archivedAt).not.toBeNull();
     }
   });
 
@@ -142,7 +137,8 @@ describe('CompleteGoalUseCase', () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.readModel.name).toBe('Complete Me');
-      expect(result.data.readModel.status).toBe('Archived');
+      expect(result.data.readModel.status).toBe('Completed');
+      expect(result.data.readModel.archivedAt).toBeNull();
     }
   });
 });

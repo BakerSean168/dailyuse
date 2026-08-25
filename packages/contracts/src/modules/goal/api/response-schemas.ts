@@ -9,18 +9,13 @@ import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type {
   GoalId,
-  GoalFolderId,
   GoalReviewId,
   KeyResultId,
   IdentityId,
   GoalRecordId,
-  FocusSessionId,
 } from '../../../primitives';
 import { GoalStatus } from '../value-objects/goal-status';
-import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { ReviewType } from '../value-objects/review-type';
-import { FocusSessionStatus } from '../value-objects/focus-session-status';
-import { FolderType } from '../value-objects/folder-type';
 
 import { KeyResultProgressDTOSchema } from '../value-objects/key-result-progress';
 import { KeyResultSnapshotDTOSchema } from '../value-objects/key-result-snapshot';
@@ -37,12 +32,6 @@ import {
 // Residual 741: GoalReminderConfigDTOSchema / ReminderTriggerSchema owned by value-objects
 // (semantic DTOs are z.infer aliases). Re-export for OpenAPI/route consumers.
 export { GoalReminderConfigDTOSchema, ReminderTriggerSchema };
-
-import { FocusModeClientDTOSchema } from '../value-objects/focus-mode';
-
-// Residual 745: FocusModeClientDTOSchema owned by value-objects
-// (semantic FocusModeDTO is a z.infer alias). Re-export for OpenAPI/route consumers.
-export { FocusModeClientDTOSchema };
 
 // ============================================================================
 // Sub-entity Schemas
@@ -84,37 +73,43 @@ export const GoalReviewClientDTOSchema = z.object({
   updatedAt: z.number(),
 });
 
+export const GoalLabelProjectionSchema = z.object({
+  id: z.string().min(1),
+  identityId: z.string().min(1),
+  name: z.string(),
+  normalizedName: z.string(),
+  color: z.string().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+export type GoalLabelProjection = z.infer<typeof GoalLabelProjectionSchema>;
+
 // ============================================================================
 // Aggregate Root Response Schemas
 // ============================================================================
 
 /**
- * Goal Client DTO Schema — 核心聚合根响应
+ * Goal Client DTO Schema — 核心聚合根响应 (GOAL-2101 simplified)
  *
- * Residual 819: GoalClientDTO dual retired — sole GoalClientDTOSchema + z.infer
- * (semantic type is z.infer alias in aggregates/goal-client.ts).
+ * Goal answers only Direction + Measurement.
+ * Legacy fields retired: color, importance, priority, category, tags, folderId, parentGoalId.
+ * `targetDate` renamed to `dueDate`. `archivedAt` is a display attribute.
  */
 export const GoalClientDTOSchema = z.object({
   id: brandedId<GoalId>(),
   identityId: brandedId<IdentityId>(),
   name: z.string(),
   description: z.string().nullable(),
-  color: z.string().nullable(),
   feasibilityAnalysis: z.string().nullable(),
   motivation: z.string().nullable(),
   status: z.enum(GoalStatus),
-  importance: z.enum(ImportanceLevel),
-  priority: z.number(),
-  category: z.string().nullable(),
-  tags: z.array(z.string()),
   startDate: z.number().nullable(),
-  targetDate: z.number().nullable(),
+  dueDate: z.number().nullable(),
   completedAt: z.number().nullable(),
   archivedAt: z.number().nullable(),
-  folderId: brandedId<GoalFolderId>().nullable(),
-  parentGoalId: brandedId<GoalId>().nullable(),
   sortOrder: z.number(),
   reminderConfig: GoalReminderConfigDTOSchema.nullable(),
+  labels: z.array(GoalLabelProjectionSchema),
   createdAt: z.number(),
   updatedAt: z.number(),
   deletedAt: z.number().nullable(),
@@ -133,60 +128,6 @@ export const GoalAggregateReadModelSchema = GoalClientDTOSchema.extend({
 });
 
 export type GoalAggregateReadModel = z.infer<typeof GoalAggregateReadModelSchema>;
-
-/**
- * GoalFolder Client DTO Schema
- *
- * Residual 819: GoalFolderClientDTO dual retired — sole GoalFolderClientDTOSchema + z.infer
- * (semantic type is z.infer alias in aggregates/goal-folder-client.ts).
- */
-export const GoalFolderClientDTOSchema = z.object({
-  id: brandedId<GoalFolderId>(),
-  identityId: brandedId<IdentityId>(),
-  name: z.string(),
-  description: z.string().nullable(),
-  icon: z.string().nullable(),
-  color: z.string().nullable(),
-  parentFolderId: brandedId<GoalFolderId>().nullable(),
-  sortOrder: z.number(),
-  isSystemFolder: z.boolean(),
-  folderType: z.enum(FolderType).nullable(),
-  version: z.number(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-  deletedAt: z.number().nullable(),
-  displayName: z.string(),
-  displayIcon: z.string(),
-});
-
-/**
- * FocusSession Client DTO Schema
- */
-// Residual 813: FocusSessionClientDTO dual retired — this schema is the sole focus-session client shape
-// (semantic FocusSessionClientDTO is z.infer alias in aggregates/focus-session-client.ts).
-export const FocusSessionClientDTOSchema = z.object({
-  id: brandedId<FocusSessionId>(),
-  identityId: brandedId<IdentityId>(),
-  goalId: brandedId<GoalId>().nullable(),
-  status: z.enum(FocusSessionStatus),
-  durationMinutes: z.number(),
-  actualDurationMinutes: z.number(),
-  description: z.string().nullable(),
-  startedAt: z.number().nullable(),
-  pausedAt: z.number().nullable(),
-  resumedAt: z.number().nullable(),
-  completedAt: z.number().nullable(),
-  cancelledAt: z.number().nullable(),
-  pauseCount: z.number(),
-  pausedDurationMinutes: z.number(),
-  remainingMinutes: z.number().optional(),
-  progressPercentage: z.number().optional(),
-  isActive: z.boolean().optional(),
-  version: z.number(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-  deletedAt: z.number().nullable(),
-});
 
 /**
  * GoalRecord Client DTO Schema
@@ -300,12 +241,6 @@ export const GoalReviewListResSchema = z.object({
 // ============================================================================
 // Simple Response Schemas
 // ============================================================================
-
-/**
- * 归档过期目标响应 Schema
- */
-export const ArchiveExpiredResSchema = z.object({ archivedCount: z.number() });
-export type ArchiveExpiredRes = z.infer<typeof ArchiveExpiredResSchema>;
 
 /**
  * 进度分解响应 Schema

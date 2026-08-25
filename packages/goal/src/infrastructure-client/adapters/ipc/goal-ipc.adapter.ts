@@ -47,7 +47,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
     query?: string;
     status?: string[];
     systemView?: GoalSystemView;
-    folderId?: string;
+    labelIdsAll?: string[];
     startDate?: number;
     endDate?: number;
     includeChildren?: boolean;
@@ -67,10 +67,6 @@ export class GoalIpcAdapter implements IGoalApiClient {
     return this.ipcClient.invoke(GoalChannels.DELETE, id, request);
   }
 
-  async archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>> {
-    return this.ipcClient.invoke(GoalChannels.ARCHIVE_EXPIRED);
-  }
-
   // ===== Goal Status =====
 
   async activateGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
@@ -85,6 +81,10 @@ export class GoalIpcAdapter implements IGoalApiClient {
     return this.ipcClient.invoke(GoalChannels.ARCHIVE, id, { expectedVersion });
   }
 
+  async abandonGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
+    return this.ipcClient.invoke(GoalChannels.ABANDON, id, { expectedVersion });
+  }
+
   // ===== Search =====
 
   async searchGoals(params: {
@@ -93,7 +93,6 @@ export class GoalIpcAdapter implements IGoalApiClient {
     pageSize?: number;
     status?: string[];
     systemView?: GoalSystemView;
-    folderId?: string;
   }): Promise<Result<QueryGoalsRes>> {
     return this.ipcClient.invoke(GoalChannels.SEARCH, params);
   }

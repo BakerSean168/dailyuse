@@ -62,10 +62,7 @@ updated: 2026-08-22T00:00:00
 | [`packages/goal/src/api/routes/key-result.routes.ts`](../../../packages/goal/src/api/routes/key-result.routes.ts) | 关键结果相关 HTTP routes |
 | [`packages/goal/src/api/routes/review.routes.ts`](../../../packages/goal/src/api/routes/review.routes.ts) | 目标复盘相关 HTTP routes |
 | [`packages/goal/src/api/routes/goal-record.routes.ts`](../../../packages/goal/src/api/routes/goal-record.routes.ts) | 目标记录相关 HTTP routes |
-| [`packages/goal/src/api/routes/goal-folder.routes.ts`](../../../packages/goal/src/api/routes/goal-folder.routes.ts) | 目标文件夹相关 HTTP routes |
-| [`packages/goal/src/api/routes/focus-mode.routes.ts`](../../../packages/goal/src/api/routes/focus-mode.routes.ts) | 专注模式相关 HTTP routes |
 | [`packages/goal/src/server/transport/goal.controller.ts`](../../../packages/goal/src/server/transport/goal.controller.ts) | 目标控制器 |
-| [`packages/goal/src/server/transport/goal-folder.controller.ts`](../../../packages/goal/src/server/transport/goal-folder.controller.ts) | 目标文件夹控制器 |
 | [`packages/goal/src/infrastructure-client/adapters/http/goal-http.adapter.ts`](../../../packages/goal/src/infrastructure-client/adapters/http/goal-http.adapter.ts) | 客户端 HTTP 目标适配器 |
 | [`packages/goal/src/infrastructure-client/adapters/ipc/goal-ipc.adapter.ts`](../../../packages/goal/src/infrastructure-client/adapters/ipc/goal-ipc.adapter.ts) | 客户端 IPC 目标适配器 |
 
@@ -76,9 +73,7 @@ updated: 2026-08-22T00:00:00
 | [`packages/goal/src/index.ts`](../../../packages/goal/src/index.ts) | `@memoflow/goal` public surface 和模块分层说明 |
 | [`packages/goal/src/server/infrastructure/goal.module.ts`](../../../packages/goal/src/server/infrastructure/goal.module.ts) | 服务端目标模块组合根 |
 | [`packages/goal/src/server/domain/aggregates/goal.ts`](../../../packages/goal/src/server/domain/aggregates/goal.ts) | Goal 聚合 |
-| [`packages/goal/src/server/domain/aggregates/goal-folder.ts`](../../../packages/goal/src/server/domain/aggregates/goal-folder.ts) | Goal Folder 聚合 |
 | [`packages/goal/src/server/domain/aggregates/goal-record.ts`](../../../packages/goal/src/server/domain/aggregates/goal-record.ts) | Goal Record 聚合 |
-| [`packages/goal/src/server/domain/aggregates/focus-session.ts`](../../../packages/goal/src/server/domain/aggregates/focus-session.ts) | Focus Session 聚合 |
 | [`packages/goal/src/server/domain/entities/key-result.ts`](../../../packages/goal/src/server/domain/entities/key-result.ts) | Key Result 领域实体 |
 | [`packages/goal/src/server/domain/entities/goal-review.ts`](../../../packages/goal/src/server/domain/entities/goal-review.ts) | Goal Review 领域实体 |
 | [`packages/goal/src/server/application/use-cases/commands/create-goal.use-case.ts`](../../../packages/goal/src/server/application/use-cases/commands/create-goal.use-case.ts) | 创建目标用例 |

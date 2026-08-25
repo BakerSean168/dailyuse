@@ -48,7 +48,7 @@ export class GoalHttpAdapter implements IGoalApiClient {
     query?: string;
     status?: string[];
     systemView?: GoalSystemView;
-    folderId?: string;
+    labelIdsAll?: string[];
     startDate?: number;
     endDate?: number;
     includeChildren?: boolean;
@@ -72,10 +72,6 @@ export class GoalHttpAdapter implements IGoalApiClient {
     return this.httpClient.delete(`${this.baseUrl}/${id}`, { params: request });
   }
 
-  async archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>> {
-    return this.httpClient.post(`${this.baseUrl}/archive-expired`);
-  }
-
   // ===== Goal Status =====
 
   async activateGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
@@ -90,6 +86,10 @@ export class GoalHttpAdapter implements IGoalApiClient {
     return this.httpClient.post(`${this.baseUrl}/${id}/archive`, { expectedVersion });
   }
 
+  async abandonGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/abandon`, { expectedVersion });
+  }
+
   // ===== Search =====
 
   async searchGoals(params: {
@@ -98,7 +98,6 @@ export class GoalHttpAdapter implements IGoalApiClient {
     pageSize?: number;
     status?: string[];
     systemView?: GoalSystemView;
-    folderId?: string;
   }): Promise<Result<QueryGoalsRes>> {
     return this.httpClient.get(`${this.baseUrl}/search`, { params });
   }

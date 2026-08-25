@@ -1,30 +1,24 @@
-import type {
-  GoalEventMap,
-  GoalServerDTO,
-  ReminderTrigger,
-} from '@memoflow/contracts/goal';
+import type { GoalEventMap, GoalServerDTO, ReminderTrigger } from '@memoflow/contracts/goal';
 import { GoalStatus, ReminderTriggerType } from '@memoflow/contracts/goal';
-import { SourceModule, Timezone, mapImportanceToTaskPriority } from '@memoflow/contracts/schedule';
+import { SourceModule, TaskPriority, Timezone } from '@memoflow/contracts/schedule';
 import { ScheduleTask } from '@memoflow/schedule';
 import type { IGoalRepository } from '../domain';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Soft residual 1168: dual mapPriority retired onto contracts mapImportanceToTaskPriority sole. */
-
 function calculateTriggerAt(goal: GoalServerDTO, trigger: ReminderTrigger): number | null {
   if (trigger.type === ReminderTriggerType.RemainingDays) {
-    if (!goal.targetDate) {
+    if (!goal.dueDate) {
       return null;
     }
-    return goal.targetDate - trigger.value * DAY_MS;
+    return goal.dueDate - trigger.value * DAY_MS;
   }
 
   if (trigger.type === ReminderTriggerType.TimeProgressPercentage) {
-    if (!goal.startDate || !goal.targetDate || goal.targetDate <= goal.startDate) {
+    if (!goal.startDate || !goal.dueDate || goal.dueDate <= goal.startDate) {
       return null;
     }
-    return goal.startDate + (goal.targetDate - goal.startDate) * (trigger.value / 100);
+    return goal.startDate + (goal.dueDate - goal.startDate) * (trigger.value / 100);
   }
 
   return null;
@@ -93,10 +87,7 @@ export type GoalScheduleProjectionEventMap = Pick<
   | 'goal:deleted'
 >;
 
-function selectGoalProjection(
-  goalId: string,
-  identityId: string,
-): GoalScheduleProjectionSelection {
+function selectGoalProjection(goalId: string, identityId: string): GoalScheduleProjectionSelection {
   return {
     sourceModule: SourceModule.Goal,
     sourceEntityId: goalId,
@@ -162,7 +153,7 @@ export function createGoalScheduleProjectionSource(deps: {
                 triggerAt,
               },
               tags: ['goal', 'goal-reminder', `trigger:${trigger.type}`],
-              priority: mapImportanceToTaskPriority(goalDTO.importance),
+              priority: TaskPriority.Normal,
               timeout: null,
             },
           });

@@ -10,8 +10,6 @@ import {
   type GoalRuntimeContributionsInput,
 } from './goal.module';
 import {
-  FocusModePrismaRepository,
-  GoalFolderPrismaRepository,
   GoalPrismaRepository,
   GoalRecordPrismaRepository,
   PrismaGoalWriteTransactionRunner,
@@ -26,8 +24,6 @@ import type { GoalScheduleProjectionSource } from '../../schedule-projection';
 import { createGoalTaskProgressHandler } from '../application/event-handlers';
 import type { GoalDependencyReadPort } from '@memoflow/contracts/reliable-messaging';
 import type {
-  IFocusModeRepository,
-  IGoalFolderRepository,
   IGoalRecordRepository,
   IGoalRepository,
   IRelationRepository,
@@ -57,9 +53,7 @@ import type { GoalWriteTransactionRunner } from '../application/use-cases/comman
  */
 export interface GoalRepositorySet {
   readonly goalRepository: IGoalRepository;
-  readonly goalFolderRepository: IGoalFolderRepository;
   readonly goalRecordRepository: IGoalRecordRepository;
-  readonly focusModeRepository: IFocusModeRepository;
   readonly goalWriteTransactionRunner: GoalWriteTransactionRunner;
   readonly habitRepository?: IHabitRepository;
   /** R5：关系仓储（仅 Prisma 提供）/ Relation repository (Prisma lane only). */
@@ -97,9 +91,7 @@ export function createGoalPrismaModule(
   }
   const {
     goalRepository,
-    goalFolderRepository,
     goalRecordRepository,
-    focusModeRepository,
     goalWriteTransactionRunner,
     habitRepository,
     relationRepository,
@@ -107,9 +99,7 @@ export function createGoalPrismaModule(
   } = createGoalPrismaRepositories(db);
   return createGoalModule({
     goalRepository,
-    goalFolderRepository,
     goalRecordRepository,
-    focusModeRepository,
     goalWriteTransactionRunner,
     taskBindingReadPort: options.taskBindingReadPort,
     runtimeContributions: options?.runtimeContributions,
@@ -136,9 +126,7 @@ export function createGoalPrismaModule(
 export function createGoalPrismaRepositories(db: PrismaClient): GoalRepositorySet {
   return {
     goalRepository: new GoalPrismaRepository(db),
-    goalFolderRepository: new GoalFolderPrismaRepository(db),
     goalRecordRepository: new GoalRecordPrismaRepository(db),
-    focusModeRepository: new FocusModePrismaRepository(db),
     goalWriteTransactionRunner: new PrismaGoalWriteTransactionRunner(db),
     // R4：习惯仓储（Habit 模块）
     habitRepository: new PrismaHabitRepository(db),

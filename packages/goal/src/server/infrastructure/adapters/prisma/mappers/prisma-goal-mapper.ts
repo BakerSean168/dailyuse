@@ -30,7 +30,6 @@ function optionalInstant(value: Date | string | number | null | undefined): numb
   return Number.isFinite(n) ? n : null;
 }
 
-
 /**
  * Prisma Goal with eagerly loaded relations
  */
@@ -55,21 +54,13 @@ export class PrismaGoalMapper {
       identityId: row.identityId,
       name: row.name,
       description: row.description ?? null,
-      color: row.color ?? '#3B82F6',
       feasibilityAnalysis: row.feasibilityAnalysis ?? null,
       motivation: row.motivation ?? null,
       status: row.status,
-      importance: row.importance,
-      priority: row.priority ?? 0,
-      category: row.category ?? null,
-      tags: row.tags ?? [],
       startDate: optionalInstant(row.startDate),
-      targetDate: optionalInstant(row.targetDate),
+      dueDate: optionalInstant(row.targetDate),
       completedAt: optionalInstant(row.completedAt),
       archivedAt: optionalInstant(row.archivedAt),
-      folderId: row.folderId ?? null,
-      parentGoalId: row.parentGoalId ?? null,
-      rollupPolicy: row.rollupPolicy ?? 'kr',
       sortOrder: row.sortOrder ?? 0,
       reminderConfig: row.reminderConfig ? JSON.parse(row.reminderConfig) : null,
       keyResults: row.keyResults ? row.keyResults.map(PrismaGoalMapper.mapKeyResult) : null,
@@ -146,7 +137,8 @@ export class PrismaGoalMapper {
       summary: row.content,
       achievements: row.achievements ?? null,
       challenges: row.challenges ?? null,
-      improvements: PrismaGoalMapper.parseReviewImprovements(row.nextSteps) ?? row.lessonsLearned ?? null,
+      improvements:
+        PrismaGoalMapper.parseReviewImprovements(row.nextSteps) ?? row.lessonsLearned ?? null,
       keyResultSnapshots: PrismaGoalMapper.parseReviewKeyResultSnapshots(row.keyResultSnapshots),
       reviewedAt: requiredInstant(row.createdAt),
       createdAt: requiredInstant(row.createdAt),

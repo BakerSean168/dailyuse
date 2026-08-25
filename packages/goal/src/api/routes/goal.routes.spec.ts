@@ -205,12 +205,12 @@ describe('goal mutation routes run the real validation adapter (Phase 4)', () =>
     const handler = getHandler(router, 'post', '/');
 
     const validRes = createRes();
-    await handler(createReq({ name: 'Ship architecture fixes', importance: 'Moderate' }), validRes);
+    await handler(createReq({ name: 'Ship architecture fixes' }), validRes);
     expect(validRes.statusCode).toBe(201);
     expect(controller.create).toHaveBeenCalledTimes(1);
 
     const badRes = createRes();
-    await handler(createReq({ name: '', importance: 'Moderate' }), badRes);
+    await handler(createReq({ name: '' }), badRes);
     expect(badRes.statusCode).toBe(400);
     expect(badRes.body.error.code).toBe('VALIDATION_ERROR');
     expect(controller.create).toHaveBeenCalledTimes(1);
@@ -256,12 +256,8 @@ describe('goal route contracts', () => {
       getRegisteredRoute(registry, 'post', '/api/v1/goals/{id}/clone'),
     );
 
-    expect(
-      createSchema.safeParse({ name: 'Ship architecture fixes', importance: 'Moderate' }).success,
-    ).toBe(true);
-    expect(createSchema.safeParse({ title: 'Legacy title', importance: 'Moderate' }).success).toBe(
-      false,
-    );
+    expect(createSchema.safeParse({ name: 'Ship architecture fixes' }).success).toBe(true);
+    expect(createSchema.safeParse({ title: 'Legacy title' }).success).toBe(false);
 
     expect(
       updateSchema.safeParse({ name: 'Ship architecture fixes v2', expectedVersion: 1 }).success,
@@ -304,49 +300,6 @@ describe('goal route contracts', () => {
 
     expect(deleteSchema.safeParse({ expectedVersion: '1' }).success).toBe(true);
     expect(deleteSchema.safeParse({ expectedVersion: 'invalid' }).success).toBe(false);
-  });
-
-  it('registers focus mode routes before the dynamic goal id route', () => {
-    const router = registerGoalRoutes(
-      createGoalUseCasesStub(),
-      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
-      null,
-    );
-
-    const layers = (
-      router as unknown as {
-        stack: Array<{ handle?: { stack?: Array<{ route?: { path: string } }> } }>;
-      }
-    ).stack;
-
-    const firstRouterPaths = layers[0]?.handle?.stack?.map((layer) => layer.route?.path) ?? [];
-    const secondRouterPaths = layers[1]?.handle?.stack?.map((layer) => layer.route?.path) ?? [];
-
-    expect(firstRouterPaths).toContain('/focus-mode');
-    expect(secondRouterPaths).toContain('/:id');
-  });
-
-  it('documents focus mode endpoints with contracts-backed response schemas', () => {
-    const registry = new TestOpenApiRegistry();
-
-    registerGoalRoutes(
-      createGoalUseCasesStub(),
-      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
-      registry,
-    );
-
-    const currentRoute = getRegisteredRoute(registry, 'get', '/api/v1/goals/focus-mode');
-    const activateRoute = getRegisteredRoute(registry, 'post', '/api/v1/goals/focus-mode/activate');
-    const activateBody = getJsonBodySchema(activateRoute);
-
-    expect(getResponseSchema(currentRoute, 200)).toBeDefined();
-    expect(getResponseSchema(activateRoute, 200)).toBeDefined();
-    expect(
-      activateBody.safeParse({
-        focusedGoalIds: ['IGoalId_550e8400-e29b-41d4-a716-446655440000'],
-        hiddenGoalsMode: 'Hide',
-      }).success,
-    ).toBe(true);
   });
 
   it('documents key-result routes with named list and detail contracts', () => {
@@ -402,22 +355,16 @@ describe('goal route contracts', () => {
           identityId: 'IdentityId_00000000-0000-4000-8000-000000000003',
           name: 'Goal',
           description: null,
-          color: null,
           feasibilityAnalysis: null,
           motivation: null,
           status: 'Active',
-          importance: 'Moderate',
-          priority: 0,
-          category: null,
-          tags: [],
           startDate: null,
-          targetDate: null,
+          dueDate: null,
           completedAt: null,
           archivedAt: null,
-          folderId: null,
-          parentGoalId: null,
           sortOrder: 0,
           reminderConfig: null,
+          labels: [],
           createdAt: 1,
           updatedAt: 2,
           deletedAt: null,

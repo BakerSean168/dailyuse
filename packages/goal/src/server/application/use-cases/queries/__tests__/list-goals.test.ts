@@ -79,14 +79,14 @@ describe('ListGoalsUseCase', () => {
       includeKeyResults: true,
       systemView: 'completed',
       status: ['IN_PROGRESS'],
-      folderId: 'folder-1',
+      labelIdsAll: ['label-work', 'label-ai'],
     });
 
     expect(findByIdentityId).toHaveBeenCalledWith('identity-1', {
       includeChildren: true,
       systemView: 'completed',
       status: 'IN_PROGRESS',
-      folderId: 'folder-1',
+      labelIdsAll: ['label-work', 'label-ai'],
     });
   });
 

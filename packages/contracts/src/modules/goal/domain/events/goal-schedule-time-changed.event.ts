@@ -4,7 +4,7 @@ import type { IdentityId } from '../../../../primitives';
 /**
  * Goal Schedule Time Changed Event
  *
- * Triggered when: Goal time range changes (start/target dates)
+ * Triggered when: Goal time range changes (start/due dates)
  * Subscribers: Schedule service
  */
 export interface GoalScheduleTimeChangedEvent {

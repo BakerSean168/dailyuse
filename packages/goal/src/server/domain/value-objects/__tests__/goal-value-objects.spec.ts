@@ -1,12 +1,8 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import {
-  FocusSessionStatus,
-  FolderType,
-  GoalMetadata,
   GoalReminderConfig,
   GoalStatus,
   GoalTimeRange,
-  HiddenGoalsMode,
   KeyResultCalculationMethod,
   KeyResultProgress,
   KeyResultSnapshot,
@@ -31,26 +27,12 @@ describe('goal shared value objects', () => {
     expect(GoalStatus.getAll()).toEqual([
       GoalStatus.Active,
       GoalStatus.Completed,
-      GoalStatus.Archived,
+      GoalStatus.Abandoned,
     ]);
     expect(GoalStatus.of('Active')).toBe(GoalStatus.Active);
     expect(GoalStatus.isTerminal(GoalStatus.Completed)).toBe(true);
+    expect(GoalStatus.isTerminal(GoalStatus.Abandoned)).toBe(true);
     expect(() => GoalStatus.of('Bad')).toThrow('Invalid GoalStatus');
-
-    expect(FolderType.getAll()).toEqual([FolderType.System, FolderType.User]);
-    expect(FolderType.of('User')).toBe(FolderType.User);
-    expect(FolderType.isSystem(FolderType.System)).toBe(true);
-    expect(FolderType.isUser(FolderType.User)).toBe(true);
-
-    expect(FocusSessionStatus.getAll()).toContain(FocusSessionStatus.Cancelled);
-    expect(FocusSessionStatus.of('Completed')).toBe(FocusSessionStatus.Completed);
-    expect(FocusSessionStatus.isTerminal(FocusSessionStatus.Cancelled)).toBe(true);
-
-    expect(HiddenGoalsMode.getAll()).toContain(HiddenGoalsMode.Collapse);
-    expect(HiddenGoalsMode.of('Dim')).toBe(HiddenGoalsMode.Dim);
-    expect(HiddenGoalsMode.isHide(HiddenGoalsMode.Hide)).toBe(true);
-    expect(HiddenGoalsMode.isDim(HiddenGoalsMode.Dim)).toBe(true);
-    expect(HiddenGoalsMode.isCollapse(HiddenGoalsMode.Collapse)).toBe(true);
 
     expect(ReviewType.getAll()).toContain(ReviewType.Final);
     expect(ReviewType.of('Weekly')).toBe(ReviewType.Weekly);
@@ -78,9 +60,7 @@ describe('goal shared value objects', () => {
 
     expect(KeyResultCalculationMethod.getAll()).toContain(KeyResultCalculationMethod.Last);
     expect(KeyResultCalculationMethod.of('Sum')).toBe(KeyResultCalculationMethod.Sum);
-    expect(KeyResultCalculationMethod.isAggregation(KeyResultCalculationMethod.Average)).toBe(
-      true,
-    );
+    expect(KeyResultCalculationMethod.isAggregation(KeyResultCalculationMethod.Average)).toBe(true);
     expect(KeyResultCalculationMethod.isAggregation(KeyResultCalculationMethod.Last)).toBe(false);
 
     const invalidWeight = new InvalidWeightError('progress', 120);
@@ -89,42 +69,7 @@ describe('goal shared value objects', () => {
     expect(invalidWeight.message).toContain('120');
   });
 
-  it('covers goal metadata and reminder config mutations', () => {
-    const metadata = GoalMetadata.createDefault()
-      .updateImportance('Important')
-      .updateCategory('Work')
-      .updateTags(['launch'])
-      .addTag('q2');
-
-    expect(metadata.importance).toBe('Important');
-    expect(metadata.category).toBe('Work');
-    expect(metadata.tags).toEqual(['launch', 'q2']);
-    expect(metadata.hasCategory).toBe(true);
-    expect(metadata.hasTags).toBe(true);
-    expect(metadata.removeTag('launch').tags).toEqual(['q2']);
-    expect(GoalMetadata.fromDTO(metadata.toDTO()).toDTO()).toEqual(metadata.toDTO());
-    expect(() =>
-      GoalMetadata.create({
-        importance: 'Moderate',
-        category: 'x'.repeat(51),
-        tags: [],
-      }),
-    ).toThrow('Category too long');
-    expect(() =>
-      GoalMetadata.create({
-        importance: 'Moderate',
-        category: null,
-        tags: Array.from({ length: 11 }, (_, i) => `t${i}`),
-      }),
-    ).toThrow('Too many tags');
-    expect(() =>
-      GoalMetadata.create({
-        importance: 'Moderate',
-        category: null,
-        tags: ['x'.repeat(21)],
-      }),
-    ).toThrow('Tag too long');
-
+  it('covers reminder config mutations', () => {
     const reminder = GoalReminderConfig.createDefault()
       .setEnabled(true)
       .addTrigger({ type: 'RemainingDays', value: 3, enabled: true })
@@ -175,13 +120,13 @@ describe('goal shared value objects', () => {
     const completed = new Date('2026-05-02T00:00:00.000Z').getTime();
     const archived = new Date('2026-04-22T00:00:00.000Z').getTime();
 
-    const range = GoalTimeRange.createDefault(start).setTargetDate(target);
+    const range = GoalTimeRange.createDefault(start).setDueDate(target);
     expect(range.startDate).toBe(start);
-    expect(range.targetDate).toBe(target);
+    expect(range.dueDate).toBe(target);
     expect(range.getPlannedDays()).toBe(30);
     // elapsed/days-to-target depend on clock.now — assert finite numbers
     expect(typeof range.getElapsedDays()).toBe('number');
-    expect(typeof range.getDaysToTargetDate()).toBe('number');
+    expect(typeof range.getDaysToDueDate()).toBe('number');
     expect(range.isCompleted).toBe(false);
     expect(range.isArchived).toBe(false);
     expect(range.isTerminal).toBe(false);
@@ -200,19 +145,28 @@ describe('goal shared value objects', () => {
     expect(() =>
       GoalTimeRange.create({
         startDate: target,
-        targetDate: start,
+        dueDate: start,
         completedAt: null,
         archivedAt: null,
       }),
-    ).toThrow('Start date must be before or equal to target date');
-    expect(() =>
-      GoalTimeRange.create({
-        startDate: start,
-        targetDate: target,
-        completedAt: completed,
-        archivedAt: archived,
-      }),
-    ).toThrow('Goal cannot be both completed and archived');
+    ).toThrow('Start date must be before or equal to due date');
+    const completedAndArchived = GoalTimeRange.create({
+      startDate: start,
+      dueDate: target,
+      completedAt: completed,
+      archivedAt: archived,
+    });
+    expect(completedAndArchived.isCompleted).toBe(true);
+    expect(completedAndArchived.isArchived).toBe(true);
+    expect(completedAndArchived.isTerminal).toBe(true);
+
+    const archivedOnly = GoalTimeRange.create({
+      startDate: start,
+      dueDate: target,
+      completedAt: null,
+      archivedAt: archived,
+    });
+    expect(archivedOnly.isTerminal).toBe(false);
 
     const snapshot = KeyResultSnapshot.create({
       keyResultId: 'KeyResultId_1' as never,

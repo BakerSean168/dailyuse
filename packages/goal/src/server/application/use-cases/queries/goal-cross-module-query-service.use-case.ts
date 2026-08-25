@@ -22,7 +22,7 @@ export interface GoalBindingOption {
   title: string;
   description?: string | null;
   status: GoalStatus;
-  targetDate?: number | null;
+  dueDate?: number | null;
   progress?: number;
 }
 
@@ -70,7 +70,7 @@ export class GoalCrossModuleQueryServiceUseCase {
           title: goal.name,
           description: goal.description,
           status: goal.status,
-          targetDate: goal.targetDate ?? null,
+          dueDate: goal.dueDate ?? null,
           progress: goal.progress,
         })),
     );
@@ -100,9 +100,10 @@ export class GoalCrossModuleQueryServiceUseCase {
         progress: {
           current: kr.progress.currentValue,
           target: kr.progress.targetValue,
-          percentage: kr.progress.targetValue === 0
-            ? 0
-            : Math.round((kr.progress.currentValue / kr.progress.targetValue) * 100),
+          percentage:
+            kr.progress.targetValue === 0
+              ? 0
+              : Math.round((kr.progress.currentValue / kr.progress.targetValue) * 100),
         },
         weight: kr.weight,
       })),

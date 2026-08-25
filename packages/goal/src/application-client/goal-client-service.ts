@@ -2,7 +2,7 @@
  * Goal Client Service
  *
  * Constructor-injected application service for goal management.
- * Uses port interfaces (IGoalApiClient, IGoalFolderApiClient) directly,
+ * Uses the Goal API client port directly,
  * returning Result<T> types throughout.
  *
  * @module application-client/goal-client-service
@@ -18,8 +18,6 @@ import type {
   AddKeyResultReq,
   UpdateKeyResultReq,
   DeleteKeyResultReq,
-  CreateGoalFolderReq,
-  UpdateGoalFolderReq,
   CreateGoalRecordReq,
   DeleteGoalRecordReq,
   CreateGoalReviewReq,
@@ -29,7 +27,6 @@ import type {
   GoalClientDTO,
   GoalMutationReceipt,
   GoalSystemView,
-  GoalFolderClientDTO,
   KeyResultClientDTO,
   GoalRecordClientDTO,
   QueryGoalsRes,
@@ -38,20 +35,14 @@ import type {
   GetGoalReviewsRes,
   GetGoalAggregateRes,
   ProgressBreakdown,
-  FocusModeDTO,
-  ActivateFocusModeRequest,
 } from '@memoflow/contracts/goal';
 import type { IGoalApiClient } from './ports/goal-api-client.port';
-import type { IGoalFolderApiClient } from './ports/goal-folder-api-client.port';
-import type { IGoalFocusApiClient } from './ports/goal-focus-api-client.port';
 import {
   Goal,
-  GoalFolder,
   KeyResult,
   GoalReview,
   GoalRecord,
   GoalId,
-  GoalFolderId,
   KeyResultId,
   GoalReviewId,
   GoalRecordId,
@@ -66,22 +57,16 @@ function goalFromDTO(dto: GoalClientDTO): Goal {
     identityId: IdentityId.of(dto.identityId),
     name: dto.name,
     description: dto.description,
-    color: dto.color,
     feasibilityAnalysis: dto.feasibilityAnalysis,
     motivation: dto.motivation,
     status: dto.status,
-    importance: dto.importance,
-    priority: dto.priority ?? 0,
-    category: dto.category,
-    tags: dto.tags ?? [],
     startDate: dto.startDate ? dto.startDate : null,
-    targetDate: dto.targetDate ? dto.targetDate : null,
+    dueDate: dto.dueDate ? dto.dueDate : null,
     completedAt: dto.completedAt ? dto.completedAt : null,
     archivedAt: dto.archivedAt ? dto.archivedAt : null,
-    folderId: dto.folderId ? GoalFolderId.of(dto.folderId) : null,
-    parentGoalId: dto.parentGoalId ? GoalId.of(dto.parentGoalId) : null,
     sortOrder: dto.sortOrder,
     reminderConfig: dto.reminderConfig ?? null,
+    labels: dto.labels ?? [],
     version: dto.version,
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,
@@ -91,25 +76,6 @@ function goalFromDTO(dto: GoalClientDTO): Goal {
     totalKeyResults: dto.totalKeyResults,
     completedKeyResults: dto.completedKeyResults,
     overallProgress: dto.overallProgress,
-  });
-}
-
-function goalFolderFromDTO(dto: GoalFolderClientDTO): GoalFolder {
-  return GoalFolder.load({
-    id: GoalFolderId.of(dto.id),
-    identityId: IdentityId.of(dto.identityId),
-    name: dto.name,
-    description: dto.description,
-    icon: dto.icon,
-    color: dto.color,
-    parentFolderId: dto.parentFolderId ? GoalFolderId.of(dto.parentFolderId) : null,
-    sortOrder: dto.sortOrder,
-    isSystemFolder: dto.isSystemFolder,
-    folderType: dto.folderType,
-    version: dto.version,
-    createdAt: dto.createdAt,
-    updatedAt: dto.updatedAt,
-    deletedAt: dto.deletedAt ?? null,
   });
 }
 
@@ -168,7 +134,7 @@ export interface GoalClientPort {
     query?: string;
     status?: string[];
     systemView?: GoalSystemView;
-    folderId?: string;
+    labelIdsAll?: string[];
     startDate?: number;
     endDate?: number;
   }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>>;
@@ -177,15 +143,14 @@ export interface GoalClientPort {
   activateGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>>;
   completeGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>>;
   archiveGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>>;
+  abandonGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>>;
   searchGoals(params: {
     query: string;
     page?: number;
     pageSize?: number;
     status?: string[];
     systemView?: GoalSystemView;
-    folderId?: string;
   }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>>;
-  archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>>;
   getGoalAggregateView(id: string): Promise<Result<GetGoalAggregateRes>>;
   cloneGoal(id: string, request?: CloneGoalReq): Promise<Result<GoalMutationReceipt>>;
   createKeyResult(
@@ -244,23 +209,10 @@ export interface GoalClientPort {
     reviewId: string,
     request: DeleteGoalReviewReq,
   ): Promise<Result<GoalMutationReceipt>>;
-  createGoalFolder(request: CreateGoalFolderReq): Promise<Result<GoalFolder>>;
-  listGoalFolders(): Promise<Result<GoalFolder[]>>;
-  getGoalFolder(id: string): Promise<Result<GoalFolder>>;
-  updateGoalFolder(id: string, request: UpdateGoalFolderReq): Promise<Result<GoalFolder>>;
-  deleteGoalFolder(id: string): Promise<Result<void>>;
-  getCurrentFocusMode(): Promise<Result<FocusModeDTO | null>>;
-  activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeDTO>>;
-  deactivateFocusMode(): Promise<Result<FocusModeDTO | null>>;
-  extendFocusMode(newEndTime: number): Promise<Result<FocusModeDTO>>;
 }
 
 export class GoalClientService implements GoalClientPort {
-  constructor(
-    private readonly goalApi: IGoalApiClient,
-    private readonly folderApi: IGoalFolderApiClient,
-    private readonly focusApi?: IGoalFocusApiClient,
-  ) {
+  constructor(private readonly goalApi: IGoalApiClient) {
     this.createGoal = this.createGoal.bind(this);
     this.getGoal = this.getGoal.bind(this);
     this.listGoals = this.listGoals.bind(this);
@@ -269,8 +221,8 @@ export class GoalClientService implements GoalClientPort {
     this.activateGoal = this.activateGoal.bind(this);
     this.completeGoal = this.completeGoal.bind(this);
     this.archiveGoal = this.archiveGoal.bind(this);
+    this.abandonGoal = this.abandonGoal.bind(this);
     this.searchGoals = this.searchGoals.bind(this);
-    this.archiveExpiredGoals = this.archiveExpiredGoals.bind(this);
     this.getGoalAggregateView = this.getGoalAggregateView.bind(this);
     this.cloneGoal = this.cloneGoal.bind(this);
     this.createKeyResult = this.createKeyResult.bind(this);
@@ -287,15 +239,6 @@ export class GoalClientService implements GoalClientPort {
     this.getGoalReviews = this.getGoalReviews.bind(this);
     this.updateGoalReview = this.updateGoalReview.bind(this);
     this.deleteGoalReview = this.deleteGoalReview.bind(this);
-    this.createGoalFolder = this.createGoalFolder.bind(this);
-    this.listGoalFolders = this.listGoalFolders.bind(this);
-    this.getGoalFolder = this.getGoalFolder.bind(this);
-    this.updateGoalFolder = this.updateGoalFolder.bind(this);
-    this.deleteGoalFolder = this.deleteGoalFolder.bind(this);
-    this.getCurrentFocusMode = this.getCurrentFocusMode.bind(this);
-    this.activateFocusMode = this.activateFocusMode.bind(this);
-    this.deactivateFocusMode = this.deactivateFocusMode.bind(this);
-    this.extendFocusMode = this.extendFocusMode.bind(this);
   }
 
   // ===== Goal Management =====
@@ -315,7 +258,7 @@ export class GoalClientService implements GoalClientPort {
     query?: string;
     status?: string[];
     systemView?: GoalSystemView;
-    folderId?: string;
+    labelIdsAll?: string[];
     startDate?: number;
     endDate?: number;
   }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>> {
@@ -352,13 +295,16 @@ export class GoalClientService implements GoalClientPort {
     return this.goalApi.archiveGoal(id, expectedVersion);
   }
 
+  async abandonGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.abandonGoal(id, expectedVersion);
+  }
+
   async searchGoals(params: {
     query: string;
     page?: number;
     pageSize?: number;
     status?: string[];
     systemView?: GoalSystemView;
-    folderId?: string;
   }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>> {
     const result = await this.goalApi.searchGoals(params);
     return mapResult(result, (data: QueryGoalsRes) => ({
@@ -371,10 +317,6 @@ export class GoalClientService implements GoalClientPort {
         totalPages: 0,
       },
     }));
-  }
-
-  async archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>> {
-    return this.goalApi.archiveExpiredGoals();
   }
 
   async getGoalAggregateView(id: string): Promise<Result<GetGoalAggregateRes>> {
@@ -431,7 +373,6 @@ export class GoalClientService implements GoalClientPort {
   async getProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>> {
     return this.goalApi.getProgressBreakdown(goalId);
   }
-
 
   // ===== Goal Record Use Cases =====
 
@@ -506,66 +447,11 @@ export class GoalClientService implements GoalClientPort {
   ): Promise<Result<GoalMutationReceipt>> {
     return this.goalApi.deleteGoalReview(goalId, reviewId, request);
   }
-
-  // ===== Goal Folder Use Cases =====
-
-  async createGoalFolder(request: CreateGoalFolderReq): Promise<Result<GoalFolder>> {
-    const result = await this.folderApi.createGoalFolder(request);
-    return mapResult(result, (dto) => goalFolderFromDTO(dto));
-  }
-
-  async listGoalFolders(): Promise<Result<GoalFolder[]>> {
-    const result = await this.folderApi.getGoalFolders();
-    return mapResult(result, (data) => data.data.map((dto) => goalFolderFromDTO(dto)));
-  }
-
-  async getGoalFolder(id: string): Promise<Result<GoalFolder>> {
-    const result = await this.folderApi.getGoalFolderById(id);
-    return mapResult(result, (dto) => goalFolderFromDTO(dto));
-  }
-
-  async updateGoalFolder(id: string, request: UpdateGoalFolderReq): Promise<Result<GoalFolder>> {
-    const result = await this.folderApi.updateGoalFolder(id, request);
-    return mapResult(result, (dto) => goalFolderFromDTO(dto));
-  }
-
-  async deleteGoalFolder(id: string): Promise<Result<void>> {
-    return this.folderApi.deleteGoalFolder(id);
-  }
-
-  // ===== Focus Mode Use Cases =====
-
-  private requireFocusApi(): IGoalFocusApiClient {
-    if (!this.focusApi) {
-      throw new Error('GoalClientService: focusApi is required for focus mode operations');
-    }
-    return this.focusApi;
-  }
-
-  async getCurrentFocusMode(): Promise<Result<FocusModeDTO | null>> {
-    return this.requireFocusApi().getCurrentFocusMode();
-  }
-
-  async activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeDTO>> {
-    return this.requireFocusApi().activateFocusMode(request);
-  }
-
-  async deactivateFocusMode(): Promise<Result<FocusModeDTO | null>> {
-    return this.requireFocusApi().deactivateFocusMode();
-  }
-
-  async extendFocusMode(newEndTime: number): Promise<Result<FocusModeDTO>> {
-    return this.requireFocusApi().extendFocusMode({ newEndTime });
-  }
 }
 
 // ─── Factory ─────────────────────────────────────────────────────────────────
 
 /** Create a `GoalClientService` from any transport adapter. */
-export function createGoalClientService(
-  goalApi: IGoalApiClient,
-  folderApi: IGoalFolderApiClient,
-  focusApi?: IGoalFocusApiClient,
-): GoalClientService {
-  return new GoalClientService(goalApi, folderApi, focusApi);
+export function createGoalClientService(goalApi: IGoalApiClient): GoalClientService {
+  return new GoalClientService(goalApi);
 }

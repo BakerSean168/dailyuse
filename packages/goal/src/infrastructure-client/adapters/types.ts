@@ -21,5 +21,3 @@ export type { IResultIpcClient } from '@memoflow/ipc-client';
 
 // ============ Port Interface Re-exports ============
 export type { IGoalApiClient } from '../../application-client/ports/goal-api-client.port';
-export type { IGoalFolderApiClient } from '../../application-client/ports/goal-folder-api-client.port';
-export type { IGoalFocusApiClient } from '../../application-client/ports/goal-focus-api-client.port';

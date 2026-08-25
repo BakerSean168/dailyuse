@@ -60,7 +60,7 @@ function createApiStub(): GoalApplicationPort {
     deleteGoal: vi.fn(() => ok(null as never)),
     permanentlyDeleteGoal: vi.fn(() => ok(null as never)),
     archiveGoal: vi.fn(() => ok(null as never)),
-    archiveExpiredGoals: vi.fn(() => ok(null as never)),
+    abandonGoal: vi.fn(() => ok(null as never)),
     activateGoal: vi.fn(() => ok(null as never)),
     completeGoal: vi.fn(() => ok(null as never)),
     searchGoals: vi.fn(() => ok([] as never)),
@@ -75,19 +75,10 @@ function createApiStub(): GoalApplicationPort {
     createRecord: vi.fn(() => ok(null as never)),
     listRecords: vi.fn(() => ok([] as never)),
     deleteRecord: vi.fn(() => ok(null as never)),
-    getCurrentFocusMode: vi.fn(() => ok(null as never)),
-    activateFocusMode: vi.fn(() => ok(null as never)),
-    deactivateFocusMode: vi.fn(() => ok(null as never)),
-    extendFocusMode: vi.fn(() => ok(null as never)),
     getGoalAggregate: vi.fn(() => ok(null as never)),
     getGoalProgressBreakdown: vi.fn(() => ok(null as never)),
     cloneGoal: vi.fn(() => ok(null as never)),
     batchUpdateKeyResultWeights: vi.fn(() => ok(null as never)),
-    listGoalFolders: vi.fn(() => ok([] as never)),
-    createGoalFolder: vi.fn(() => ok(null as never)),
-    getGoalFolder: vi.fn(() => ok(null as never)),
-    updateGoalFolder: vi.fn(() => ok(null as never)),
-    deleteGoalFolder: vi.fn(() => ok(null as never)),
   } as GoalApplicationPort;
 }
 
@@ -167,9 +158,13 @@ describe('createGoalElectronModule IPC lifecycle', () => {
     expect(listResult).toMatchObject({ ok: true });
     expect(fake.api.listGoals).toHaveBeenCalledTimes(1);
 
-    const folderResult = await registered(GoalChannels.FOLDER_LIST)(undefined, {});
-    expect(folderResult).toMatchObject({ ok: true });
-    expect(fake.api.listGoalFolders).toHaveBeenCalledTimes(1);
+    const abandonResult = await registered(GoalChannels.ABANDON)(
+      undefined,
+      'IGoalId_00000000-0000-4000-8000-000000000001',
+      { expectedVersion: 1 },
+    );
+    expect(abandonResult).toMatchObject({ ok: true });
+    expect(fake.api.abandonGoal).toHaveBeenCalledTimes(1);
   });
 
   it('destroy removes all channels and disposes exactly once (second call no-ops)', () => {

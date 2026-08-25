@@ -11,13 +11,13 @@ describe('PrismaGoalMapper additional coverage', () => {
       color: null,
       feasibilityAnalysis: null,
       motivation: null,
-      status: 'InProgress',
+      status: 'Active',
       importance: 'Medium',
       priority: null,
       category: null,
       tags: null,
       startDate: new Date(1_000),
-      targetDate: null,
+      targetDate: new Date(2_000),
       completedAt: null,
       archivedAt: null,
       folderId: null,
@@ -84,9 +84,10 @@ describe('PrismaGoalMapper additional coverage', () => {
 
     const dto = PrismaGoalMapper.toDomainDTO(row);
 
-    expect(dto.color).toBe('#3B82F6');
-    expect(dto.priority).toBe(0);
-    expect(dto.tags).toEqual([]);
+    expect(dto.dueDate).toBe(2_000);
+    expect('color' in dto).toBe(false);
+    expect('priority' in dto).toBe(false);
+    expect('tags' in dto).toBe(false);
     expect(dto.sortOrder).toBe(0);
     expect(dto.reminderConfig).toEqual({ enabled: true, triggers: '[]' });
     expect(dto.keyResults?.[0].weight).toBe(1);
@@ -204,7 +205,7 @@ describe('PrismaGoalMapper fallback branches (R4)', () => {
       color: null,
       feasibilityAnalysis: null,
       motivation: null,
-      status: 'InProgress',
+      status: 'Active',
       importance: 'Medium',
       priority: null,
       category: null,
@@ -228,7 +229,8 @@ describe('PrismaGoalMapper fallback branches (R4)', () => {
     };
 
     const raw = PrismaGoalMapper.toDomainDTO(row as never);
-    expect(raw.rollupPolicy).toBe('kr');
+    expect(raw.dueDate).toBeNull();
+    expect('rollupPolicy' in raw).toBe(false);
     expect(raw.sortOrder).toBe(0);
     expect(raw.version).toBe(1);
     expect(raw.reminderConfig).toBeNull();

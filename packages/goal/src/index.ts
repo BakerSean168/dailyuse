@@ -33,8 +33,6 @@ export {
   type GoalEventListenersRuntime,
   type IGoalRepository,
   type IGoalRecordRepository,
-  type IGoalFolderRepository,
-  type IFocusModeRepository,
   type IRelationRepository,
   type IWalletRepository,
 } from './server';

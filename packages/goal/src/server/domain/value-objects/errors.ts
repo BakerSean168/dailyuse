@@ -16,15 +16,15 @@ export class GoalNameRequiredError extends ResultErrorException {
 }
 
 /**
- * 目标日期范围无效错误
+ * Goal due-date range error
  */
 export class GoalInvalidDateRangeError extends ResultErrorException {
   constructor(
     public readonly startDate: number,
-    public readonly targetDate: number,
+    public readonly dueDate: number,
   ) {
     super(
-      `目标日期范围无效：开始日期 ${startDate} 晚于目标日期 ${targetDate}`,
+      `截止日期范围无效：开始日期 ${startDate} 晚于截止日期 ${dueDate}`,
       'goal_invalid_date_range',
       undefined,
       undefined,
@@ -34,7 +34,7 @@ export class GoalInvalidDateRangeError extends ResultErrorException {
 }
 
 /**
- * 目标日期修改无效错误
+ * Goal due-date modification error
  */
 export class GoalInvalidDateModificationError extends ResultErrorException {
   constructor(
@@ -52,11 +52,11 @@ export class GoalInvalidDateModificationError extends ResultErrorException {
 }
 
 /**
- * 目标目标日期未设置错误
+ * 目标截止日期未设置错误
  */
-export class GoalTargetDateNotSetError extends ResultErrorException {
+export class GoalDueDateNotSetError extends ResultErrorException {
   constructor() {
-    super('目标日期未设置', 'goal_target_date_not_set', undefined, undefined, 400);
+    super('截止日期未设置', 'goal_due_date_not_set', undefined, undefined, 400);
   }
 }
 
@@ -128,7 +128,13 @@ export class GoalArchivedError extends ResultErrorException {
  */
 export class GoalNameTooLongError extends ResultErrorException {
   constructor(maxLength: number = 200) {
-    super(`目标名称过长（最大 ${maxLength} 个字符）`, 'goal_name_too_long', undefined, undefined, 400);
+    super(
+      `目标名称过长（最大 ${maxLength} 个字符）`,
+      'goal_name_too_long',
+      undefined,
+      undefined,
+      400,
+    );
   }
 }
 
@@ -167,6 +173,12 @@ export class KeyResultWeightExceededError extends ResultErrorException {
  */
 export class GoalReviewRatingInvalidError extends ResultErrorException {
   constructor(rating: number) {
-    super(`目标回顾评分 ${rating} 无效（必须在 1-5 之间）`, 'goal_review_rating_invalid', undefined, undefined, 400);
+    super(
+      `目标回顾评分 ${rating} 无效（必须在 1-5 之间）`,
+      'goal_review_rating_invalid',
+      undefined,
+      undefined,
+      400,
+    );
   }
 }

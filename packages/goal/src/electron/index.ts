@@ -71,37 +71,25 @@
  */
 
 import { ipcMain } from 'electron';
-import { ok } from '@memoflow/contracts/result';
 import { GoalChannels, type IElectronModuleContext } from '@memoflow/contracts/electron';
 import { createLogger } from '@memoflow/utils/logger';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { GoalModuleInstance } from '../server/infrastructure';
 import { GoalController } from '../server/transport/goal.controller';
-import { GoalFolderController } from '../server/transport/goal-folder.controller';
-import {
-  createGoalFolderTransportHandlers,
-  createGoalTransportHandlers,
-} from '../server/transport';
+import { createGoalTransportHandlers } from '../server/transport';
 import { withAuthenticatedValidation, withAuthenticatedValue } from './authenticated-ipc';
 import {
-  ActivateFocusModeSchema,
   AddKeyResultInvocationSchema,
-  ArchiveExpiredInvocationSchema,
   BatchKeyResultWeightsInvocationSchema,
   CloneGoalInvocationSchema,
-  CreateGoalFolderSchema,
   CreateGoalSchema,
   CreateRecordInvocationSchema,
   CreateReviewInvocationSchema,
-  DeactivateFocusModeInvocationSchema,
-  DeleteGoalFolderInvocationSchema,
   DeleteGoalInvocationSchema,
   DeleteKeyResultInvocationSchema,
   DeleteRecordInvocationSchema,
   DeleteReviewInvocationSchema,
-  ExtendFocusModeSchema,
   GoalStatusCommandInvocationSchema,
-  UpdateGoalFolderInvocationSchema,
   UpdateGoalInvocationSchema,
   UpdateKeyResultInvocationSchema,
   UpdateReviewInvocationSchema,
@@ -227,10 +215,6 @@ export function createGoalElectronModule(
         const goalController = new GoalController(
           createGoalTransportHandlers(options.instance.api),
         );
-        const goalFolderController = new GoalFolderController(
-          createGoalFolderTransportHandlers(options.instance.api),
-        );
-
         ipcMain.handle(GoalChannels.LIST, async (_event, params) =>
           withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
             // Pass filters only - identityId is injected from requestContext inside controller
@@ -273,13 +257,6 @@ export function createGoalElectronModule(
           (args) => ({ params: { id: args[0] }, query: args[1] }),
         );
         installed.push(GoalChannels.DELETE);
-        registerValidatedChannel(
-          ctx,
-          GoalChannels.ARCHIVE_EXPIRED,
-          ArchiveExpiredInvocationSchema,
-          (_data, requestContext) => goalController.archiveExpired(requestContext),
-        );
-        installed.push(GoalChannels.ARCHIVE_EXPIRED);
         // Issue #4 fix: route archive through auth + adapter validation
         // 问题 #4 修复：将归档操作路由到认证 + adapter 校验
         registerValidatedChannel(
@@ -291,6 +268,15 @@ export function createGoalElectronModule(
           (args) => ({ params: { id: args[0] }, body: args[1] }),
         );
         installed.push(GoalChannels.ARCHIVE);
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.ABANDON,
+          GoalStatusCommandInvocationSchema,
+          (data, requestContext) =>
+            goalController.abandon(data.params.id, data.body.expectedVersion, requestContext),
+          (args) => ({ params: { id: args[0] }, body: args[1] }),
+        );
+        installed.push(GoalChannels.ABANDON);
         registerValidatedChannel(
           ctx,
           GoalChannels.ACTIVATE,
@@ -331,53 +317,6 @@ export function createGoalElectronModule(
           ),
         );
         installed.push(GoalChannels.PROGRESS_BREAKDOWN);
-        ipcMain.handle(GoalChannels.FOCUS_MODE_GET, async (_event) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
-            logger.info('IPC 获取专注模式处理器', {
-              identityId: requestContext.identityId,
-            });
-            return goalController.getCurrentFocusMode(requestContext);
-          }),
-        );
-        installed.push(GoalChannels.FOCUS_MODE_GET);
-        registerValidatedChannel(
-          ctx,
-          GoalChannels.FOCUS_MODE_ACTIVATE,
-          ActivateFocusModeSchema,
-          (data, requestContext) => {
-            logger.info('IPC 启用专注模式处理器', {
-              identityId: requestContext.identityId,
-              data,
-            });
-            return goalController.activateFocusMode(data, requestContext);
-          },
-        );
-        installed.push(GoalChannels.FOCUS_MODE_ACTIVATE);
-        registerValidatedChannel(
-          ctx,
-          GoalChannels.FOCUS_MODE_DEACTIVATE,
-          DeactivateFocusModeInvocationSchema,
-          (_data, requestContext) => {
-            logger.info('IPC 停用专注模式处理器', {
-              identityId: requestContext.identityId,
-            });
-            return goalController.deactivateFocusMode(requestContext);
-          },
-        );
-        installed.push(GoalChannels.FOCUS_MODE_DEACTIVATE);
-        registerValidatedChannel(
-          ctx,
-          GoalChannels.FOCUS_MODE_EXTEND,
-          ExtendFocusModeSchema,
-          (data, requestContext) => {
-            logger.info('IPC 延长专注模式处理器', {
-              identityId: requestContext.identityId,
-              data,
-            });
-            return goalController.extendFocusMode(data, requestContext);
-          },
-        );
-        installed.push(GoalChannels.FOCUS_MODE_EXTEND);
         registerValidatedChannel(
           ctx,
           GoalChannels.CLONE,
@@ -539,49 +478,6 @@ export function createGoalElectronModule(
           (args) => ({ params: { id: args[0], krId: args[1], recordId: args[2] }, query: args[3] }),
         );
         installed.push(GoalChannels.RECORD_DELETE);
-        ipcMain.handle(GoalChannels.FOLDER_LIST, async (_event, params) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            // Pass filters only - identityId is injected from requestContext inside controller
-            goalFolderController.list(params ?? {}, requestContext),
-          ),
-        );
-        installed.push(GoalChannels.FOLDER_LIST);
-        ipcMain.handle(GoalChannels.FOLDER_GET, async (_event, id) =>
-          withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-            goalFolderController.get(id, requestContext),
-          ),
-        );
-        installed.push(GoalChannels.FOLDER_GET);
-        registerValidatedChannel(
-          ctx,
-          GoalChannels.FOLDER_CREATE,
-          CreateGoalFolderSchema,
-          (data, requestContext) => goalFolderController.create(data, requestContext),
-          (args) => args[0],
-        );
-        installed.push(GoalChannels.FOLDER_CREATE);
-        registerValidatedChannel(
-          ctx,
-          GoalChannels.FOLDER_UPDATE,
-          UpdateGoalFolderInvocationSchema,
-          (data, requestContext) =>
-            goalFolderController.update(data.params.id, data.body, requestContext),
-          (args) => ({ params: { id: args[0] }, body: args[1] }),
-        );
-        installed.push(GoalChannels.FOLDER_UPDATE);
-        registerValidatedChannel(
-          ctx,
-          GoalChannels.FOLDER_DELETE,
-          DeleteGoalFolderInvocationSchema,
-          async (data, requestContext) => {
-            const result = await goalFolderController.delete(data.params.id, requestContext);
-            if (!result.ok) return result;
-            return ok(null);
-          },
-          (args) => ({ params: { id: args[0] } }),
-        );
-        installed.push(GoalChannels.FOLDER_DELETE);
-
         options.instance.start();
         state = 'registered';
 

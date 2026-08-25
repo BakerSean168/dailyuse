@@ -16,16 +16,10 @@ function createTestGoal(name = 'Test Goal'): Goal {
     identityId: 'test-identity-id' as any,
     name,
     description: null,
-    color: '#3B82F6',
     feasibilityAnalysis: null,
     motivation: null,
-    importance: 'MEDIUM' as any,
-    category: null,
-    tags: [],
     startDate: null,
-    targetDate: null,
-    folderId: null,
-    parentGoalId: null,
+    dueDate: null,
     reminderConfig: null,
   });
 }
@@ -69,7 +63,7 @@ describe('ArchiveGoalUseCase', () => {
     expect(goalRepo.save).not.toHaveBeenCalled();
   });
 
-  it('should be idempotent when archiving a completed goal again', async () => {
+  it('archives a completed goal without changing its Completed business status', async () => {
     const goal = createCompletedGoal();
     const initialVersion = goal.version;
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
@@ -77,8 +71,11 @@ describe('ArchiveGoalUseCase', () => {
     const result = await useCase.execute(goal.id, 'identity-1', initialVersion);
 
     expect(result).toBeOk();
-    expect(goal.version).toBe(initialVersion);
-    expect(goalRepo.saveRootWithExpectedVersion).not.toHaveBeenCalled();
+    expect(goal.version).toBe(initialVersion + 1);
+    expect(goal.status).toBe('Completed');
+    expect(goal.completedAt).not.toBeNull();
+    expect(goal.archivedAt).not.toBeNull();
+    expect(goalRepo.saveRootWithExpectedVersion).toHaveBeenCalledWith(goal, initialVersion);
   });
 
   it('should archive an active goal', async () => {

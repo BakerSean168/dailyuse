@@ -13,7 +13,7 @@ import type { Instant, TransferDate } from '../../../primitives';
  */
 export interface GoalTimeRange {
   startDate: Instant | null;
-  targetDate: Instant | null;
+  dueDate: Instant | null;
   completedAt: Instant | null;
   archivedAt: Instant | null;
 }
@@ -28,7 +28,7 @@ export type GoalTimeRangeDTO = GoalTimeRange;
 // Retain TransferDate documentation alias for wire readers.
 export type GoalTimeRangeTransfer = {
   startDate: TransferDate | null;
-  targetDate: TransferDate | null;
+  dueDate: TransferDate | null;
   completedAt: TransferDate | null;
   archivedAt: TransferDate | null;
 };

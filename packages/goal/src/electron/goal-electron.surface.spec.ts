@@ -23,44 +23,48 @@ describe('createGoalElectronModule channel surface', () => {
     expect(source).not.toMatch(/const Ch = \{/);
     expect(source).toContain('Object.values(GoalChannels)');
     expect(source).toContain('GoalChannels.LIST');
-    expect(source).toContain('GoalChannels.ARCHIVE_EXPIRED');
-    expect(source).toContain('GoalChannels.FOLDER_LIST');
+    expect(source).toContain('GoalChannels.ABANDON');
+    expect(source).not.toContain('GoalChannels.ARCHIVE_EXPIRED');
+    expect(source).not.toContain('GoalChannels.FOLDER_LIST');
+    expect(source).not.toContain('GoalChannels.FOCUS_MODE_GET');
   });
 
-  it('keeps live archiveExpired channel on contracts surface', () => {
-    expect(GoalChannels.ARCHIVE_EXPIRED).toBe('goal:archiveExpired');
+  it('keeps canonical Goal vNext status channels on contracts surface', () => {
+    expect(GoalChannels.ABANDON).toBe('goal:abandon');
+    expect(GoalChannels.COMPLETE).toBe('goal:complete');
+    expect('ARCHIVE_EXPIRED' in GoalChannels).toBe(false);
   });
 });
 
 function createPowerSyncDb() {
-    const Database = require('better-sqlite3') as typeof import('better-sqlite3');
-    const sqlite = new Database(':memory:');
-    const wrapper = {
-      execute: async (sql: string, p?: unknown[]) => {
-        const info = sqlite.prepare(sql).run(...(p ?? []));
-        return { rowsAffected: info.changes };
-      },
-      getAll: async <T>(sql: string, p?: unknown[]) => sqlite.prepare(sql).all(...(p ?? [])) as T[],
-      getOptional: async <T>(sql: string, p?: unknown[]) =>
-        (sqlite.prepare(sql).get(...(p ?? [])) as T) ?? null,
-      get: async <T>(sql: string, p?: unknown[]) => {
-        const row = sqlite.prepare(sql).get(...(p ?? []));
-        if (!row) throw new Error(`no rows: ${sql}`);
-        return row as T;
-      },
-      writeTransaction: async <T>(cb: (tx: unknown) => Promise<T>) => {
-        sqlite.exec('BEGIN');
-        try {
-          const r = await cb(wrapper);
-          sqlite.exec('COMMIT');
-          return r;
-        } catch (e) {
-          sqlite.exec('ROLLBACK');
-          throw e;
-        }
-      },
-    };
-    return wrapper;
+  const Database = require('better-sqlite3') as typeof import('better-sqlite3');
+  const sqlite = new Database(':memory:');
+  const wrapper = {
+    execute: async (sql: string, p?: unknown[]) => {
+      const info = sqlite.prepare(sql).run(...(p ?? []));
+      return { rowsAffected: info.changes };
+    },
+    getAll: async <T>(sql: string, p?: unknown[]) => sqlite.prepare(sql).all(...(p ?? [])) as T[],
+    getOptional: async <T>(sql: string, p?: unknown[]) =>
+      (sqlite.prepare(sql).get(...(p ?? [])) as T) ?? null,
+    get: async <T>(sql: string, p?: unknown[]) => {
+      const row = sqlite.prepare(sql).get(...(p ?? []));
+      if (!row) throw new Error(`no rows: ${sql}`);
+      return row as T;
+    },
+    writeTransaction: async <T>(cb: (tx: unknown) => Promise<T>) => {
+      sqlite.exec('BEGIN');
+      try {
+        const r = await cb(wrapper);
+        sqlite.exec('COMMIT');
+        return r;
+      } catch (e) {
+        sqlite.exec('ROLLBACK');
+        throw e;
+      }
+    },
+  };
+  return wrapper;
 }
 
 describe('GoalElectronModule.register() startup (W4 P2-1)', () => {

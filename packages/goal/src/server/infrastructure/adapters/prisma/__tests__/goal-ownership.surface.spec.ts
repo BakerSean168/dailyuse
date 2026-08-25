@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 /**
  * Goal ownership surface (stage-6 residual 117/118):
  * Residual 178 collapses bare findById dual method.
- * goal aggregate + status + KR/review + create parent + focus + records/progress must identity-scope
+ * goal aggregate + status + KR/review + idempotent create + records/progress must identity-scope
  * repository reads — never authorize by bare goal/record primary key alone.
  */
 describe('goal ownership surface', () => {
@@ -58,6 +58,10 @@ describe('goal ownership surface', () => {
     resolve(__dirname, '../../../../application/use-cases/commands/complete-goal.use-case.ts'),
     'utf8',
   );
+  const abandonUseCase = readFileSync(
+    resolve(__dirname, '../../../../application/use-cases/commands/abandon-goal.use-case.ts'),
+    'utf8',
+  );
   const permanentUseCase = readFileSync(
     resolve(
       __dirname,
@@ -101,13 +105,6 @@ describe('goal ownership surface', () => {
   );
   const createGoal = readFileSync(
     resolve(__dirname, '../../../../application/use-cases/commands/create-goal.use-case.ts'),
-    'utf8',
-  );
-  const activateFocus = readFileSync(
-    resolve(
-      __dirname,
-      '../../../../application/use-cases/commands/activate-focus-mode.use-case.ts',
-    ),
     'utf8',
   );
   const listRecords = readFileSync(
@@ -188,7 +185,7 @@ describe('goal ownership surface', () => {
   });
 
   it('status mutation use cases load via findByIdForIdentity', () => {
-    for (const useCase of [archiveUseCase, activateUseCase, completeUseCase]) {
+    for (const useCase of [archiveUseCase, activateUseCase, completeUseCase, abandonUseCase]) {
       expect(useCase).toMatch(/findByIdForIdentity\(identityId, id, \{\s*includeChildren: true,/);
       expect(useCase).toMatch(/expectedVersion: number/);
       expect(useCase).toContain('saveRootWithExpectedVersion(goal, expectedVersion)');
@@ -209,14 +206,10 @@ describe('goal ownership surface', () => {
     expect(listReviews).toMatch(/execute\(goalId: string, identityId: string\)/);
   });
 
-  it('create parent, focus, records, progress and cross-module use owned reads', () => {
-    expect(createGoal).toContain(
-      'findByIdForIdentity(\n          cx.identityId,\n          input.parentGoalId,',
-    );
+  it('idempotent create, records, progress and cross-module use owned reads', () => {
+    expect(createGoal).toContain('findByIdForIdentity(cx.identityId, input.id,');
     expect(createGoal).toContain('createGoalMutationReceipt');
     expect(createGoal).toMatch(/catch \(caughtError\)/);
-    expect(createGoal).toMatch(/findByIdForIdentity\(\s*cx\.identityId,\s*input\.id,/);
-    expect(activateFocus).toContain('findByIdForIdentity(identityId, goalId)');
     expect(listRecords).toContain('identityId: string;');
     expect(listRecords).toContain('findByIdForIdentity(identityId, goalId,');
     expect(listRecords).toContain('String(record.identityId) === identityId');
@@ -242,6 +235,9 @@ describe('goal ownership surface', () => {
     );
     expect(routes).toMatch(
       /controller\.archive\(data\.params\.id, data\.body\.expectedVersion, ctx\)/,
+    );
+    expect(routes).toMatch(
+      /controller\.abandon\(data\.params\.id, data\.body\.expectedVersion, ctx\)/,
     );
     expect(routes).toMatch(
       /controller\.activate\(data\.params\.id, data\.body\.expectedVersion, ctx\)/,
@@ -287,6 +283,9 @@ describe('goal ownership surface', () => {
       /GoalChannels\.ARCHIVE[\s\S]*goalController\.archive\(data\.params\.id, data\.body\.expectedVersion, requestContext\)/,
     );
     expect(electron).toMatch(
+      /GoalChannels\.ABANDON[\s\S]*goalController\.abandon\(data\.params\.id, data\.body\.expectedVersion, requestContext\)/,
+    );
+    expect(electron).toMatch(
       /GoalChannels\.ACTIVATE[\s\S]*goalController\.activate\(data\.params\.id, data\.body\.expectedVersion, requestContext\)/,
     );
     expect(electron).toMatch(
@@ -325,8 +324,10 @@ describe('goal ownership surface', () => {
     );
     expect(recordPrisma).toContain('where: { identityId, keyResultId }');
     expect(recordPrisma).not.toContain('identityId, keyResultId, deletedAt: null');
-    expect(prisma).toContain('async findByFolderId(identityId: string, folderId: string)');
-    expect(prisma).toContain('where: { identityId, folderId, deletedAt: null, archivedAt: null }');
+    expect(prisma).toContain('async replaceLabels(');
+    expect(prisma).toContain('where: { id: goalId, identityId }');
+    expect(prisma).toContain('where: { identityId, goalId }');
+    expect(prisma).not.toContain('async findByFolderId(');
   });
 
   it('record port deleteMany requires identityId (residual 154)', () => {
@@ -360,41 +361,5 @@ describe('goal ownership surface', () => {
     expect(powersync).toContain(
       'UPDATE goals SET status = ?, updated_at = ? WHERE identity_id = ? AND id IN (${placeholders})',
     );
-  });
-
-  it('port batchMoveToFolder requires identityId (residual 160)', () => {
-    expect(port).toContain(
-      'batchMoveToFolder(identityId: string, ids: string[], folderId: string | null): Promise<void>;',
-    );
-  });
-
-  it('prisma/powersync batchMoveToFolder filter by identity (residual 160)', () => {
-    expect(prisma).toMatch(
-      /async batchMoveToFolder\(\s*identityId: string,\s*ids: string\[\],\s*folderId: string \| null,/,
-    );
-    expect(prisma).toContain('where: { id: { in: ids }, identityId }');
-    expect(powersync).toContain(
-      'UPDATE goals SET folder_id = ?, updated_at = ? WHERE identity_id = ? AND id IN (${placeholders})',
-    );
-  });
-
-  it('port isAncestor/findChildren require identityId (residual 161)', () => {
-    expect(port).toContain(
-      'isAncestor(\n    identityId: string,\n    potentialAncestorId: string,\n    potentialDescendantId: string,\n  ): Promise<boolean>;',
-    );
-    expect(port).toContain('findChildren(identityId: string, parentId: string): Promise<Goal[]>;');
-  });
-
-  it('prisma/powersync hierarchy queries filter by identity (residual 161)', () => {
-    expect(prisma).toContain(
-      'async isAncestor(\n    identityId: string,\n    potentialAncestorId: string,',
-    );
-    expect(prisma).toContain('where: { id: currentId, identityId }');
-    expect(prisma).toContain('where: { parentGoalId: parentId, identityId, deletedAt: null }');
-    expect(powersync).toContain(
-      'SELECT parent_goal_id FROM goals WHERE id = ? AND identity_id = ? LIMIT 1',
-    );
-    expect(powersync).toContain('AND identity_id = ?');
-    expect(powersync).toContain('parent_goal_id = ?');
   });
 });

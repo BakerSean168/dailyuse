@@ -1,26 +1,17 @@
 import type {
-  ActivateFocusModeRequest,
   CloneGoalReq,
-  CreateGoalFolderReq,
   CreateGoalReq,
-  FocusModeDTO,
   GetGoalAggregateRes,
   GetGoalRes,
   GoalMutationReceipt,
-  GoalFolderClientDTO,
-  ListGoalFoldersQuery,
   ListGoalsQuery,
   ProgressBreakdown,
-  QueryGoalFoldersRes,
   QueryGoalsRes,
-  UpdateGoalFolderReq,
-  UpdateGoalFolderRes,
   UpdateGoalReq,
   UpdateGoalRes,
 } from '@memoflow/contracts/goal';
 import type { Result } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
-import type { IdentityId } from '@memoflow/domain-shared';
 import type {
   ListGoalRecordsParams,
   ListGoalRecordsResult,
@@ -48,7 +39,11 @@ export interface GoalApplicationPort {
     identityId: string,
     expectedVersion: number,
   ): Promise<Result<GoalMutationReceipt>>;
-  archiveExpiredGoals(identityId: string): Promise<Result<{ archivedCount: number }>>;
+  abandonGoal(
+    id: string,
+    identityId: string,
+    expectedVersion: number,
+  ): Promise<Result<GoalMutationReceipt>>;
   activateGoal(
     id: string,
     identityId: string,
@@ -64,19 +59,6 @@ export interface GoalApplicationPort {
     query: string,
     systemView?: string,
   ): Promise<Result<QueryGoalsRes>>;
-
-  listGoalFolders(input: ListGoalFoldersQuery): Promise<Result<QueryGoalFoldersRes>>;
-  createGoalFolder(
-    identityId: IdentityId,
-    input: CreateGoalFolderReq,
-  ): Promise<Result<GoalFolderClientDTO>>;
-  getGoalFolder(id: string, identityId: string): Promise<Result<GoalFolderClientDTO>>;
-  updateGoalFolder(
-    id: string,
-    identityId: string,
-    input: UpdateGoalFolderReq,
-  ): Promise<Result<UpdateGoalFolderRes>>;
-  deleteGoalFolder(id: string, identityId: string): Promise<Result<void>>;
 
   addKeyResult(
     goalId: string,
@@ -173,14 +155,6 @@ export interface GoalApplicationPort {
     identityId: string,
     expectedVersion: number,
   ): Promise<Result<GoalMutationReceipt>>;
-
-  activateFocusMode(
-    identityId: string,
-    input: ActivateFocusModeRequest,
-  ): Promise<Result<FocusModeDTO>>;
-  deactivateFocusMode(identityId: string): Promise<Result<FocusModeDTO | null>>;
-  extendFocusMode(identityId: string, newEndTime: number): Promise<Result<FocusModeDTO>>;
-  getCurrentFocusMode(identityId: string): Promise<Result<FocusModeDTO | null>>;
 
   getGoalAggregate(goalId: string, identityId: string): Promise<Result<GetGoalAggregateRes>>;
   getGoalProgressBreakdown(goalId: string, identityId: string): Promise<Result<ProgressBreakdown>>;

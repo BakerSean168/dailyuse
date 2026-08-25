@@ -17,13 +17,11 @@
 
 import type {
   IGoalRepository,
-  IGoalFolderRepository,
   IGoalRecordRepository,
-  IFocusModeRepository,
   IRelationRepository,
   IWalletRepository,
 } from '../domain';
-import { GoalPolicy, FocusSessionPolicy } from '../domain';
+import { GoalPolicy } from '../domain';
 import {
   CreateGoalUseCase,
   GetGoalUseCase,
@@ -31,15 +29,10 @@ import {
   UpdateGoalUseCase,
   DeleteGoalUseCase,
   ArchiveGoalUseCase,
-  ArchiveExpiredGoalsUseCase,
   ActivateGoalUseCase,
+  AbandonGoalUseCase,
   CompleteGoalUseCase,
   SearchGoalsUseCase,
-  ListGoalFoldersUseCase,
-  CreateGoalFolderUseCase,
-  GetGoalFolderUseCase,
-  UpdateGoalFolderUseCase,
-  DeleteGoalFolderUseCase,
   AddGoalKeyResultUseCase,
   UpdateGoalKeyResultUseCase,
   UpdateGoalKeyResultProgressUseCase,
@@ -52,10 +45,6 @@ import {
   ListGoalRecordsUseCase,
   DeleteGoalRecordUseCase,
   PermanentlyDeleteGoalUseCase,
-  GetCurrentFocusModeUseCase,
-  ActivateFocusModeUseCase,
-  DeactivateFocusModeUseCase,
-  ExtendFocusModeUseCase,
   GetGoalAggregateUseCase,
   GetGoalProgressBreakdownUseCase,
   CloneGoalUseCase,
@@ -99,9 +88,7 @@ export type GoalRuntimeContributionsInput =
 
 export interface GoalModuleDependencies {
   readonly goalRepository: IGoalRepository;
-  readonly goalFolderRepository: IGoalFolderRepository;
   readonly goalRecordRepository: IGoalRecordRepository;
-  readonly focusModeRepository: IFocusModeRepository;
   readonly goalWriteTransactionRunner: GoalWriteTransactionRunner;
   readonly taskBindingReadPort: GoalDependencyReadPort;
   readonly runtimeContributions?: GoalRuntimeContributionsInput;
@@ -162,17 +149,10 @@ export interface GoalModuleUseCases {
   readonly deleteGoal: DeleteGoalUseCase;
   readonly permanentlyDeleteGoal: PermanentlyDeleteGoalUseCase;
   readonly archiveGoal: ArchiveGoalUseCase;
-  readonly archiveExpiredGoals: ArchiveExpiredGoalsUseCase;
   readonly activateGoal: ActivateGoalUseCase;
+  readonly abandonGoal: AbandonGoalUseCase;
   readonly completeGoal: CompleteGoalUseCase;
   readonly searchGoals: SearchGoalsUseCase;
-
-  // Folder CRUD / 文件夹增删改查
-  readonly listGoalFolders: ListGoalFoldersUseCase;
-  readonly createGoalFolder: CreateGoalFolderUseCase;
-  readonly getGoalFolder: GetGoalFolderUseCase;
-  readonly updateGoalFolder: UpdateGoalFolderUseCase;
-  readonly deleteGoalFolder: DeleteGoalFolderUseCase;
 
   // Key Result / 关键结果
   readonly addKeyResult: AddGoalKeyResultUseCase;
@@ -190,12 +170,6 @@ export interface GoalModuleUseCases {
   readonly createRecord: CreateGoalRecordUseCase;
   readonly listRecords: ListGoalRecordsUseCase;
   readonly deleteRecord: DeleteGoalRecordUseCase;
-
-  // Focus Mode / 专注模式
-  readonly getCurrentFocusMode: GetCurrentFocusModeUseCase;
-  readonly activateFocusMode: ActivateFocusModeUseCase;
-  readonly deactivateFocusMode: DeactivateFocusModeUseCase;
-  readonly extendFocusMode: ExtendFocusModeUseCase;
 
   // Workflow / 工作流
   readonly getGoalAggregate: GetGoalAggregateUseCase;
@@ -217,7 +191,6 @@ export interface GoalModuleUseCases {
  */
 export interface GoalModuleInstance {
   readonly goalRepository: IGoalRepository;
-  readonly goalFolderRepository: IGoalFolderRepository;
   readonly goalRecordRepository: IGoalRecordRepository;
   readonly goalWriteTransactionRunner: GoalWriteTransactionRunner;
   readonly useCases: GoalModuleUseCases;
@@ -233,23 +206,20 @@ export interface GoalModuleInstance {
 
 export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseCases {
   if (!deps.goalWriteTransactionRunner) {
-    throw new Error('goalWriteTransactionRunner must be explicitly provided to GoalModule (no inline fallback allowed).');
+    throw new Error(
+      'goalWriteTransactionRunner must be explicitly provided to GoalModule (no inline fallback allowed).',
+    );
   }
   if (!deps.taskBindingReadPort) {
-    throw new Error('taskBindingReadPort must be explicitly provided to GoalModule (no inline fallback allowed).');
+    throw new Error(
+      'taskBindingReadPort must be explicitly provided to GoalModule (no inline fallback allowed).',
+    );
   }
 
-  const {
-    goalRepository,
-    goalFolderRepository,
-    goalRecordRepository,
-    focusModeRepository,
-    goalWriteTransactionRunner,
-    taskBindingReadPort,
-  } = deps;
+  const { goalRepository, goalRecordRepository, goalWriteTransactionRunner, taskBindingReadPort } =
+    deps;
 
   const goalPolicy = new GoalPolicy();
-  const focusSessionPolicy = new FocusSessionPolicy();
 
   const habitRepository: IHabitRepository | undefined = deps.habitRepository;
   const relationRepository: IRelationRepository | undefined = deps.relationRepository;
@@ -286,24 +256,17 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
         }
       : {}),
     // Goal CRUD / 目标增删改查
-    createGoal: new CreateGoalUseCase(goalRepository, goalPolicy),
+    createGoal: new CreateGoalUseCase(goalRepository, goalPolicy, goalWriteTransactionRunner),
     getGoal: new GetGoalUseCase(goalRepository),
     listGoals: new ListGoalsUseCase(goalRepository),
-    updateGoal: new UpdateGoalUseCase(goalRepository, goalPolicy),
+    updateGoal: new UpdateGoalUseCase(goalRepository, goalPolicy, goalWriteTransactionRunner),
     deleteGoal: new DeleteGoalUseCase(goalRepository, goalPolicy, taskBindingReadPort),
     permanentlyDeleteGoal: new PermanentlyDeleteGoalUseCase(goalRepository, goalPolicy),
     archiveGoal: new ArchiveGoalUseCase(goalRepository, goalPolicy, goalWriteTransactionRunner),
-    archiveExpiredGoals: new ArchiveExpiredGoalsUseCase(goalWriteTransactionRunner, goalRepository),
     activateGoal: new ActivateGoalUseCase(goalRepository, goalPolicy),
+    abandonGoal: new AbandonGoalUseCase(goalRepository, goalPolicy),
     completeGoal: new CompleteGoalUseCase(goalRepository, goalPolicy, goalWriteTransactionRunner),
     searchGoals: new SearchGoalsUseCase(goalRepository),
-
-    // Folder CRUD / 文件夹增删改查
-    listGoalFolders: new ListGoalFoldersUseCase(goalFolderRepository),
-    createGoalFolder: new CreateGoalFolderUseCase(goalFolderRepository),
-    getGoalFolder: new GetGoalFolderUseCase(goalFolderRepository),
-    updateGoalFolder: new UpdateGoalFolderUseCase(goalFolderRepository),
-    deleteGoalFolder: new DeleteGoalFolderUseCase(goalFolderRepository),
 
     // Key Result / 关键结果
     addKeyResult: new AddGoalKeyResultUseCase(goalRepository, goalPolicy),
@@ -330,23 +293,12 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
       goalWriteTransactionRunner,
     ),
 
-    // Focus Mode / 专注模式
-    getCurrentFocusMode: new GetCurrentFocusModeUseCase(focusModeRepository),
-    activateFocusMode: new ActivateFocusModeUseCase(
-      focusModeRepository,
-      goalRepository,
-      goalPolicy,
-      focusSessionPolicy,
-    ),
-    deactivateFocusMode: new DeactivateFocusModeUseCase(focusModeRepository),
-    extendFocusMode: new ExtendFocusModeUseCase(focusModeRepository),
-
     // Workflow / 工作流
     getGoalAggregate: new GetGoalAggregateUseCase(goalRepository, goalRecordRepository),
     getGoalProgressBreakdown: new GetGoalProgressBreakdownUseCase(goalRepository),
     cloneGoal: new CloneGoalUseCase(
       goalRepository,
-      new CreateGoalUseCase(goalRepository, goalPolicy),
+      new CreateGoalUseCase(goalRepository, goalPolicy, goalWriteTransactionRunner),
     ),
     batchUpdateKeyResultWeights: new BatchUpdateKeyResultWeightsUseCase(
       goalWriteTransactionRunner,
@@ -394,17 +346,16 @@ export function normalizeGoalRuntimeContributions(
 
 export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstance {
   if (!deps.goalWriteTransactionRunner) {
-    throw new Error('goalWriteTransactionRunner must be explicitly provided to GoalModule (no inline fallback allowed).');
+    throw new Error(
+      'goalWriteTransactionRunner must be explicitly provided to GoalModule (no inline fallback allowed).',
+    );
   }
   if (!deps.taskBindingReadPort) {
-    throw new Error('taskBindingReadPort must be explicitly provided to GoalModule (no inline fallback allowed).');
+    throw new Error(
+      'taskBindingReadPort must be explicitly provided to GoalModule (no inline fallback allowed).',
+    );
   }
-  const {
-    goalRepository,
-    goalFolderRepository,
-    goalRecordRepository,
-    goalWriteTransactionRunner,
-  } = deps;
+  const { goalRepository, goalRecordRepository, goalWriteTransactionRunner } = deps;
   const runtimeContributions = normalizeGoalRuntimeContributions(deps.runtimeContributions);
   const useCases = createGoalUseCases(deps);
   let started = false;
@@ -422,21 +373,14 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
       useCases.permanentlyDeleteGoal.execute(id, identityId, expectedVersion),
     archiveGoal: (id, identityId, expectedVersion) =>
       useCases.archiveGoal.execute(id, identityId, expectedVersion),
-    archiveExpiredGoals: (identityId) => useCases.archiveExpiredGoals.execute(identityId),
+    abandonGoal: (id, identityId, expectedVersion) =>
+      useCases.abandonGoal.execute(id, identityId, expectedVersion),
     activateGoal: (id, identityId, expectedVersion) =>
       useCases.activateGoal.execute(id, identityId, expectedVersion),
     completeGoal: (id, identityId, expectedVersion) =>
       useCases.completeGoal.execute(id, identityId, expectedVersion),
     searchGoals: (identityId, query, systemView) =>
       useCases.searchGoals.execute(identityId, query, systemView as GoalSystemView),
-
-    // Folder CRUD / 文件夹增删改查
-    listGoalFolders: (input) => useCases.listGoalFolders.execute(input),
-    createGoalFolder: (identityId, input) => useCases.createGoalFolder.execute(identityId, input),
-    getGoalFolder: (id, identityId) => useCases.getGoalFolder.execute(id, identityId),
-    updateGoalFolder: (id, identityId, input) =>
-      useCases.updateGoalFolder.execute(id, identityId, input),
-    deleteGoalFolder: (id, identityId) => useCases.deleteGoalFolder.execute(id, identityId),
 
     // Key Result / 关键结果
     addKeyResult: (goalId, identityId, keyResult) =>
@@ -478,13 +422,6 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
     deleteRecord: (goalId, keyResultId, recordId, identityId, expectedVersion) =>
       useCases.deleteRecord.execute(goalId, keyResultId, recordId, identityId, expectedVersion),
 
-    // Focus Mode / 专注模式
-    getCurrentFocusMode: (identityId) => useCases.getCurrentFocusMode.execute(identityId),
-    activateFocusMode: (identityId, input) => useCases.activateFocusMode.execute(identityId, input),
-    deactivateFocusMode: (identityId) => useCases.deactivateFocusMode.execute(identityId),
-    extendFocusMode: (identityId, newEndTime) =>
-      useCases.extendFocusMode.execute(identityId, newEndTime),
-
     // Workflow / 工作流
     getGoalAggregate: (goalId, identityId) => useCases.getGoalAggregate.execute(goalId, identityId),
     getGoalProgressBreakdown: (goalId, identityId) =>
@@ -496,7 +433,6 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
 
   return {
     goalRepository,
-    goalFolderRepository,
     goalRecordRepository,
     goalWriteTransactionRunner,
     useCases,

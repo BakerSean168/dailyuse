@@ -24,7 +24,6 @@ import type {
   DeleteGoalRecordReq,
   DeleteGoalReviewReq,
   DeleteKeyResultReq,
-  ExtendFocusModeReq,
   GoalSystemView,
   GetGoalAggregateRes,
   ListGoalsQuery,
@@ -33,11 +32,9 @@ import type {
   UpdateKeyResultProgressReq,
   UpdateKeyResultReq,
   UpdateGoalReviewReq,
-  ActivateFocusModeReq,
 } from '@memoflow/contracts/goal';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { IdentityId } from '@memoflow/contracts/primitives';
-import { createLogger } from '@memoflow/utils/logger';
 import { toKeyResultListResponse } from './mappers';
 import type {
   CreateGoalUseCase,
@@ -47,6 +44,7 @@ import type {
   DeleteGoalUseCase,
   ArchiveGoalUseCase,
   ActivateGoalUseCase,
+  AbandonGoalUseCase,
   SearchGoalsUseCase,
   AddGoalKeyResultUseCase,
   UpdateGoalKeyResultUseCase,
@@ -60,11 +58,6 @@ import type {
   ListGoalRecordsUseCase,
   DeleteGoalRecordUseCase,
   CompleteGoalUseCase,
-  ArchiveExpiredGoalsUseCase,
-  ActivateFocusModeUseCase,
-  DeactivateFocusModeUseCase,
-  ExtendFocusModeUseCase,
-  GetCurrentFocusModeUseCase,
   GetGoalAggregateUseCase,
   GetGoalProgressBreakdownUseCase,
   CloneGoalUseCase,
@@ -79,8 +72,8 @@ export interface GoalUseCases {
   listGoals: ListGoalsUseCase['execute'];
   updateGoal: UpdateGoalUseCase['execute'];
   deleteGoal: DeleteGoalUseCase['execute'];
-  archiveExpiredGoals: ArchiveExpiredGoalsUseCase['execute'];
   archiveGoal: ArchiveGoalUseCase['execute'];
+  abandonGoal: AbandonGoalUseCase['execute'];
   activateGoal: ActivateGoalUseCase['execute'];
   completeGoal: CompleteGoalUseCase['execute'];
   searchGoals: SearchGoalsUseCase['execute'];
@@ -95,10 +88,6 @@ export interface GoalUseCases {
   createRecord: CreateGoalRecordUseCase['execute'];
   listRecords: ListGoalRecordsUseCase['execute'];
   deleteRecord: DeleteGoalRecordUseCase['execute'];
-  activateFocusMode: ActivateFocusModeUseCase['execute'];
-  deactivateFocusMode: DeactivateFocusModeUseCase['execute'];
-  extendFocusMode: ExtendFocusModeUseCase['execute'];
-  getCurrentFocusMode: GetCurrentFocusModeUseCase['execute'];
   getGoalAggregate: GetGoalAggregateUseCase['execute'];
   getGoalProgressBreakdown: GetGoalProgressBreakdownUseCase['execute'];
   cloneGoal: CloneGoalUseCase['execute'];
@@ -112,8 +101,6 @@ export interface GoalUseCases {
  * Used by both expressAdapter (HTTP) and ipcAdapter (IPC).
  */
 export class GoalController {
-  private readonly logger = createLogger('GoalController');
-
   constructor(private readonly useCases: GoalUseCases) {}
 
   // ==================== Goal CRUD ====================
@@ -165,10 +152,6 @@ export class GoalController {
     return this.useCases.deleteGoal(id, cx.identityId, expectedVersion);
   }
 
-  async archiveExpired(cx: ExecutionContext): Promise<Result<unknown>> {
-    return this.useCases.archiveExpiredGoals(cx.identityId);
-  }
-
   // ==================== Goal Status Operations ====================
 
   async archive(
@@ -177,6 +160,14 @@ export class GoalController {
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
     return this.useCases.archiveGoal(id, cx.identityId, expectedVersion);
+  }
+
+  async abandon(
+    id: string,
+    expectedVersion: number,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
+    return this.useCases.abandonGoal(id, cx.identityId, expectedVersion);
   }
 
   async activate(
@@ -409,40 +400,5 @@ export class GoalController {
       cx.identityId,
       input.expectedVersion,
     );
-  }
-
-  // ==================== Focus Mode ====================
-
-  async getCurrentFocusMode(cx: ExecutionContext): Promise<Result<unknown>> {
-    this.logger.info('获取当前专注模式开始', {
-      identityId: cx.identityId,
-    });
-    return this.useCases.getCurrentFocusMode(cx.identityId);
-  }
-
-  async activateFocusMode(
-    input: ActivateFocusModeReq,
-    cx: ExecutionContext,
-  ): Promise<Result<unknown>> {
-    this.logger.info('启用专注模式开始', {
-      identityId: cx.identityId,
-      input,
-    });
-    return this.useCases.activateFocusMode(cx.identityId, input);
-  }
-
-  async deactivateFocusMode(cx: ExecutionContext): Promise<Result<unknown>> {
-    this.logger.info('停用专注模式开始', {
-      identityId: cx.identityId,
-    });
-    return this.useCases.deactivateFocusMode(cx.identityId);
-  }
-
-  async extendFocusMode(input: ExtendFocusModeReq, cx: ExecutionContext): Promise<Result<unknown>> {
-    this.logger.info('延长专注模式开始', {
-      identityId: cx.identityId,
-      input,
-    });
-    return this.useCases.extendFocusMode(cx.identityId, input.newEndTime);
   }
 }

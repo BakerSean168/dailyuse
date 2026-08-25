@@ -5,11 +5,17 @@
  * Shared by Prisma and PowerSync mappers.
  */
 
-import type { ReviewType, KeyResultWeightSnapshotDTO, KeyResultValueType, KeyResultCalculationMethod, GoalReminderConfigDTO, KeyResultSnapshotDTO } from '@memoflow/contracts/goal';
-import { GoalStatus, GoalRollupPolicy } from '@memoflow/contracts/goal';
-import { ImportanceLevel } from '@memoflow/contracts/shared';
+import type {
+  ReviewType,
+  KeyResultWeightSnapshotDTO,
+  KeyResultValueType,
+  KeyResultCalculationMethod,
+  GoalReminderConfigDTO,
+  KeyResultSnapshotDTO,
+} from '@memoflow/contracts/goal';
+import { GoalStatus } from '@memoflow/contracts/goal';
 import { IdentityId } from '@memoflow/domain-shared';
-import { GoalId, GoalFolderId, GoalReviewId, KeyResultId } from '../../../../domain';
+import { GoalId, GoalReviewId, KeyResultId } from '../../../../domain';
 import {
   KeyResult,
   GoalReview,
@@ -28,21 +34,13 @@ export interface RawGoalData {
   identityId: string;
   name: string;
   description: string | null;
-  color: string;
   feasibilityAnalysis: string | null;
   motivation: string | null;
   status: string;
-  importance: string;
-  priority: number;
-  category: string | null;
-  tags: string[];
   startDate: number | null;
-  targetDate: number | null;
+  dueDate: number | null;
   completedAt: number | null;
   archivedAt: number | null;
-  folderId: string | null;
-  parentGoalId: string | null;
-  rollupPolicy: string;
   sortOrder: number;
   reminderConfig: { enabled: boolean; triggers: unknown[] } | null;
   keyResults: RawKeyResultData[] | null;
@@ -144,21 +142,13 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
     identityId: IdentityId.of(raw.identityId),
     name: raw.name,
     description: raw.description ?? null,
-    color: raw.color,
     feasibilityAnalysis: raw.feasibilityAnalysis ?? null,
     motivation: raw.motivation ?? null,
     status: raw.status as GoalStatus,
-    importance: raw.importance as ImportanceLevel,
-    priority: raw.priority ?? 0,
-    category: raw.category ?? null,
-    tags: Array.isArray(raw.tags) ? raw.tags : [],
     startDate: raw.startDate ? Number(raw.startDate) : null,
-    targetDate: raw.targetDate ? Number(raw.targetDate) : null,
+    dueDate: raw.dueDate ? Number(raw.dueDate) : null,
     completedAt: raw.completedAt ? Number(raw.completedAt) : null,
     archivedAt: raw.archivedAt ? Number(raw.archivedAt) : null,
-    folderId: raw.folderId ? GoalFolderId.of(raw.folderId) : null,
-    parentGoalId: raw.parentGoalId ? GoalId.of(raw.parentGoalId) : null,
-    rollupPolicy: (raw.rollupPolicy as GoalRollupPolicy) ?? GoalRollupPolicy.Kr,
     sortOrder: raw.sortOrder,
     reminderConfig,
     version: raw.version ?? 1,

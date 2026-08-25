@@ -3,8 +3,7 @@
  *
  * Every Goal mutation ledger row is fed the SAME canonical fixture through the
  * PRODUCTION route registrations (registerGoalCrudRoutes /
- * registerFocusModeRoutes / registerKeyResultRoutes / registerReviewRoutes /
- * registerRecordRoutes / registerGoalFolderRoutes) and the PRODUCTION IPC
+ * registerKeyResultRoutes / registerReviewRoutes / registerRecordRoutes) and the PRODUCTION IPC
  * registrations (createGoalElectronModule). Both hosts consume the same
  * `GoalApplicationPort` stub, so parity is proven by construction: production
  * projectors + production controllers call the same port method with
@@ -16,8 +15,7 @@
  * registered (documented unsupported) instead of fabricating a host.
  *
  * 每个 Goal mutation ledger 行都用同一 canonical fixture 走生产 route 注册
- * （registerGoalCrudRoutes / registerFocusModeRoutes / registerKeyResultRoutes /
- * registerReviewRoutes / registerRecordRoutes / registerGoalFolderRoutes）与
+ * （registerGoalCrudRoutes / registerKeyResultRoutes / registerReviewRoutes / registerRecordRoutes）与
  * 生产 IPC 注册（createGoalElectronModule）。两条宿主消费同一个
  * `GoalApplicationPort` stub，因此 parity 由构造保证：生产 projector + 生产
  * controller 以等价输入调用同一 port 方法，HTTP/IPC envelope 携带相同的响应
@@ -32,15 +30,12 @@ import type { RequestHandler } from 'express';
 import { GoalChannels, type IElectronModuleContext } from '@memoflow/contracts/electron';
 import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
 import type { GoalApplicationPort } from '../../application';
-import { createGoalFolderTransportHandlers, createGoalTransportHandlers } from '..';
+import { createGoalTransportHandlers } from '..';
 import { GoalController } from '../goal.controller';
-import { GoalFolderController } from '../goal-folder.controller';
 import { registerGoalCrudRoutes } from '../../../api/routes/goal.routes';
-import { registerFocusModeRoutes } from '../../../api/routes/focus-mode.routes';
 import { registerKeyResultRoutes } from '../../../api/routes/key-result.routes';
 import { registerReviewRoutes } from '../../../api/routes/review.routes';
 import { registerRecordRoutes } from '../../../api/routes/goal-record.routes';
-import { registerGoalFolderRoutes as registerFolderEntityRoutes } from '../../../api/routes/goal-folder.routes';
 import { createGoalElectronModule } from '../../../electron';
 
 const mocks = vi.hoisted(() => {
@@ -81,7 +76,6 @@ const GOAL_ID = 'IGoalId_550e8400-e29b-41d4-a716-446655440000';
 const KR_ID = 'IKeyResultId_550e8400-e29b-41d4-a716-446655440001';
 const REVIEW_ID = 'IGoalReviewId_550e8400-e29b-41d4-a716-446655440002';
 const RECORD_ID = 'IGoalRecordId_550e8400-e29b-41d4-a716-446655440003';
-const FOLDER_ID = 'IGoalFolderId_550e8400-e29b-41d4-a716-446655440004';
 
 function okReceipt() {
   return {
@@ -98,8 +92,8 @@ function createPortStub(): GoalApplicationPort {
     createGoal: fn(okReceipt()),
     updateGoal: fn(okReceipt()),
     deleteGoal: fn(okReceipt()),
-    archiveExpiredGoals: fn({ archivedCount: 1 }),
     archiveGoal: fn(okReceipt()),
+    abandonGoal: fn(okReceipt()),
     activateGoal: fn(okReceipt()),
     completeGoal: fn(okReceipt()),
     cloneGoal: fn(okReceipt()),
@@ -113,21 +107,12 @@ function createPortStub(): GoalApplicationPort {
     deleteReview: fn(okReceipt()),
     createRecord: fn(okReceipt()),
     deleteRecord: fn(okReceipt()),
-    activateFocusMode: fn({ id: 'fm-1' }),
-    deactivateFocusMode: fn({ id: 'fm-1' }),
-    extendFocusMode: fn({ id: 'fm-1' }),
-    createGoalFolder: fn({ id: FOLDER_ID }),
-    updateGoalFolder: fn({ id: FOLDER_ID }),
-    deleteGoalFolder: fn(undefined as never),
     getGoal: vi.fn(),
     listGoals: vi.fn(),
     searchGoals: vi.fn(),
     getGoalAggregate: vi.fn(),
     getGoalProgressBreakdown: vi.fn(),
-    getCurrentFocusMode: vi.fn(),
     permanentlyDeleteGoal: vi.fn(),
-    listGoalFolders: vi.fn(),
-    getGoalFolder: vi.fn(),
   } as unknown as GoalApplicationPort;
 }
 
@@ -181,8 +166,8 @@ interface RowSpec {
   readonly validInvocation: unknown;
 }
 
-const validCreate = { name: 'Ship architecture fixes', importance: 'Moderate' };
-const malformedCreate = { name: '', importance: 'Moderate' };
+const validCreate = { name: 'Ship architecture fixes' };
+const malformedCreate = { name: '' };
 
 const validUpdateBody = { name: 'v2', expectedVersion: 1 };
 const malformedUpdateBody = { name: 'v2', expectedVersion: 0 };
@@ -242,18 +227,6 @@ const malformedUpdateReview = { title: 'R2', expectedVersion: 0 };
 const validCreateRecord = { keyResultId: KR_ID, expectedVersion: 1, value: 5 };
 const malformedCreateRecord = { keyResultId: KR_ID, expectedVersion: 1, value: -1 };
 
-const validActivateFocus = { focusedGoalIds: [GOAL_ID], hiddenGoalsMode: 'Hide' };
-const malformedActivateFocus = { focusedGoalIds: [], hiddenGoalsMode: 'Hide' };
-
-const validExtendFocus = { newEndTime: 1_700_000_000_000 };
-const malformedExtendFocus = { newEndTime: 1.5 };
-
-const validCreateFolder = { name: 'Inbox', color: '#FF0000' };
-const malformedCreateFolder = { name: '' };
-
-const validUpdateFolder = { name: 'Inbox2' };
-const malformedUpdateFolder = { name: '' };
-
 describe('goal transport parity (Phase 4) — production registrations', () => {
   let instance: {
     api: GoalApplicationPort;
@@ -272,14 +245,11 @@ describe('goal transport parity (Phase 4) — production registrations', () => {
 
   function buildHttp(port: GoalApplicationPort) {
     const controller = new GoalController(createGoalTransportHandlers(port));
-    const folderController = new GoalFolderController(createGoalFolderTransportHandlers(port));
     const routers = [
       ['goal', registerGoalCrudRoutes(controller, middleware, null)],
-      ['focus', registerFocusModeRoutes(controller, middleware, null)],
       ['key-result', registerKeyResultRoutes(controller, middleware, null)],
       ['review', registerReviewRoutes(controller, middleware, null)],
       ['record', registerRecordRoutes(controller, middleware, null)],
-      ['folder', registerFolderEntityRoutes(folderController, middleware, null)],
     ] as const;
     const map = new Map<string, (req: unknown, res: unknown) => Promise<unknown>>();
     for (const [ns, router] of routers) {
@@ -440,25 +410,6 @@ describe('goal transport parity (Phase 4) — production registrations', () => {
       },
     ],
     [
-      'archive-expired',
-      {
-        httpKey: 'goal POST /archive-expired',
-        ipcChannel: GoalChannels.ARCHIVE_EXPIRED,
-        httpReq: {},
-        ipcArgs: [],
-        validInvocation: undefined,
-        malformedHttpReq: { body: { unexpected: true } },
-        malformedIpcArgs: [{ unexpected: true }],
-        assertPort: (port) => {
-          const mock = port.archiveExpiredGoals as ReturnType<typeof vi.fn>;
-          expect(mock).toHaveBeenCalledTimes(2);
-          for (const call of mock.mock.calls) {
-            expect(call[0]).toBe('identity-1');
-          }
-        },
-      },
-    ],
-    [
       'archive',
       {
         httpKey: 'goal POST /:id/archive',
@@ -470,6 +421,27 @@ describe('goal transport parity (Phase 4) — production registrations', () => {
         malformedIpcArgs: [GOAL_ID, malformedVersionCommand],
         assertPort: (port) => {
           const mock = port.archiveGoal as ReturnType<typeof vi.fn>;
+          expect(mock).toHaveBeenCalledTimes(2);
+          for (const call of mock.mock.calls) {
+            expect(call[0]).toBe(GOAL_ID);
+            expect(call[1]).toBe('identity-1');
+            expect(call[2]).toBe(1);
+          }
+        },
+      },
+    ],
+    [
+      'abandon',
+      {
+        httpKey: 'goal POST /:id/abandon',
+        ipcChannel: GoalChannels.ABANDON,
+        httpReq: { params: { id: GOAL_ID }, body: validVersionCommand },
+        ipcArgs: [GOAL_ID, validVersionCommand],
+        validInvocation: { params: { id: GOAL_ID }, body: validVersionCommand },
+        malformedHttpReq: { params: { id: GOAL_ID }, body: malformedVersionCommand },
+        malformedIpcArgs: [GOAL_ID, malformedVersionCommand],
+        assertPort: (port) => {
+          const mock = port.abandonGoal as ReturnType<typeof vi.fn>;
           expect(mock).toHaveBeenCalledTimes(2);
           for (const call of mock.mock.calls) {
             expect(call[0]).toBe(GOAL_ID);
@@ -755,125 +727,6 @@ describe('goal transport parity (Phase 4) — production registrations', () => {
             expect(call[0]).toBe(GOAL_ID);
             expect(call[1]).toBe(KR_ID);
             expect(call[2]).toBe(RECORD_ID);
-          }
-        },
-      },
-    ],
-    [
-      'focus activate',
-      {
-        httpKey: 'focus POST /focus-mode/activate',
-        ipcChannel: GoalChannels.FOCUS_MODE_ACTIVATE,
-        httpReq: { body: validActivateFocus },
-        ipcArgs: [validActivateFocus],
-        validInvocation: validActivateFocus,
-        malformedHttpReq: { body: malformedActivateFocus },
-        malformedIpcArgs: [malformedActivateFocus],
-        assertPort: (port) => {
-          const mock = port.activateFocusMode as ReturnType<typeof vi.fn>;
-          expect(mock).toHaveBeenCalledTimes(2);
-          for (const call of mock.mock.calls) {
-            expect(call[0]).toBe('identity-1');
-            expect(call[1]).toEqual(validActivateFocus);
-          }
-        },
-      },
-    ],
-    [
-      'focus deactivate',
-      {
-        httpKey: 'focus POST /focus-mode/deactivate',
-        ipcChannel: GoalChannels.FOCUS_MODE_DEACTIVATE,
-        httpReq: {},
-        ipcArgs: [],
-        validInvocation: undefined,
-        malformedHttpReq: { body: { unexpected: true } },
-        malformedIpcArgs: [{ unexpected: true }],
-        assertPort: (port) => {
-          const mock = port.deactivateFocusMode as ReturnType<typeof vi.fn>;
-          expect(mock).toHaveBeenCalledTimes(2);
-          for (const call of mock.mock.calls) {
-            expect(call[0]).toBe('identity-1');
-          }
-        },
-      },
-    ],
-    [
-      'focus extend',
-      {
-        httpKey: 'focus POST /focus-mode/extend',
-        ipcChannel: GoalChannels.FOCUS_MODE_EXTEND,
-        httpReq: { body: validExtendFocus },
-        ipcArgs: [validExtendFocus],
-        validInvocation: validExtendFocus,
-        malformedHttpReq: { body: malformedExtendFocus },
-        malformedIpcArgs: [malformedExtendFocus],
-        assertPort: (port) => {
-          const mock = port.extendFocusMode as ReturnType<typeof vi.fn>;
-          expect(mock).toHaveBeenCalledTimes(2);
-          for (const call of mock.mock.calls) {
-            expect(call[0]).toBe('identity-1');
-          }
-        },
-      },
-    ],
-    [
-      'folder create',
-      {
-        httpKey: 'folder POST /',
-        ipcChannel: GoalChannels.FOLDER_CREATE,
-        successStatus: 201,
-        httpReq: { body: validCreateFolder },
-        ipcArgs: [validCreateFolder],
-        validInvocation: validCreateFolder,
-        malformedHttpReq: { body: malformedCreateFolder },
-        malformedIpcArgs: [malformedCreateFolder],
-        assertPort: (port) => {
-          const mock = port.createGoalFolder as ReturnType<typeof vi.fn>;
-          expect(mock).toHaveBeenCalledTimes(2);
-          for (const call of mock.mock.calls) {
-            expect(call[0]).toBe('identity-1');
-            expect(call[1]).toEqual(validCreateFolder);
-          }
-        },
-      },
-    ],
-    [
-      'folder update',
-      {
-        httpKey: 'folder PUT /:id',
-        ipcChannel: GoalChannels.FOLDER_UPDATE,
-        httpReq: { params: { id: FOLDER_ID }, body: validUpdateFolder },
-        ipcArgs: [FOLDER_ID, validUpdateFolder],
-        validInvocation: { params: { id: FOLDER_ID }, body: validUpdateFolder },
-        malformedHttpReq: { params: { id: FOLDER_ID }, body: malformedUpdateFolder },
-        malformedIpcArgs: [FOLDER_ID, malformedUpdateFolder],
-        assertPort: (port) => {
-          const mock = port.updateGoalFolder as ReturnType<typeof vi.fn>;
-          expect(mock).toHaveBeenCalledTimes(2);
-          for (const call of mock.mock.calls) {
-            expect(call[0]).toBe(FOLDER_ID);
-            expect(call[2]).toEqual(validUpdateFolder);
-          }
-        },
-      },
-    ],
-    [
-      'folder delete',
-      {
-        httpKey: 'folder DELETE /:id',
-        ipcChannel: GoalChannels.FOLDER_DELETE,
-        httpReq: { params: { id: FOLDER_ID } },
-        ipcArgs: [FOLDER_ID],
-        validInvocation: { params: { id: FOLDER_ID } },
-        malformedHttpReq: { params: { id: 'bad' } },
-        malformedIpcArgs: ['bad'],
-        assertPort: (port) => {
-          const mock = port.deleteGoalFolder as ReturnType<typeof vi.fn>;
-          expect(mock).toHaveBeenCalledTimes(2);
-          for (const call of mock.mock.calls) {
-            expect(call[0]).toBe(FOLDER_ID);
-            expect(call[1]).toBe('identity-1');
           }
         },
       },
