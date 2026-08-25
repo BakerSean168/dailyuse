@@ -11,7 +11,7 @@ import {
   ScheduleConfig,
   ScheduleTaskMetadata,
 } from '../../../domain/value-objects';
-import type { ScheduledIntent } from '../../../../scheduling';
+import type { ScheduledIntent, SchedulingOwner, SchedulingReconcileReceipt } from '../../../../scheduling';
 import {
   ScheduledHandlerRegistry,
   SchedulingReconcileError,
@@ -48,9 +48,14 @@ function cloneTask(task: ScheduleTask): ScheduleTask {
 
 class TransactionalInMemoryScheduleTaskRepository implements IScheduleTaskRepository {
   private tasks: Map<string, ScheduleTask>;
+  private receipts: Map<string, SchedulingReconcileReceipt>;
 
-  constructor(tasks: readonly ScheduleTask[] = []) {
+  constructor(
+    tasks: readonly ScheduleTask[] = [],
+    receipts: readonly SchedulingReconcileReceipt[] = [],
+  ) {
     this.tasks = new Map(tasks.map((task) => [task.id, cloneTask(task)]));
+    this.receipts = new Map(receipts.map((receipt) => [receipt.operationId, receipt]));
   }
 
   private all(): ScheduleTask[] {
@@ -97,6 +102,30 @@ class TransactionalInMemoryScheduleTaskRepository implements IScheduleTaskReposi
         task.sourceEntityId === entityId &&
         String(task.identityId) === identityId,
     );
+  }
+
+  async findBySchedulingOwner(owner: SchedulingOwner): Promise<ScheduleTask[]> {
+    return this.all().filter((task) => {
+      const invocation = toScheduledInvocationContext(task);
+      return (
+        invocation?.owner.identityId === owner.identityId &&
+        invocation.owner.type === owner.type &&
+        invocation.owner.id === owner.id
+      );
+    });
+  }
+
+  async appendSchedulingReconcileReceipt(receipt: SchedulingReconcileReceipt): Promise<void> {
+    if (this.receipts.has(receipt.operationId)) throw new Error('duplicate operation receipt');
+    this.receipts.set(receipt.operationId, receipt);
+  }
+
+  getReceipt(operationId: string): SchedulingReconcileReceipt | undefined {
+    return this.receipts.get(operationId);
+  }
+
+  get receiptCount(): number {
+    return this.receipts.size;
   }
 
   async findByStatus(status: ScheduleTaskStatus, identityId: string): Promise<ScheduleTask[]> {
@@ -166,9 +195,13 @@ class TransactionalInMemoryScheduleTaskRepository implements IScheduleTaskReposi
   }
 
   async withTransaction<T>(fn: (repo: IScheduleTaskRepository) => Promise<T>): Promise<T> {
-    const working = new TransactionalInMemoryScheduleTaskRepository(this.all());
+    const working = new TransactionalInMemoryScheduleTaskRepository(
+      this.all(),
+      [...this.receipts.values()],
+    );
     const result = await fn(working);
     this.tasks = new Map(working.all().map((task) => [task.id, cloneTask(task)]));
+    this.receipts = new Map(working.receipts);
     return result;
   }
 }
@@ -212,6 +245,8 @@ describe('LegacyScheduleTaskSchedulingAdapter', () => {
       payloadVersion: 1,
       payload: { ownerId: 'fake-owner-1', message: 'hello' },
     });
+    expect(repository.receiptCount).toBe(1);
+    expect(repository.getReceipt(receipt.operationId)).toEqual(receipt);
   });
 
   it('reconciles the same desired invocation 100 times without duplicate persistence or invocation', async () => {
@@ -269,6 +304,9 @@ describe('LegacyScheduleTaskSchedulingAdapter', () => {
       expect(toScheduledInvocationContext(remaining[0]!)?.schedulingKey).toBe(
         intentWithKey('before').schedulingKey,
       );
+      // Only the baseline successful reconcile has a durable receipt; the failed
+      // owner transaction must roll back both mutations and its receipt append.
+      expect(repository.receiptCount).toBe(1);
     },
   );
 

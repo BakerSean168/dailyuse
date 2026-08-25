@@ -16,7 +16,11 @@ import type {
 } from '@memoflow/database';
 import type { IScheduleTaskRepository } from '../../../domain/repositories/i-schedule-task-repository';
 import { ScheduleTask } from '../../../domain/aggregates/schedule-task';
-import type { SourceModule } from '@memoflow/contracts/schedule';
+import type {
+  SchedulingOwner,
+  SchedulingReconcileReceipt,
+  SourceModule,
+} from '@memoflow/contracts/schedule';
 import { ScheduleTaskStatus } from '@memoflow/contracts/schedule';
 import {
   AggregateRepositoryBase,
@@ -40,6 +44,7 @@ const eventBusAdapter = createEventBusAdapter(eventBus);
 interface ScheduleTaskDb {
   scheduleTask: PrismaClient['scheduleTask'];
   scheduleExecution: PrismaClient['scheduleExecution'];
+  schedulingReconcileOperation: PrismaClient['schedulingReconcileOperation'];
 }
 
 type PrismaTransactionRoot = Pick<PrismaClient, '$transaction'>;
@@ -252,6 +257,47 @@ export class ScheduleTaskPrismaRepository
     });
 
     return tasks.map((task) => this.toDomain(task));
+  }
+
+  async findBySchedulingOwner(owner: SchedulingOwner): Promise<ScheduleTask[]> {
+    const tasks = await this.db.scheduleTask.findMany({
+      where: {
+        identityId: owner.identityId,
+        ownerType: owner.type,
+        ownerId: owner.id,
+        schedulingKey: { not: null },
+      },
+      include: {
+        executions: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
+      },
+    });
+
+    return tasks.map((task) => this.toDomain(task));
+  }
+
+  async appendSchedulingReconcileReceipt(receipt: SchedulingReconcileReceipt): Promise<void> {
+    await this.db.schedulingReconcileOperation.create({
+      data: {
+        operationId: receipt.operationId,
+        identityId: receipt.owner.identityId,
+        ownerType: receipt.owner.type,
+        ownerId: receipt.owner.id,
+        status: receipt.status,
+        desiredCount: receipt.desiredCount,
+        createdCount: receipt.createdCount,
+        updatedCount: receipt.updatedCount,
+        deletedCount: receipt.deletedCount,
+        unchangedCount: receipt.unchangedCount,
+        failureCode: receipt.failure?.code ?? null,
+        failureMessage: receipt.failure?.message ?? null,
+        failureRetryable: receipt.failure?.retryable ?? null,
+        startedAt: new Date(receipt.startedAt),
+        finishedAt: new Date(receipt.finishedAt),
+      },
+    });
   }
 
   async findByStatus(status: ScheduleTaskStatus, identityId: string): Promise<ScheduleTask[]> {

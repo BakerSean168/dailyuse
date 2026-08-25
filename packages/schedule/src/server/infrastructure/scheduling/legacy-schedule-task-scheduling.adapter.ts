@@ -21,9 +21,15 @@ import { ScheduleTask } from '../../domain/aggregates/schedule-task';
 import type { IScheduleTaskRepository } from '../../domain/repositories/i-schedule-task-repository';
 import type { ScheduleTaskSourceExecutor } from '../../application/source-executors/runtime-contract';
 import type { ScheduledHandlerRegistry } from '../../../scheduling';
+import {
+  SCHEDULING_ENVELOPE_FIELD,
+  SCHEDULING_ENVELOPE_VERSION,
+  readSchedulingPayloadEnvelope,
+  type SchedulingPayloadEnvelope,
+  type SchedulingPersistenceEnvelope,
+  type SchedulingReconcileReceiptWriter,
+} from './scheduling-persistence-metadata';
 
-const LEGACY_ENVELOPE_FIELD = '__memoflowScheduling';
-const LEGACY_ENVELOPE_VERSION = 1 as const;
 const scheduleEvents = createTypedEventPublisher<Pick<ScheduleEventMap, 'schedule:task-deleted'>>(eventBus);
 
 type ReconcileFailurePoint = 'after-read' | 'after-upsert' | 'after-delete';
@@ -35,23 +41,6 @@ export interface ScheduleTaskSchedulingAdapterOptions {
     point: ReconcileFailurePoint,
     context: { readonly owner: SchedulingOwner; readonly desiredCount: number },
   ) => void | Promise<void>;
-}
-
-interface LegacySchedulingEnvelope {
-  readonly schemaVersion: typeof LEGACY_ENVELOPE_VERSION;
-  readonly ownerType: string;
-  readonly ownerId: string;
-  readonly schedulingKey: string;
-  readonly handlerKey: string;
-  readonly originalRunAt: number;
-  readonly payloadVersion: number;
-  readonly sourceRevision: number | string | null;
-  readonly fingerprint: string;
-}
-
-interface LegacyPayloadEnvelope extends Record<string, unknown> {
-  readonly [LEGACY_ENVELOPE_FIELD]: LegacySchedulingEnvelope;
-  readonly payload: unknown;
 }
 
 interface ReconcileCounts {
@@ -198,10 +187,10 @@ function ownerStorageKey(owner: SchedulingOwner): string {
   return buildSchedulingOwnerKey(owner);
 }
 
-function makePayloadEnvelope(owner: SchedulingOwner, intent: ScheduledIntent): LegacyPayloadEnvelope {
+function makePayloadEnvelope(owner: SchedulingOwner, intent: ScheduledIntent): SchedulingPayloadEnvelope {
   return {
-    [LEGACY_ENVELOPE_FIELD]: {
-      schemaVersion: LEGACY_ENVELOPE_VERSION,
+    [SCHEDULING_ENVELOPE_FIELD]: {
+      schemaVersion: SCHEDULING_ENVELOPE_VERSION,
       ownerType: owner.type,
       ownerId: owner.id,
       schedulingKey: intent.schedulingKey,
@@ -215,27 +204,8 @@ function makePayloadEnvelope(owner: SchedulingOwner, intent: ScheduledIntent): L
   };
 }
 
-function readPayloadEnvelope(task: ScheduleTask): LegacyPayloadEnvelope | null {
-  const payload = task.metadata.toDTO().payload;
-  const raw = payload[LEGACY_ENVELOPE_FIELD];
-  if (!raw || typeof raw !== 'object') return null;
-  const envelope = raw as Partial<LegacySchedulingEnvelope>;
-  if (
-    envelope.schemaVersion !== LEGACY_ENVELOPE_VERSION ||
-    typeof envelope.ownerType !== 'string' ||
-    typeof envelope.ownerId !== 'string' ||
-    typeof envelope.schedulingKey !== 'string' ||
-    typeof envelope.handlerKey !== 'string' ||
-    typeof envelope.originalRunAt !== 'number' ||
-    typeof envelope.payloadVersion !== 'number' ||
-    typeof envelope.fingerprint !== 'string'
-  ) {
-    return null;
-  }
-  return {
-    [LEGACY_ENVELOPE_FIELD]: envelope as LegacySchedulingEnvelope,
-    payload: payload.payload,
-  };
+function readPayloadEnvelope(task: ScheduleTask): SchedulingPayloadEnvelope | null {
+  return readSchedulingPayloadEnvelope(task);
 }
 
 function createLegacyTask(owner: SchedulingOwner, intent: ScheduledIntent): ScheduleTask {
@@ -396,19 +366,20 @@ export class LegacyScheduleTaskSchedulingAdapter implements SchedulingPort {
       try {
         const counts = await this.repository.withTransaction(async (txRepository) => {
           const storageKey = ownerStorageKey(owner);
-          const existingTasks = await txRepository.findBySourceEntity(
-            SourceModule.Custom,
-            storageKey,
-            owner.identityId,
-          );
+          if (!txRepository.findBySchedulingOwner) {
+            throw new Error(
+              'Scheduling repository must support first-class owner lookup inside the owner transaction.',
+            );
+          }
+          const existingTasks = await txRepository.findBySchedulingOwner(owner);
 
           const existingByKey = new Map<
             string,
-            { task: ScheduleTask; envelope: LegacySchedulingEnvelope }
+            { task: ScheduleTask; envelope: SchedulingPersistenceEnvelope }
           >();
           for (const task of existingTasks) {
             const payloadEnvelope = readPayloadEnvelope(task);
-            const envelope = payloadEnvelope?.[LEGACY_ENVELOPE_FIELD];
+            const envelope = payloadEnvelope?.[SCHEDULING_ENVELOPE_FIELD];
             if (
               !envelope ||
               envelope.ownerType !== owner.type ||
@@ -463,7 +434,7 @@ export class LegacyScheduleTaskSchedulingAdapter implements SchedulingPort {
             const expectedId = deterministicTaskId(owner, intent.schedulingKey);
             const idCollision = await txRepository.findByIdForIdentity(owner.identityId, expectedId);
             if (idCollision) {
-              const collisionEnvelope = readPayloadEnvelope(idCollision)?.[LEGACY_ENVELOPE_FIELD];
+              const collisionEnvelope = readPayloadEnvelope(idCollision)?.[SCHEDULING_ENVELOPE_FIELD];
               if (
                 !collisionEnvelope ||
                 collisionEnvelope.schedulingKey !== intent.schedulingKey ||
@@ -505,13 +476,35 @@ export class LegacyScheduleTaskSchedulingAdapter implements SchedulingPort {
             desiredCount: desired.length,
           });
 
+          const receipt: SchedulingReconcileReceipt = {
+            operationId,
+            owner,
+            status: 'succeeded',
+            desiredCount: desired.length,
+            createdCount,
+            updatedCount,
+            deletedCount: stale.length,
+            unchangedCount,
+            startedAt,
+            finishedAt: this.now(),
+          };
+          const receiptWriter = txRepository as IScheduleTaskRepository &
+            Partial<SchedulingReconcileReceiptWriter>;
+          if (!receiptWriter.appendSchedulingReconcileReceipt) {
+            throw new Error(
+              'Scheduling repository must persist the reconcile receipt inside the owner transaction.',
+            );
+          }
+          await receiptWriter.appendSchedulingReconcileReceipt(receipt);
+
           return {
             createdCount,
             updatedCount,
             deletedCount: stale.length,
             unchangedCount,
             deletedTaskIds: stale.map((task) => task.id),
-          } satisfies ReconcileCounts;
+            receipt,
+          } satisfies ReconcileCounts & { readonly receipt: SchedulingReconcileReceipt };
         });
 
         // Runtime queue invalidation happens only after the owner transaction commits.
@@ -519,18 +512,7 @@ export class LegacyScheduleTaskSchedulingAdapter implements SchedulingPort {
           scheduleEvents.send('schedule:task-deleted', { taskId });
         }
 
-        return {
-          operationId,
-          owner,
-          status: 'succeeded',
-          desiredCount: desired.length,
-          createdCount: counts.createdCount,
-          updatedCount: counts.updatedCount,
-          deletedCount: counts.deletedCount,
-          unchangedCount: counts.unchangedCount,
-          startedAt,
-          finishedAt: this.now(),
-        };
+        return counts.receipt;
       } catch (error) {
         const mapped = failureCode(error);
         const receipt: SchedulingReconcileReceipt = {
@@ -566,7 +548,7 @@ export function createScheduleTaskSchedulingPort(
 export function toScheduledInvocationContext(task: ScheduleTask): ScheduledInvocationContext | null {
   const payloadEnvelope = readPayloadEnvelope(task);
   if (!payloadEnvelope) return null;
-  const envelope = payloadEnvelope[LEGACY_ENVELOPE_FIELD];
+  const envelope = payloadEnvelope[SCHEDULING_ENVELOPE_FIELD];
   return {
     identityId: String(task.identityId),
     owner: {

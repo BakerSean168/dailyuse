@@ -14,7 +14,7 @@ tags:
   - parallel
 description: MemoFlow Goal/Task/Routine/Planner/Scheduler/Notification/EventBus 的总重构编排计划，按依赖、共享热点和可并行 lane 组织，并为每个标准能力指定 Build/Borrow/Imitate 来源
 created: 2026-08-25T19:18:00+08:00
-updated: 2026-08-25T19:18:00+08:00
+updated: 2026-08-25T21:40:00+08:00
 status: active
 ---
 
@@ -38,6 +38,34 @@ status: active
 - `2026-08-25-scheduling-notification-vnext-refactor.md`
 
 本计划解决它们之间的交叉依赖和重复迁移问题。
+
+## 0.1 Implementation checkpoint — Wave 0 / Wave 1
+
+Wave 0 evidence is frozen in [`Core vNext Wave 0 — Baseline / Acceptance / Shared-Train Evidence`](../../analysis/2026-08-25-core-vnext-wave-0-baseline-and-acceptance.md).
+
+| Ticket group | Status | Canonical evidence / implementation |
+| --- | --- | --- |
+| `CORE-0001~0005` | **DONE** | frozen map + A–J fixtures + train map + OSS gate; child plans rebased below |
+| `EVT-1001` | **DONE** | ADR-064, Emittery-backed runtime EventBus |
+| `TIME-1101~1103` | **DONE** | `RecurrenceEnginePort`, `rrule@2.8.1`, Task recurrence adapter, timezone/DST fixtures |
+| `UI-1101` | **DONE** | shared Date/Time/DateTime/Duration/ReminderOffset fields using existing shadcn/Reka primitives |
+| `LABEL-1101` | **DONE** | canonical Label contracts + `@memoflow/label` + Prisma/PowerSync Goal/Task assignment persistence |
+| `SCHED-1101~1105` | **DONE** | canonical neutral contracts, first-class scheduling identity, atomic owner reconcile + durable receipt, HandlerRegistry composition hook |
+| `NOTIF-1101/1102` | **DONE** | per-channel policy correctness + production DND/rate-limit path |
+
+**Next executable parallel point after the Wave 1 gate:** `GOAL-2101~2103`, `TASK-2201~2204`, `ROUTINE-2301~2303`, and `NOTIF-2401/2402`. Feature lanes must obey the W2 Contract/Schema Train single-writer rule.
+
+**Wave 1 gate evidence (2026-08-25):**
+
+- Event foundation: `utils` 144 tests, `patterns` 35 tests, contracts typecheck green.
+- Time/recurrence: 31 tests + typecheck/build green; Storybook exposed and the integration train repaired an `rrule` ESM default-import bundling defect.
+- Task recurrence consumer: 847 tests + typecheck green.
+- Scheduling: 399 focused tests + 28 Prisma integration tests + typecheck green; orchestration 10 tests + typecheck green.
+- Notification: 297 tests + typecheck green.
+- Shared Label: 5 unit tests + 3 PostgreSQL integration tests + typecheck/build green; PowerSync transaction behavior is included in the unit suite.
+- Shared date/time UI: 4 interaction/accessibility tests + `vue-tsc` + package build + production Storybook build green.
+- Schema/tooling: Prisma schema valid, PowerSync schema build green, Nx `sync:check` green, test inventory green (`1085` files).
+- Repository governance: `docs:check` and `governance:check` green after registering the new Label project/export and removing the obsolete UI-test exemption.
 
 North Star：
 

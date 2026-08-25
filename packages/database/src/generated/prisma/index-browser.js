@@ -619,6 +619,28 @@ exports.Prisma.HabitStreakProjectionScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.LabelScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  name: 'name',
+  normalizedName: 'normalizedName',
+  color: 'color',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GoalLabelScalarFieldEnum = {
+  identityId: 'identityId',
+  goalId: 'goalId',
+  labelId: 'labelId'
+};
+
+exports.Prisma.TaskLabelScalarFieldEnum = {
+  identityId: 'identityId',
+  taskTemplateId: 'taskTemplateId',
+  labelId: 'labelId'
+};
+
 exports.Prisma.NotificationScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -1224,6 +1246,12 @@ exports.Prisma.ScheduleTaskScalarFieldEnum = {
   description: 'description',
   sourceModule: 'sourceModule',
   sourceEntityId: 'sourceEntityId',
+  schedulingKey: 'schedulingKey',
+  ownerType: 'ownerType',
+  ownerId: 'ownerId',
+  handlerKey: 'handlerKey',
+  payloadVersion: 'payloadVersion',
+  sourceRevision: 'sourceRevision',
   status: 'status',
   enabled: 'enabled',
   cronExpression: 'cronExpression',
@@ -1250,6 +1278,25 @@ exports.Prisma.ScheduleTaskScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
+};
+
+exports.Prisma.SchedulingReconcileOperationScalarFieldEnum = {
+  operationId: 'operationId',
+  identityId: 'identityId',
+  ownerType: 'ownerType',
+  ownerId: 'ownerId',
+  status: 'status',
+  desiredCount: 'desiredCount',
+  createdCount: 'createdCount',
+  updatedCount: 'updatedCount',
+  deletedCount: 'deletedCount',
+  unchangedCount: 'unchangedCount',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  failureRetryable: 'failureRetryable',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.ScheduleExecutionScalarFieldEnum = {
@@ -1599,6 +1646,9 @@ exports.Prisma.ModelName = {
   HabitOccurrence: 'HabitOccurrence',
   HabitCheckIn: 'HabitCheckIn',
   HabitStreakProjection: 'HabitStreakProjection',
+  Label: 'Label',
+  GoalLabel: 'GoalLabel',
+  TaskLabel: 'TaskLabel',
   Notification: 'Notification',
   NotificationChannel: 'NotificationChannel',
   NotificationHistory: 'NotificationHistory',
@@ -1636,6 +1686,7 @@ exports.Prisma.ModelName = {
   KnowledgeRepositoryLease: 'KnowledgeRepositoryLease',
   Schedule: 'Schedule',
   ScheduleTask: 'ScheduleTask',
+  SchedulingReconcileOperation: 'SchedulingReconcileOperation',
   ScheduleExecution: 'ScheduleExecution',
   ScheduleStatistic: 'ScheduleStatistic',
   ScheduleLease: 'ScheduleLease',

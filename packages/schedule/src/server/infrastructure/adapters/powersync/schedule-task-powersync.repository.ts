@@ -3,7 +3,13 @@ import type {
   IScheduleTaskRepository,
 } from '../../../domain/repositories/i-schedule-task-repository';
 import { ScheduleTask } from '../../../domain/aggregates/schedule-task';
-import { ScheduleTaskStatus, type ScheduleEventMap, type SourceModule } from '@memoflow/contracts/schedule';
+import {
+  ScheduleTaskStatus,
+  type ScheduleEventMap,
+  type SchedulingOwner,
+  type SchedulingReconcileReceipt,
+  type SourceModule,
+} from '@memoflow/contracts/schedule';
 import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@memoflow/utils/domain';
 import { createLogger } from '@memoflow/utils/logger';
 import {
@@ -85,6 +91,12 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
              description = ?,
              source_module = ?,
              source_entity_id = ?,
+             scheduling_key = ?,
+             owner_type = ?,
+             owner_id = ?,
+             handler_key = ?,
+             payload_version = ?,
+             source_revision = ?,
              status = ?,
              enabled = ?,
              cron_expression = ?,
@@ -116,6 +128,12 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
           data.description,
           data.sourceModule,
           data.sourceEntityId,
+          data.schedulingKey,
+          data.ownerType,
+          data.ownerId,
+          data.handlerKey,
+          data.payloadVersion,
+          data.sourceRevision,
           data.status,
           data.enabled,
           data.cronExpression,
@@ -147,12 +165,13 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     } else {
       await tx.execute(
         `INSERT INTO schedule_tasks (
-          id, identity_id, name, description, source_module, source_entity_id, status, enabled,
-          cron_expression, timezone, start_date, end_date, max_executions, next_run_at, last_run_at,
-          execution_count, last_execution_status, last_execution_duration, consecutive_failures,
-          max_retries, initial_delay_ms, max_delay_ms, backoff_multiplier, retryable_statuses,
-          payload, tags, priority, timeout, version, created_at, updated_at, deleted_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          id, identity_id, name, description, source_module, source_entity_id,
+          scheduling_key, owner_type, owner_id, handler_key, payload_version, source_revision,
+          status, enabled, cron_expression, timezone, start_date, end_date, max_executions,
+          next_run_at, last_run_at, execution_count, last_execution_status, last_execution_duration,
+          consecutive_failures, max_retries, initial_delay_ms, max_delay_ms, backoff_multiplier,
+          retryable_statuses, payload, tags, priority, timeout, version, created_at, updated_at, deleted_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           data.id,
           data.identityId,
@@ -160,6 +179,12 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
           data.description,
           data.sourceModule,
           data.sourceEntityId,
+          data.schedulingKey,
+          data.ownerType,
+          data.ownerId,
+          data.handlerKey,
+          data.payloadVersion,
+          data.sourceRevision,
           data.status,
           data.enabled,
           data.cronExpression,
@@ -290,6 +315,43 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     return this.queryRows(
       `SELECT * FROM schedule_tasks WHERE source_module = ? AND source_entity_id = ? AND identity_id = ? ORDER BY next_run_at ASC`,
       [module, entityId, identityId],
+    );
+  }
+
+  async findBySchedulingOwner(owner: SchedulingOwner): Promise<ScheduleTask[]> {
+    return this.queryRows(
+      `SELECT * FROM schedule_tasks
+       WHERE identity_id = ? AND owner_type = ? AND owner_id = ? AND scheduling_key IS NOT NULL
+       ORDER BY next_run_at ASC`,
+      [owner.identityId, owner.type, owner.id],
+    );
+  }
+
+  async appendSchedulingReconcileReceipt(receipt: SchedulingReconcileReceipt): Promise<void> {
+    await this.queryDb.execute(
+      `INSERT INTO scheduling_reconcile_operations (
+        id, identity_id, owner_type, owner_id, status, desired_count, created_count,
+        updated_count, deleted_count, unchanged_count, failure_code, failure_message,
+        failure_retryable, started_at, finished_at, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        receipt.operationId,
+        receipt.owner.identityId,
+        receipt.owner.type,
+        receipt.owner.id,
+        receipt.status,
+        receipt.desiredCount,
+        receipt.createdCount,
+        receipt.updatedCount,
+        receipt.deletedCount,
+        receipt.unchangedCount,
+        receipt.failure?.code ?? null,
+        receipt.failure?.message ?? null,
+        receipt.failure?.retryable === undefined ? null : receipt.failure.retryable ? 1 : 0,
+        new Date(receipt.startedAt).toISOString(),
+        new Date(receipt.finishedAt).toISOString(),
+        new Date(receipt.finishedAt).toISOString(),
+      ],
     );
   }
 

@@ -7,6 +7,8 @@ import {
 import { RetryPolicy, ScheduleConfig, ScheduleTaskMetadata } from '../../../domain/value-objects';
 import { ScheduleTask } from '../../../domain/aggregates/schedule-task';
 import { ScheduleTaskPrismaRepository } from './schedule-task-prisma.repository';
+import { buildSchedulingKey } from '../../../../scheduling';
+import { createScheduleTaskSchedulingPort } from '../../scheduling';
 import {
   cleanAll,
   disconnectPrisma,
@@ -115,6 +117,56 @@ describe('ScheduleTaskPrismaRepository integration', () => {
     await expect(
       prisma.scheduleTask.findUnique({ where: { id: String(task.id) } }),
     ).resolves.toBeNull();
+  });
+
+
+  it('persists neutral scheduling identity and a durable reconcile receipt in the owner transaction', async () => {
+    const identityId = 'schedule-int-neutral-owner';
+    await seedAccount({ id: identityId });
+
+    const prisma = await getPrisma();
+    const repository = new ScheduleTaskPrismaRepository(prisma);
+    const schedulingPort = createScheduleTaskSchedulingPort(repository);
+    const owner = { identityId, type: 'task', id: 'task-plan-1' };
+    const schedulingKey = buildSchedulingKey(owner.type, owner.id, 'reminder:occurrence-1');
+
+    const receipt = await schedulingPort.reconcile(owner, [
+      {
+        schedulingKey,
+        handlerKey: 'task.reminder.fire',
+        runAt: Date.now() + 60_000,
+        payloadVersion: 1,
+        payload: { taskInstanceId: 'task-instance-1' },
+        sourceRevision: 7,
+      },
+    ]);
+
+    const row = await prisma.scheduleTask.findFirstOrThrow({
+      where: { identityId, ownerType: owner.type, ownerId: owner.id, schedulingKey },
+    });
+    const operation = await prisma.schedulingReconcileOperation.findUniqueOrThrow({
+      where: { operationId: receipt.operationId },
+    });
+
+    expect(row).toMatchObject({
+      schedulingKey,
+      ownerType: owner.type,
+      ownerId: owner.id,
+      handlerKey: 'task.reminder.fire',
+      payloadVersion: 1,
+      sourceRevision: '7',
+    });
+    expect(operation).toMatchObject({
+      identityId,
+      ownerType: owner.type,
+      ownerId: owner.id,
+      status: 'succeeded',
+      desiredCount: 1,
+      createdCount: 1,
+      updatedCount: 0,
+      deletedCount: 0,
+      unchangedCount: 0,
+    });
   });
 
   it('lists tasks by identity without leaking other scheduler state', async () => {

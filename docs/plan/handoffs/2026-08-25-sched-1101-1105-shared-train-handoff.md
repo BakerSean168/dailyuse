@@ -7,12 +7,22 @@ tags:
   - contract-train
   - schema-train
   - orchestration-train
-description: SCHED-1101..1105 shared-train changes intentionally not written by Scheduling Foundation lane.
+description: SCHED-1101..1105 shared-train handoff, now resolved by the Wave 1 integration train.
 created: 2026-08-25T20:03:00+08:00
-updated: 2026-08-25T20:03:00+08:00
+updated: 2026-08-25T21:25:00+08:00
 ---
 
 # Core vNext Scheduling Foundation — Shared Train Handoff
+
+> **RESOLVED IN WAVE 1 INTEGRATION.** The sections below preserve the original Worker handoff request for traceability; they are no longer pending work.
+>
+> Closed by the integration train:
+> - canonical types -> `packages/contracts/src/modules/schedule/scheduling.ts`;
+> - first-class `scheduling_key / owner / handler / payload_version / source_revision` -> Prisma + PowerSync;
+> - durable `SchedulingReconcileOperation` appended inside the successful owner transaction;
+> - `ScheduleOrchestrationModule` exposes one `SchedulingPort` + one `ScheduledHandlerRegistry`; neutral execution goes registry-first with the legacy router as temporary fallback.
+>
+> The metadata envelope remains only as a compatibility carrier for the existing `ScheduleTask` aggregate/worker and is a W3 deletion target after Goal/Task/Routine projector cutover. It is not a new public contract.
 
 > Execution truth remains `docs/plan/active/2026-08-25-core-vnext-orchestration.md`.
 > This file is a handoff only. It does not create a second active plan.

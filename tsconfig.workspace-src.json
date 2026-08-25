@@ -170,6 +170,13 @@
         "packages/dashboard/src/*/index.ts",
         "packages/dashboard/src/*.ts"
       ],
+      "@memoflow/label": [
+        "packages/label/src/index.ts"
+      ],
+      "@memoflow/label/*": [
+        "packages/label/src/*/index.ts",
+        "packages/label/src/*.ts"
+      ],
       "@memoflow/test-utils": [
         "packages/test-utils/src/index.ts"
       ],

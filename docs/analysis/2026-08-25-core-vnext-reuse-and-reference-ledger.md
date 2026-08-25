@@ -11,7 +11,7 @@ tags:
   - routine
 description: MemoFlow Core vNext 的 Build / Borrow / Integrate 决策台账，明确哪些能力直接复用成熟库、哪些只借鉴业务语义、哪些继续由 MemoFlow 持有
 created: 2026-08-25T19:18:00+08:00
-updated: 2026-08-25T20:24:00+08:00
+updated: 2026-08-25T21:25:00+08:00
 ---
 
 # Core vNext — OSS / Standard Capability Reuse & Reference Ledger
@@ -47,8 +47,8 @@ Integrate  = 把外部系统作为运行时依赖；当前默认不采用，除�
 | ---------------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------- | --------------------------------------------------------------------------- |
 | Runtime-local event bus                  | **Borrow / implemented**            | `emittery`                                                                       | `CrossPlatformEventBus` adapter         | async-first、每次 delivery 独立 Promise；删除自研 global drain              |
 | Product time facade                      | **Keep + Borrow underneath**        | existing `@memoflow/time` + `date-fns`                                           | `TimeFacade`                            | 已有统一 Instant/Ymd/Hm contract，不重写                                    |
-| Zoned / calendar UI date value           | **Borrow**                          | existing `@internationalized/date`; optional `temporal-polyfill` at adapter edge | UI/time adapter                         | 不手写 calendar arithmetic / zoned date object                              |
-| Date picker / calendar primitive         | **Borrow**                          | existing shadcn-vue Calendar + Reka UI                                           | `@memoflow/ui-vue-shadcn`               | 已存在、可访问性 primitives 已接入                                          |
+| Zoned / calendar UI date value           | **Borrow / implemented W1**                          | existing `@internationalized/date`; optional `temporal-polyfill` at adapter edge | UI/time adapter                         | 不手写 calendar arithmetic / zoned date object                              |
+| Date picker / calendar primitive         | **Borrow / implemented W1 composites**                          | existing shadcn-vue Calendar + Reka UI                                           | `@memoflow/ui-vue-shadcn`               | 已存在、可访问性 primitives 已接入                                          |
 | Planner calendar rendering               | **Borrow candidate A / preferred**  | FullCalendar Standard Vue 3                                                      | `PlannerCalendarAdapter`                | MIT Standard、成熟 Day/Week/Month/List、drag/resize/revert                  |
 | Planner candidate B                      | **Do not adopt for interactive v1** | Schedule-X v4                                                                    | spike only                              | v4 drag/resize 已进入 Premium，不符合低成本重构目标                         |
 | Task/Routine recurrence math             | **Borrow / selected**                | `rrule@2.8.1`; `ical.js` deferred                                                 | `RecurrenceEnginePort`                  | fixture 已通过；RFC recurrence math 复用，IANA/Instant 仍由 TimeFacade 持有 |
@@ -63,6 +63,7 @@ Integrate  = 把外部系统作为运行时依赖；当前默认不采用，除�
 | Routine Active/Idle/Natural Break        | **Build adapters, imitate**         | Workrave / Safe Eyes / Sane Break                                                | `ActivitySensorPort` / `IdleSensorPort` | 平台事实要本地实现；借成熟 state semantics，不复制 GPL code                 |
 | Routine intervention phases              | **Imitate**                         | Sane Break / Workrave                                                            | Routine intervention state machine      | Gentle → natural stop → Guided/Strict                                       |
 | Focus/Pomodoro/Flowtime                  | **Build state machine, imitate**    | Super Productivity                                                               | `ProtocolSession`                       | 业务状态自有；学习其 session/break separation、race fixes                   |
+| Shared Goal/Task classification           | **Build / implemented W1**          | MemoFlow Label contract + persistence                                               | `@memoflow/label`                        | identity-scoped normalized Label; no second tag taxonomy                            |
 | Goal / Task business model               | **Build, imitate**                  | Vikunja / Tasks.org / Super Productivity / Leantime etc.                         | Goal/Task bounded contexts              | 业务 source of truth 必须由 MemoFlow 持有                                   |
 | UI forms / popup / menu / drawer         | **Borrow primitives**               | shadcn-vue / Reka UI / Vaul Vue                                                  | UI package                              | 禁止重复实现 accessibility primitives                                       |
 | Plugin runtime                           | **Defer**                           | Cordis / other plugin kernels only as research                                   | registry seams only                     | 当前只做 plugin-ready registry，不做 installer/runtime/marketplace          |

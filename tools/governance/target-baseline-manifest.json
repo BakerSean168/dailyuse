@@ -64,6 +64,7 @@
     "task": "runtime-lib",
     "domain-shared": "runtime-lib",
     "contracts": "runtime-lib",
+    "label": "runtime-lib",
     "repository": "runtime-lib",
     "database": "runtime-lib",
     "http-client": "runtime-lib",
@@ -97,12 +98,6 @@
       "target": "test",
       "type": "permanent",
       "reason": "React Native app in apps/: test infrastructure requires Expo test runner integration; not a standard package"
-    },
-    {
-      "project": "ui-vue-shadcn",
-      "target": "test",
-      "type": "permanent",
-      "reason": "UI component lib: third-party shadcn-vue primitives; component tests require Vue Test Utils + jsdom/happy-dom environment setup that differs from standard vitest"
     },
     {
       "project": "app-react",

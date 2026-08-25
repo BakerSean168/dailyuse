@@ -17,6 +17,8 @@ updated: 2026-08-25T19:18:00+08:00
 # Scheduling / Notification vNext — Boundary & Reliability Refactor
 
 > **Orchestration notice (2026-08-25):** 本文件保留 Scheduling/Notification 的专项设计与 ticket 细节；实际实施顺序、并行 lane、与 Goal/Task/Routine 的 contract freeze 点以 `2026-08-25-core-vnext-orchestration.md` 为唯一真值。不要先迁旧 Task projector 后再重写 Task vNext。
+>
+> Old-phase mapping: Phase 0 -> `CORE-0001~0005`; Phase 1 -> `SCHED-1101~1105` + `NOTIF-1101/1102`; Phase 2 -> `TASK-3101/3102`; Phase 3 -> `GOAL-3201/3202` + `ROUTINE-3501/3502`; Phase 4 -> `NOTIF-2401/2402` + `NOTIF-3301/3302`; Phase 5 -> `PLAN-5101~5105`; Phase 6 -> `POC-6101` + cleanup tickets; Phase 7 -> `HARD-7101~7105`.
 
 **状态：** Planned / active  
 **North Star：** ADR-060~063  

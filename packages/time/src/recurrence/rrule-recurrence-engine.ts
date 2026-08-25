@@ -1,5 +1,4 @@
-import rruleModule from 'rrule';
-import type { Options, Weekday } from 'rrule';
+import { RRule, type Options, type Weekday } from 'rrule';
 import {
   asHm,
   asYmd,
@@ -16,7 +15,6 @@ import type {
   RecurrenceWeekday,
 } from './recurrence-engine.port';
 
-const { RRule } = rruleModule;
 
 const FREQUENCY_MAP: Record<RecurrenceFrequency, number> = {
   daily: RRule.DAILY,

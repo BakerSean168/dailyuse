@@ -24,6 +24,7 @@ import {
 } from '../../../../domain/value-objects';
 import { ScheduleTaskId } from '../../../../domain/value-objects/schedule-task-id';
 import type { IdentityId } from '@memoflow/domain-shared';
+import { schedulingPersistenceMetadata } from '../../../scheduling/scheduling-persistence-metadata';
 
 /**
  * Prisma ScheduleTask with optional executions relation
@@ -115,6 +116,7 @@ export class PrismaScheduleTaskMapper {
   /** Converts a ScheduleTask aggregate to Prisma write data. */
   static toPersistence(task: ScheduleTask) {
     const metadataDTO = task.metadata.toDTO();
+    const scheduling = schedulingPersistenceMetadata(task);
 
     return {
       id: task.id,
@@ -123,6 +125,12 @@ export class PrismaScheduleTaskMapper {
       description: task.description,
       sourceModule: task.sourceModule,
       sourceEntityId: task.sourceEntityId,
+      schedulingKey: scheduling.schedulingKey,
+      ownerType: scheduling.ownerType,
+      ownerId: scheduling.ownerId,
+      handlerKey: scheduling.handlerKey,
+      payloadVersion: scheduling.payloadVersion,
+      sourceRevision: scheduling.sourceRevision,
       status: task.status,
       enabled: task.enabled,
       cronExpression: task.schedule.cronExpression,

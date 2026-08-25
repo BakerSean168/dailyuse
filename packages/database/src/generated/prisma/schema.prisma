@@ -54,6 +54,9 @@ model Account {
   focusSessions                   FocusSession[]
   focusModes                      FocusMode[]
   goals                           Goal[]
+  labels                          Label[]
+  goalLabels                      GoalLabel[]
+  taskLabels                      TaskLabel[]
   goalFolders                     GoalFolder[]
   reminderGroups                  ReminderGroup[]
   reminderTemplates               ReminderTemplate[]
@@ -65,6 +68,7 @@ model Account {
   repositoryStatistics            RepositoryStatistic?
   schedules                       Schedule[]
   scheduleTasks                   ScheduleTask[]
+  schedulingReconcileOperations   SchedulingReconcileOperation[]
   scheduleStatistics              ScheduleStatistic?
   habits                          Habit[]
   relations                       Relation[]
@@ -568,6 +572,7 @@ model Goal {
   reviews                  GoalReview[] /// 目标评审记录（一对多，级联删除）
   keyResultWeightSnapshots KeyResultWeightSnapshot[] /// KR权重快照（一对多，级联删除）
   focusSessions            FocusSession[] /// 专注会话记录（一对多，级联删除）
+  labelLinks               GoalLabel[]
 
   @@unique([id, identityId])
   // ============ 索引优化 ============
@@ -967,6 +972,58 @@ model HabitStreakProjection {
   habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
 
   @@map("habit_streak_projections")
+}
+
+// ==========================================
+// Shared Labels (ADR-054)
+// User-owned classification shared by Goal and Task.
+// ==========================================
+
+model Label {
+  id             String   @id
+  identityId     String   @map("identity_id")
+  name           String
+  normalizedName String   @map("normalized_name")
+  color          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  account   Account     @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  goalLinks GoalLabel[]
+  taskLinks TaskLabel[]
+
+  @@unique([id, identityId])
+  @@unique([identityId, normalizedName])
+  @@index([identityId, name])
+  @@map("labels")
+}
+
+model GoalLabel {
+  identityId String @map("identity_id")
+  goalId     String @map("goal_id")
+  labelId    String @map("label_id")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  goal    Goal    @relation(fields: [goalId, identityId], references: [id, identityId], onDelete: Cascade)
+  label   Label   @relation(fields: [labelId, identityId], references: [id, identityId], onDelete: Cascade)
+
+  @@id([identityId, goalId, labelId])
+  @@index([identityId, labelId, goalId])
+  @@map("goal_labels")
+}
+
+model TaskLabel {
+  identityId     String @map("identity_id")
+  taskTemplateId String @map("task_template_id")
+  labelId        String @map("label_id")
+
+  account      Account      @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  taskTemplate TaskTemplate @relation(fields: [taskTemplateId, identityId], references: [id, identityId], onDelete: Cascade)
+  label        Label        @relation(fields: [labelId, identityId], references: [id, identityId], onDelete: Cascade)
+
+  @@id([identityId, taskTemplateId, labelId])
+  @@index([identityId, labelId, taskTemplateId])
+  @@map("task_labels")
 }
 
 // ==========================================
@@ -1884,6 +1941,13 @@ model ScheduleTask {
   description           String?
   sourceModule          String    @map("source_module")
   sourceEntityId        String    @map("source_entity_id")
+  // ADR-061 neutral scheduling identity. Legacy projector rows remain NULL until migrated.
+  schedulingKey         String?   @map("scheduling_key")
+  ownerType             String?   @map("owner_type")
+  ownerId               String?   @map("owner_id")
+  handlerKey            String?   @map("handler_key")
+  payloadVersion        Int?      @map("payload_version")
+  sourceRevision        String?   @map("source_revision")
   status                String
   enabled               Boolean
   cronExpression        String?   @map("cron_expression")
@@ -1914,8 +1978,36 @@ model ScheduleTask {
   executions ScheduleExecution[]
   account    Account             @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
+  @@unique([identityId, ownerType, ownerId, schedulingKey], map: "schedule_tasks_owner_scheduling_key_unique")
   @@index([status])
+  @@index([identityId, ownerType, ownerId], map: "schedule_tasks_owner_lookup_idx")
   @@map("schedule_tasks")
+}
+
+/// Durable evidence for one owner-level desired-state reconcile.
+/// Successful rows are written inside the same transaction as ScheduleTask upsert/delete.
+model SchedulingReconcileOperation {
+  operationId      String   @id @map("operation_id")
+  identityId       String   @map("identity_id")
+  ownerType        String   @map("owner_type")
+  ownerId          String   @map("owner_id")
+  status           String
+  desiredCount     Int      @map("desired_count")
+  createdCount     Int      @map("created_count")
+  updatedCount     Int      @map("updated_count")
+  deletedCount     Int      @map("deleted_count")
+  unchangedCount   Int      @map("unchanged_count")
+  failureCode      String?  @map("failure_code")
+  failureMessage   String?  @map("failure_message")
+  failureRetryable Boolean? @map("failure_retryable")
+  startedAt        DateTime @map("started_at")
+  finishedAt       DateTime @map("finished_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId, ownerType, ownerId, finishedAt], map: "scheduling_reconcile_owner_history_idx")
+  @@map("scheduling_reconcile_operations")
 }
 
 model ScheduleExecution {
@@ -2188,10 +2280,12 @@ model TaskTemplate {
   successorDependencies   TaskDependency[] @relation("SuccessorTaskDeps")
 
   // 实例
-  instances TaskInstance[]
-  history   TaskTemplateHistory[]
+  instances  TaskInstance[]
+  history    TaskTemplateHistory[]
+  labelLinks TaskLabel[]
 
   // ============ 索引优化 ============
+  @@unique([id, identityId])
   @@index([identityId])
   @@index([status])
   @@index([importance])

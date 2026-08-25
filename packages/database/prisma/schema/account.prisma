@@ -37,6 +37,9 @@ model Account {
   focusSessions                   FocusSession[]
   focusModes                      FocusMode[]
   goals                           Goal[]
+  labels                          Label[]
+  goalLabels                      GoalLabel[]
+  taskLabels                      TaskLabel[]
   goalFolders                     GoalFolder[]
   reminderGroups                  ReminderGroup[]
   reminderTemplates               ReminderTemplate[]
@@ -48,6 +51,7 @@ model Account {
   repositoryStatistics            RepositoryStatistic?
   schedules                       Schedule[]
   scheduleTasks                   ScheduleTask[]
+  schedulingReconcileOperations   SchedulingReconcileOperation[]
   scheduleStatistics              ScheduleStatistic?
   habits                          Habit[]
   relations                       Relation[]

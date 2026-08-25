@@ -7,6 +7,11 @@ import {
   createTypedEventSubscriber,
   eventBus,
 } from '@memoflow/utils/domain';
+import {
+  ScheduledHandlerRegistry,
+  createHandlerRegistryScheduleTaskSourceExecutor,
+  createScheduleTaskSchedulingPort,
+} from '@memoflow/schedule';
 import type {
   CreateScheduleOrchestrationModuleOptions,
   ScheduleOrchestrationModule,
@@ -23,6 +28,18 @@ export function createScheduleOrchestrationModule(
   const scheduleEvents = createTypedEventPublisher<Pick<ScheduleEventMap, 'schedule:task-deleted'>>(
     eventBus,
   );
+  const scheduleTaskRepository = options.taskProjection.scheduleTaskRepository;
+  if (
+    options.goalProjection.scheduleTaskRepository !== scheduleTaskRepository ||
+    options.reminderProjection.scheduleTaskRepository !== scheduleTaskRepository
+  ) {
+    throw new Error(
+      'Schedule orchestration requires one shared ScheduleTask repository for projections and SchedulingPort.',
+    );
+  }
+
+  const handlerRegistry = new ScheduledHandlerRegistry();
+  const legacySourceExecutor = createScheduleExecutionRouter(options.execution);
 
   return {
     projectionRuntime: createCompositeRuntimeContribution([
@@ -45,6 +62,11 @@ export function createScheduleOrchestrationModule(
         scheduleEvents,
       }),
     ]),
-    sourceExecutor: createScheduleExecutionRouter(options.execution),
+    schedulingPort: createScheduleTaskSchedulingPort(scheduleTaskRepository),
+    handlerRegistry,
+    sourceExecutor: createHandlerRegistryScheduleTaskSourceExecutor({
+      registry: handlerRegistry,
+      legacyFallback: legacySourceExecutor,
+    }),
   };
 }

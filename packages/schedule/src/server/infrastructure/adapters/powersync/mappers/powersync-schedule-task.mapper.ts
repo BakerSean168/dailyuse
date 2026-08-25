@@ -15,6 +15,7 @@ import {
 } from '../../../../domain/value-objects';
 import { ScheduleTaskId } from '../../../../domain/value-objects/schedule-task-id';
 import type { IdentityId } from '@memoflow/domain-shared';
+import { schedulingPersistenceMetadata } from '../../../scheduling/scheduling-persistence-metadata';
 import {
   PowerSyncScheduleExecutionMapper,
   type PowerSyncScheduleExecutionRow,
@@ -27,6 +28,12 @@ export type PowerSyncScheduleTaskRow = {
   description: string | null;
   source_module: string;
   source_entity_id: string;
+  scheduling_key: string | null;
+  owner_type: string | null;
+  owner_id: string | null;
+  handler_key: string | null;
+  payload_version: number | null;
+  source_revision: string | null;
   status: string;
   enabled: number | boolean;
   cron_expression: string | null;
@@ -112,6 +119,7 @@ export class PowerSyncScheduleTaskMapper {
 
   static toPersistence(task: ScheduleTask) {
     const metadataDTO = task.metadata.toDTO();
+    const scheduling = schedulingPersistenceMetadata(task);
     return {
       id: String(task.id),
       identityId: task.identityId,
@@ -119,6 +127,12 @@ export class PowerSyncScheduleTaskMapper {
       description: task.description,
       sourceModule: task.sourceModule,
       sourceEntityId: task.sourceEntityId,
+      schedulingKey: scheduling.schedulingKey,
+      ownerType: scheduling.ownerType,
+      ownerId: scheduling.ownerId,
+      handlerKey: scheduling.handlerKey,
+      payloadVersion: scheduling.payloadVersion,
+      sourceRevision: scheduling.sourceRevision,
       status: task.status,
       enabled: task.enabled ? 1 : 0,
       cronExpression: task.schedule.cronExpression,

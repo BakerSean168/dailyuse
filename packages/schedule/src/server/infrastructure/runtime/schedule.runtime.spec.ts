@@ -137,6 +137,8 @@ type ScheduleTaskRepositoryMock = IScheduleTaskRepository & {
   findByIdentityId: ReturnType<typeof vi.fn>;
   findBySourceModule: ReturnType<typeof vi.fn>;
   findBySourceEntity: ReturnType<typeof vi.fn>;
+  findBySchedulingOwner: ReturnType<typeof vi.fn>;
+  appendSchedulingReconcileReceipt: ReturnType<typeof vi.fn>;
   findByStatus: ReturnType<typeof vi.fn>;
   findEnabled: ReturnType<typeof vi.fn>;
   findDueTasksForExecution: ReturnType<typeof vi.fn>;
@@ -156,6 +158,8 @@ function createRepositoryMock(): ScheduleTaskRepositoryMock {
     findByIdentityId: vi.fn(async () => []),
     findBySourceModule: vi.fn(async () => []),
     findBySourceEntity: vi.fn(async () => []),
+    findBySchedulingOwner: vi.fn(async () => []),
+    appendSchedulingReconcileReceipt: vi.fn(async () => undefined),
     findByStatus: vi.fn(async () => []),
     findEnabled: vi.fn(async () => []),
     findDueTasksForExecution: vi.fn(async () => []),

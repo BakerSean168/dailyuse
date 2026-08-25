@@ -43,6 +43,12 @@ export type { InputApi } from './input/input';
 export type { CalendarApi } from './calendar/calendar';
 
 export { asInstant, asTransferDate, asYmd, asHm } from './codec/brand';
+export {
+  calendarDateValueToYmd,
+  ymdToCalendarDateValue,
+  timeValueToHm,
+  hmToTimeValue,
+} from './ui/calendar-date-adapter';
 
 export type {
   RecurrenceEnginePort,

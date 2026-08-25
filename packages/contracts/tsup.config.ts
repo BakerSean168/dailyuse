@@ -33,6 +33,7 @@ export default createTsupConfig({
     'src/modules/ai/index.ts',
     'src/modules/dashboard/index.ts',
     'src/modules/data-portability/index.ts',
+    'src/modules/label/index.ts',
     // 其他模块入口
     'src/result/index.ts',
     'src/shared/index.ts',
