@@ -7,7 +7,7 @@ tags:
   - schema-train
 description: ROUTINE-2301..2303 feature-lane handoff for Core vNext shared Contract/Schema/PowerSync integration.
 created: 2026-08-25T23:41:00+08:00
-updated: 2026-08-26T00:37:00+08:00
+updated: 2026-08-26T00:46:00+08:00
 ---
 
 # Core vNext Routine Domain / Wave 2 — Shared Train Handoff
@@ -208,13 +208,16 @@ They must **not** produce durable `ScheduleTask`/`ScheduledIntent` projection. W
 ```text
 FixedTime -> WallClock
 legacy timezone null -> explicit UTC (the existing legacy contract)
+Recurring FixedTime -> daily recurrence (this is the actual legacy calculator behavior)
+OneTime FixedTime -> daily recurrence with count=1
 
-Interval -> Elapsed by default
-Interval -> ActiveUsage only with explicit migration evidence
-legacy Interval.startTime -> runtime anchor state, not long-lived trigger config
+Recurring Interval -> Elapsed by default
+Recurring Interval -> ActiveUsage only with explicit migration evidence
+legacy runtime anchor -> activeTime.activatedAt (the current calculator ignores Interval.startTime)
+OneTime Interval -> no canonical trigger, because the legacy OneTime calculator never executes Interval
 ```
 
-Do not infer ActiveUsage from a numeric interval alone.
+Do not infer ActiveUsage from a numeric interval alone. Do not resurrect the unused legacy `Interval.startTime` as timing truth; preserve `activeTime.activatedAt` as the migration/runtime anchor.
 
 ### TemporaryOverride / snooze
 

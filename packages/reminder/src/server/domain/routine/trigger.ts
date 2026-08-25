@@ -232,9 +232,20 @@ export function createTemporaryOverride(input: {
   }
   const expiresAt = normalizeInstant(input.expiresAt, 'expiresAt');
   if (expiresAt == null) throw new TypeError('expiresAt is required');
+  const snoozeUntil = normalizeInstant(input.snoozeUntil ?? null, 'snoozeUntil');
+  const suppressUntil = normalizeInstant(input.suppressUntil ?? null, 'suppressUntil');
+  if (snoozeUntil != null && Number(snoozeUntil) > Number(expiresAt)) {
+    throw new TypeError('snoozeUntil must not exceed expiresAt');
+  }
+  if (suppressUntil != null && Number(suppressUntil) > Number(expiresAt)) {
+    throw new TypeError('suppressUntil must not exceed expiresAt');
+  }
+  if (snoozeUntil == null && suppressUntil == null && input.overrideIntervalMs == null) {
+    throw new TypeError('TemporaryOverride must define at least one temporary effect');
+  }
   return {
-    snoozeUntil: normalizeInstant(input.snoozeUntil ?? null, 'snoozeUntil'),
-    suppressUntil: normalizeInstant(input.suppressUntil ?? null, 'suppressUntil'),
+    snoozeUntil,
+    suppressUntil,
     overrideIntervalMs: input.overrideIntervalMs ?? null,
     expiresAt,
     reason,
@@ -295,11 +306,16 @@ export function migrateLegacyIntervalTrigger(
     elapsedAnchor?: ElapsedAnchor;
     activeUsageAnchor?: ActiveUsageAnchor;
     naturalBreakCreditMs?: number | null;
+    /** Actual legacy runtime recurrence base; Reminder uses activeTime.activatedAt. */
+    legacyAnchorInstant?: Instant | number | null;
   } = {},
 ): LegacyIntervalMigration {
   assertPositiveFinite(legacy.minutes, 'legacy interval minutes');
   const durationMs = legacy.minutes * 60_000;
-  const legacyAnchorInstant = normalizeInstant(legacy.startTime, 'legacy interval startTime');
+  const legacyAnchorInstant = normalizeInstant(
+    options.legacyAnchorInstant !== undefined ? options.legacyAnchorInstant : legacy.startTime,
+    'legacy interval runtime anchor',
+  );
 
   if (options.semanticEvidence === 'active-usage') {
     return {

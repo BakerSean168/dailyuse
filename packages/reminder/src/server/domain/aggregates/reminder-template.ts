@@ -387,9 +387,8 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     this._props.updatedAt = now;
 
-    // selfEnabled 变化，需要重新计算 effectiveEnabled
-    // 注意：如果有分组且分组控制模式为 GROUP，需要在应用层重新计算
-    // 这里先假设启用（应用层会调用 setEffectiveEnabled 来修正）
+    // effectiveEnabled is a legacy cached projection. Application code immediately
+    // recomputes it through the canonical Routine AND-gate after this local mutation.
     this._props.effectiveEnabled = true;
 
     // 发布启用事件
@@ -412,9 +411,8 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.status = ReminderStatus.Paused;
     this._props.updatedAt = Date.now();
 
-    // selfEnabled 变化，需要重新计算 effectiveEnabled
-    // 注意：如果有分组且分组控制模式为 GROUP，需要在应用层重新计算
-    // 这里先简单设置为 false
+    // effectiveEnabled is a legacy cached projection. False is locally safe here;
+    // application code still recomputes through the canonical Routine AND-gate.
     this._props.effectiveEnabled = false;
 
     // 发布暂停事件

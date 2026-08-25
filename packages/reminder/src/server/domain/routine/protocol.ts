@@ -471,15 +471,75 @@ function validateSessionSnapshot(snapshot: ProtocolSessionSnapshot): void {
   assertNonEmpty(snapshot.protocolId, 'session.protocolId');
   assertPositiveInteger(snapshot.protocolVersion, 'session.protocolVersion');
   assertPositiveInteger(snapshot.version, 'session.version');
+  ProtocolDefinition.load(snapshot.protocolSnapshot);
   if (snapshot.protocolSnapshot.id !== snapshot.protocolId) {
     throw new TypeError('Session protocol snapshot id mismatch');
   }
   if (snapshot.protocolSnapshot.identityId !== snapshot.identityId) {
     throw new TypeError('Session protocol snapshot identity mismatch');
   }
+  if (snapshot.protocolSnapshot.version !== snapshot.protocolVersion) {
+    throw new TypeError('Session protocol snapshot version mismatch');
+  }
   if (snapshot.phasePlan.length === 0) throw new TypeError('Session phase plan must not be empty');
   if (snapshot.currentPlanIndex != null && !snapshot.phasePlan[snapshot.currentPlanIndex]) {
     throw new TypeError('Session current phase index is outside the phase plan');
+  }
+
+  const hasCurrentPhase = snapshot.currentPlanIndex != null;
+  const hasStartedState = snapshot.startedAt != null && snapshot.phaseStartedAt != null && hasCurrentPhase;
+  const hasTerminalState = snapshot.endedAt != null && snapshot.terminationReason != null;
+
+  switch (snapshot.state) {
+    case 'Idle':
+      if (
+        snapshot.currentPlanIndex != null ||
+        snapshot.startedAt != null ||
+        snapshot.phaseStartedAt != null ||
+        snapshot.phaseDeadline != null ||
+        snapshot.pausedAt != null ||
+        snapshot.pausedRemainingMs != null ||
+        hasTerminalState
+      ) {
+        throw new TypeError('Idle ProtocolSession snapshot contains active or terminal state');
+      }
+      break;
+    case 'Running':
+      if (!hasStartedState || snapshot.pausedAt != null || snapshot.pausedRemainingMs != null || hasTerminalState) {
+        throw new TypeError('Running ProtocolSession snapshot is inconsistent');
+      }
+      break;
+    case 'Paused':
+      if (!hasStartedState || snapshot.pausedAt == null || hasTerminalState) {
+        throw new TypeError('Paused ProtocolSession snapshot is inconsistent');
+      }
+      break;
+    case 'Completed':
+      if (!hasStartedState || !hasTerminalState) {
+        throw new TypeError('Completed ProtocolSession snapshot is missing terminal state');
+      }
+      if (snapshot.terminationReason !== 'completed' && snapshot.terminationReason !== 'user-ended') {
+        throw new TypeError('Completed ProtocolSession has an invalid termination reason');
+      }
+      if (snapshot.phaseDeadline != null || snapshot.pausedAt != null || snapshot.pausedRemainingMs != null) {
+        throw new TypeError('Completed ProtocolSession snapshot retains active timing state');
+      }
+      break;
+    case 'Cancelled':
+      if (!hasStartedState || !hasTerminalState) {
+        throw new TypeError('Cancelled ProtocolSession snapshot is missing terminal state');
+      }
+      if (
+        snapshot.terminationReason !== 'user-cancelled' &&
+        snapshot.terminationReason !== 'superseded' &&
+        snapshot.terminationReason !== 'runtime-aborted'
+      ) {
+        throw new TypeError('Cancelled ProtocolSession has an invalid termination reason');
+      }
+      if (snapshot.phaseDeadline != null || snapshot.pausedAt != null || snapshot.pausedRemainingMs != null) {
+        throw new TypeError('Cancelled ProtocolSession snapshot retains active timing state');
+      }
+      break;
   }
 }
 

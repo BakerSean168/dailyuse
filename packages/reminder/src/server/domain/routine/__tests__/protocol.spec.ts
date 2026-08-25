@@ -145,6 +145,29 @@ describe('ProtocolSession deterministic state machine', () => {
     expect([restored.currentPhase?.kind, restored.currentCycle]).toEqual(['Focus', 2]);
   });
 
+  it('rejects cross-field inconsistent persistent snapshots during restore', () => {
+    const session = ProtocolSession.create({ identityId: 'identity-1', protocol: create5010(), now: t0 });
+    session.start(t0);
+    const running = session.snapshot();
+
+    expect(() => ProtocolSession.load({
+      ...running,
+      protocolVersion: running.protocolVersion + 1,
+    })).toThrow('protocol snapshot version mismatch');
+    expect(() => ProtocolSession.load({
+      ...running,
+      state: 'Paused',
+      pausedAt: null,
+    })).toThrow('Paused ProtocolSession snapshot is inconsistent');
+    expect(() => ProtocolSession.load({
+      ...running,
+      state: 'Completed',
+      endedAt: asInstant(Number(t0) + minute),
+      terminationReason: 'user-cancelled',
+      phaseDeadline: null,
+    })).toThrow('invalid termination reason');
+  });
+
   it('captures the expanded plan so an active session is insulated from later definition revisions', () => {
     const protocol = create5010();
     const session = ProtocolSession.create({ identityId: 'identity-1', protocol, now: t0 });

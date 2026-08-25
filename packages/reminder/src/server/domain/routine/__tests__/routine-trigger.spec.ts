@@ -1,12 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
+import { ReminderType } from '@memoflow/contracts/reminder';
+import { IdentityId } from '@memoflow/domain-shared';
+import { ReminderTemplate } from '../../aggregates/reminder-template';
 import {
   asInstant,
   type RecurrenceEnginePort,
 } from '@memoflow/time';
 import {
+  adaptLegacyReminderTrigger,
   createActiveUsageTrigger,
   createElapsedTrigger,
   createSnoozeOverride,
+  createTemporaryOverride,
   createWallClockTrigger,
   migrateLegacyFixedTimeTrigger,
   migrateLegacyIntervalTrigger,
@@ -18,6 +23,32 @@ import {
   timingOwnerOf,
   wallClockOccurrencesBetween,
 } from '..';
+
+function createLegacyTemplate(input: {
+  type?: (typeof ReminderType)[keyof typeof ReminderType];
+  trigger: {
+    type: 'FixedTime' | 'Interval';
+    fixedTime: { time: string; timezone: string | null } | null;
+    interval: { minutes: number; startTime: number | null } | null;
+  };
+  activatedAt: number;
+}) {
+  return ReminderTemplate.create({
+    identityId: IdentityId.generate(),
+    title: 'Legacy Routine',
+    type: input.type ?? ReminderType.Recurring,
+    trigger: input.trigger,
+    activeTime: { activatedAt: input.activatedAt },
+    notificationConfig: {
+      channels: ['InApp'],
+      title: null,
+      body: null,
+      sound: null,
+      vibration: null,
+      actions: null,
+    },
+  });
+}
 
 describe('Routine canonical trigger model', () => {
   it('has exactly WallClock / Elapsed / ActiveUsage and keeps Protocol out of Trigger', () => {
@@ -167,6 +198,21 @@ describe('Routine canonical trigger model', () => {
     expect(trigger.localTime).toBe('23:30');
   });
 
+  it('rejects temporary overrides whose effect outlives expiry or has no effect', () => {
+    const now = asInstant(Date.parse('2026-08-25T15:30:00.000Z'));
+    expect(() => createTemporaryOverride({
+      snoozeUntil: asInstant(Number(now) + 30 * 60_000),
+      expiresAt: asInstant(Number(now) + 20 * 60_000),
+      reason: 'invalid snooze',
+      source: 'user',
+    })).toThrow('snoozeUntil must not exceed expiresAt');
+    expect(() => createTemporaryOverride({
+      expiresAt: asInstant(Number(now) + 20 * 60_000),
+      reason: 'no-op',
+      source: 'runtime',
+    })).toThrow('must define at least one temporary effect');
+  });
+
   it('maps legacy FixedTime to WallClock with explicit UTC for the old null-timezone contract', () => {
     const trigger = migrateLegacyFixedTimeTrigger({
       legacy: { time: '12:00', timezone: null },
@@ -179,6 +225,64 @@ describe('Routine canonical trigger model', () => {
     expect(trigger.type).toBe('WallClock');
     expect(trigger.timeZone).toBe('UTC');
     expect(trigger.localTime).toBe('12:00');
+  });
+
+  it('adapts actual legacy FixedTime behavior: recurring=daily and one-time=count 1', () => {
+    const activatedAt = Date.parse('2026-08-25T16:30:00.000Z'); // 2026-08-26 in Tokyo
+    const recurring = adaptLegacyReminderTrigger(createLegacyTemplate({
+      activatedAt,
+      trigger: {
+        type: 'FixedTime',
+        fixedTime: { time: '07:30', timezone: 'Asia/Tokyo' },
+        interval: null,
+      },
+    }));
+    const oneTime = adaptLegacyReminderTrigger(createLegacyTemplate({
+      type: ReminderType.OneTime,
+      activatedAt,
+      trigger: {
+        type: 'FixedTime',
+        fixedTime: { time: '07:30', timezone: 'Asia/Tokyo' },
+        interval: null,
+      },
+    }));
+
+    expect(recurring.trigger).toMatchObject({
+      type: 'WallClock',
+      recurrence: { startDate: '2026-08-26', frequency: 'daily', count: null },
+    });
+    expect(oneTime.trigger).toMatchObject({
+      type: 'WallClock',
+      recurrence: { startDate: '2026-08-26', frequency: 'daily', count: 1 },
+    });
+  });
+
+  it('uses activeTime.activatedAt as the real legacy Interval anchor and does not invent OneTime Interval behavior', () => {
+    const activatedAt = Date.parse('2026-08-25T08:00:00.000Z');
+    const ignoredIntervalStartTime = Date.parse('2026-08-24T08:00:00.000Z');
+    const recurring = adaptLegacyReminderTrigger(createLegacyTemplate({
+      activatedAt,
+      trigger: {
+        type: 'Interval',
+        fixedTime: null,
+        interval: { minutes: 40, startTime: ignoredIntervalStartTime },
+      },
+    }));
+    const oneTime = adaptLegacyReminderTrigger(createLegacyTemplate({
+      type: ReminderType.OneTime,
+      activatedAt,
+      trigger: {
+        type: 'Interval',
+        fixedTime: null,
+        interval: { minutes: 40, startTime: ignoredIntervalStartTime },
+      },
+    }));
+
+    expect(recurring.trigger).toMatchObject({ type: 'Elapsed', durationMs: 40 * 60_000 });
+    expect(Number(recurring.legacyRuntimeAnchor)).toBe(activatedAt);
+    expect(Number(recurring.legacyRuntimeAnchor)).not.toBe(ignoredIntervalStartTime);
+    expect(oneTime.trigger).toBeNull();
+    expect(oneTime.rationale).toContain('does not invent new behavior');
   });
 
   it('classifies legacy Interval as Elapsed by default and only ActiveUsage with explicit evidence', () => {
