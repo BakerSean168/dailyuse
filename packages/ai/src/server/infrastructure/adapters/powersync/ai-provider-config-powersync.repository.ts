@@ -1,15 +1,16 @@
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type { AIProviderConfigServerDTO } from '@memoflow/contracts/ai';
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
+import type { IAIProviderSecretVault } from '../../../application/ports/provider-secret-vault.port';
 import { AISecretCipher } from '../../security/ai-secret-cipher';
 import { PowerSyncAIProviderConfigMapper, type PowerSyncAIProviderConfigRow } from './mappers';
 
 export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRepository {
-  private cipher: AISecretCipher | null;
+  private cipher: IAIProviderSecretVault | null;
 
   constructor(
     private readonly db: IElectronDatabase,
-    secretCipher?: AISecretCipher,
+    secretCipher?: IAIProviderSecretVault,
   ) {
     this.cipher = secretCipher ?? null;
   }
@@ -19,7 +20,7 @@ export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRep
    * 而不是在模块注册/构造时。未使用 AI provider 加密的启动路径无需配置
    * AI_PROVIDER_ENCRYPTION_KEY，同时保证真正落库/读取密钥时缺 key 决不静默降级。
    */
-  private get secretCipher(): AISecretCipher {
+  private get secretCipher(): IAIProviderSecretVault {
     return (this.cipher ??= AISecretCipher.fromEnv());
   }
 

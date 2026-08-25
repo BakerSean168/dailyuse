@@ -14,15 +14,6 @@ const emptyStringToUndefined = (value: unknown) => {
   return value;
 };
 
-const MAGICDNS_SUFFIX = '.ts.net';
-
-function isControlledMagicDnsHost(hostname: string): boolean {
-  // Tailscale MagicDNS names are <machine>.<tailnet>.ts.net — a reserved suffix.
-  // Not treated as a trusted HTTP host on its own; the caller must still gate it
-  // behind LOCAL_VALIDATION so arbitrary public HTTP hosts are rejected.
-  return hostname.toLowerCase().endsWith(MAGICDNS_SUFFIX);
-}
-
 /**
  * 环境变量 Schema
  *
@@ -162,11 +153,23 @@ export const envSchema = z
     // schema 层保持 optional：env 单例在任意 import（含不启用 AI 的测试）时即校验，
     // 若强制必填会让这些场景无法加载 env。真正的“必填”语义由运行时承担 ——
     // 启用 AI 模块时 AISecretCipher.fromEnv() 会 fail-fast。
-    // 密钥经 SHA-256 派生为 32 字节，任意长度都可用；这里只在“已提供”时校验最小长度，
-    // 以便接受常见的 `openssl rand -hex 32`（64 字符）格式。
+    // 密钥经 SHA-256 派生为 32 字节；配置层仍要求至少 32 字符，
+    // 推荐使用 `openssl rand -hex 32`（64 字符）生成高熵 secret。
     AI_PROVIDER_ENCRYPTION_KEY: z
       .preprocess(emptyStringToUndefined, z.string().min(32).optional())
       .describe('AI Provider 配置加密密钥（至少 32 字符；启用 AI 模块时必填）'),
+    AI_PROVIDER_ENCRYPTION_KEY_ID: z
+      .preprocess(
+        emptyStringToUndefined,
+        z
+          .string()
+          .regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/u)
+          .optional(),
+      )
+      .describe('AI Provider active encryption key id（轮换标识；默认 primary）'),
+    AI_PROVIDER_ENCRYPTION_PREVIOUS_KEYS: z
+      .preprocess(emptyStringToUndefined, z.string().optional())
+      .describe('AI Provider previous decrypt-only keys，格式 kid=secret,kid=secret'),
 
     // ========== 邮件服务配置 ==========
     // EMAIL_PROVIDER: console (default) | smtp | resend. Never infer from NODE_ENV alone
@@ -322,8 +325,7 @@ export const envSchema = z
       const url = new URL(value);
       const loopbackHttp =
         url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
-      const trustedHttp =
-        env.LOCAL_VALIDATION && (loopbackHttp || isControlledMagicDnsHost(url.hostname));
+      const trustedHttp = env.LOCAL_VALIDATION && loopbackHttp;
       if (url.protocol !== 'https:' && !trustedHttp) {
         context.addIssue({
           code: 'custom',

@@ -63,6 +63,22 @@ VCS_REF=<git-sha> BUILD_DATE=<utc-iso-time> docker compose -f docker-compose.loc
 - PostgreSQL: `127.0.0.1:55432`
 - Redis: `127.0.0.1:56379`
 
+local-docker 的 API/Web/PowerSync host publish 默认只绑定 `127.0.0.1`，避免局域网/Tailnet 直接绕过 TLS 命中明文 HTTP。需要远程验证时，应在宿主机使用受信任 TLS terminator。GCP Dev 的 canonical 方式是 Tailscale Serve：
+
+```bash
+sudo tailscale serve --bg --https=53080 http://127.0.0.1:53080
+sudo tailscale serve --bg --https=58080 http://127.0.0.1:58080
+sudo tailscale serve --bg --https=58081 http://127.0.0.1:58081
+```
+
+对应远程入口：
+
+- Web: `https://<magicdns>:58080`
+- API / Better Auth: `https://<magicdns>:53080`
+- PowerSync: `https://<magicdns>:58081`
+
+GitHub/OAuth callback、`AUTH_BASE_URL`、`MEMOFLOW_WEB_URL`、`POWERSYNC_URL` 必须与这些 HTTPS public origins 保持一致。默认 443 若已被其他控制面使用，不要覆盖；使用 local-docker 既有独立端口即可。
+
 `migrator` 是一次性数据库初始化服务，没有 host 端口。它在 PostgreSQL healthy 后执行 Prisma schema reconciliation 与数据库 bootstrap；成功时以 `Exited (0)` 结束，API 随后才会启动。`Exited (0)` 是预期状态，不是服务故障。
 
 仅重启已有容器：

@@ -13,6 +13,7 @@ import type {
 import type { IAIProviderConfigRepository } from '../../../domain';
 import type { AIModelInfo, AIProviderConfigServerDTO } from '@memoflow/contracts/ai';
 import type { AIProviderType } from '@memoflow/contracts/ai';
+import type { IAIProviderSecretVault } from '../../../application/ports/provider-secret-vault.port';
 import { AISecretCipher } from '../../security/ai-secret-cipher';
 
 /**
@@ -21,11 +22,11 @@ import { AISecretCipher } from '../../security/ai-secret-cipher';
  * Prisma implementation of IAIProviderConfigRepository.
  */
 export class AIProviderConfigPrismaRepository implements IAIProviderConfigRepository {
-  private cipher: AISecretCipher | null;
+  private cipher: IAIProviderSecretVault | null;
 
   constructor(
     private readonly prisma: PrismaClient,
-    secretCipher?: AISecretCipher,
+    secretCipher?: IAIProviderSecretVault,
   ) {
     this.cipher = secretCipher ?? null;
   }
@@ -36,7 +37,7 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
    * 本地 dev、CI）无需配置 AI_PROVIDER_ENCRYPTION_KEY 即可启动，
    * 同时保证真正落库/读取密钥时缺 key 决不静默降级。
    */
-  private get secretCipher(): AISecretCipher {
+  private get secretCipher(): IAIProviderSecretVault {
     return (this.cipher ??= AISecretCipher.fromEnv());
   }
 
