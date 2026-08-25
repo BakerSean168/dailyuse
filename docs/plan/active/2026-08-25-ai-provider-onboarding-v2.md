@@ -8,7 +8,7 @@ tags:
   - byok
 description: MemoFlow AI Provider 连接、凭据验证、模型发现与选择的一次性重构计划
 created: 2026-08-25T12:20:00+08:00
-updated: 2026-08-25T13:30:00+08:00
+updated: 2026-08-25T12:29:00+08:00
 status: active
 ---
 
@@ -316,6 +316,17 @@ Groq / Mistral / SiliconFlow / LiteLLM 等放 `更多 Provider`，都以 catalog
 - user-selectable / multi-tenant BYOK 方向。
 
 Mastra 仍是唯一 Agent/Workflow/Memory runtime。
+
+## Implementation decision — 2026-08-25: Secret Vault V3 + Tailscale Serve TLS
+
+本轮不再把 Secret Vault / GCP HTTPS 留作后续债务，直接纳入 Provider V2 基线：
+
+- **Secret Vault V3**：保留 AES-256-GCM，但密文升级为带 `key id` 的 `enc_v3:<kid>:<payload>`；active key + previous keyring 支持平滑轮换。现有 `enc_v2` 继续可读，下一次 Provider 保存/更新时自然 rewrap 到 active `enc_v3`。
+- **Port abstraction**：Provider repositories 依赖最小 `ProviderSecretVault` port，而不是直接依赖某个 env cipher；默认实现仍是 env-backed AES-GCM，未来可替换 GCP/Aliyun KMS，而不改 domain/application。
+- **GCP canonical TLS**：local-Docker 的 API/Web/PowerSync host publish 默认只绑定 loopback；Tailnet 远程入口由 Tailscale Serve 做 TLS termination。保持既有端口语义：API `https://gcp-dev-01.taile92a8e.ts.net:53080`、Web `https://gcp-dev-01.taile92a8e.ts.net:58080`、PowerSync `https://gcp-dev-01.taile92a8e.ts.net:58081`。
+- **不占用 443 根入口**：当前 `https://gcp-dev-01.taile92a8e.ts.net/` 已由 `model-control-plane` 使用；MemoFlow 继续使用独立端口，避免破坏 ChatGPT/GCP Dev 控制面。
+- **No plaintext bypass**：GCP Docker host ports 绑定 `127.0.0.1` 后，Tailnet 无法再绕过 Serve 直接命中明文 HTTP；远程验证只走 Serve HTTPS。
+- GitHub App user-authorization callback 同步升级为 `https://gcp-dev-01.taile92a8e.ts.net:53080/api/auth/callback/github`；这是 GitHub App registration 的外部配置项，需与 `AUTH_BASE_URL` exact match。
 
 ## Deployment / security hardening
 

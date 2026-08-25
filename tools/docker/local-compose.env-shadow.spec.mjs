@@ -170,11 +170,11 @@ describe('mergeLocalDockerWebOrigins', () => {
 
 describe('MagicDNS browser-facing local Docker URLs', () => {
   it('normalizes the public Web URL into an allowlist origin', () => {
-    const publicWebOrigin = extractHttpOrigin('http://oracle.taile92a8e.ts.net:58080/auth');
-    assert.equal(publicWebOrigin, 'http://oracle.taile92a8e.ts.net:58080');
+    const publicWebOrigin = extractHttpOrigin('https://oracle.taile92a8e.ts.net:58080/auth');
+    assert.equal(publicWebOrigin, 'https://oracle.taile92a8e.ts.net:58080');
     assert.equal(
       mergeLocalDockerWebOrigins('58080', publicWebOrigin).includes(
-        'http://oracle.taile92a8e.ts.net:58080',
+        'https://oracle.taile92a8e.ts.net:58080',
       ),
       true,
     );
@@ -182,8 +182,8 @@ describe('MagicDNS browser-facing local Docker URLs', () => {
 
   it('preserves an explicit public PowerSync URL instead of forcing localhost', () => {
     assert.equal(
-      resolveLocalDockerPowerSyncUrl('58081', 'http://oracle.taile92a8e.ts.net:58081'),
-      'http://oracle.taile92a8e.ts.net:58081',
+      resolveLocalDockerPowerSyncUrl('58081', 'https://oracle.taile92a8e.ts.net:58081'),
+      'https://oracle.taile92a8e.ts.net:58081',
     );
     assert.equal(resolveLocalDockerPowerSyncUrl('58081'), 'http://localhost:58081');
   });
@@ -193,12 +193,12 @@ describe('MagicDNS browser-facing local Docker URLs', () => {
       resolveLocalDockerBrowserValidationOrigins({
         apiHostPort: '53080',
         webHostPort: '58080',
-        authBaseUrl: 'http://oracle.taile92a8e.ts.net:53080/api/auth',
-        webUrl: 'http://oracle.taile92a8e.ts.net:58080',
+        authBaseUrl: 'https://oracle.taile92a8e.ts.net:53080/api/auth',
+        webUrl: 'https://oracle.taile92a8e.ts.net:58080',
       }),
       {
-        apiOrigin: 'http://oracle.taile92a8e.ts.net:53080',
-        webOrigin: 'http://oracle.taile92a8e.ts.net:58080',
+        apiOrigin: 'https://oracle.taile92a8e.ts.net:53080',
+        webOrigin: 'https://oracle.taile92a8e.ts.net:58080',
       },
     );
   });
@@ -249,7 +249,6 @@ describe('API runtime image boundary', () => {
   });
 });
 
-
 describe('GitHub server-only compose environment contract', () => {
   const requiredKeys = [
     'GITHUB_OAUTH_CLIENT_ID',
@@ -262,6 +261,36 @@ describe('GitHub server-only compose environment contract', () => {
 
   for (const composeFile of ['docker-compose.local.yml', 'docker-compose.prod.yml']) {
     it(`${composeFile} passes all GitHub identity and installation credentials to API`, () => {
+      const source = readFileSync(resolve(process.cwd(), composeFile), 'utf8');
+      for (const key of requiredKeys) {
+        assert.ok(source.includes(key + ': ${' + key + ':'));
+      }
+    });
+  }
+});
+
+describe('local Docker external bind contract', () => {
+  it('binds API/Web/PowerSync to loopback by default so remote access must use a TLS terminator', () => {
+    const source = readFileSync(resolve(process.cwd(), 'docker-compose.local.yml'), 'utf8');
+    for (const mapping of [
+      '${LOCAL_DOCKER_BIND_HOST:-127.0.0.1}:${API_HOST_PORT:-53080}:3000',
+      '${LOCAL_DOCKER_BIND_HOST:-127.0.0.1}:${WEB_HOST_PORT:-58080}:80',
+      '${LOCAL_DOCKER_BIND_HOST:-127.0.0.1}:${POWERSYNC_HOST_PORT:-58081}:${POWERSYNC_PORT:-8080}',
+    ]) {
+      assert.ok(source.includes(mapping));
+    }
+  });
+});
+
+describe('AI provider secret-vault compose environment contract', () => {
+  const requiredKeys = [
+    'AI_PROVIDER_ENCRYPTION_KEY',
+    'AI_PROVIDER_ENCRYPTION_KEY_ID',
+    'AI_PROVIDER_ENCRYPTION_PREVIOUS_KEYS',
+  ];
+
+  for (const composeFile of ['docker-compose.local.yml', 'docker-compose.prod.yml']) {
+    it(`${composeFile} passes the active and previous provider-secret keyring to API`, () => {
       const source = readFileSync(resolve(process.cwd(), composeFile), 'utf8');
       for (const key of requiredKeys) {
         assert.ok(source.includes(key + ': ${' + key + ':'));

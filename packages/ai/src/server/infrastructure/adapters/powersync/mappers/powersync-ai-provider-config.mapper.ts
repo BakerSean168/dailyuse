@@ -1,5 +1,9 @@
-import type { AIModelInfo, AIProviderConfigServerDTO, AIProviderType } from '@memoflow/contracts/ai';
-import type { AISecretCipher } from '../../../security/ai-secret-cipher';
+import type {
+  AIModelInfo,
+  AIProviderConfigServerDTO,
+  AIProviderType,
+} from '@memoflow/contracts/ai';
+import type { IAIProviderSecretVault } from '../../../../application/ports/provider-secret-vault.port';
 
 export interface PowerSyncAIProviderConfigRow {
   id: string;
@@ -50,7 +54,7 @@ function parseModels(value: string | null): AIModelInfo[] {
 export class PowerSyncAIProviderConfigMapper {
   static toDTO(
     row: PowerSyncAIProviderConfigRow,
-    secretCipher: AISecretCipher,
+    secretCipher: IAIProviderSecretVault,
   ): AIProviderConfigServerDTO {
     const createdAt = new Date(row.created_at).getTime();
     const updatedAt = new Date(row.updated_at).getTime();
@@ -77,7 +81,7 @@ export class PowerSyncAIProviderConfigMapper {
 
   static toPersistence(
     config: AIProviderConfigServerDTO,
-    secretCipher: AISecretCipher,
+    secretCipher: IAIProviderSecretVault,
   ): PowerSyncAIProviderConfigWriteRow {
     return {
       id: String(config.id),

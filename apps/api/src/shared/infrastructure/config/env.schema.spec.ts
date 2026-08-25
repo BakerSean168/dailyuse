@@ -53,7 +53,7 @@ describe('envSchema LOCAL_VALIDATION', () => {
   });
 });
 
-describe('envSchema Tailscale MagicDNS HTTP in local validation lane', () => {
+describe('envSchema remote origins require HTTPS', () => {
   const required = { JWT_SECRET: 'local-validation-secret-at-least-32-characters' };
 
   it('rejects MagicDNS HTTP in production without LOCAL_VALIDATION', () => {
@@ -86,16 +86,16 @@ describe('envSchema Tailscale MagicDNS HTTP in local validation lane', () => {
     ).toThrow(/MEMOFLOW_WEB_URL must use HTTPS/);
   });
 
-  it('allows MagicDNS HTTP in production with LOCAL_VALIDATION', () => {
-    expect(
+  it('rejects MagicDNS HTTP even in the local validation lane', () => {
+    expect(() =>
       envSchema.parse({
         ...required,
         NODE_ENV: 'production',
         LOCAL_VALIDATION: '1',
         AUTH_BASE_URL: 'http://oracle.taile92a8e.ts.net:53080/api/auth',
-        MEMOFLOW_WEB_URL: 'http://memoflow.taile92a8e.ts.net:57021',
+        MEMOFLOW_WEB_URL: 'http://memoflow.taile92a8e.ts.net:58080',
       }),
-    ).toMatchObject({ LOCAL_VALIDATION: true });
+    ).toThrow(/must use HTTPS/);
   });
 
   it('still allows HTTPS MagicDNS origins in production with LOCAL_VALIDATION', () => {
@@ -134,8 +134,8 @@ describe('envSchema Tailscale MagicDNS HTTP in local validation lane', () => {
     ).toThrow(/must use HTTPS/);
   });
 
-  it('accepts any MagicDNS suffix host (not only the reserved tailnet) with LOCAL_VALIDATION', () => {
-    expect(
+  it('rejects arbitrary MagicDNS suffix HTTP hosts with LOCAL_VALIDATION', () => {
+    expect(() =>
       envSchema.parse({
         ...required,
         NODE_ENV: 'production',
@@ -143,7 +143,7 @@ describe('envSchema Tailscale MagicDNS HTTP in local validation lane', () => {
         AUTH_BASE_URL: 'http://foo.example.ts.net:53080/api/auth',
         MEMOFLOW_WEB_URL: 'https://app.example.com',
       }),
-    ).toMatchObject({ LOCAL_VALIDATION: true });
+    ).toThrow(/AUTH_BASE_URL must use HTTPS/);
   });
 });
 

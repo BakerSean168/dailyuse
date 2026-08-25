@@ -1,42 +1,73 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
+import type { IAIProviderSecretVault } from '../../application/ports/provider-secret-vault.port';
+
+interface AISecretCipherOptions {
+  /** Stable non-secret identifier embedded in enc_v3 ciphertext. */
+  readonly keyId?: string;
+  /** Previous decrypt-only keys used during rotation. */
+  readonly previousKeys?: Readonly<Record<string, string>>;
+}
 
 /**
- * Symmetric cipher for AI provider secrets (e.g. third-party API keys).
+ * Env-backed AES-256-GCM vault for AI provider credentials.
  *
- * Uses AES-256-GCM with a random IV per encryption and an authentication tag,
- * so ciphertext is non-deterministic and tamper-evident. The 256-bit key is
- * derived from the configured secret via SHA-256.
+ * New writes use `enc_v3:<kid>:<payload>`. The key id is authenticated as GCM
+ * additional authenticated data (AAD), so changing the id invalidates the
+ * ciphertext. A random 96-bit IV is generated for every encryption.
  *
- * The `enc_v2:` prefix identifies this AES-256-GCM format. `enc_v1:` was the
- * previous (incompatible) XOR format; bumping the version means legacy XOR
- * rows are no longer silently mis-decrypted — per AGENT.md there is no
- * backward-compat/migration requirement. Values without a known prefix are
- * treated as already-plaintext and returned as-is (decrypt is a no-op), which
- * keeps freshly-seeded plaintext rows readable.
+ * Rotation is explicit: one active key encrypts, while zero or more previous
+ * keys are decrypt-only. Existing `enc_v2:` AES-GCM rows contain no key id, so
+ * decryption safely tries the active/previous keyring until GCM authentication
+ * succeeds. Any subsequent save rewrites the value as active `enc_v3`.
+ *
+ * `enc_v1:` XOR ciphertext remains rejected. Unprefixed values are treated as
+ * plaintext seeds for existing local/test fixtures and are rewrapped on save.
  */
-export class AISecretCipher {
-  private static readonly PREFIX = 'enc_v2:';
-  /** 旧的 XOR 格式前缀，仅用于识别并拒绝，不再支持解密。 */
+export class AISecretCipher implements IAIProviderSecretVault {
+  private static readonly PREFIX = 'enc_v3:';
+  private static readonly LEGACY_GCM_PREFIX = 'enc_v2:';
   private static readonly LEGACY_XOR_PREFIX = 'enc_v1:';
   private static readonly ALGORITHM = 'aes-256-gcm';
   private static readonly IV_LENGTH = 12;
   private static readonly AUTH_TAG_LENGTH = 16;
+  private static readonly DEFAULT_KEY_ID = 'primary';
+  private static readonly KEY_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/u;
+  private static readonly AAD_NAMESPACE = 'memoflow.ai-provider-secret';
 
-  private readonly key: Buffer;
+  private readonly activeKeyId: string;
+  private readonly keys: ReadonlyMap<string, Buffer>;
 
-  constructor(secret: string) {
+  constructor(secret: string, options: AISecretCipherOptions = {}) {
     if (!secret) {
       throw new Error('AISecretCipher requires a non-empty secret');
     }
 
-    this.key = createHash('sha256').update(secret).digest();
+    const keyId = options.keyId ?? AISecretCipher.DEFAULT_KEY_ID;
+    AISecretCipher.assertKeyId(keyId);
+
+    const keys = new Map<string, Buffer>();
+    keys.set(keyId, AISecretCipher.deriveKey(secret));
+    for (const [previousKeyId, previousSecret] of Object.entries(options.previousKeys ?? {})) {
+      AISecretCipher.assertKeyId(previousKeyId);
+      if (!previousSecret) {
+        throw new Error(`AISecretCipher previous key ${previousKeyId} requires a non-empty secret`);
+      }
+      if (keys.has(previousKeyId)) {
+        throw new Error(`AISecretCipher duplicate key id: ${previousKeyId}`);
+      }
+      keys.set(previousKeyId, AISecretCipher.deriveKey(previousSecret));
+    }
+
+    this.activeKeyId = keyId;
+    this.keys = keys;
   }
 
   /**
-   * Builds a cipher from `AI_PROVIDER_ENCRYPTION_KEY`.
+   * Build the vault from the server-only environment keyring.
    *
-   * Fails fast when the env var is missing so a missing key can never silently
-   * fall back to a shared, publicly-known default.
+   * - `AI_PROVIDER_ENCRYPTION_KEY`: active secret (required when provider secrets are used)
+   * - `AI_PROVIDER_ENCRYPTION_KEY_ID`: active key id, defaults to `primary`
+   * - `AI_PROVIDER_ENCRYPTION_PREVIOUS_KEYS`: optional comma-separated `kid=secret` entries
    */
   static fromEnv(env: NodeJS.ProcessEnv = process.env): AISecretCipher {
     const secret = env.AI_PROVIDER_ENCRYPTION_KEY;
@@ -45,46 +76,144 @@ export class AISecretCipher {
         'AI_PROVIDER_ENCRYPTION_KEY environment variable is required to encrypt AI provider secrets',
       );
     }
+    if (secret.length < 32) {
+      throw new Error('AI_PROVIDER_ENCRYPTION_KEY must be at least 32 characters');
+    }
 
-    return new AISecretCipher(secret);
+    return new AISecretCipher(secret, {
+      keyId: env.AI_PROVIDER_ENCRYPTION_KEY_ID || AISecretCipher.DEFAULT_KEY_ID,
+      previousKeys: AISecretCipher.parsePreviousKeys(env.AI_PROVIDER_ENCRYPTION_PREVIOUS_KEYS),
+    });
   }
 
   encrypt(value: string): string {
     const iv = randomBytes(AISecretCipher.IV_LENGTH);
-    const cipher = createCipheriv(AISecretCipher.ALGORITHM, this.key, iv);
+    const key = this.requireKey(this.activeKeyId);
+    const cipher = createCipheriv(AISecretCipher.ALGORITHM, key, iv);
+    cipher.setAAD(this.aad(this.activeKeyId));
 
     const ciphertext = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
     const authTag = cipher.getAuthTag();
-
     const payload = Buffer.concat([iv, authTag, ciphertext]);
-    return `${AISecretCipher.PREFIX}${payload.toString('base64')}`;
+
+    return `${AISecretCipher.PREFIX}${this.activeKeyId}:${payload.toString('base64')}`;
   }
 
   decrypt(value: string): string {
-    // 显式拒绝旧的 XOR 格式（enc_v1:），避免把无法解密的密文当作明文静默返回，
-    // 从而把损坏的 API key 交给下游 provider。当前不做迁移（见 AGENT.md），
-    // 遇到旧数据应快速失败而非悄悄产出垃圾。
     if (value.startsWith(AISecretCipher.LEGACY_XOR_PREFIX)) {
       throw new Error(
         'AISecretCipher: encountered legacy enc_v1 (XOR) ciphertext, which is no longer supported',
       );
     }
 
-    if (!value.startsWith(AISecretCipher.PREFIX)) {
-      return value;
+    if (value.startsWith(AISecretCipher.PREFIX)) {
+      const remainder = value.slice(AISecretCipher.PREFIX.length);
+      const separator = remainder.indexOf(':');
+      if (separator <= 0) {
+        throw new Error('AISecretCipher: malformed enc_v3 ciphertext');
+      }
+      const keyId = remainder.slice(0, separator);
+      AISecretCipher.assertKeyId(keyId);
+      const key = this.keys.get(keyId);
+      if (!key) {
+        throw new Error(`AISecretCipher: key id ${keyId} is not available in the keyring`);
+      }
+      return this.decryptPayload(remainder.slice(separator + 1), key, this.aad(keyId));
     }
 
-    const payload = Buffer.from(value.slice(AISecretCipher.PREFIX.length), 'base64');
+    if (value.startsWith(AISecretCipher.LEGACY_GCM_PREFIX)) {
+      const payload = value.slice(AISecretCipher.LEGACY_GCM_PREFIX.length);
+      let lastError: unknown;
+      for (const key of this.keys.values()) {
+        try {
+          return this.decryptPayload(payload, key);
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      const error = new Error('AISecretCipher: unable to decrypt legacy enc_v2 ciphertext');
+      (error as Error & { cause?: unknown }).cause = lastError;
+      throw error;
+    }
+
+    return value;
+  }
+
+  needsRewrap(value: string): boolean {
+    return !value.startsWith(`${AISecretCipher.PREFIX}${this.activeKeyId}:`);
+  }
+
+  rewrap(value: string): string {
+    return this.encrypt(this.decrypt(value));
+  }
+
+  private decryptPayload(payloadBase64: string, key: Buffer, aad?: Buffer): string {
+    const payload = Buffer.from(payloadBase64, 'base64');
+    const minimumLength = AISecretCipher.IV_LENGTH + AISecretCipher.AUTH_TAG_LENGTH;
+    if (payload.length < minimumLength) {
+      throw new Error('AISecretCipher: encrypted payload is too short');
+    }
+
     const iv = payload.subarray(0, AISecretCipher.IV_LENGTH);
     const authTag = payload.subarray(
       AISecretCipher.IV_LENGTH,
       AISecretCipher.IV_LENGTH + AISecretCipher.AUTH_TAG_LENGTH,
     );
     const ciphertext = payload.subarray(AISecretCipher.IV_LENGTH + AISecretCipher.AUTH_TAG_LENGTH);
-
-    const decipher = createDecipheriv(AISecretCipher.ALGORITHM, this.key, iv);
+    const decipher = createDecipheriv(AISecretCipher.ALGORITHM, key, iv);
+    if (aad) decipher.setAAD(aad);
     decipher.setAuthTag(authTag);
-
     return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');
+  }
+
+  private aad(keyId: string): Buffer {
+    return Buffer.from(`${AISecretCipher.AAD_NAMESPACE}:${keyId}`, 'utf8');
+  }
+
+  private requireKey(keyId: string): Buffer {
+    const key = this.keys.get(keyId);
+    if (!key) throw new Error(`AISecretCipher: key id ${keyId} is not available in the keyring`);
+    return key;
+  }
+
+  private static deriveKey(secret: string): Buffer {
+    return createHash('sha256').update(secret).digest();
+  }
+
+  private static assertKeyId(keyId: string): void {
+    if (!AISecretCipher.KEY_ID_PATTERN.test(keyId)) {
+      throw new Error(
+        'AISecretCipher key id must be 1-64 chars of alphanumeric, dot, underscore, or hyphen',
+      );
+    }
+  }
+
+  private static parsePreviousKeys(value: string | undefined): Record<string, string> {
+    const result: Record<string, string> = {};
+    if (!value?.trim()) return result;
+
+    for (const rawEntry of value.split(',')) {
+      const entry = rawEntry.trim();
+      if (!entry) continue;
+      const separator = entry.indexOf('=');
+      if (separator <= 0 || separator === entry.length - 1) {
+        throw new Error(
+          'AI_PROVIDER_ENCRYPTION_PREVIOUS_KEYS must be comma-separated kid=secret entries',
+        );
+      }
+      const keyId = entry.slice(0, separator).trim();
+      const secret = entry.slice(separator + 1).trim();
+      AISecretCipher.assertKeyId(keyId);
+      if (secret.length < 32) {
+        throw new Error(
+          `AI_PROVIDER_ENCRYPTION_PREVIOUS_KEYS secret for ${keyId} must be at least 32 characters`,
+        );
+      }
+      if (Object.prototype.hasOwnProperty.call(result, keyId)) {
+        throw new Error(`AI_PROVIDER_ENCRYPTION_PREVIOUS_KEYS contains duplicate key id: ${keyId}`);
+      }
+      result[keyId] = secret;
+    }
+    return result;
   }
 }
