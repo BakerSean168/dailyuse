@@ -61,9 +61,9 @@ export function createTaskTransportHandlers(api: TaskApplicationPort): TaskTrans
       complete: api.completeTaskInstance,
       uncomplete: api.uncompleteTaskInstance,
       skip: api.skipTaskInstance,
+      markMissed: api.markTaskInstanceMissed,
       start: api.startTaskInstance,
       deleteInstance: api.deleteTaskInstance,
-      checkExpired: api.checkExpiredInstances,
     },
     dependency: {
       createDependency: api.createTaskDependency,

@@ -136,6 +136,7 @@ export const TaskInstanceResponseSchema = z.object({
   importance: z.enum(ImportanceLevel).optional(),
   priority: z.number().optional(),
   status: z.enum(TaskInstanceStatus),
+  isOverdue: z.boolean(),
   actualStartTime: z.number().nullable(),
   actualEndTime: z.number().nullable(),
   comment: z.string().nullable(),
@@ -145,22 +146,11 @@ export const TaskInstanceResponseSchema = z.object({
   deletedAt: z.number().nullable(),
 });
 
-// Residual 697: CheckExpiredTaskInstancesResponseSchema is the sole expired-list response shape
-// (CheckExpiredTaskInstancesRes is a z.infer alias).
-export const CheckExpiredTaskInstancesResponseSchema = z.object({
-  count: z.number(),
-  instances: z.array(TaskInstanceResponseSchema),
-});
-
 // ============ Inferred response aliases ============
 // ADR-047: the RPC map imports ONLY inferred types from `../api`; these aliases
 // are the type surface the protocol layer references (no `z.infer` in maps).
 // ADR-047：RPC map 只从 `../api` 导入推导类型；这些别名是 protocol 层引用的
 // 类型表面（map 内不再出现 `z.infer`）。
-// Note: CheckExpiredTaskInstancesRes and ValidateDependencyResponse live in
-// their respective dto files; they are not re-declared here.
-// 注意：CheckExpiredTaskInstancesRes 与 ValidateDependencyResponse 已定义在
-// 各自 dto 文件中，这里不重复声明。
 
 export type TaskTemplateResponse = z.infer<typeof TaskTemplateResponseSchema>;
 export type TaskInstanceResponse = z.infer<typeof TaskInstanceResponseSchema>;

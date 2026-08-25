@@ -9,10 +9,10 @@ import type { Result } from '@memoflow/contracts/result';
 import type { IResultHttpClient } from '@memoflow/http-client';
 import type { ITaskInstanceApiClient } from '../types';
 import type {
-  CheckExpiredTaskInstancesRes,
   GetTaskInstancesByRangeReq,
   TaskInstanceClientDTO,
   CompleteTaskInstanceReq,
+  MarkTaskInstanceMissedReq,
   SkipTaskInstanceReq,
 } from '@memoflow/contracts/task';
 
@@ -77,11 +77,13 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
     return this.httpClient.post(`${this.baseUrl}/${id}/skip`, request);
   }
 
-  // ===== Batch Operations =====
-
-  async checkExpiredInstances(): Promise<Result<CheckExpiredTaskInstancesRes>> {
-    return this.httpClient.post(`${this.baseUrl}/check-expired`);
+  async markTaskInstanceMissed(
+    id: string,
+    request?: MarkTaskInstanceMissedReq,
+  ): Promise<Result<TaskInstanceClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/missed`, request);
   }
+
 }
 
 /**

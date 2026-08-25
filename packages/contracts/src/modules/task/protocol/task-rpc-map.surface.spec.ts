@@ -37,7 +37,7 @@ const TASK_LEDGER = [
   ['task:instance:complete', 'CompleteTaskInstanceSchema', 'TaskInstanceClientDTO'],
   ['task:instance:uncomplete', 'void', 'TaskInstanceClientDTO'],
   ['task:instance:skip', 'SkipTaskInstanceSchema', 'TaskInstanceClientDTO'],
-  ['task:instance:check-expired', 'void', 'CheckExpiredTaskInstancesRes'],
+  ['task:instance:mark-missed', 'MarkTaskInstanceMissedSchema', 'TaskInstanceClientDTO'],
   ['task:dependency:create', 'CreateDependencyBodySchema', 'TaskDependencyClientDTO'],
   ['task:dependency:update', 'UpdateDependencyBodySchema', 'TaskDependencyClientDTO'],
   ['task:dependency:delete', 'void', 'null'],
@@ -95,7 +95,6 @@ describe('task RPC map surface (Phase 4 ledger)', () => {
     expect(responseSchemas).toContain('export const TaskInstanceResponseSchema');
     expect(responseSchemas).toContain('export const TaskDependencyResponseSchema');
     expect(responseSchemas).toContain('export const ValidateDependencyResponseSchema');
-    expect(responseSchemas).toContain('export const CheckExpiredTaskInstancesResponseSchema');
     expect(readApiFile('task-instance.dto.ts')).toContain('export type TaskInstanceOperationRes =');
   });
 

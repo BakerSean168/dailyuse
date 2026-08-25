@@ -352,7 +352,7 @@ const task_statistics = new Table({
   instance_in_progress: column.integer,
   instance_completed: column.integer,
   instance_skipped: column.integer,
-  instance_expired: column.integer,
+  instance_missed: column.integer,
   completion_today: column.integer,
   completion_week: column.integer,
   completion_month: column.integer,

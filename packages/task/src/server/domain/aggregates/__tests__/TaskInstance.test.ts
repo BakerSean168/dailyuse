@@ -3,7 +3,7 @@
  *
  * Covers:
  * - Factory methods (create, load)
- * - State transitions (start, complete, skip, markExpired)
+ * - State transitions (start, complete, skip, markMissed)
  * - Business logic (canStart, canComplete, canSkip, isOverdue)
  * - DTO conversion (toServerDTO, toClientDTO)
  * - Edge cases and error handling
@@ -334,16 +334,19 @@ describe('TaskInstance Aggregate', () => {
         expect(() => instance.complete()).toThrow('Cannot complete task in current state');
       });
 
-      it('should throw when completing a Skipped task', () => {
-        instance.skip('Too busy');
+      it('allows a waived occurrence to be corrected to Completed', () => {
+        instance.skip('Not applicable');
         expect(instance.status).toBe(TaskInstanceStatus.Skipped);
-        expect(() => instance.complete()).toThrow('Cannot complete task in current state');
+        instance.complete();
+        expect(instance.status).toBe(TaskInstanceStatus.Completed);
+        expect(instance.skipRecord).toBeNull();
       });
 
-      it('should throw when completing an Expired task', () => {
-        instance.markExpired();
-        expect(instance.status).toBe(TaskInstanceStatus.Expired);
-        expect(() => instance.complete()).toThrow('Cannot complete task in current state');
+      it('allows a missed occurrence to be completed late as a correction', () => {
+        instance.markMissed('Forgot yesterday');
+        expect(instance.status).toBe(TaskInstanceStatus.Missed);
+        instance.complete();
+        expect(instance.status).toBe(TaskInstanceStatus.Completed);
       });
 
       it('should emit task:instance:completed domain event', () => {
@@ -423,62 +426,38 @@ describe('TaskInstance Aggregate', () => {
         expect(() => instance.skip('Second reason')).toThrow('Cannot skip task in current state');
       });
 
-      it('should throw when skipping an Expired task', () => {
-        instance.markExpired();
-        expect(instance.status).toBe(TaskInstanceStatus.Expired);
+      it('rejects skipping an explicitly Missed occurrence', () => {
+        instance.markMissed('Not done');
+        expect(instance.status).toBe(TaskInstanceStatus.Missed);
         expect(() => instance.skip('Late')).toThrow('Cannot skip task in current state');
       });
     });
 
-    describe('markExpired()', () => {
-      it('should expire a Pending task', () => {
-        expect(instance.status).toBe(TaskInstanceStatus.Pending);
-
+    describe('markMissed()', () => {
+      it('records an explicit Missed fact from Pending', () => {
         const before = Date.now();
-        instance.markExpired();
+        instance.markMissed('No completion evidence');
         const after = Date.now();
 
-        expect(instance.status).toBe(TaskInstanceStatus.Expired);
+        expect(instance.status).toBe(TaskInstanceStatus.Missed);
+        expect(instance.note).toBe('No completion evidence');
         expect(Number(instance.updatedAt)).toBeGreaterThanOrEqual(before);
         expect(Number(instance.updatedAt)).toBeLessThanOrEqual(after);
       });
 
-      it('should expire an InProgress task', () => {
+      it('records an explicit Missed fact from InProgress', () => {
         instance.start();
-        expect(instance.status).toBe(TaskInstanceStatus.InProgress);
-
-        instance.markExpired();
-
-        expect(instance.status).toBe(TaskInstanceStatus.Expired);
+        instance.markMissed();
+        expect(instance.status).toBe(TaskInstanceStatus.Missed);
       });
 
-      it('should not expire a Completed task', () => {
+      it('rejects Missed from terminal facts', () => {
         instance.complete();
-        expect(instance.status).toBe(TaskInstanceStatus.Completed);
+        expect(() => instance.markMissed()).toThrow('Cannot mark task missed in current state');
 
-        instance.markExpired();
-
-        expect(instance.status).toBe(TaskInstanceStatus.Completed);
-      });
-
-      it('should not expire a Skipped task', () => {
-        instance.skip('Busy');
-        expect(instance.status).toBe(TaskInstanceStatus.Skipped);
-
-        instance.markExpired();
-
-        expect(instance.status).toBe(TaskInstanceStatus.Skipped);
-      });
-
-      it('should not re-expire an already Expired task', () => {
-        instance.markExpired();
-        expect(instance.status).toBe(TaskInstanceStatus.Expired);
-        const firstUpdatedAt = instance.updatedAt;
-
-        instance.markExpired();
-
-        expect(instance.status).toBe(TaskInstanceStatus.Expired);
-        expect(instance.updatedAt).toBe(firstUpdatedAt);
+        const skipped = makeInstance();
+        skipped.skip();
+        expect(() => skipped.markMissed()).toThrow('Cannot mark task missed in current state');
       });
     });
   });
@@ -512,8 +491,8 @@ describe('TaskInstance Aggregate', () => {
         expect(instance.canStart()).toBe(false);
       });
 
-      it('should return false for Expired status', () => {
-        instance.markExpired();
+      it('should return false for Missed status', () => {
+        instance.markMissed();
         expect(instance.canStart()).toBe(false);
       });
     });
@@ -533,14 +512,14 @@ describe('TaskInstance Aggregate', () => {
         expect(instance.canComplete()).toBe(false);
       });
 
-      it('should return false for Skipped status', () => {
+      it('should return true for Skipped status so waiver mistakes can be corrected', () => {
         instance.skip();
-        expect(instance.canComplete()).toBe(false);
+        expect(instance.canComplete()).toBe(true);
       });
 
-      it('should return false for Expired status', () => {
-        instance.markExpired();
-        expect(instance.canComplete()).toBe(false);
+      it('should return true for Missed status so late completion can correct the fact', () => {
+        instance.markMissed();
+        expect(instance.canComplete()).toBe(true);
       });
     });
 
@@ -564,8 +543,8 @@ describe('TaskInstance Aggregate', () => {
         expect(instance.canSkip()).toBe(false);
       });
 
-      it('should return false for Expired status', () => {
-        instance.markExpired();
+      it('should return false for Missed status', () => {
+        instance.markMissed();
         expect(instance.canSkip()).toBe(false);
       });
     });
@@ -619,13 +598,22 @@ describe('TaskInstance Aggregate', () => {
         expect(overdueInstance.isOverdue()).toBe(false);
       });
 
-      it('should return false for Expired task', () => {
-        const overdueInstance = makeInstance({
-          instanceDate: Date.now() - 86400000 - 1000,
-        });
+      it('clock movement only derives overdue and never manufactures Missed', () => {
+        const occurrenceDay = Date.now() - 2 * 86400000;
+        const overdueInstance = makeInstance({ instanceDate: occurrenceDay });
 
-        overdueInstance.markExpired();
-        expect(overdueInstance.status).toBe(TaskInstanceStatus.Expired);
+        expect(overdueInstance.isOverdue(occurrenceDay + 3 * 86400000)).toBe(true);
+        expect(overdueInstance.status).toBe(TaskInstanceStatus.Pending);
+        expect(overdueInstance.toClientDTO().status).toBe(TaskInstanceStatus.Pending);
+        expect(overdueInstance.toClientDTO().isOverdue).toBe(true);
+      });
+
+      it('a past-due Pending occurrence remains completable', () => {
+        const occurrenceDay = Date.now() - 2 * 86400000;
+        const overdueInstance = makeInstance({ instanceDate: occurrenceDay });
+        expect(overdueInstance.isOverdue()).toBe(true);
+        overdueInstance.complete();
+        expect(overdueInstance.status).toBe(TaskInstanceStatus.Completed);
         expect(overdueInstance.isOverdue()).toBe(false);
       });
     });
@@ -650,8 +638,7 @@ describe('TaskInstance Aggregate', () => {
           timeConfig: makeTimePointConfig(minutesFromMidnight, new Date('2025-06-15')),
         });
 
-        // TimePoint: the timePoint value itself
-        expect(inst.dueDate).toBe(minutesFromMidnight);
+        expect(inst.dueDate).toBe(instanceDate + minutesFromMidnight * 60_000);
       });
     });
   });
@@ -760,6 +747,13 @@ describe('TaskInstance Aggregate', () => {
     });
   });
 
+  describe('persisted status characterization', () => {
+    it('rejects historical persisted Expired state instead of reviving it as canonical state', () => {
+      const state = makeState({ status: 'Expired' as any });
+      expect(() => TaskInstance.load(state)).toThrow('Invalid persisted TaskInstanceStatus: Expired');
+    });
+  });
+
   // ==================== State Transitions ====================
   describe('State Transitions', () => {
     let instance: TaskInstance;
@@ -768,82 +762,59 @@ describe('TaskInstance Aggregate', () => {
       instance = makeInstance();
     });
 
-    it('should allow Pending → InProgress', () => {
-      expect(instance.status).toBe(TaskInstanceStatus.Pending);
-      instance.start();
-      expect(instance.status).toBe(TaskInstanceStatus.InProgress);
+    it('allows Pending -> InProgress/Completed/Skipped/Missed', () => {
+      const inProgress = makeInstance();
+      inProgress.start();
+      expect(inProgress.status).toBe(TaskInstanceStatus.InProgress);
+
+      const completed = makeInstance();
+      completed.complete();
+      expect(completed.status).toBe(TaskInstanceStatus.Completed);
+
+      const skipped = makeInstance();
+      skipped.skip();
+      expect(skipped.status).toBe(TaskInstanceStatus.Skipped);
+
+      instance.markMissed();
+      expect(instance.status).toBe(TaskInstanceStatus.Missed);
     });
 
-    it('should allow Pending → Completed', () => {
-      expect(instance.status).toBe(TaskInstanceStatus.Pending);
+    it('allows InProgress -> Completed/Skipped/Missed', () => {
+      const completed = makeInstance();
+      completed.start();
+      completed.complete();
+      expect(completed.status).toBe(TaskInstanceStatus.Completed);
+
+      const skipped = makeInstance();
+      skipped.start();
+      skipped.skip();
+      expect(skipped.status).toBe(TaskInstanceStatus.Skipped);
+
+      instance.start();
+      instance.markMissed();
+      expect(instance.status).toBe(TaskInstanceStatus.Missed);
+    });
+
+    it('allows Missed/Skipped -> Completed as factual correction', () => {
+      const missed = makeInstance();
+      missed.markMissed();
+      missed.complete();
+      expect(missed.status).toBe(TaskInstanceStatus.Completed);
+
+      const skipped = makeInstance();
+      skipped.skip();
+      skipped.complete();
+      expect(skipped.status).toBe(TaskInstanceStatus.Completed);
+    });
+
+    it('keeps Completed terminal except for explicit uncomplete', () => {
       instance.complete();
-      expect(instance.status).toBe(TaskInstanceStatus.Completed);
-    });
-
-    it('should allow Pending → Skipped', () => {
-      expect(instance.status).toBe(TaskInstanceStatus.Pending);
-      instance.skip();
-      expect(instance.status).toBe(TaskInstanceStatus.Skipped);
-    });
-
-    it('should allow Pending → Expired', () => {
-      expect(instance.status).toBe(TaskInstanceStatus.Pending);
-      instance.markExpired();
-      expect(instance.status).toBe(TaskInstanceStatus.Expired);
-    });
-
-    it('should allow InProgress → Completed', () => {
-      instance.start();
-      expect(instance.status).toBe(TaskInstanceStatus.InProgress);
-      instance.complete();
-      expect(instance.status).toBe(TaskInstanceStatus.Completed);
-    });
-
-    it('should allow InProgress → Skipped', () => {
-      instance.start();
-      expect(instance.status).toBe(TaskInstanceStatus.InProgress);
-      instance.skip();
-      expect(instance.status).toBe(TaskInstanceStatus.Skipped);
-    });
-
-    it('should allow InProgress → Expired', () => {
-      instance.start();
-      expect(instance.status).toBe(TaskInstanceStatus.InProgress);
-      instance.markExpired();
-      expect(instance.status).toBe(TaskInstanceStatus.Expired);
-    });
-
-    it('should reject transitions from Completed', () => {
-      instance.complete();
-      expect(instance.status).toBe(TaskInstanceStatus.Completed);
-
       expect(() => instance.start()).toThrow();
       expect(() => instance.complete()).toThrow();
       expect(() => instance.skip()).toThrow();
-      instance.markExpired(); // no-op
-      expect(instance.status).toBe(TaskInstanceStatus.Completed);
-    });
-
-    it('should reject transitions from Skipped', () => {
-      instance.skip();
-      expect(instance.status).toBe(TaskInstanceStatus.Skipped);
-
-      expect(() => instance.start()).toThrow();
-      expect(() => instance.complete()).toThrow();
-      expect(() => instance.skip()).toThrow();
-      instance.markExpired(); // no-op
-      expect(instance.status).toBe(TaskInstanceStatus.Skipped);
-    });
-
-    it('should reject transitions from Expired', () => {
-      instance.markExpired();
-      expect(instance.status).toBe(TaskInstanceStatus.Expired);
-
-      expect(() => instance.start()).toThrow();
-      expect(() => instance.complete()).toThrow();
-      expect(() => instance.skip()).toThrow();
-      instance.markExpired(); // no-op
-      expect(instance.status).toBe(TaskInstanceStatus.Expired);
+      expect(() => instance.markMissed()).toThrow();
+      instance.uncomplete();
+      expect(instance.status).toBe(TaskInstanceStatus.Pending);
     });
   });
 

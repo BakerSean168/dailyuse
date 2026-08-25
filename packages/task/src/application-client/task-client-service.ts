@@ -15,6 +15,7 @@ import type {
   GenerateInstancesReq,
   BindToGoalReq,
   CompleteTaskInstanceReq,
+  MarkTaskInstanceMissedReq,
   SkipTaskInstanceReq,
   CreateTaskDependencyBody,
   GetTaskInstancesByRangeReq,
@@ -105,6 +106,7 @@ function taskInstanceFromDTO(dto: TaskInstanceClientDTO): TaskInstance {
     importance: dto.importance,
     priority: dto.priority,
     status: dto.status,
+    isOverdue: dto.isOverdue,
     actualStartTime: dto.actualStartTime ? dto.actualStartTime : null,
     actualEndTime: dto.actualEndTime ? dto.actualEndTime : null,
     comment: dto.comment,
@@ -171,7 +173,7 @@ export class TaskClientService implements TaskClientPort {
     this.startInstance = this.startInstance.bind(this);
     this.completeInstance = this.completeInstance.bind(this);
     this.skipInstance = this.skipInstance.bind(this);
-    this.checkExpiredInstances = this.checkExpiredInstances.bind(this);
+    this.markInstanceMissed = this.markInstanceMissed.bind(this);
     this.createDependency = this.createDependency.bind(this);
     this.getDependencies = this.getDependencies.bind(this);
     this.getDependents = this.getDependents.bind(this);
@@ -343,12 +345,12 @@ export class TaskClientService implements TaskClientPort {
     return mapResult(result, (dto) => taskInstanceFromDTO(dto));
   }
 
-  async checkExpiredInstances(): Promise<Result<{ count: number; instances: TaskInstance[] }>> {
-    const result = await this.instanceApi.checkExpiredInstances();
-    return mapResult(result, (data) => ({
-      count: data.count,
-      instances: data.instances.map((dto) => taskInstanceFromDTO(dto)),
-    }));
+  async markInstanceMissed(
+    id: string,
+    request?: MarkTaskInstanceMissedReq,
+  ): Promise<Result<TaskInstance>> {
+    const result = await this.instanceApi.markTaskInstanceMissed(id, request);
+    return mapResult(result, (dto) => taskInstanceFromDTO(dto));
   }
 
   // ===== Task Dependency Operations =====

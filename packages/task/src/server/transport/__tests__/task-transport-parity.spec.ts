@@ -92,9 +92,9 @@ function createPortStub(): TaskApplicationPort {
     completeTaskInstance: fn({ instance: FAKE_INSTANCE }),
     uncompleteTaskInstance: fn({ instance: FAKE_INSTANCE }),
     skipTaskInstance: fn({ instance: FAKE_INSTANCE }),
+    markTaskInstanceMissed: fn({ instance: FAKE_INSTANCE }),
     startTaskInstance: fn(FAKE_INSTANCE),
     deleteTaskInstance: fn(null),
-    checkExpiredInstances: fn([FAKE_INSTANCE]),
     createTaskDependency: fn(FAKE_DEPENDENCY),
     updateTaskDependency: fn(FAKE_DEPENDENCY),
     deleteTaskDependency: fn(null),
@@ -581,20 +581,25 @@ describe('task transport parity (Phase 4) — production registrations', () => {
         },
       ],
       [
-        'instance check-expired',
+        'instance mark-missed',
         {
-          httpKey: 'instance POST /check-expired',
-          ipcChannel: TaskChannels.INSTANCE_CHECK_EXPIRED,
-          httpReq: {},
-          ipcArgs: undefined,
-          validInvocation: undefined,
-          malformedHttpReq: { body: { unexpected: true } },
-          malformedIpcArgs: { unexpected: true },
+          httpKey: 'instance POST /:id/missed',
+          ipcChannel: TaskChannels.INSTANCE_MARK_MISSED,
+          httpReq: { params: { id: INSTANCE_ID }, body: { reason: 'No completion evidence' } },
+          ipcArgs: { id: INSTANCE_ID, request: { reason: 'No completion evidence' } },
+          validInvocation: {
+            params: { id: INSTANCE_ID },
+            body: { reason: 'No completion evidence' },
+          },
+          malformedHttpReq: { params: { id: 'bad' }, body: {} },
+          malformedIpcArgs: { id: 'bad', request: {} },
           assertPort: (port) => {
-            const mock = port.checkExpiredInstances as ReturnType<typeof vi.fn>;
+            const mock = port.markTaskInstanceMissed as ReturnType<typeof vi.fn>;
             expect(mock).toHaveBeenCalledTimes(2);
             for (const call of mock.mock.calls) {
-              expect(call[0]).toBe('identity-1');
+              expect(call[0]).toBe(INSTANCE_ID);
+              expect(call[1]).toBe('identity-1');
+              expect(call[2]).toEqual({ reason: 'No completion evidence' });
             }
           },
         },

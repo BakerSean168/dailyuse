@@ -84,15 +84,15 @@ describe('task domain value objects', () => {
       TaskInstanceStatus.Pending,
       TaskInstanceStatus.InProgress,
       TaskInstanceStatus.Completed,
+      TaskInstanceStatus.Missed,
       TaskInstanceStatus.Skipped,
-      TaskInstanceStatus.Expired,
     ]);
     expect(TaskInstanceStatus.isValid('Pending')).toBe(true);
     expect(TaskInstanceStatus.isPending(TaskInstanceStatus.Pending)).toBe(true);
     expect(TaskInstanceStatus.isInProgress(TaskInstanceStatus.InProgress)).toBe(true);
     expect(TaskInstanceStatus.isCompleted(TaskInstanceStatus.Completed)).toBe(true);
     expect(TaskInstanceStatus.isSkipped(TaskInstanceStatus.Skipped)).toBe(true);
-    expect(TaskInstanceStatus.isExpired(TaskInstanceStatus.Expired)).toBe(true);
+    expect(TaskInstanceStatus.isMissed(TaskInstanceStatus.Missed)).toBe(true);
     expect(TaskInstanceStatus.isTerminated(TaskInstanceStatus.Completed)).toBe(true);
     expect(TaskInstanceStatus.needsAction(TaskInstanceStatus.Pending)).toBe(true);
     expect(TaskTemplateStatus.getAll()).toEqual([

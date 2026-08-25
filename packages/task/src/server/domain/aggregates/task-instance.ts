@@ -3,7 +3,7 @@ import type { Instant } from '@memoflow/contracts/primitives';
  * TaskInstance Aggregate Root (Server)
  *
  * Manages the full lifecycle of a task instance:
- * - State transitions (PENDING -> IN_PROGRESS -> COMPLETED/SKIPPED/EXPIRED)
+ * - State transitions (Pending -> InProgress -> Completed/Missed/Skipped)
  * - Execution time tracking (start time, end time, actual duration)
  * - Completion records (status, rating, notes)
  * - Skip records (reason, skip time)
@@ -56,6 +56,9 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
   // ===== 2. Constructor (Private) =====
   private constructor(state: TaskInstanceState) {
     super(state.id);
+    if (!Object.values(TaskInstanceStatus).includes(state.status)) {
+      throw new Error(`Invalid persisted TaskInstanceStatus: ${String(state.status)}`);
+    }
     this._props = state;
   }
 
@@ -89,18 +92,21 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
   }
 
   /**
-   * Gets the task instance's due time based on timeConfig.
-   * Used for priority calculation.
+   * Canonical completion-window end for this occurrence.
+   * `timePoint` / `timeRange` are local-day minutes, never epoch timestamps.
+   * The recurrence/generation path supplies `instanceDate` as the occurrence-day anchor.
    */
   public get dueDate(): number | null {
+    const dayStart = this._props.instanceDate;
     if (this._props.timeConfig.timeType === TimeType.TimePoint) {
-      return this._props.timeConfig.timePoint;
-    } else if (this._props.timeConfig.timeType === TimeType.TimeRange) {
-      return this._props.timeConfig.timeRange?.end ?? null;
-    } else {
-      // All-day task: due at end of instanceDate day (23:59:59)
-      return this._props.instanceDate + 86400000 - 1;
+      const minute = this._props.timeConfig.timePoint;
+      return minute == null ? null : dayStart + minute * 60_000;
     }
+    if (this._props.timeConfig.timeType === TimeType.TimeRange) {
+      const minute = this._props.timeConfig.timeRange?.end;
+      return minute == null ? null : dayStart + minute * 60_000;
+    }
+    return dayStart + 86_400_000 - 1;
   }
 
   public get status(): TaskInstanceStatus {
@@ -188,8 +194,16 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
 
     const now = Date.now();
+    const previousStatus = this._props.status;
     this._props.status = TaskInstanceStatus.Completed;
     this._props.actualEndTime = now;
+    this._props.skipRecord = null;
+    if (
+      note === undefined &&
+      (previousStatus === TaskInstanceStatus.Missed || previousStatus === TaskInstanceStatus.Skipped)
+    ) {
+      this._props.note = null;
+    }
 
     // Create completion record
     this._props.completionRecord = CompletionRecord.create({
@@ -274,16 +288,20 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     });
   }
 
-  /** Marks the instance as expired. */
-  public markExpired(): void {
-    if (
-      this._props.status === TaskInstanceStatus.Pending ||
-      this._props.status === TaskInstanceStatus.InProgress
-    ) {
-      this._props.status = TaskInstanceStatus.Expired;
-      this._props.updatedAt = Date.now();
-      this.advanceVersion();
+  /** Records an explicit Missed fact. Time passing never calls this method implicitly. */
+  public markMissed(reason?: string): void {
+    if (!this.canMarkMissed()) {
+      throw new Error('Cannot mark task missed in current state');
     }
+
+    const now = Date.now();
+    this._props.status = TaskInstanceStatus.Missed;
+    this._props.actualEndTime = null;
+    if (reason !== undefined) {
+      this._props.note = reason;
+    }
+    this._props.updatedAt = now;
+    this.advanceVersion();
   }
 
   /** Applies template-owned fields only while this is an unstarted future instance. */
@@ -323,7 +341,9 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
   public canComplete(): boolean {
     return (
       this._props.status === TaskInstanceStatus.Pending ||
-      this._props.status === TaskInstanceStatus.InProgress
+      this._props.status === TaskInstanceStatus.InProgress ||
+      this._props.status === TaskInstanceStatus.Missed ||
+      this._props.status === TaskInstanceStatus.Skipped
     );
   }
 
@@ -334,7 +354,15 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     );
   }
 
-  public isOverdue(): boolean {
+  public canMarkMissed(): boolean {
+    return (
+      this._props.status === TaskInstanceStatus.Pending ||
+      this._props.status === TaskInstanceStatus.InProgress
+    );
+  }
+
+  /** Derived only: clock movement never mutates persisted occurrence status. */
+  public isOverdue(now = Date.now()): boolean {
     if (
       this._props.status !== TaskInstanceStatus.Pending &&
       this._props.status !== TaskInstanceStatus.InProgress
@@ -342,9 +370,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       return false;
     }
 
-    const now = Date.now();
-    // Check if past the instance date
-    return now > this._props.instanceDate + 86400000; // Overdue after 1 day
+    const dueAt = this.dueDate;
+    return dueAt !== null && now > dueAt;
   }
 
   // ===== 6. Serialization =====
@@ -359,6 +386,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       importance: this._props.importance,
       priority: this._props.priority,
       status: this._props.status,
+      isOverdue: this.isOverdue(),
       actualStartTime: this._props.actualStartTime,
       actualEndTime: this._props.actualEndTime,
       comment: this._props.note,
@@ -379,6 +407,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       importance: this._props.importance,
       priority: this._props.priority,
       status: this._props.status,
+      isOverdue: this.isOverdue(),
       actualStartTime: this._props.actualStartTime,
       actualEndTime: this._props.actualEndTime,
       comment: this._props.note,
@@ -456,8 +485,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       Pending: '待完成',
       InProgress: '进行中',
       Completed: '已完成',
-      Skipped: '已跳过',
-      Expired: '已过期',
+      Missed: '已错过',
+      Skipped: '已豁免',
     };
     return statusMap[this._props.status];
   }
@@ -467,8 +496,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       Pending: 'blue',
       InProgress: 'orange',
       Completed: 'green',
+      Missed: 'red',
       Skipped: 'gray',
-      Expired: 'red',
     };
     return colorMap[this._props.status];
   }

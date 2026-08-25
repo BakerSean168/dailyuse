@@ -34,6 +34,8 @@ export interface TaskInstanceServerDTO {
   priority?: number;
 
   status: TaskInstanceStatus;
+  /** Derived read-model flag; never persisted. */
+  isOverdue: boolean;
   actualStartTime: TransferDate | null;
   actualEndTime: TransferDate | null;
 

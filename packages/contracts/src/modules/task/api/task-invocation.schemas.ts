@@ -25,7 +25,11 @@ import {
   TaskGoalBindingSchema,
   UpdateTaskTemplateSchema,
 } from './task-template.dto';
-import { CompleteTaskInstanceSchema, SkipTaskInstanceSchema } from './task-instance.dto';
+import {
+  CompleteTaskInstanceSchema,
+  MarkTaskInstanceMissedSchema,
+  SkipTaskInstanceSchema,
+} from './task-instance.dto';
 import {
   CreateDependencyBodySchema,
   UpdateDependencyBodySchema,
@@ -101,6 +105,15 @@ export const SkipTaskInstanceInvocationSchema = z.object({
 });
 export type SkipTaskInstanceInvocation = z.infer<typeof SkipTaskInstanceInvocationSchema>;
 
+/** POST /:id/missed — explicitly record a missed occurrence. */
+export const MarkTaskInstanceMissedInvocationSchema = z.object({
+  params: TaskInstanceIdParamsSchema,
+  body: MarkTaskInstanceMissedSchema,
+});
+export type MarkTaskInstanceMissedInvocation = z.infer<
+  typeof MarkTaskInstanceMissedInvocationSchema
+>;
+
 /** POST /:id/start | /uncomplete — id-only instance commands. 实例 id-only 命令。 */
 export const TaskInstanceIdCommandInvocationSchema = z.object({
   params: TaskInstanceIdParamsSchema,
@@ -135,23 +148,4 @@ export type DeleteTaskDependencyInvocation = z.infer<typeof DeleteTaskDependency
 export const ValidateTaskDependencyInvocationSchema = ValidateDependencyBodySchema;
 export type ValidateTaskDependencyInvocation = z.infer<
   typeof ValidateTaskDependencyInvocationSchema
->;
-
-// ============================================================================
-// Void commands (identity-scoped; no payload)
-// ============================================================================
-
-/**
- * POST /check-expired — void command. Accepts `undefined` (no body/args) or an
- * empty object; rejects any payload so the identity-scoped command can never
- * carry wire input.
- * POST /check-expired — void 命令。接受 `undefined`（无 body/args）或空对象；
- * 拒绝任何 payload，使 identity 作用域命令永不携带 wire 输入。
- */
-export const CheckExpiredTaskInstancesInvocationSchema = z.union([
-  z.undefined(),
-  z.object({}).strict(),
-]);
-export type CheckExpiredTaskInstancesInvocation = z.infer<
-  typeof CheckExpiredTaskInstancesInvocationSchema
 >;

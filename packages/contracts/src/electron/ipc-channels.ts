@@ -21,7 +21,7 @@ export const TaskChannels = {
   INSTANCE_COMPLETE: 'task:instance:complete',
   INSTANCE_UNCOMPLETE: 'task:instance:uncomplete',
   INSTANCE_SKIP: 'task:instance:skip',
-  INSTANCE_CHECK_EXPIRED: 'task:instance:check-expired',
+  INSTANCE_MARK_MISSED: 'task:instance:mark-missed',
   DEPENDENCY_CREATE: 'task:dependency:create',
   DEPENDENCY_LIST: 'task:dependency:list',
   DEPENDENCY_DEPENDENTS: 'task:dependency:dependents',

@@ -6,10 +6,7 @@
  */
 
 import { z } from 'zod';
-import {
-  CheckExpiredTaskInstancesResponseSchema,
-  TaskInstanceResponseSchema,
-} from './response-schemas';
+import { TaskInstanceResponseSchema } from './response-schemas';
 
 // ============================================================================
 // GET Task Operations
@@ -33,9 +30,6 @@ export const GetTaskInstancesByRangeResSchema = z.object({
 });
 export type GetTaskInstancesByRangeRes = z.infer<typeof GetTaskInstancesByRangeResSchema>;
 
-// Residual 697: list response dual body retired — OpenAPI + transport use CheckExpiredTaskInstancesResponseSchema.
-export type CheckExpiredTaskInstancesRes = z.infer<typeof CheckExpiredTaskInstancesResponseSchema>;
-
 export const CompleteTaskInstanceSchema = z.object({
   duration: z.number().optional(),
   note: z.string().optional(),
@@ -49,6 +43,12 @@ export const SkipTaskInstanceSchema = z.object({
 }).default({});
 
 export type SkipTaskInstanceReq = z.infer<typeof SkipTaskInstanceSchema>;
+
+export const MarkTaskInstanceMissedSchema = z.object({
+  reason: z.string().optional(),
+}).default({});
+
+export type MarkTaskInstanceMissedReq = z.infer<typeof MarkTaskInstanceMissedSchema>;
 
 // Residual 789: complete/skip operation Res dual retired — sole ResSchema + z.infer.
 export const TaskInstanceOperationResSchema = z.object({

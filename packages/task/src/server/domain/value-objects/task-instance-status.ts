@@ -25,8 +25,8 @@ export const TaskInstanceStatus = {
   Pending: 'Pending' as TaskInstanceStatus,
   InProgress: 'InProgress' as TaskInstanceStatus,
   Completed: 'Completed' as TaskInstanceStatus,
+  Missed: 'Missed' as TaskInstanceStatus,
   Skipped: 'Skipped' as TaskInstanceStatus,
-  Expired: 'Expired' as TaskInstanceStatus,
 
   // ================= 工厂方法 =================
 
@@ -79,23 +79,17 @@ export const TaskInstanceStatus = {
     return value === 'Skipped';
   },
 
-  /**
-   * 判断任务实例是否已过期
-   */
-  isExpired(value: TaskInstanceStatus): boolean {
-    return value === 'Expired';
+  /** 明确记录为 Missed，而不是由时钟自动推导。 */
+  isMissed(value: TaskInstanceStatus): boolean {
+    return value === 'Missed';
   },
 
-  /**
-   * 判断任务实例是否已终止（完成、跳过或过期）
-   */
+  /** 终态事实：完成、明确 Missed 或豁免。 */
   isTerminated(value: TaskInstanceStatus): boolean {
-    return value === 'Completed' || value === 'Skipped' || value === 'Expired';
+    return value === 'Completed' || value === 'Missed' || value === 'Skipped';
   },
 
-  /**
-   * 判断任务实例是否需要处理（未完成且未过期）
-   */
+  /** 未决状态仍需要处理；overdue 与此状态正交。 */
   needsAction(value: TaskInstanceStatus): boolean {
     return value === 'Pending' || value === 'InProgress';
   },

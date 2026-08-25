@@ -2,47 +2,11 @@
  * Dual registry suite (elegance E3b tax cut).
  * Merged 13 dual-retired surface locks from this directory.
  * Behavior/assertions preserved; individual *-dual.surface.spec.ts removed.
- * Sources: check-expired-instances-res-dual.surface.spec.ts, recurrence-rule-dual.surface.spec.ts, subtask-client-dto-dual.surface.spec.ts, task-dependency-transport-dual.surface.spec.ts, task-folder-history-client-dto-dual.surface.spec.ts, task-folder-history-server-dto-dual.surface.spec.ts, task-goal-binding-dual.surface.spec.ts, task-goal-binding-reminder-dual.surface.spec.ts, task-graph-dependency-dto-dual.surface.spec.ts, task-instance-dependency-schedule-task-client-dto-dual.surface.spec.ts, task-instance-range-op-res-dual.surface.spec.ts, task-instance-res-dual.surface.spec.ts, task-time-config-dual.surface.spec.ts
+ * Sources: recurrence-rule-dual.surface.spec.ts, subtask-client-dto-dual.surface.spec.ts, task-dependency-transport-dual.surface.spec.ts, task-folder-history-client-dto-dual.surface.spec.ts, task-folder-history-server-dto-dual.surface.spec.ts, task-goal-binding-dual.surface.spec.ts, task-goal-binding-reminder-dual.surface.spec.ts, task-graph-dependency-dto-dual.surface.spec.ts, task-instance-dependency-schedule-task-client-dto-dual.surface.spec.ts, task-instance-range-op-res-dual.surface.spec.ts, task-instance-res-dual.surface.spec.ts, task-time-config-dual.surface.spec.ts
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-
-// --- merged from check-expired-instances-res-dual.surface.spec.ts ---
-{
-  /**
-   * Residual 697: task check-expired instances response dual body retired.
-   * CheckExpiredTaskInstancesRes reuses CheckExpiredTaskInstancesResponseSchema only.
-   */
-  describe('task check-expired instances res dual retired (residual 697)', () => {
-    const apiDir = __dirname;
-    const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
-    const dto = readFileSync(resolve(apiDir, 'task-instance.dto.ts'), 'utf8');
-    const routes = readFileSync(
-      resolve(apiDir, '../../../../../task/src/api/routes/task-instance.routes.ts'),
-      'utf8',
-    );
-
-    it('exports CheckExpiredTaskInstancesResponseSchema with instance array', () => {
-      expect(responseSchemas).toContain('Residual 697');
-      expect(responseSchemas).toContain('export const CheckExpiredTaskInstancesResponseSchema');
-      expect(responseSchemas).toContain('instances: z.array(TaskInstanceResponseSchema)');
-    });
-
-    it('semantic Res type is z.infer alias without interface dual body', () => {
-      expect(dto).toContain('Residual 697');
-      expect(dto).toContain(
-        'export type CheckExpiredTaskInstancesRes = z.infer<typeof CheckExpiredTaskInstancesResponseSchema>',
-      );
-      expect(dto).not.toMatch(/export interface CheckExpiredTaskInstancesRes\b/);
-    });
-
-    it('OpenAPI task instance route uses CheckExpiredTaskInstancesResponseSchema only', () => {
-      expect(routes).toContain('CheckExpiredTaskInstancesResponseSchema');
-      expect(routes).toContain('successResponse(CheckExpiredTaskInstancesResponseSchema');
-    });
-  });
-}
 
 // --- merged from recurrence-rule-dual.surface.spec.ts ---
 {

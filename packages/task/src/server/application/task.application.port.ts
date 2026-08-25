@@ -1,7 +1,7 @@
 import type { ActivateTaskTemplateUseCase } from './use-cases/commands/activate-task-template.use-case';
 import type { ArchiveTaskTemplateUseCase } from './use-cases/commands/archive-task-template.use-case';
 import type { BindTaskToGoalUseCase } from './use-cases/commands/bind-task-to-goal.use-case';
-import type { CheckExpiredInstancesUseCase } from './use-cases/commands/check-expired-instances.use-case';
+import type { MarkTaskInstanceMissedUseCase } from './use-cases/commands/mark-task-instance-missed.use-case';
 import type { CompleteTaskInstanceUseCase } from './use-cases/commands/complete-task-instance.use-case';
 import type { UncompleteTaskInstanceUseCase } from './use-cases/commands/uncomplete-task-instance.use-case';
 import type { CreateTaskDependencyUseCase } from './use-cases/commands/create-task-dependency.use-case';
@@ -56,9 +56,9 @@ export interface TaskApplicationPort {
   completeTaskInstance: TaskPortFn<CompleteTaskInstanceUseCase['execute']>;
   uncompleteTaskInstance: TaskPortFn<UncompleteTaskInstanceUseCase['execute']>;
   skipTaskInstance: TaskPortFn<SkipTaskInstanceUseCase['execute']>;
+  markTaskInstanceMissed: TaskPortFn<MarkTaskInstanceMissedUseCase['execute']>;
   startTaskInstance: TaskPortFn<StartTaskInstanceUseCase['execute']>;
   deleteTaskInstance: TaskPortFn<DeleteTaskInstanceUseCase['execute']>;
-  checkExpiredInstances: TaskPortFn<CheckExpiredInstancesUseCase['execute']>;
 
   // Instance queries
   getTaskInstance: TaskPortFn<GetTaskInstanceUseCase['execute']>;

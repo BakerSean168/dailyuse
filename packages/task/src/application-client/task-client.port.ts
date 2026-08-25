@@ -5,6 +5,7 @@ import type {
   GenerateInstancesReq,
   BindToGoalReq,
   CompleteTaskInstanceReq,
+  MarkTaskInstanceMissedReq,
   SkipTaskInstanceReq,
   CreateTaskDependencyBody,
   UpdateTaskDependencyBody,
@@ -46,7 +47,10 @@ export interface TaskClientPort {
   completeInstance(id: string, request?: CompleteTaskInstanceReq): Promise<Result<TaskInstance>>;
   uncompleteInstance(id: string): Promise<Result<TaskInstance>>;
   skipInstance(id: string, request?: SkipTaskInstanceReq): Promise<Result<TaskInstance>>;
-  checkExpiredInstances(): Promise<Result<{ count: number; instances: TaskInstance[] }>>;
+  markInstanceMissed(
+    id: string,
+    request?: MarkTaskInstanceMissedReq,
+  ): Promise<Result<TaskInstance>>;
 
   // Task Dependency Operations
   createDependency(taskId: string, request: CreateTaskDependencyBody): Promise<Result<TaskDependencyClientDTO>>;

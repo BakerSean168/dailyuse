@@ -255,7 +255,7 @@ model TaskStatistic {
   instanceInProgress       Int      @map("instance_in_progress")
   instanceCompleted        Int      @map("instance_completed")
   instanceSkipped          Int      @map("instance_skipped")
-  instanceExpired          Int      @map("instance_expired")
+  instanceMissed           Int      @map("instance_missed")
   completionToday          Int      @map("completion_today")
   completionWeek           Int      @map("completion_week")
   completionMonth          Int      @map("completion_month")

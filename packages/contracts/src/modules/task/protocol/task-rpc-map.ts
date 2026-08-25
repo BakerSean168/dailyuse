@@ -15,6 +15,7 @@ import type {
   CreateTaskDependencyInvocation,
   DeleteTaskDependencyInvocation,
   GenerateInstancesInvocation,
+  MarkTaskInstanceMissedInvocation,
   SkipTaskInstanceInvocation,
   TaskInstanceIdCommandInvocation,
   TaskTemplateIdCommandInvocation,
@@ -22,11 +23,7 @@ import type {
   UpdateTaskTemplateInvocation,
   ValidateTaskDependencyInvocation,
 } from '../api/task-invocation.schemas';
-import type {
-  GetTaskInstancesByRangeReq,
-  GetTaskInstancesByRangeRes,
-  CheckExpiredTaskInstancesRes,
-} from '../api/task-instance.dto';
+import type { GetTaskInstancesByRangeReq, GetTaskInstancesByRangeRes } from '../api/task-instance.dto';
 import type { ValidateDependencyResponse } from '../api/task-dependency.dto';
 import type {
   TaskDependencyResponse,
@@ -53,7 +50,7 @@ export type TaskRpcMap = {
   'task:instance:complete': [CompleteTaskInstanceInvocation, TaskInstanceResponse];
   'task:instance:uncomplete': [TaskInstanceIdCommandInvocation, TaskInstanceResponse];
   'task:instance:skip': [SkipTaskInstanceInvocation, TaskInstanceResponse];
-  'task:instance:check-expired': [void, CheckExpiredTaskInstancesRes];
+  'task:instance:mark-missed': [MarkTaskInstanceMissedInvocation, TaskInstanceResponse];
   'task:instance:get-by-date-range': [GetTaskInstancesByRangeReq, GetTaskInstancesByRangeRes];
 
   'task:dependency:create': [CreateTaskDependencyInvocation, TaskDependencyResponse];

@@ -78,12 +78,12 @@ import { TaskChannels, type IElectronModuleContext } from '@memoflow/contracts/e
 import type { ListTaskTemplateFilters } from '@memoflow/contracts/task';
 import {
   BindTaskToGoalInvocationSchema,
-  CheckExpiredTaskInstancesInvocationSchema,
   CompleteTaskInstanceInvocationSchema,
   CreateTaskDependencyInvocationSchema,
   CreateTaskTemplateSchema,
   DeleteTaskDependencyInvocationSchema,
   GenerateInstancesInvocationSchema,
+  MarkTaskInstanceMissedInvocationSchema,
   SkipTaskInstanceInvocationSchema,
   TaskInstanceIdCommandInvocationSchema,
   TaskTemplateIdCommandInvocationSchema,
@@ -462,12 +462,16 @@ export function createTaskElectronModule(
         installed.push(TaskChannels.INSTANCE_SKIP);
         registerValidatedChannel(
           ctx,
-          TaskChannels.INSTANCE_CHECK_EXPIRED,
-          CheckExpiredTaskInstancesInvocationSchema,
-          (_data, requestContext) => instanceController.checkExpired(requestContext.identityId),
-          (args) => args,
+          TaskChannels.INSTANCE_MARK_MISSED,
+          MarkTaskInstanceMissedInvocationSchema,
+          (data, requestContext) =>
+            instanceController.markMissedInstance(data.params.id, data.body, requestContext),
+          (args) => ({
+            params: { id: (args as { id?: string }).id ?? (args as string) },
+            body: (args as { request?: unknown }).request,
+          }),
         );
-        installed.push(TaskChannels.INSTANCE_CHECK_EXPIRED);
+        installed.push(TaskChannels.INSTANCE_MARK_MISSED);
 
         // --- Dependency channels ---
         registerValidatedChannel(

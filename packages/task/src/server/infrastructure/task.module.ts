@@ -42,7 +42,7 @@ import { DeleteTaskInstanceUseCase } from '../application/use-cases/commands/del
 import { GenerateTaskInstancesUseCase } from '../application/use-cases/commands/generate-task-instances.use-case';
 import { BindTaskToGoalUseCase } from '../application/use-cases/commands/bind-task-to-goal.use-case';
 import { UnbindTaskFromGoalUseCase } from '../application/use-cases/commands/unbind-task-from-goal.use-case';
-import { CheckExpiredInstancesUseCase } from '../application/use-cases/commands/check-expired-instances.use-case';
+import { MarkTaskInstanceMissedUseCase } from '../application/use-cases/commands/mark-task-instance-missed.use-case';
 import { CreateTaskDependencyUseCase } from '../application/use-cases/commands/create-task-dependency.use-case';
 import { DeleteTaskDependencyUseCase } from '../application/use-cases/commands/delete-task-dependency.use-case';
 import { UpdateTaskDependencyUseCase } from '../application/use-cases/commands/update-task-dependency.use-case';
@@ -130,9 +130,9 @@ export interface TaskModuleUseCases {
   readonly completeTaskInstance: CompleteTaskInstanceUseCase;
   readonly uncompleteTaskInstance: UncompleteTaskInstanceUseCase;
   readonly skipTaskInstance: SkipTaskInstanceUseCase;
+  readonly markTaskInstanceMissed: MarkTaskInstanceMissedUseCase;
   readonly startTaskInstance: StartTaskInstanceUseCase;
   readonly deleteTaskInstance: DeleteTaskInstanceUseCase;
-  readonly checkExpiredInstances: CheckExpiredInstancesUseCase;
 
   // Instance queries
   readonly getTaskInstance: GetTaskInstanceUseCase;
@@ -267,9 +267,9 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
       taskWriteTransactionRunner,
     ),
     skipTaskInstance: new SkipTaskInstanceUseCase(taskInstanceRepository),
+    markTaskInstanceMissed: new MarkTaskInstanceMissedUseCase(taskInstanceRepository),
     startTaskInstance: new StartTaskInstanceUseCase(taskInstanceRepository),
     deleteTaskInstance: new DeleteTaskInstanceUseCase(taskInstanceRepository),
-    checkExpiredInstances: new CheckExpiredInstancesUseCase(taskInstanceRepository),
 
     // Instance queries
     getTaskInstance: new GetTaskInstanceUseCase(taskInstanceRepository),
@@ -358,9 +358,10 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
       useCases.uncompleteTaskInstance.execute(id, identityId),
     skipTaskInstance: (id, identityId, input) =>
       useCases.skipTaskInstance.execute(id, identityId, input),
+    markTaskInstanceMissed: (id, identityId, input) =>
+      useCases.markTaskInstanceMissed.execute(id, identityId, input),
     startTaskInstance: (id, identityId) => useCases.startTaskInstance.execute(id, identityId),
     deleteTaskInstance: (id, identityId) => useCases.deleteTaskInstance.execute(id, identityId),
-    checkExpiredInstances: (identityId) => useCases.checkExpiredInstances.execute(identityId),
     getTaskInstance: (id, identityId) => useCases.getTaskInstance.execute(id, identityId),
     listTaskInstancesByAccount: (identityId) =>
       useCases.listTaskInstancesByAccount.execute(identityId),
