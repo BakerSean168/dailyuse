@@ -174,48 +174,29 @@ export class ReminderGroupBusinessService {
   }
 
   /**
-   * 计算控制模式变更对模板的影响
-   * 
-   * 返回需要重新计算 effectiveEnabled 的模板列表
-   * 
-   * @param oldControlMode - 旧的控制模式
-   * @param newControlMode - 新的控制模式
-   * @param templates - 分组下的模板列表
-   * @returns 受影响的模板列表
+   * ControlMode is legacy compatibility metadata only in Routine vNext.
+   * Switching it has no effective-state impact and must never take over a member.
    */
   public calculateControlModeChangeImpact(
     oldControlMode: ControlMode,
     newControlMode: ControlMode,
     templates: ReminderTemplate[],
   ): ReminderTemplate[] {
-    // 如果控制模式没变，无影响
-    if (oldControlMode === newControlMode) {
-      return [];
-    }
-
-    // 所有模板都受影响（需要重新计算 effectiveEnabled）
-    return templates.filter(t => !t.deletedAt);
+    void oldControlMode;
+    void newControlMode;
+    void templates;
+    return [];
   }
 
   /**
-   * 计算分组启用状态变更对模板的影响
-   * 
-   * 只有在 GROUP 控制模式下，分组启用状态变更才会影响模板
-   * 
-   * @param group - 分组对象
-   * @param templates - 分组下的模板列表
-   * @returns 受影响的模板列表
+   * A legacy group maps to a RoutineProfile, so profile enabled/active changes
+   * affect every non-deleted membership regardless of old ControlMode.
    */
   public calculateGroupStatusChangeImpact(
     group: ReminderGroup,
     templates: ReminderTemplate[],
   ): ReminderTemplate[] {
-    // 只有 Group 模式下才有影响
-    if (group.controlMode !== ControlMode.Group) {
-      return [];
-    }
-
-    // 返回所有未删除的模板
-    return templates.filter(t => !t.deletedAt);
+    void group;
+    return templates.filter((template) => !template.deletedAt);
   }
 }

@@ -104,7 +104,7 @@ describe('ReminderPolicy', () => {
       expect(policy.calculateEffectiveEnabled(template, group)).toBe(true);
     });
 
-    it('should return template status for Individual mode even if group paused', () => {
+    it('should close the Profile gate even when legacy mode is Individual', () => {
       const template = ReminderTemplate.load(makeTemplateState({ status: ReminderStatus.Active }));
       const group = ReminderGroup.load(
         makeGroupState({
@@ -113,10 +113,10 @@ describe('ReminderPolicy', () => {
         }),
       );
 
-      expect(policy.calculateEffectiveEnabled(template, group)).toBe(true);
+      expect(policy.calculateEffectiveEnabled(template, group)).toBe(false);
     });
 
-    it('should AND group + template status in Group control mode (both active)', () => {
+    it('should AND profile + routine status in Group control mode (both active)', () => {
       const template = ReminderTemplate.load(makeTemplateState({ status: ReminderStatus.Active }));
       const group = ReminderGroup.load(
         makeGroupState({

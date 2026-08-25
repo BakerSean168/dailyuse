@@ -110,7 +110,7 @@ describe('ReminderGroupBusinessService', () => {
     ).toEqual({ valid: true });
   });
 
-  it('returns only active templates when control mode changes', () => {
+  it('treats legacy ControlMode changes as semantically inert', () => {
     const active = createTemplate();
     const deleted = createTemplate({ deleted: true });
 
@@ -123,10 +123,10 @@ describe('ReminderGroupBusinessService', () => {
         ControlMode.Group,
         [active, deleted],
       ),
-    ).toEqual([active]);
+    ).toEqual([]);
   });
 
-  it('limits group status impact to group-controlled templates', () => {
+  it('applies Profile status impact independent of legacy ControlMode', () => {
     const identityId = String(IdentityId.generate());
     const active = createTemplate();
     const deleted = createTemplate({ deleted: true });
@@ -136,7 +136,7 @@ describe('ReminderGroupBusinessService', () => {
         createGroup(identityId, { controlMode: ControlMode.Individual }),
         [active, deleted],
       ),
-    ).toEqual([]);
+    ).toEqual([active]);
     expect(
       service.calculateGroupStatusChangeImpact(
         createGroup(identityId, { controlMode: ControlMode.Group }),

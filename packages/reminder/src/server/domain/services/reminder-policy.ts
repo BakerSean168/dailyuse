@@ -1,34 +1,30 @@
-import type { ReminderTemplate } from '../aggregates/reminder-template';
-import type { ReminderGroup } from '../aggregates/reminder-group';
-import { ControlMode, ReminderStatus } from '@memoflow/contracts/reminder';
+import { ReminderStatus } from '@memoflow/contracts/reminder';
 import { BusinessRuleViolationError } from '@memoflow/utils/errors';
+import type { ReminderGroup } from '../aggregates/reminder-group';
+import type { ReminderTemplate } from '../aggregates/reminder-template';
+import { evaluateRoutineEffectiveEnabled } from '../routine';
 
+/** Legacy policy facade over canonical Routine effective-state truth. */
 export class ReminderPolicy {
   public calculateEffectiveEnabled(
     template: ReminderTemplate,
     group: ReminderGroup | null,
   ): boolean {
-    const templateEnabled = template.status === ReminderStatus.Active;
-
-    if (!group) {
-      return templateEnabled;
-    }
-
-    if (group.controlMode === ControlMode.Individual) {
-      return templateEnabled;
-    }
-
-    return group.status === ReminderStatus.Active && templateEnabled;
+    return evaluateRoutineEffectiveEnabled({
+      routineEnabled:
+        template.selfEnabled && template.status === ReminderStatus.Active,
+      profileEnabled: group?.enabled,
+      profileActive: group ? group.status === ReminderStatus.Active : undefined,
+      membershipEnabled: true,
+      temporaryOverrideAllowsExecution: true,
+    }).effectiveEnabled;
   }
 
   public assertValidGroupAssignment(
     template: ReminderTemplate,
     group: ReminderGroup | null,
   ): void {
-    if (!group) {
-      return;
-    }
-
+    if (!group) return;
     if (group.identityId !== template.identityId) {
       throw new BusinessRuleViolationError(
         'Reminder template and group must belong to the same identity.',
@@ -41,9 +37,7 @@ export class ReminderPolicy {
     hardDelete: boolean,
   ): void {
     if (!hardDelete && template.deletedAt) {
-      throw new BusinessRuleViolationError(
-        'Reminder template is already deleted.',
-      );
+      throw new BusinessRuleViolationError('Reminder template is already deleted.');
     }
   }
 
@@ -51,8 +45,7 @@ export class ReminderPolicy {
     template: ReminderTemplate,
     group: ReminderGroup | null,
   ): void {
-    const isEnabled = this.calculateEffectiveEnabled(template, group);
-    if (!isEnabled) {
+    if (!this.calculateEffectiveEnabled(template, group)) {
       throw new BusinessRuleViolationError('Reminder template is not enabled.');
     }
   }

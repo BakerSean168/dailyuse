@@ -64,10 +64,10 @@ describe('ReminderTemplateBusinessService', () => {
     const result = service.calculateEffectiveEnabled(template, null, false);
 
     expect(result.isEffectivelyEnabled).toBe(false);
-    expect(result.reason).toBe('全局提醒总开关已关闭');
+    expect(result.reason).toContain('legacy seam -> Routine gate');
   });
 
-  it('uses template status for ungrouped and individual-control templates', () => {
+  it('uses Routine and Profile gates regardless of legacy individual-control metadata', () => {
     const identityId = IdentityId.generate();
     const group = createGroup(String(identityId), {
       controlMode: ControlMode.Individual,
@@ -85,7 +85,7 @@ describe('ReminderTemplateBusinessService', () => {
     ).toBe(false);
   });
 
-  it('uses group status for group-control templates and reports reasons', () => {
+  it('uses the same Routine × Profile formula for legacy group-control metadata', () => {
     const identityId = IdentityId.generate();
     const pausedGroup = createGroup(String(identityId), {
       controlMode: ControlMode.Group,
@@ -110,9 +110,9 @@ describe('ReminderTemplateBusinessService', () => {
     );
 
     expect(paused.isEffectivelyEnabled).toBe(false);
-    expect(paused.reason).toContain('分组已暂停');
-    expect(active.isEffectivelyEnabled).toBe(true);
-    expect(active.reason).toContain('模板自身状态已暂停，但当前由分组接管');
+    expect(paused.reason).toContain('Profile 已关闭或未激活');
+    expect(active.isEffectivelyEnabled).toBe(false);
+    expect(active.reason).toContain('Profile 开启不能重新启用');
   });
 
   it('calculates batch status using the provided group map', () => {

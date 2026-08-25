@@ -50,3 +50,6 @@ export * from './services';
 
 // 业务错误
 export * from './errors';
+
+// Routine Coach vNext canonical domain (legacy Reminder migration seam)
+export * from './routine';
