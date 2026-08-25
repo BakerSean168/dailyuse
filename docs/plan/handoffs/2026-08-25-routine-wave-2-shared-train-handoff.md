@@ -7,7 +7,7 @@ tags:
   - schema-train
 description: ROUTINE-2301..2303 feature-lane handoff for Core vNext shared Contract/Schema/PowerSync integration.
 created: 2026-08-25T23:41:00+08:00
-updated: 2026-08-26T00:32:00+08:00
+updated: 2026-08-26T00:37:00+08:00
 ---
 
 # Core vNext Routine Domain / Wave 2 — Shared Train Handoff
@@ -243,6 +243,144 @@ The canonical effective-enabled evaluator consumes only the derived gate `tempor
 
 No W2 code adds a second wall-clock authority or edits the existing Scheduler engine.
 
-## ROUTINE-2303 — pending feature-lane details
+## ROUTINE-2303 — Protocol / Schema Train request
 
-To be appended by this worker after the protocol model is complete.
+Canonical implementation:
+
+```text
+packages/reminder/src/server/domain/routine/protocol.ts
+packages/reminder/src/server/infrastructure/routine-vnext/protocol-persistence-parity.ts
+```
+
+Protocol is a first-class Routine domain object, not `TriggerType.Protocol`, not an Electron timer, and not a set of Reminder rows.
+
+### Phase vocabulary
+
+```text
+Prepare
+Focus
+ShortBreak
+LongBreak
+Recovery
+```
+
+A phase can have `durationMs = null` for explicit/manual advancement (for example Flowtime focus). Such a phase has no wall-clock deadline and is never auto-advanced by deadline catch-up.
+
+### ProtocolDefinition
+
+Persist definition truth in a first-class table:
+
+```text
+routine_protocol_definitions
+```
+
+Minimum columns:
+
+```text
+id              TEXT PK
+identity_id     TEXT NOT NULL
+name            TEXT NOT NULL
+definition_json TEXT NOT NULL
+version         INTEGER NOT NULL
+created_at      TIMESTAMP NOT NULL
+updated_at      TIMESTAMP NOT NULL
+```
+
+Indexes/ownership:
+
+```text
+UNIQUE(identity_id, id)
+INDEX(identity_id, name)
+```
+
+`definition_json` contains the validated phase template, fixed cycle policy and break policy. Definition revision increments `version`.
+
+### Cycle / break policy
+
+W2 supports deterministic fixed-cycle execution:
+
+```text
+cyclePolicy = { mode: fixed, cycles }
+breakPolicy = {
+  afterFinalCycle: include | skip
+  longBreakEveryCycles: N | null
+  longBreakDurationMs: duration | null
+}
+```
+
+Example required by the ticket expands to:
+
+```text
+50m Focus cycle 1
+10m ShortBreak cycle 1
+50m Focus cycle 2
+10m ShortBreak cycle 2
+Completed
+```
+
+### ProtocolSession
+
+Persist runtime truth in:
+
+```text
+routine_protocol_sessions
+```
+
+Minimum indexed columns:
+
+```text
+id                 TEXT PK
+identity_id        TEXT NOT NULL
+protocol_id        TEXT NOT NULL
+protocol_version   INTEGER NOT NULL
+status             TEXT NOT NULL
+snapshot_json      TEXT NOT NULL
+termination_reason TEXT NULL
+ended_at           TIMESTAMP NULL
+version            INTEGER NOT NULL
+created_at         TIMESTAMP NOT NULL
+updated_at         TIMESTAMP NOT NULL
+
+INDEX(identity_id, status)
+INDEX(identity_id, protocol_id, created_at)
+```
+
+The PowerSync shared schema must receive the same columns in the same Schema Train bundle (booleans are not used in these two records; timestamps follow ISO text convention at the SQLite edge).
+
+`snapshot_json` is intentionally restart-complete and includes:
+
+```text
+protocol snapshot + protocolVersion
+expanded phasePlan
+state
+currentPlanIndex / cycle
+startedAt
+phaseStartedAt
+phaseDeadline
+pausedAt
+pausedRemainingMs
+accumulatedPauseMs
+endedAt
+terminationReason
+version
+```
+
+An active session therefore remains pinned to the version/plan it started with even if the reusable ProtocolDefinition is revised later.
+
+### Deterministic state machine
+
+Canonical transitions:
+
+```text
+Idle --start--> Running
+Running --pause--> Paused
+Paused --resume--> Running
+Running --phase-complete--> Running | Completed
+Running|Paused --end--> Completed(reason=user-ended)
+Running|Paused --cancel--> Cancelled(explicit reason)
+final phase completion --> Completed(reason=completed)
+```
+
+Terminal states reject further mutation. Deadline catch-up advances from persisted phase deadlines, not renderer ticks, so restart recovery is deterministic.
+
+Do not add BrowserWindow/Electron dependencies to Protocol domain. FocusWindow/BreakOverlay implementation remains out of Wave 2 and belongs to later local-runtime/UI work.
