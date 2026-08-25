@@ -14,6 +14,11 @@ import {
   ScheduleTaskMetadata,
 } from '../../domain/value-objects';
 import { ScheduleTaskId } from '../../domain/value-objects/schedule-task-id';
+import { ScheduledHandlerRegistry, buildSchedulingKey } from '../../../scheduling';
+import {
+  createHandlerRegistryScheduleTaskSourceExecutor,
+  createScheduleTaskSchedulingPort,
+} from '../scheduling';
 
 const mocked = vi.hoisted(() => {
   const handlers = new Map<string, Set<(payload: unknown) => void>>();
@@ -179,13 +184,16 @@ function recurringSchedule(): ScheduleConfig {
   });
 }
 
-function oneShotPastSchedule(startTime: number): ScheduleConfig {
+function oneShotPastSchedule(
+  startTime: number,
+  maxExecutions: number | null = 1,
+): ScheduleConfig {
   return ScheduleConfig.fromDTO({
     cronExpression: null,
     timezone: Timezone.Shanghai,
     startDate: new Date(startTime).toISOString(),
     endDate: null,
-    maxExecutions: 1,
+    maxExecutions,
   });
 }
 
@@ -507,6 +515,64 @@ describe('createScheduleRuntimeContribution', () => {
     expect(queue.removeTask).toHaveBeenNthCalledWith(1, 'task-remove');
   });
 
+  it('executes a neutral scheduled intent through the existing queue and HandlerRegistry', async () => {
+    const repository = createRepositoryMock();
+    let persistedTask: ScheduleTask | undefined;
+    repository.findBySourceEntity.mockResolvedValue([]);
+    repository.findByIdForIdentity.mockImplementation(async (_identityId, id) =>
+      persistedTask?.id === id ? persistedTask : null,
+    );
+    repository.saveBatch.mockImplementation(async (tasks: ScheduleTask[]) => {
+      persistedTask = tasks[0];
+    });
+
+    const owner = { identityId: 'identity-1', type: 'fake-module', id: 'queue-owner' };
+    const schedulingPort = createScheduleTaskSchedulingPort(repository);
+    await schedulingPort.reconcile(owner, [
+      {
+        schedulingKey: buildSchedulingKey('fake-module', 'queue-owner', 'fire'),
+        handlerKey: 'fake.fire',
+        runAt: Date.now() - 1_000,
+        payloadVersion: 1,
+        payload: { value: 42 },
+      },
+    ]);
+    expect(persistedTask).toBeDefined();
+
+    const handler = vi.fn(async () => ({ status: 'succeeded' as const }));
+    const registry = new ScheduledHandlerRegistry();
+    registry.register({
+      handlerKey: 'fake.fire',
+      payloadVersion: 1,
+      validatePayload(payload: unknown) {
+        if ((payload as { value?: unknown })?.value !== 42) {
+          throw new TypeError('value must equal 42');
+        }
+        return payload as { value: 42 };
+      },
+      handler: { execute: handler },
+    });
+
+    createScheduleRuntimeContribution({
+      scheduleTaskRepository: repository,
+      sourceExecutor: createHandlerRegistryScheduleTaskSourceExecutor({ registry }),
+    });
+    const queue = getLastQueue();
+    await queue.config.onExecuteTask(persistedTask!.id, { identityId: owner.identityId });
+
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner,
+        handlerKey: 'fake.fire',
+        payloadVersion: 1,
+        payload: { value: 42 },
+      }),
+    );
+    expect(persistedTask!.execution.lastExecutionStatus).toBe(ExecutionStatus.Success);
+    expect(persistedTask!.status).toBe(ScheduleTaskStatus.Completed);
+  });
+
   it('executes due tasks through the source executor and persists the updated aggregate', async () => {
     const task = createLoadedTask({ id: 'task-execute', nextRunAt: Date.now() - 60_000 });
     const repository = createRepositoryMock();
@@ -590,6 +656,129 @@ describe('createScheduleRuntimeContribution', () => {
     expect(mocked.loggerError).toHaveBeenCalledWith(
       '[Schedule] Source executor failed',
       expect.objectContaining({ taskId: task.id, error: 'boom', retryScheduledAt: null }),
+    );
+  });
+
+  it('retries a one-shot logical invocation when maxExecutions does not cap technical attempts', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-25T12:00:00.000Z'));
+    try {
+      const startTime = Date.now() - 60_000;
+      const task = createLoadedTask({
+        id: 'task-retry-one-shot',
+        nextRunAt: startTime,
+        retryPolicy: RetryPolicy.createDefault(),
+        schedule: oneShotPastSchedule(startTime, null),
+      });
+      const repository = createRepositoryMock();
+      repository.findByIdForIdentity.mockResolvedValue(task);
+      const sourceExecutor = {
+        execute: vi
+          .fn()
+          .mockRejectedValueOnce(new Error('temporary'))
+          .mockResolvedValueOnce({ nextRunAt: null, result: { ok: true } }),
+      };
+
+      createScheduleRuntimeContribution({
+        scheduleTaskRepository: repository,
+        sourceExecutor,
+      });
+      const queue = getLastQueue();
+
+      await queue.config.onExecuteTask(task.id, { identityId: String(task.identityId) });
+      expect(sourceExecutor.execute).toHaveBeenCalledTimes(1);
+      expect(task.execution.lastExecutionStatus).toBe(ExecutionStatus.Failed);
+      expect(task.status).toBe(ScheduleTaskStatus.Active);
+      expect(task.execution.nextRunAt).toBe(Date.now() + 5_000);
+
+      await vi.advanceTimersByTimeAsync(5_000);
+      await queue.config.onExecuteTask(task.id, { identityId: String(task.identityId) });
+
+      expect(sourceExecutor.execute).toHaveBeenCalledTimes(2);
+      expect(task.execution.executionCount).toBe(2);
+      expect(task.execution.lastExecutionStatus).toBe(ExecutionStatus.Success);
+      expect(task.execution.nextRunAt).toBeNull();
+      expect(task.status).toBe(ScheduleTaskStatus.Completed);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('treats an explicit skipped disposition as a successful terminal outcome', async () => {
+    const startTime = Date.now() - 120_000;
+    const task = createLoadedTask({
+      id: 'task-skipped-terminal',
+      nextRunAt: startTime,
+      retryPolicy: RetryPolicy.createDefault(),
+      schedule: oneShotPastSchedule(startTime, null),
+    });
+    const repository = createRepositoryMock();
+    repository.findByIdForIdentity.mockResolvedValue(task);
+    const sourceExecutor = {
+      execute: vi.fn(async () => ({
+        disposition: 'skipped' as const,
+        nextRunAt: null,
+        error: 'authoritative state no longer requires work',
+      })),
+    };
+
+    createScheduleRuntimeContribution({
+      scheduleTaskRepository: repository,
+      sourceExecutor,
+    });
+    const queue = getLastQueue();
+
+    await queue.config.onExecuteTask(task.id, { identityId: String(task.identityId) });
+
+    expect(task.execution.lastExecutionStatus).toBe(ExecutionStatus.Skipped);
+    expect(task.execution.nextRunAt).toBeNull();
+    expect(task.status).toBe(ScheduleTaskStatus.Completed);
+  });
+
+  it('treats an explicit dead-letter disposition as terminal even when retry is enabled', async () => {
+    const startTime = Date.now() - 120_000;
+    const task = createLoadedTask({
+      id: 'task-dead-letter',
+      nextRunAt: startTime,
+      retryPolicy: RetryPolicy.createDefault(),
+      schedule: oneShotPastSchedule(startTime),
+    });
+    const repository = createRepositoryMock();
+    repository.findByIdForIdentity.mockResolvedValue(task);
+    const sourceExecutor = {
+      execute: vi.fn(async () => ({
+        disposition: 'dead_letter' as const,
+        nextRunAt: null,
+        error: 'No scheduled handler is registered for key: fake.missing',
+        result: { schedulingFailureCode: 'UNKNOWN_HANDLER' },
+      })),
+    };
+
+    createScheduleRuntimeContribution({
+      scheduleTaskRepository: repository,
+      sourceExecutor,
+    });
+    const queue = getLastQueue();
+
+    await queue.config.onExecuteTask(task.id, { identityId: String(task.identityId) });
+
+    expect(sourceExecutor.execute).toHaveBeenCalledWith(task);
+    expect(repository.save).toHaveBeenCalledWith(task);
+    expect(task.execution.executionCount).toBe(1);
+    expect(task.execution.lastExecutionStatus).toBe(ExecutionStatus.Failed);
+    expect(task.execution.nextRunAt).toBeNull();
+    expect(task.status).toBe(ScheduleTaskStatus.Failed);
+    expect(mocked.loggerError).not.toHaveBeenCalledWith(
+      '[Schedule] Source executor failed',
+      expect.anything(),
+    );
+    expect(mocked.loggerInfo).toHaveBeenCalledWith(
+      '[Schedule] Source executor completed',
+      expect.objectContaining({
+        taskId: task.id,
+        disposition: 'dead_letter',
+        nextRunAt: null,
+      }),
     );
   });
 

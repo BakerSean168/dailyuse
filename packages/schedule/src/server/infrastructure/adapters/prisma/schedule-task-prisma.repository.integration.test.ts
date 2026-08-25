@@ -97,6 +97,26 @@ describe('ScheduleTaskPrismaRepository integration', () => {
     expect(loaded?.executions?.[0]?.status).toBe(ExecutionStatus.Success);
   });
 
+  it('rolls back a transaction-scoped save when the owner reconcile callback fails', async () => {
+    const identityId = 'schedule-int-transaction-rollback';
+    await seedAccount({ id: identityId });
+
+    const prisma = await getPrisma();
+    const repository = new ScheduleTaskPrismaRepository(prisma);
+    const task = createScheduleTask(identityId);
+
+    await expect(
+      repository.withTransaction(async (txRepository) => {
+        await txRepository.save(task);
+        throw new Error('injected owner reconcile failure');
+      }),
+    ).rejects.toThrow('injected owner reconcile failure');
+
+    await expect(
+      prisma.scheduleTask.findUnique({ where: { id: String(task.id) } }),
+    ).resolves.toBeNull();
+  });
+
   it('lists tasks by identity without leaking other scheduler state', async () => {
     const identityId = 'schedule-int-primary';
     const otherIdentityId = 'schedule-int-other';

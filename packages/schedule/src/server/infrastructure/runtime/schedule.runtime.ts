@@ -178,6 +178,7 @@ async function executeScheduledTask(
   let errorMessage: string | undefined;
   let result: Record<string, unknown> | undefined;
   let nextRunAt: number | null | undefined;
+  let explicitlySkippedBySource = false;
 
   // R3b：原子 claim——共享 DB 的多个宿主并发出队同一任务时，
   // 只有先 claim 成功的宿主继续执行；另一宿主直接跳过。
@@ -213,10 +214,28 @@ async function executeScheduledTask(
       });
       const executionResult = await sourceExecutor.execute(task);
       result = executionResult?.result;
-      nextRunAt = executionResult?.nextRunAt ?? task.calculateNextRun();
+      const disposition = executionResult?.disposition;
+      if (disposition === 'skipped') {
+        status = ExecutionStatus.Skipped;
+        explicitlySkippedBySource = true;
+        errorMessage = executionResult?.error ?? 'Scheduled handler skipped execution';
+        nextRunAt = executionResult?.nextRunAt ?? null;
+      } else if (disposition === 'failed' || disposition === 'dead_letter') {
+        status = ExecutionStatus.Failed;
+        errorMessage =
+          executionResult?.error ??
+          (disposition === 'dead_letter'
+            ? 'Scheduled handler moved invocation to dead letter'
+            : 'Scheduled handler failed');
+        // Explicit terminal handler failures never enter the legacy retry path.
+        nextRunAt = executionResult?.nextRunAt ?? null;
+      } else {
+        nextRunAt = executionResult?.nextRunAt ?? task.calculateNextRun();
+      }
       logger.info('[Schedule] Source executor completed', {
         taskId,
         sourceModule: task.sourceModule,
+        disposition: disposition ?? 'legacy-success',
         nextRunAt,
         result,
       });
@@ -241,7 +260,11 @@ async function executeScheduledTask(
     task.fail(errorMessage ?? 'Unknown schedule execution failure');
   }
 
-  if (status === ExecutionStatus.Success && nextRunAt === null) {
+  if (
+    (status === ExecutionStatus.Success ||
+      (status === ExecutionStatus.Skipped && explicitlySkippedBySource)) &&
+    nextRunAt === null
+  ) {
     task.complete();
   }
 

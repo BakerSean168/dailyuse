@@ -7937,6 +7937,26 @@
       ]
     },
     {
+      "path": "packages/schedule/src/scheduling/__tests__/handler-registry.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/schedule/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/schedule/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/schedule/src/scheduling/__tests__/scheduling-contracts.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/schedule/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/schedule/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/schedule/src/server/application/scheduler/patterns-scheduler-dual.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -8142,6 +8162,16 @@
       ]
     },
     {
+      "path": "packages/schedule/src/server/infrastructure/adapters/powersync/__tests__/schedule-task-powersync.repository.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/schedule/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/schedule/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/schedule/src/server/infrastructure/adapters/prisma/__tests__/schedule-event-ownership.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -8260,6 +8290,16 @@
     },
     {
       "path": "packages/schedule/src/server/infrastructure/runtime/schedule.runtime.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/schedule/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/schedule/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/schedule/src/server/infrastructure/scheduling/__tests__/legacy-schedule-task-scheduling.adapter.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/schedule/vitest.config.ts"
@@ -10129,7 +10169,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 41
+      "fileCount": 45
     },
     {
       "id": "packages/schedule/vitest.integration.config.ts",
@@ -10143,7 +10183,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 41
+      "fileCount": 45
     },
     {
       "id": "packages/schedule/vitest.use-cases.config.ts",
@@ -10771,6 +10811,8 @@
       "packages/schedule/src/electron/schedule-electron-delete-contract.spec.ts",
       "packages/schedule/src/electron/schedule-electron.surface.spec.ts",
       "packages/schedule/src/infrastructure-client/adapters/ipc/schedule-ipc.adapter.surface.spec.ts",
+      "packages/schedule/src/scheduling/__tests__/handler-registry.spec.ts",
+      "packages/schedule/src/scheduling/__tests__/scheduling-contracts.spec.ts",
       "packages/schedule/src/server/application/scheduler/patterns-scheduler-dual.surface.spec.ts",
       "packages/schedule/src/server/application/services/__tests__/schedule-domain-event-publisher.spec.ts",
       "packages/schedule/src/server/application/services/__tests__/schedule-w5-concurrency-projection.spec.ts",
@@ -10791,6 +10833,7 @@
       "packages/schedule/src/server/domain/value-objects/__tests__/schedule-config.spec.ts",
       "packages/schedule/src/server/domain/value-objects/__tests__/schedule-task-metadata.spec.ts",
       "packages/schedule/src/server/infrastructure/__tests__/schedule-repositories.surface.spec.ts",
+      "packages/schedule/src/server/infrastructure/adapters/powersync/__tests__/schedule-task-powersync.repository.spec.ts",
       "packages/schedule/src/server/infrastructure/adapters/prisma/__tests__/schedule-event-ownership.surface.spec.ts",
       "packages/schedule/src/server/infrastructure/adapters/prisma/__tests__/schedule-execution-ownership.surface.spec.ts",
       "packages/schedule/src/server/infrastructure/adapters/prisma/__tests__/schedule-task-ownership.surface.spec.ts",
@@ -10801,6 +10844,7 @@
       "packages/schedule/src/server/infrastructure/lease/schedule-lease.repository.spec.ts",
       "packages/schedule/src/server/infrastructure/runtime/schedule-runtime-ownership.surface.spec.ts",
       "packages/schedule/src/server/infrastructure/runtime/schedule.runtime.spec.ts",
+      "packages/schedule/src/server/infrastructure/scheduling/__tests__/legacy-schedule-task-scheduling.adapter.spec.ts",
       "packages/setting/src/api/module-lifecycle.spec.ts",
       "packages/setting/src/api/routes.spec.ts",
       "packages/setting/src/application-client/ports/setting-api-client-port.surface.spec.ts",
