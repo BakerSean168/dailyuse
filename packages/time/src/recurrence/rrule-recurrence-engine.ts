@@ -1,4 +1,5 @@
-import { RRule, type Options, type Weekday } from 'rrule';
+import * as rruleNamespace from 'rrule';
+import type { Options, Weekday } from 'rrule';
 import {
   asHm,
   asYmd,
@@ -15,6 +16,22 @@ import type {
   RecurrenceWeekday,
 } from './recurrence-engine.port';
 
+type RRuleConstructor = typeof import('rrule').RRule;
+type RRuleRuntimeNamespace = {
+  RRule?: RRuleConstructor;
+  default?: { RRule?: RRuleConstructor };
+};
+
+function resolveRRuleConstructor(): RRuleConstructor {
+  const runtime = rruleNamespace as unknown as RRuleRuntimeNamespace;
+  const constructor = runtime.RRule ?? runtime.default?.RRule;
+  if (constructor == null) {
+    throw new TypeError('rrule runtime does not expose RRule');
+  }
+  return constructor;
+}
+
+const RRule = resolveRRuleConstructor();
 
 const FREQUENCY_MAP: Record<RecurrenceFrequency, number> = {
   daily: RRule.DAILY,
