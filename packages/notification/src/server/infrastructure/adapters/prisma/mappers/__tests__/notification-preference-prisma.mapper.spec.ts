@@ -5,12 +5,17 @@ import { DoNotDisturbConfig } from '../../../../../domain/value-objects/do-not-d
 import { RateLimit } from '../../../../../domain/value-objects/rate-limit';
 import { NotificationPreferencePrismaMapper } from '../notification-preference-prisma.mapper';
 
-describe('NotificationPreferencePrismaMapper policy fields', () => {
-  it('round-trips DND and rate-limit configuration through existing persistence columns', () => {
+describe('NotificationPreferencePrismaMapper vNext hierarchy', () => {
+  it('round-trips global/workflow preference layers plus DND/rate-limit', () => {
     const preference = NotificationPreference.create({
-      identityId: 'identity-policy-roundtrip',
-      defaultChannels: [NotificationChannelType.InApp],
+      identityId: 'identity-policy-roundtrip' as never,
     });
+    preference.setGlobalChannel(NotificationChannelType.Email, false);
+    preference.setWorkflowChannelOverride(
+      'system.weekly-digest',
+      NotificationChannelType.Email,
+      true,
+    );
     preference.setDoNotDisturb(
       DoNotDisturbConfig.create({
         enabled: true,
@@ -28,9 +33,8 @@ describe('NotificationPreferencePrismaMapper policy fields', () => {
     const loaded = NotificationPreferencePrismaMapper.toDomain({
       id: String(dto.id),
       identityId: String(dto.identityId),
-      enabled: persisted.enabled,
-      channels: persisted.channels,
-      categories: persisted.categories,
+      globalChannels: persisted.globalChannels,
+      workflowOverrides: persisted.workflowOverrides,
       doNotDisturb: persisted.doNotDisturb,
       rateLimit: persisted.rateLimit,
       version: dto.version,
@@ -39,7 +43,14 @@ describe('NotificationPreferencePrismaMapper policy fields', () => {
       deletedAt: null,
     });
 
+    expect(loaded.getGlobalChannel(NotificationChannelType.Email)).toBe(false);
+    expect(
+      loaded.getWorkflowChannelOverride('system.weekly-digest', NotificationChannelType.Email),
+    ).toBe(true);
     expect(loaded.doNotDisturb?.toDTO()).toEqual(preference.doNotDisturb?.toDTO());
     expect(loaded.rateLimit?.toDTO()).toEqual(preference.rateLimit?.toDTO());
+    expect(persisted).not.toHaveProperty('channels');
+    expect(persisted).not.toHaveProperty('categories');
+    expect(persisted).not.toHaveProperty('enabled');
   });
 });

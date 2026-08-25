@@ -96,12 +96,11 @@ export function createNotificationUseCases(
     throw new Error('[FAIL-CLOSED] NotificationModule requires closureChecker dependency');
   }
 
-  const { notificationRepository, preferenceRepository, templateRepository } = deps;
+  const { notificationRepository, preferenceRepository } = deps;
 
   return {
     createNotification: new CreateNotificationUseCase(
       notificationRepository,
-      templateRepository,
       preferenceRepository,
       deps.closureChecker,
     ),

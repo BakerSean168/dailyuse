@@ -13,6 +13,9 @@ describe('GetUnreadNotificationsUseCase', () => {
   function aNotification(identityId: string) {
     return Notification.create({
       identityId,
+      workflowKey: 'system.general',
+      topic: 'system.general',
+      idempotencyKey: 'unread-list:' + identityId,
       title: 'Unread notification',
       content: 'Content',
       type: NotificationType.Info,

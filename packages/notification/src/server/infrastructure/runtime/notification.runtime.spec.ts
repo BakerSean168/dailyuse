@@ -37,12 +37,15 @@ function notificationWithChannel(status: string, options: { attempts?: number; f
   const notification = Notification.load({
     id: 'n-1' as never,
     identityId: 'identity-1' as never,
+    workflowKey: 'reminder.general',
+    topic: 'reminder.general',
+    idempotencyKey: 'runtime-fixture',
     title: 't',
     content: 'c',
-    type: 'InApp' as never,
+    type: 'Info' as never,
     category: 'Reminder' as never,
     importance: 'Moderate' as never,
-    status: 'Unread' as never,
+    urgency: 'Medium' as never,
     isRead: false,
     readAt: null,
     actions: null,
@@ -122,6 +125,8 @@ describe('NotificationChannel durable worker (R3 收尾)', () => {
     expect(deliverer.deliver).toHaveBeenCalledTimes(1);
     expect(channel.status).toBe(ChannelStatus.Delivered);
     expect(channel.sentAt).not.toBeNull();
+    expect(notification.isRead).toBe(false);
+    expect(notification.readAt).toBeNull();
     expect(repository.save).toHaveBeenCalled();
 
     const receipts = await adapter.queryReceipts(String(notification.identityId));

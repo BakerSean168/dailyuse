@@ -217,6 +217,11 @@ export type NotificationChannel = $Result.DefaultSelection<Prisma.$NotificationC
  */
 export type NotificationHistory = $Result.DefaultSelection<Prisma.$NotificationHistoryPayload>
 /**
+ * Model NotificationDeliveryDecisionRecord
+ *
+ */
+export type NotificationDeliveryDecisionRecord = $Result.DefaultSelection<Prisma.$NotificationDeliveryDecisionRecordPayload>
+/**
  * Model NotificationPreference
  *
  */
@@ -1010,6 +1015,16 @@ export class PrismaClient<
     * ```
     */
   get notificationHistory(): Prisma.NotificationHistoryDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.notificationDeliveryDecisionRecord`: Exposes CRUD operations for the **NotificationDeliveryDecisionRecord** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more NotificationDeliveryDecisionRecords
+    * const notificationDeliveryDecisionRecords = await prisma.notificationDeliveryDecisionRecord.findMany()
+    * ```
+    */
+  get notificationDeliveryDecisionRecord(): Prisma.NotificationDeliveryDecisionRecordDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.notificationPreference`: Exposes CRUD operations for the **NotificationPreference** model.
@@ -2003,6 +2018,7 @@ export namespace Prisma {
     Notification: 'Notification',
     NotificationChannel: 'NotificationChannel',
     NotificationHistory: 'NotificationHistory',
+    NotificationDeliveryDecisionRecord: 'NotificationDeliveryDecisionRecord',
     NotificationPreference: 'NotificationPreference',
     NotificationTemplate: 'NotificationTemplate',
     NotificationDispatchOutbox: 'NotificationDispatchOutbox',
@@ -2070,7 +2086,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "activityLedger" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "cloudAuthUser" | "cloudAuthSession" | "cloudAuthProviderAccount" | "cloudAuthVerification" | "cloudAuthDeviceCode" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "rule" | "ruleRevision" | "habit" | "habitOccurrence" | "habitCheckIn" | "habitStreakProjection" | "label" | "goalLabel" | "taskLabel" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "notificationDispatchOutbox" | "relation" | "outboxMessage" | "inboxReceipt" | "projectionCursor" | "accountClosureOperation" | "operationAuditLog" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "reminderOccurrence" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "knowledgeRepositoryConnection" | "githubWebhookDelivery" | "knowledgeNoteProjection" | "knowledgeAttachmentProjection" | "knowledgeAttachmentContentCache" | "knowledgeWriteRequest" | "knowledgeRepositoryLease" | "schedule" | "scheduleTask" | "schedulingReconcileOperation" | "scheduleExecution" | "scheduleStatistic" | "scheduleLease" | "scheduleRebuildOutbox" | "scheduleDomainEventOutbox" | "scheduleEventConsumerReceipt" | "scheduleEventDeliveryLog" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskGoalOutbox" | "taskDependency" | "taskTemplateHistory" | "taskStatistic" | "walletAccount" | "walletTransaction"
+      modelProps: "account" | "activityLedger" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "cloudAuthUser" | "cloudAuthSession" | "cloudAuthProviderAccount" | "cloudAuthVerification" | "cloudAuthDeviceCode" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "rule" | "ruleRevision" | "habit" | "habitOccurrence" | "habitCheckIn" | "habitStreakProjection" | "label" | "goalLabel" | "taskLabel" | "notification" | "notificationChannel" | "notificationHistory" | "notificationDeliveryDecisionRecord" | "notificationPreference" | "notificationTemplate" | "notificationDispatchOutbox" | "relation" | "outboxMessage" | "inboxReceipt" | "projectionCursor" | "accountClosureOperation" | "operationAuditLog" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "reminderOccurrence" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "knowledgeRepositoryConnection" | "githubWebhookDelivery" | "knowledgeNoteProjection" | "knowledgeAttachmentProjection" | "knowledgeAttachmentContentCache" | "knowledgeWriteRequest" | "knowledgeRepositoryLease" | "schedule" | "scheduleTask" | "schedulingReconcileOperation" | "scheduleExecution" | "scheduleStatistic" | "scheduleLease" | "scheduleRebuildOutbox" | "scheduleDomainEventOutbox" | "scheduleEventConsumerReceipt" | "scheduleEventDeliveryLog" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskGoalOutbox" | "taskDependency" | "taskTemplateHistory" | "taskStatistic" | "walletAccount" | "walletTransaction"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4957,6 +4973,80 @@ export namespace Prisma {
           count: {
             args: Prisma.NotificationHistoryCountArgs<ExtArgs>
             result: $Utils.Optional<NotificationHistoryCountAggregateOutputType> | number
+          }
+        }
+      }
+      NotificationDeliveryDecisionRecord: {
+        payload: Prisma.$NotificationDeliveryDecisionRecordPayload<ExtArgs>
+        fields: Prisma.NotificationDeliveryDecisionRecordFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.NotificationDeliveryDecisionRecordFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationDeliveryDecisionRecordPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.NotificationDeliveryDecisionRecordFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationDeliveryDecisionRecordPayload>
+          }
+          findFirst: {
+            args: Prisma.NotificationDeliveryDecisionRecordFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationDeliveryDecisionRecordPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.NotificationDeliveryDecisionRecordFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationDeliveryDecisionRecordPayload>
+          }
+          findMany: {
+            args: Prisma.NotificationDeliveryDecisionRecordFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationDeliveryDecisionRecordPayload>[]
+          }
+          create: {
+            args: Prisma.NotificationDeliveryDecisionRecordCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationDeliveryDecisionRecordPayload>
+          }
+          createMany: {
+            args: Prisma.NotificationDeliveryDecisionRecordCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.NotificationDeliveryDecisionRecordCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationDeliveryDecisionRecordPayload>[]
+          }
+          delete: {
+            args: Prisma.NotificationDeliveryDecisionRecordDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationDeliveryDecisionRecordPayload>
+          }
+          update: {
+            args: Prisma.NotificationDeliveryDecisionRecordUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationDeliveryDecisionRecordPayload>
+          }
+          deleteMany: {
+            args: Prisma.NotificationDeliveryDecisionRecordDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.NotificationDeliveryDecisionRecordUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.NotificationDeliveryDecisionRecordUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationDeliveryDecisionRecordPayload>[]
+          }
+          upsert: {
+            args: Prisma.NotificationDeliveryDecisionRecordUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationDeliveryDecisionRecordPayload>
+          }
+          aggregate: {
+            args: Prisma.NotificationDeliveryDecisionRecordAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateNotificationDeliveryDecisionRecord>
+          }
+          groupBy: {
+            args: Prisma.NotificationDeliveryDecisionRecordGroupByArgs<ExtArgs>
+            result: $Utils.Optional<NotificationDeliveryDecisionRecordGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.NotificationDeliveryDecisionRecordCountArgs<ExtArgs>
+            result: $Utils.Optional<NotificationDeliveryDecisionRecordCountAggregateOutputType> | number
           }
         }
       }
@@ -8955,6 +9045,7 @@ export namespace Prisma {
     notification?: NotificationOmit
     notificationChannel?: NotificationChannelOmit
     notificationHistory?: NotificationHistoryOmit
+    notificationDeliveryDecisionRecord?: NotificationDeliveryDecisionRecordOmit
     notificationPreference?: NotificationPreferenceOmit
     notificationTemplate?: NotificationTemplateOmit
     notificationDispatchOutbox?: NotificationDispatchOutboxOmit
@@ -10006,12 +10097,14 @@ export namespace Prisma {
     channels: number
     history: number
     dispatchOutboxes: number
+    deliveryDecisions: number
   }
 
   export type NotificationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     channels?: boolean | NotificationCountOutputTypeCountChannelsArgs
     history?: boolean | NotificationCountOutputTypeCountHistoryArgs
     dispatchOutboxes?: boolean | NotificationCountOutputTypeCountDispatchOutboxesArgs
+    deliveryDecisions?: boolean | NotificationCountOutputTypeCountDeliveryDecisionsArgs
   }
 
   // Custom InputTypes
@@ -10044,6 +10137,13 @@ export namespace Prisma {
    */
   export type NotificationCountOutputTypeCountDispatchOutboxesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: NotificationDispatchOutboxWhereInput
+  }
+
+  /**
+   * NotificationCountOutputType without action
+   */
+  export type NotificationCountOutputTypeCountDeliveryDecisionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NotificationDeliveryDecisionRecordWhereInput
   }
 
 
@@ -55156,7 +55256,9 @@ export namespace Prisma {
     identityId: string | null
     type: string | null
     category: string | null
-    status: string | null
+    workflowKey: string | null
+    topic: string | null
+    idempotencyKey: string | null
     title: string | null
     content: string | null
     importance: string | null
@@ -55166,8 +55268,9 @@ export namespace Prisma {
     metadata: string | null
     actions: string | null
     navigationIntent: string | null
+    correlationId: string | null
+    causationId: string | null
     readAt: Date | null
-    sentAt: Date | null
     expiresAt: Date | null
     version: number | null
     createdAt: Date | null
@@ -55181,7 +55284,9 @@ export namespace Prisma {
     identityId: string | null
     type: string | null
     category: string | null
-    status: string | null
+    workflowKey: string | null
+    topic: string | null
+    idempotencyKey: string | null
     title: string | null
     content: string | null
     importance: string | null
@@ -55191,8 +55296,9 @@ export namespace Prisma {
     metadata: string | null
     actions: string | null
     navigationIntent: string | null
+    correlationId: string | null
+    causationId: string | null
     readAt: Date | null
-    sentAt: Date | null
     expiresAt: Date | null
     version: number | null
     createdAt: Date | null
@@ -55206,7 +55312,9 @@ export namespace Prisma {
     identityId: number
     type: number
     category: number
-    status: number
+    workflowKey: number
+    topic: number
+    idempotencyKey: number
     title: number
     content: number
     importance: number
@@ -55216,8 +55324,9 @@ export namespace Prisma {
     metadata: number
     actions: number
     navigationIntent: number
+    correlationId: number
+    causationId: number
     readAt: number
-    sentAt: number
     expiresAt: number
     version: number
     createdAt: number
@@ -55241,7 +55350,9 @@ export namespace Prisma {
     identityId?: true
     type?: true
     category?: true
-    status?: true
+    workflowKey?: true
+    topic?: true
+    idempotencyKey?: true
     title?: true
     content?: true
     importance?: true
@@ -55251,8 +55362,9 @@ export namespace Prisma {
     metadata?: true
     actions?: true
     navigationIntent?: true
+    correlationId?: true
+    causationId?: true
     readAt?: true
-    sentAt?: true
     expiresAt?: true
     version?: true
     createdAt?: true
@@ -55266,7 +55378,9 @@ export namespace Prisma {
     identityId?: true
     type?: true
     category?: true
-    status?: true
+    workflowKey?: true
+    topic?: true
+    idempotencyKey?: true
     title?: true
     content?: true
     importance?: true
@@ -55276,8 +55390,9 @@ export namespace Prisma {
     metadata?: true
     actions?: true
     navigationIntent?: true
+    correlationId?: true
+    causationId?: true
     readAt?: true
-    sentAt?: true
     expiresAt?: true
     version?: true
     createdAt?: true
@@ -55291,7 +55406,9 @@ export namespace Prisma {
     identityId?: true
     type?: true
     category?: true
-    status?: true
+    workflowKey?: true
+    topic?: true
+    idempotencyKey?: true
     title?: true
     content?: true
     importance?: true
@@ -55301,8 +55418,9 @@ export namespace Prisma {
     metadata?: true
     actions?: true
     navigationIntent?: true
+    correlationId?: true
+    causationId?: true
     readAt?: true
-    sentAt?: true
     expiresAt?: true
     version?: true
     createdAt?: true
@@ -55403,7 +55521,9 @@ export namespace Prisma {
     identityId: string
     type: string
     category: string
-    status: string
+    workflowKey: string
+    topic: string
+    idempotencyKey: string
     title: string
     content: string
     importance: string
@@ -55413,8 +55533,9 @@ export namespace Prisma {
     metadata: string | null
     actions: string | null
     navigationIntent: string | null
+    correlationId: string | null
+    causationId: string | null
     readAt: Date | null
-    sentAt: Date | null
     expiresAt: Date | null
     version: number
     createdAt: Date
@@ -55447,7 +55568,9 @@ export namespace Prisma {
     identityId?: boolean
     type?: boolean
     category?: boolean
-    status?: boolean
+    workflowKey?: boolean
+    topic?: boolean
+    idempotencyKey?: boolean
     title?: boolean
     content?: boolean
     importance?: boolean
@@ -55457,8 +55580,9 @@ export namespace Prisma {
     metadata?: boolean
     actions?: boolean
     navigationIntent?: boolean
+    correlationId?: boolean
+    causationId?: boolean
     readAt?: boolean
-    sentAt?: boolean
     expiresAt?: boolean
     version?: boolean
     createdAt?: boolean
@@ -55468,6 +55592,7 @@ export namespace Prisma {
     channels?: boolean | Notification$channelsArgs<ExtArgs>
     history?: boolean | Notification$historyArgs<ExtArgs>
     dispatchOutboxes?: boolean | Notification$dispatchOutboxesArgs<ExtArgs>
+    deliveryDecisions?: boolean | Notification$deliveryDecisionsArgs<ExtArgs>
     account?: boolean | AccountDefaultArgs<ExtArgs>
     _count?: boolean | NotificationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["notification"]>
@@ -55477,7 +55602,9 @@ export namespace Prisma {
     identityId?: boolean
     type?: boolean
     category?: boolean
-    status?: boolean
+    workflowKey?: boolean
+    topic?: boolean
+    idempotencyKey?: boolean
     title?: boolean
     content?: boolean
     importance?: boolean
@@ -55487,8 +55614,9 @@ export namespace Prisma {
     metadata?: boolean
     actions?: boolean
     navigationIntent?: boolean
+    correlationId?: boolean
+    causationId?: boolean
     readAt?: boolean
-    sentAt?: boolean
     expiresAt?: boolean
     version?: boolean
     createdAt?: boolean
@@ -55503,7 +55631,9 @@ export namespace Prisma {
     identityId?: boolean
     type?: boolean
     category?: boolean
-    status?: boolean
+    workflowKey?: boolean
+    topic?: boolean
+    idempotencyKey?: boolean
     title?: boolean
     content?: boolean
     importance?: boolean
@@ -55513,8 +55643,9 @@ export namespace Prisma {
     metadata?: boolean
     actions?: boolean
     navigationIntent?: boolean
+    correlationId?: boolean
+    causationId?: boolean
     readAt?: boolean
-    sentAt?: boolean
     expiresAt?: boolean
     version?: boolean
     createdAt?: boolean
@@ -55529,7 +55660,9 @@ export namespace Prisma {
     identityId?: boolean
     type?: boolean
     category?: boolean
-    status?: boolean
+    workflowKey?: boolean
+    topic?: boolean
+    idempotencyKey?: boolean
     title?: boolean
     content?: boolean
     importance?: boolean
@@ -55539,8 +55672,9 @@ export namespace Prisma {
     metadata?: boolean
     actions?: boolean
     navigationIntent?: boolean
+    correlationId?: boolean
+    causationId?: boolean
     readAt?: boolean
-    sentAt?: boolean
     expiresAt?: boolean
     version?: boolean
     createdAt?: boolean
@@ -55549,11 +55683,12 @@ export namespace Prisma {
     isRead?: boolean
   }
 
-  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "type" | "category" | "status" | "title" | "content" | "importance" | "urgency" | "relatedEntityType" | "relatedEntityId" | "metadata" | "actions" | "navigationIntent" | "readAt" | "sentAt" | "expiresAt" | "version" | "createdAt" | "updatedAt" | "deletedAt" | "isRead", ExtArgs["result"]["notification"]>
+  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "type" | "category" | "workflowKey" | "topic" | "idempotencyKey" | "title" | "content" | "importance" | "urgency" | "relatedEntityType" | "relatedEntityId" | "metadata" | "actions" | "navigationIntent" | "correlationId" | "causationId" | "readAt" | "expiresAt" | "version" | "createdAt" | "updatedAt" | "deletedAt" | "isRead", ExtArgs["result"]["notification"]>
   export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     channels?: boolean | Notification$channelsArgs<ExtArgs>
     history?: boolean | Notification$historyArgs<ExtArgs>
     dispatchOutboxes?: boolean | Notification$dispatchOutboxesArgs<ExtArgs>
+    deliveryDecisions?: boolean | Notification$deliveryDecisionsArgs<ExtArgs>
     account?: boolean | AccountDefaultArgs<ExtArgs>
     _count?: boolean | NotificationCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -55570,6 +55705,7 @@ export namespace Prisma {
       channels: Prisma.$NotificationChannelPayload<ExtArgs>[]
       history: Prisma.$NotificationHistoryPayload<ExtArgs>[]
       dispatchOutboxes: Prisma.$NotificationDispatchOutboxPayload<ExtArgs>[]
+      deliveryDecisions: Prisma.$NotificationDeliveryDecisionRecordPayload<ExtArgs>[]
       account: Prisma.$AccountPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -55577,7 +55713,9 @@ export namespace Prisma {
       identityId: string
       type: string
       category: string
-      status: string
+      workflowKey: string
+      topic: string
+      idempotencyKey: string
       title: string
       content: string
       importance: string
@@ -55587,8 +55725,9 @@ export namespace Prisma {
       metadata: string | null
       actions: string | null
       navigationIntent: string | null
+      correlationId: string | null
+      causationId: string | null
       readAt: Date | null
-      sentAt: Date | null
       expiresAt: Date | null
       version: number
       createdAt: Date
@@ -55992,6 +56131,7 @@ export namespace Prisma {
     channels<T extends Notification$channelsArgs<ExtArgs> = {}>(args?: Subset<T, Notification$channelsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     history<T extends Notification$historyArgs<ExtArgs> = {}>(args?: Subset<T, Notification$historyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     dispatchOutboxes<T extends Notification$dispatchOutboxesArgs<ExtArgs> = {}>(args?: Subset<T, Notification$dispatchOutboxesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationDispatchOutboxPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    deliveryDecisions<T extends Notification$deliveryDecisionsArgs<ExtArgs> = {}>(args?: Subset<T, Notification$deliveryDecisionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationDeliveryDecisionRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -56026,7 +56166,9 @@ export namespace Prisma {
     readonly identityId: FieldRef<"Notification", 'String'>
     readonly type: FieldRef<"Notification", 'String'>
     readonly category: FieldRef<"Notification", 'String'>
-    readonly status: FieldRef<"Notification", 'String'>
+    readonly workflowKey: FieldRef<"Notification", 'String'>
+    readonly topic: FieldRef<"Notification", 'String'>
+    readonly idempotencyKey: FieldRef<"Notification", 'String'>
     readonly title: FieldRef<"Notification", 'String'>
     readonly content: FieldRef<"Notification", 'String'>
     readonly importance: FieldRef<"Notification", 'String'>
@@ -56036,8 +56178,9 @@ export namespace Prisma {
     readonly metadata: FieldRef<"Notification", 'String'>
     readonly actions: FieldRef<"Notification", 'String'>
     readonly navigationIntent: FieldRef<"Notification", 'String'>
+    readonly correlationId: FieldRef<"Notification", 'String'>
+    readonly causationId: FieldRef<"Notification", 'String'>
     readonly readAt: FieldRef<"Notification", 'DateTime'>
-    readonly sentAt: FieldRef<"Notification", 'DateTime'>
     readonly expiresAt: FieldRef<"Notification", 'DateTime'>
     readonly version: FieldRef<"Notification", 'Int'>
     readonly createdAt: FieldRef<"Notification", 'DateTime'>
@@ -56514,6 +56657,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: NotificationDispatchOutboxScalarFieldEnum | NotificationDispatchOutboxScalarFieldEnum[]
+  }
+
+  /**
+   * Notification.deliveryDecisions
+   */
+  export type Notification$deliveryDecisionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationDeliveryDecisionRecord
+     */
+    select?: NotificationDeliveryDecisionRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationDeliveryDecisionRecord
+     */
+    omit?: NotificationDeliveryDecisionRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationDeliveryDecisionRecordInclude<ExtArgs> | null
+    where?: NotificationDeliveryDecisionRecordWhereInput
+    orderBy?: NotificationDeliveryDecisionRecordOrderByWithRelationInput | NotificationDeliveryDecisionRecordOrderByWithRelationInput[]
+    cursor?: NotificationDeliveryDecisionRecordWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: NotificationDeliveryDecisionRecordScalarFieldEnum | NotificationDeliveryDecisionRecordScalarFieldEnum[]
   }
 
   /**
@@ -58850,6 +59017,1134 @@ export namespace Prisma {
 
 
   /**
+   * Model NotificationDeliveryDecisionRecord
+   */
+
+  export type AggregateNotificationDeliveryDecisionRecord = {
+    _count: NotificationDeliveryDecisionRecordCountAggregateOutputType | null
+    _min: NotificationDeliveryDecisionRecordMinAggregateOutputType | null
+    _max: NotificationDeliveryDecisionRecordMaxAggregateOutputType | null
+  }
+
+  export type NotificationDeliveryDecisionRecordMinAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    notificationId: string | null
+    channel: string | null
+    outcome: string | null
+    reason: string | null
+    preferenceSource: string | null
+    retryAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type NotificationDeliveryDecisionRecordMaxAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    notificationId: string | null
+    channel: string | null
+    outcome: string | null
+    reason: string | null
+    preferenceSource: string | null
+    retryAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type NotificationDeliveryDecisionRecordCountAggregateOutputType = {
+    id: number
+    identityId: number
+    notificationId: number
+    channel: number
+    outcome: number
+    reason: number
+    preferenceSource: number
+    retryAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type NotificationDeliveryDecisionRecordMinAggregateInputType = {
+    id?: true
+    identityId?: true
+    notificationId?: true
+    channel?: true
+    outcome?: true
+    reason?: true
+    preferenceSource?: true
+    retryAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type NotificationDeliveryDecisionRecordMaxAggregateInputType = {
+    id?: true
+    identityId?: true
+    notificationId?: true
+    channel?: true
+    outcome?: true
+    reason?: true
+    preferenceSource?: true
+    retryAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type NotificationDeliveryDecisionRecordCountAggregateInputType = {
+    id?: true
+    identityId?: true
+    notificationId?: true
+    channel?: true
+    outcome?: true
+    reason?: true
+    preferenceSource?: true
+    retryAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type NotificationDeliveryDecisionRecordAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which NotificationDeliveryDecisionRecord to aggregate.
+     */
+    where?: NotificationDeliveryDecisionRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of NotificationDeliveryDecisionRecords to fetch.
+     */
+    orderBy?: NotificationDeliveryDecisionRecordOrderByWithRelationInput | NotificationDeliveryDecisionRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: NotificationDeliveryDecisionRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` NotificationDeliveryDecisionRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` NotificationDeliveryDecisionRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned NotificationDeliveryDecisionRecords
+    **/
+    _count?: true | NotificationDeliveryDecisionRecordCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+    **/
+    _min?: NotificationDeliveryDecisionRecordMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+    **/
+    _max?: NotificationDeliveryDecisionRecordMaxAggregateInputType
+  }
+
+  export type GetNotificationDeliveryDecisionRecordAggregateType<T extends NotificationDeliveryDecisionRecordAggregateArgs> = {
+        [P in keyof T & keyof AggregateNotificationDeliveryDecisionRecord]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateNotificationDeliveryDecisionRecord[P]>
+      : GetScalarType<T[P], AggregateNotificationDeliveryDecisionRecord[P]>
+  }
+
+
+
+
+  export type NotificationDeliveryDecisionRecordGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NotificationDeliveryDecisionRecordWhereInput
+    orderBy?: NotificationDeliveryDecisionRecordOrderByWithAggregationInput | NotificationDeliveryDecisionRecordOrderByWithAggregationInput[]
+    by: NotificationDeliveryDecisionRecordScalarFieldEnum[] | NotificationDeliveryDecisionRecordScalarFieldEnum
+    having?: NotificationDeliveryDecisionRecordScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: NotificationDeliveryDecisionRecordCountAggregateInputType | true
+    _min?: NotificationDeliveryDecisionRecordMinAggregateInputType
+    _max?: NotificationDeliveryDecisionRecordMaxAggregateInputType
+  }
+
+  export type NotificationDeliveryDecisionRecordGroupByOutputType = {
+    id: string
+    identityId: string
+    notificationId: string
+    channel: string
+    outcome: string
+    reason: string
+    preferenceSource: string | null
+    retryAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: NotificationDeliveryDecisionRecordCountAggregateOutputType | null
+    _min: NotificationDeliveryDecisionRecordMinAggregateOutputType | null
+    _max: NotificationDeliveryDecisionRecordMaxAggregateOutputType | null
+  }
+
+  type GetNotificationDeliveryDecisionRecordGroupByPayload<T extends NotificationDeliveryDecisionRecordGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<NotificationDeliveryDecisionRecordGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof NotificationDeliveryDecisionRecordGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], NotificationDeliveryDecisionRecordGroupByOutputType[P]>
+            : GetScalarType<T[P], NotificationDeliveryDecisionRecordGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type NotificationDeliveryDecisionRecordSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    notificationId?: boolean
+    channel?: boolean
+    outcome?: boolean
+    reason?: boolean
+    preferenceSource?: boolean
+    retryAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    notification?: boolean | NotificationDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["notificationDeliveryDecisionRecord"]>
+
+  export type NotificationDeliveryDecisionRecordSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    notificationId?: boolean
+    channel?: boolean
+    outcome?: boolean
+    reason?: boolean
+    preferenceSource?: boolean
+    retryAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    notification?: boolean | NotificationDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["notificationDeliveryDecisionRecord"]>
+
+  export type NotificationDeliveryDecisionRecordSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    notificationId?: boolean
+    channel?: boolean
+    outcome?: boolean
+    reason?: boolean
+    preferenceSource?: boolean
+    retryAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    notification?: boolean | NotificationDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["notificationDeliveryDecisionRecord"]>
+
+  export type NotificationDeliveryDecisionRecordSelectScalar = {
+    id?: boolean
+    identityId?: boolean
+    notificationId?: boolean
+    channel?: boolean
+    outcome?: boolean
+    reason?: boolean
+    preferenceSource?: boolean
+    retryAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type NotificationDeliveryDecisionRecordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "notificationId" | "channel" | "outcome" | "reason" | "preferenceSource" | "retryAt" | "createdAt" | "updatedAt", ExtArgs["result"]["notificationDeliveryDecisionRecord"]>
+  export type NotificationDeliveryDecisionRecordInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    notification?: boolean | NotificationDefaultArgs<ExtArgs>
+  }
+  export type NotificationDeliveryDecisionRecordIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    notification?: boolean | NotificationDefaultArgs<ExtArgs>
+  }
+  export type NotificationDeliveryDecisionRecordIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    notification?: boolean | NotificationDefaultArgs<ExtArgs>
+  }
+
+  export type $NotificationDeliveryDecisionRecordPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "NotificationDeliveryDecisionRecord"
+    objects: {
+      notification: Prisma.$NotificationPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      identityId: string
+      notificationId: string
+      channel: string
+      outcome: string
+      reason: string
+      preferenceSource: string | null
+      retryAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["notificationDeliveryDecisionRecord"]>
+    composites: {}
+  }
+
+  type NotificationDeliveryDecisionRecordGetPayload<S extends boolean | null | undefined | NotificationDeliveryDecisionRecordDefaultArgs> = $Result.GetResult<Prisma.$NotificationDeliveryDecisionRecordPayload, S>
+
+  type NotificationDeliveryDecisionRecordCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<NotificationDeliveryDecisionRecordFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: NotificationDeliveryDecisionRecordCountAggregateInputType | true
+    }
+
+  export interface NotificationDeliveryDecisionRecordDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['NotificationDeliveryDecisionRecord'], meta: { name: 'NotificationDeliveryDecisionRecord' } }
+    /**
+     * Find zero or one NotificationDeliveryDecisionRecord that matches the filter.
+     * @param {NotificationDeliveryDecisionRecordFindUniqueArgs} args - Arguments to find a NotificationDeliveryDecisionRecord
+     * @example
+     * // Get one NotificationDeliveryDecisionRecord
+     * const notificationDeliveryDecisionRecord = await prisma.notificationDeliveryDecisionRecord.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends NotificationDeliveryDecisionRecordFindUniqueArgs>(args: SelectSubset<T, NotificationDeliveryDecisionRecordFindUniqueArgs<ExtArgs>>): Prisma__NotificationDeliveryDecisionRecordClient<$Result.GetResult<Prisma.$NotificationDeliveryDecisionRecordPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one NotificationDeliveryDecisionRecord that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {NotificationDeliveryDecisionRecordFindUniqueOrThrowArgs} args - Arguments to find a NotificationDeliveryDecisionRecord
+     * @example
+     * // Get one NotificationDeliveryDecisionRecord
+     * const notificationDeliveryDecisionRecord = await prisma.notificationDeliveryDecisionRecord.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends NotificationDeliveryDecisionRecordFindUniqueOrThrowArgs>(args: SelectSubset<T, NotificationDeliveryDecisionRecordFindUniqueOrThrowArgs<ExtArgs>>): Prisma__NotificationDeliveryDecisionRecordClient<$Result.GetResult<Prisma.$NotificationDeliveryDecisionRecordPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first NotificationDeliveryDecisionRecord that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationDeliveryDecisionRecordFindFirstArgs} args - Arguments to find a NotificationDeliveryDecisionRecord
+     * @example
+     * // Get one NotificationDeliveryDecisionRecord
+     * const notificationDeliveryDecisionRecord = await prisma.notificationDeliveryDecisionRecord.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends NotificationDeliveryDecisionRecordFindFirstArgs>(args?: SelectSubset<T, NotificationDeliveryDecisionRecordFindFirstArgs<ExtArgs>>): Prisma__NotificationDeliveryDecisionRecordClient<$Result.GetResult<Prisma.$NotificationDeliveryDecisionRecordPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first NotificationDeliveryDecisionRecord that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationDeliveryDecisionRecordFindFirstOrThrowArgs} args - Arguments to find a NotificationDeliveryDecisionRecord
+     * @example
+     * // Get one NotificationDeliveryDecisionRecord
+     * const notificationDeliveryDecisionRecord = await prisma.notificationDeliveryDecisionRecord.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends NotificationDeliveryDecisionRecordFindFirstOrThrowArgs>(args?: SelectSubset<T, NotificationDeliveryDecisionRecordFindFirstOrThrowArgs<ExtArgs>>): Prisma__NotificationDeliveryDecisionRecordClient<$Result.GetResult<Prisma.$NotificationDeliveryDecisionRecordPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more NotificationDeliveryDecisionRecords that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationDeliveryDecisionRecordFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all NotificationDeliveryDecisionRecords
+     * const notificationDeliveryDecisionRecords = await prisma.notificationDeliveryDecisionRecord.findMany()
+     *
+     * // Get first 10 NotificationDeliveryDecisionRecords
+     * const notificationDeliveryDecisionRecords = await prisma.notificationDeliveryDecisionRecord.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const notificationDeliveryDecisionRecordWithIdOnly = await prisma.notificationDeliveryDecisionRecord.findMany({ select: { id: true } })
+     *
+     */
+    findMany<T extends NotificationDeliveryDecisionRecordFindManyArgs>(args?: SelectSubset<T, NotificationDeliveryDecisionRecordFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationDeliveryDecisionRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a NotificationDeliveryDecisionRecord.
+     * @param {NotificationDeliveryDecisionRecordCreateArgs} args - Arguments to create a NotificationDeliveryDecisionRecord.
+     * @example
+     * // Create one NotificationDeliveryDecisionRecord
+     * const NotificationDeliveryDecisionRecord = await prisma.notificationDeliveryDecisionRecord.create({
+     *   data: {
+     *     // ... data to create a NotificationDeliveryDecisionRecord
+     *   }
+     * })
+     *
+     */
+    create<T extends NotificationDeliveryDecisionRecordCreateArgs>(args: SelectSubset<T, NotificationDeliveryDecisionRecordCreateArgs<ExtArgs>>): Prisma__NotificationDeliveryDecisionRecordClient<$Result.GetResult<Prisma.$NotificationDeliveryDecisionRecordPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many NotificationDeliveryDecisionRecords.
+     * @param {NotificationDeliveryDecisionRecordCreateManyArgs} args - Arguments to create many NotificationDeliveryDecisionRecords.
+     * @example
+     * // Create many NotificationDeliveryDecisionRecords
+     * const notificationDeliveryDecisionRecord = await prisma.notificationDeliveryDecisionRecord.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends NotificationDeliveryDecisionRecordCreateManyArgs>(args?: SelectSubset<T, NotificationDeliveryDecisionRecordCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many NotificationDeliveryDecisionRecords and returns the data saved in the database.
+     * @param {NotificationDeliveryDecisionRecordCreateManyAndReturnArgs} args - Arguments to create many NotificationDeliveryDecisionRecords.
+     * @example
+     * // Create many NotificationDeliveryDecisionRecords
+     * const notificationDeliveryDecisionRecord = await prisma.notificationDeliveryDecisionRecord.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many NotificationDeliveryDecisionRecords and only return the `id`
+     * const notificationDeliveryDecisionRecordWithIdOnly = await prisma.notificationDeliveryDecisionRecord.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends NotificationDeliveryDecisionRecordCreateManyAndReturnArgs>(args?: SelectSubset<T, NotificationDeliveryDecisionRecordCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationDeliveryDecisionRecordPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a NotificationDeliveryDecisionRecord.
+     * @param {NotificationDeliveryDecisionRecordDeleteArgs} args - Arguments to delete one NotificationDeliveryDecisionRecord.
+     * @example
+     * // Delete one NotificationDeliveryDecisionRecord
+     * const NotificationDeliveryDecisionRecord = await prisma.notificationDeliveryDecisionRecord.delete({
+     *   where: {
+     *     // ... filter to delete one NotificationDeliveryDecisionRecord
+     *   }
+     * })
+     *
+     */
+    delete<T extends NotificationDeliveryDecisionRecordDeleteArgs>(args: SelectSubset<T, NotificationDeliveryDecisionRecordDeleteArgs<ExtArgs>>): Prisma__NotificationDeliveryDecisionRecordClient<$Result.GetResult<Prisma.$NotificationDeliveryDecisionRecordPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one NotificationDeliveryDecisionRecord.
+     * @param {NotificationDeliveryDecisionRecordUpdateArgs} args - Arguments to update one NotificationDeliveryDecisionRecord.
+     * @example
+     * // Update one NotificationDeliveryDecisionRecord
+     * const notificationDeliveryDecisionRecord = await prisma.notificationDeliveryDecisionRecord.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends NotificationDeliveryDecisionRecordUpdateArgs>(args: SelectSubset<T, NotificationDeliveryDecisionRecordUpdateArgs<ExtArgs>>): Prisma__NotificationDeliveryDecisionRecordClient<$Result.GetResult<Prisma.$NotificationDeliveryDecisionRecordPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more NotificationDeliveryDecisionRecords.
+     * @param {NotificationDeliveryDecisionRecordDeleteManyArgs} args - Arguments to filter NotificationDeliveryDecisionRecords to delete.
+     * @example
+     * // Delete a few NotificationDeliveryDecisionRecords
+     * const { count } = await prisma.notificationDeliveryDecisionRecord.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends NotificationDeliveryDecisionRecordDeleteManyArgs>(args?: SelectSubset<T, NotificationDeliveryDecisionRecordDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more NotificationDeliveryDecisionRecords.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationDeliveryDecisionRecordUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many NotificationDeliveryDecisionRecords
+     * const notificationDeliveryDecisionRecord = await prisma.notificationDeliveryDecisionRecord.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends NotificationDeliveryDecisionRecordUpdateManyArgs>(args: SelectSubset<T, NotificationDeliveryDecisionRecordUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more NotificationDeliveryDecisionRecords and returns the data updated in the database.
+     * @param {NotificationDeliveryDecisionRecordUpdateManyAndReturnArgs} args - Arguments to update many NotificationDeliveryDecisionRecords.
+     * @example
+     * // Update many NotificationDeliveryDecisionRecords
+     * const notificationDeliveryDecisionRecord = await prisma.notificationDeliveryDecisionRecord.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more NotificationDeliveryDecisionRecords and only return the `id`
+     * const notificationDeliveryDecisionRecordWithIdOnly = await prisma.notificationDeliveryDecisionRecord.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    updateManyAndReturn<T extends NotificationDeliveryDecisionRecordUpdateManyAndReturnArgs>(args: SelectSubset<T, NotificationDeliveryDecisionRecordUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationDeliveryDecisionRecordPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one NotificationDeliveryDecisionRecord.
+     * @param {NotificationDeliveryDecisionRecordUpsertArgs} args - Arguments to update or create a NotificationDeliveryDecisionRecord.
+     * @example
+     * // Update or create a NotificationDeliveryDecisionRecord
+     * const notificationDeliveryDecisionRecord = await prisma.notificationDeliveryDecisionRecord.upsert({
+     *   create: {
+     *     // ... data to create a NotificationDeliveryDecisionRecord
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the NotificationDeliveryDecisionRecord we want to update
+     *   }
+     * })
+     */
+    upsert<T extends NotificationDeliveryDecisionRecordUpsertArgs>(args: SelectSubset<T, NotificationDeliveryDecisionRecordUpsertArgs<ExtArgs>>): Prisma__NotificationDeliveryDecisionRecordClient<$Result.GetResult<Prisma.$NotificationDeliveryDecisionRecordPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of NotificationDeliveryDecisionRecords.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationDeliveryDecisionRecordCountArgs} args - Arguments to filter NotificationDeliveryDecisionRecords to count.
+     * @example
+     * // Count the number of NotificationDeliveryDecisionRecords
+     * const count = await prisma.notificationDeliveryDecisionRecord.count({
+     *   where: {
+     *     // ... the filter for the NotificationDeliveryDecisionRecords we want to count
+     *   }
+     * })
+    **/
+    count<T extends NotificationDeliveryDecisionRecordCountArgs>(
+      args?: Subset<T, NotificationDeliveryDecisionRecordCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], NotificationDeliveryDecisionRecordCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a NotificationDeliveryDecisionRecord.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationDeliveryDecisionRecordAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends NotificationDeliveryDecisionRecordAggregateArgs>(args: Subset<T, NotificationDeliveryDecisionRecordAggregateArgs>): Prisma.PrismaPromise<GetNotificationDeliveryDecisionRecordAggregateType<T>>
+
+    /**
+     * Group by NotificationDeliveryDecisionRecord.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationDeliveryDecisionRecordGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+    **/
+    groupBy<
+      T extends NotificationDeliveryDecisionRecordGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: NotificationDeliveryDecisionRecordGroupByArgs['orderBy'] }
+        : { orderBy?: NotificationDeliveryDecisionRecordGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, NotificationDeliveryDecisionRecordGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetNotificationDeliveryDecisionRecordGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the NotificationDeliveryDecisionRecord model
+   */
+  readonly fields: NotificationDeliveryDecisionRecordFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for NotificationDeliveryDecisionRecord.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__NotificationDeliveryDecisionRecordClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    notification<T extends NotificationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, NotificationDefaultArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the NotificationDeliveryDecisionRecord model
+   */
+  interface NotificationDeliveryDecisionRecordFieldRefs {
+    readonly id: FieldRef<"NotificationDeliveryDecisionRecord", 'String'>
+    readonly identityId: FieldRef<"NotificationDeliveryDecisionRecord", 'String'>
+    readonly notificationId: FieldRef<"NotificationDeliveryDecisionRecord", 'String'>
+    readonly channel: FieldRef<"NotificationDeliveryDecisionRecord", 'String'>
+    readonly outcome: FieldRef<"NotificationDeliveryDecisionRecord", 'String'>
+    readonly reason: FieldRef<"NotificationDeliveryDecisionRecord", 'String'>
+    readonly preferenceSource: FieldRef<"NotificationDeliveryDecisionRecord", 'String'>
+    readonly retryAt: FieldRef<"NotificationDeliveryDecisionRecord", 'DateTime'>
+    readonly createdAt: FieldRef<"NotificationDeliveryDecisionRecord", 'DateTime'>
+    readonly updatedAt: FieldRef<"NotificationDeliveryDecisionRecord", 'DateTime'>
+  }
+
+
+  // Custom InputTypes
+  /**
+   * NotificationDeliveryDecisionRecord findUnique
+   */
+  export type NotificationDeliveryDecisionRecordFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationDeliveryDecisionRecord
+     */
+    select?: NotificationDeliveryDecisionRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationDeliveryDecisionRecord
+     */
+    omit?: NotificationDeliveryDecisionRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationDeliveryDecisionRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which NotificationDeliveryDecisionRecord to fetch.
+     */
+    where: NotificationDeliveryDecisionRecordWhereUniqueInput
+  }
+
+  /**
+   * NotificationDeliveryDecisionRecord findUniqueOrThrow
+   */
+  export type NotificationDeliveryDecisionRecordFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationDeliveryDecisionRecord
+     */
+    select?: NotificationDeliveryDecisionRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationDeliveryDecisionRecord
+     */
+    omit?: NotificationDeliveryDecisionRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationDeliveryDecisionRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which NotificationDeliveryDecisionRecord to fetch.
+     */
+    where: NotificationDeliveryDecisionRecordWhereUniqueInput
+  }
+
+  /**
+   * NotificationDeliveryDecisionRecord findFirst
+   */
+  export type NotificationDeliveryDecisionRecordFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationDeliveryDecisionRecord
+     */
+    select?: NotificationDeliveryDecisionRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationDeliveryDecisionRecord
+     */
+    omit?: NotificationDeliveryDecisionRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationDeliveryDecisionRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which NotificationDeliveryDecisionRecord to fetch.
+     */
+    where?: NotificationDeliveryDecisionRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of NotificationDeliveryDecisionRecords to fetch.
+     */
+    orderBy?: NotificationDeliveryDecisionRecordOrderByWithRelationInput | NotificationDeliveryDecisionRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for NotificationDeliveryDecisionRecords.
+     */
+    cursor?: NotificationDeliveryDecisionRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` NotificationDeliveryDecisionRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` NotificationDeliveryDecisionRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of NotificationDeliveryDecisionRecords.
+     */
+    distinct?: NotificationDeliveryDecisionRecordScalarFieldEnum | NotificationDeliveryDecisionRecordScalarFieldEnum[]
+  }
+
+  /**
+   * NotificationDeliveryDecisionRecord findFirstOrThrow
+   */
+  export type NotificationDeliveryDecisionRecordFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationDeliveryDecisionRecord
+     */
+    select?: NotificationDeliveryDecisionRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationDeliveryDecisionRecord
+     */
+    omit?: NotificationDeliveryDecisionRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationDeliveryDecisionRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which NotificationDeliveryDecisionRecord to fetch.
+     */
+    where?: NotificationDeliveryDecisionRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of NotificationDeliveryDecisionRecords to fetch.
+     */
+    orderBy?: NotificationDeliveryDecisionRecordOrderByWithRelationInput | NotificationDeliveryDecisionRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for NotificationDeliveryDecisionRecords.
+     */
+    cursor?: NotificationDeliveryDecisionRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` NotificationDeliveryDecisionRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` NotificationDeliveryDecisionRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of NotificationDeliveryDecisionRecords.
+     */
+    distinct?: NotificationDeliveryDecisionRecordScalarFieldEnum | NotificationDeliveryDecisionRecordScalarFieldEnum[]
+  }
+
+  /**
+   * NotificationDeliveryDecisionRecord findMany
+   */
+  export type NotificationDeliveryDecisionRecordFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationDeliveryDecisionRecord
+     */
+    select?: NotificationDeliveryDecisionRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationDeliveryDecisionRecord
+     */
+    omit?: NotificationDeliveryDecisionRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationDeliveryDecisionRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which NotificationDeliveryDecisionRecords to fetch.
+     */
+    where?: NotificationDeliveryDecisionRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of NotificationDeliveryDecisionRecords to fetch.
+     */
+    orderBy?: NotificationDeliveryDecisionRecordOrderByWithRelationInput | NotificationDeliveryDecisionRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing NotificationDeliveryDecisionRecords.
+     */
+    cursor?: NotificationDeliveryDecisionRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` NotificationDeliveryDecisionRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` NotificationDeliveryDecisionRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of NotificationDeliveryDecisionRecords.
+     */
+    distinct?: NotificationDeliveryDecisionRecordScalarFieldEnum | NotificationDeliveryDecisionRecordScalarFieldEnum[]
+  }
+
+  /**
+   * NotificationDeliveryDecisionRecord create
+   */
+  export type NotificationDeliveryDecisionRecordCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationDeliveryDecisionRecord
+     */
+    select?: NotificationDeliveryDecisionRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationDeliveryDecisionRecord
+     */
+    omit?: NotificationDeliveryDecisionRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationDeliveryDecisionRecordInclude<ExtArgs> | null
+    /**
+     * The data needed to create a NotificationDeliveryDecisionRecord.
+     */
+    data: XOR<NotificationDeliveryDecisionRecordCreateInput, NotificationDeliveryDecisionRecordUncheckedCreateInput>
+  }
+
+  /**
+   * NotificationDeliveryDecisionRecord createMany
+   */
+  export type NotificationDeliveryDecisionRecordCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many NotificationDeliveryDecisionRecords.
+     */
+    data: NotificationDeliveryDecisionRecordCreateManyInput | NotificationDeliveryDecisionRecordCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * NotificationDeliveryDecisionRecord createManyAndReturn
+   */
+  export type NotificationDeliveryDecisionRecordCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationDeliveryDecisionRecord
+     */
+    select?: NotificationDeliveryDecisionRecordSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationDeliveryDecisionRecord
+     */
+    omit?: NotificationDeliveryDecisionRecordOmit<ExtArgs> | null
+    /**
+     * The data used to create many NotificationDeliveryDecisionRecords.
+     */
+    data: NotificationDeliveryDecisionRecordCreateManyInput | NotificationDeliveryDecisionRecordCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationDeliveryDecisionRecordIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * NotificationDeliveryDecisionRecord update
+   */
+  export type NotificationDeliveryDecisionRecordUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationDeliveryDecisionRecord
+     */
+    select?: NotificationDeliveryDecisionRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationDeliveryDecisionRecord
+     */
+    omit?: NotificationDeliveryDecisionRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationDeliveryDecisionRecordInclude<ExtArgs> | null
+    /**
+     * The data needed to update a NotificationDeliveryDecisionRecord.
+     */
+    data: XOR<NotificationDeliveryDecisionRecordUpdateInput, NotificationDeliveryDecisionRecordUncheckedUpdateInput>
+    /**
+     * Choose, which NotificationDeliveryDecisionRecord to update.
+     */
+    where: NotificationDeliveryDecisionRecordWhereUniqueInput
+  }
+
+  /**
+   * NotificationDeliveryDecisionRecord updateMany
+   */
+  export type NotificationDeliveryDecisionRecordUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update NotificationDeliveryDecisionRecords.
+     */
+    data: XOR<NotificationDeliveryDecisionRecordUpdateManyMutationInput, NotificationDeliveryDecisionRecordUncheckedUpdateManyInput>
+    /**
+     * Filter which NotificationDeliveryDecisionRecords to update
+     */
+    where?: NotificationDeliveryDecisionRecordWhereInput
+    /**
+     * Limit how many NotificationDeliveryDecisionRecords to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * NotificationDeliveryDecisionRecord updateManyAndReturn
+   */
+  export type NotificationDeliveryDecisionRecordUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationDeliveryDecisionRecord
+     */
+    select?: NotificationDeliveryDecisionRecordSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationDeliveryDecisionRecord
+     */
+    omit?: NotificationDeliveryDecisionRecordOmit<ExtArgs> | null
+    /**
+     * The data used to update NotificationDeliveryDecisionRecords.
+     */
+    data: XOR<NotificationDeliveryDecisionRecordUpdateManyMutationInput, NotificationDeliveryDecisionRecordUncheckedUpdateManyInput>
+    /**
+     * Filter which NotificationDeliveryDecisionRecords to update
+     */
+    where?: NotificationDeliveryDecisionRecordWhereInput
+    /**
+     * Limit how many NotificationDeliveryDecisionRecords to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationDeliveryDecisionRecordIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * NotificationDeliveryDecisionRecord upsert
+   */
+  export type NotificationDeliveryDecisionRecordUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationDeliveryDecisionRecord
+     */
+    select?: NotificationDeliveryDecisionRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationDeliveryDecisionRecord
+     */
+    omit?: NotificationDeliveryDecisionRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationDeliveryDecisionRecordInclude<ExtArgs> | null
+    /**
+     * The filter to search for the NotificationDeliveryDecisionRecord to update in case it exists.
+     */
+    where: NotificationDeliveryDecisionRecordWhereUniqueInput
+    /**
+     * In case the NotificationDeliveryDecisionRecord found by the `where` argument doesn't exist, create a new NotificationDeliveryDecisionRecord with this data.
+     */
+    create: XOR<NotificationDeliveryDecisionRecordCreateInput, NotificationDeliveryDecisionRecordUncheckedCreateInput>
+    /**
+     * In case the NotificationDeliveryDecisionRecord was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<NotificationDeliveryDecisionRecordUpdateInput, NotificationDeliveryDecisionRecordUncheckedUpdateInput>
+  }
+
+  /**
+   * NotificationDeliveryDecisionRecord delete
+   */
+  export type NotificationDeliveryDecisionRecordDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationDeliveryDecisionRecord
+     */
+    select?: NotificationDeliveryDecisionRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationDeliveryDecisionRecord
+     */
+    omit?: NotificationDeliveryDecisionRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationDeliveryDecisionRecordInclude<ExtArgs> | null
+    /**
+     * Filter which NotificationDeliveryDecisionRecord to delete.
+     */
+    where: NotificationDeliveryDecisionRecordWhereUniqueInput
+  }
+
+  /**
+   * NotificationDeliveryDecisionRecord deleteMany
+   */
+  export type NotificationDeliveryDecisionRecordDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which NotificationDeliveryDecisionRecords to delete
+     */
+    where?: NotificationDeliveryDecisionRecordWhereInput
+    /**
+     * Limit how many NotificationDeliveryDecisionRecords to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * NotificationDeliveryDecisionRecord without action
+   */
+  export type NotificationDeliveryDecisionRecordDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationDeliveryDecisionRecord
+     */
+    select?: NotificationDeliveryDecisionRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationDeliveryDecisionRecord
+     */
+    omit?: NotificationDeliveryDecisionRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationDeliveryDecisionRecordInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model NotificationPreference
    */
 
@@ -58872,9 +60167,8 @@ export namespace Prisma {
   export type NotificationPreferenceMinAggregateOutputType = {
     id: string | null
     identityId: string | null
-    enabled: boolean | null
-    channels: string | null
-    categories: string | null
+    globalChannels: string | null
+    workflowOverrides: string | null
     doNotDisturb: string | null
     rateLimit: string | null
     version: number | null
@@ -58886,9 +60180,8 @@ export namespace Prisma {
   export type NotificationPreferenceMaxAggregateOutputType = {
     id: string | null
     identityId: string | null
-    enabled: boolean | null
-    channels: string | null
-    categories: string | null
+    globalChannels: string | null
+    workflowOverrides: string | null
     doNotDisturb: string | null
     rateLimit: string | null
     version: number | null
@@ -58900,9 +60193,8 @@ export namespace Prisma {
   export type NotificationPreferenceCountAggregateOutputType = {
     id: number
     identityId: number
-    enabled: number
-    channels: number
-    categories: number
+    globalChannels: number
+    workflowOverrides: number
     doNotDisturb: number
     rateLimit: number
     version: number
@@ -58924,9 +60216,8 @@ export namespace Prisma {
   export type NotificationPreferenceMinAggregateInputType = {
     id?: true
     identityId?: true
-    enabled?: true
-    channels?: true
-    categories?: true
+    globalChannels?: true
+    workflowOverrides?: true
     doNotDisturb?: true
     rateLimit?: true
     version?: true
@@ -58938,9 +60229,8 @@ export namespace Prisma {
   export type NotificationPreferenceMaxAggregateInputType = {
     id?: true
     identityId?: true
-    enabled?: true
-    channels?: true
-    categories?: true
+    globalChannels?: true
+    workflowOverrides?: true
     doNotDisturb?: true
     rateLimit?: true
     version?: true
@@ -58952,9 +60242,8 @@ export namespace Prisma {
   export type NotificationPreferenceCountAggregateInputType = {
     id?: true
     identityId?: true
-    enabled?: true
-    channels?: true
-    categories?: true
+    globalChannels?: true
+    workflowOverrides?: true
     doNotDisturb?: true
     rateLimit?: true
     version?: true
@@ -59053,9 +60342,8 @@ export namespace Prisma {
   export type NotificationPreferenceGroupByOutputType = {
     id: string
     identityId: string
-    enabled: boolean
-    channels: string
-    categories: string
+    globalChannels: string
+    workflowOverrides: string
     doNotDisturb: string | null
     rateLimit: string | null
     version: number
@@ -59086,9 +60374,8 @@ export namespace Prisma {
   export type NotificationPreferenceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     identityId?: boolean
-    enabled?: boolean
-    channels?: boolean
-    categories?: boolean
+    globalChannels?: boolean
+    workflowOverrides?: boolean
     doNotDisturb?: boolean
     rateLimit?: boolean
     version?: boolean
@@ -59100,9 +60387,8 @@ export namespace Prisma {
   export type NotificationPreferenceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     identityId?: boolean
-    enabled?: boolean
-    channels?: boolean
-    categories?: boolean
+    globalChannels?: boolean
+    workflowOverrides?: boolean
     doNotDisturb?: boolean
     rateLimit?: boolean
     version?: boolean
@@ -59114,9 +60400,8 @@ export namespace Prisma {
   export type NotificationPreferenceSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     identityId?: boolean
-    enabled?: boolean
-    channels?: boolean
-    categories?: boolean
+    globalChannels?: boolean
+    workflowOverrides?: boolean
     doNotDisturb?: boolean
     rateLimit?: boolean
     version?: boolean
@@ -59128,9 +60413,8 @@ export namespace Prisma {
   export type NotificationPreferenceSelectScalar = {
     id?: boolean
     identityId?: boolean
-    enabled?: boolean
-    channels?: boolean
-    categories?: boolean
+    globalChannels?: boolean
+    workflowOverrides?: boolean
     doNotDisturb?: boolean
     rateLimit?: boolean
     version?: boolean
@@ -59139,7 +60423,7 @@ export namespace Prisma {
     deletedAt?: boolean
   }
 
-  export type NotificationPreferenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "enabled" | "channels" | "categories" | "doNotDisturb" | "rateLimit" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["notificationPreference"]>
+  export type NotificationPreferenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "globalChannels" | "workflowOverrides" | "doNotDisturb" | "rateLimit" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["notificationPreference"]>
 
   export type $NotificationPreferencePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "NotificationPreference"
@@ -59147,9 +60431,8 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       identityId: string
-      enabled: boolean
-      channels: string
-      categories: string
+      globalChannels: string
+      workflowOverrides: string
       doNotDisturb: string | null
       rateLimit: string | null
       version: number
@@ -59581,9 +60864,8 @@ export namespace Prisma {
   interface NotificationPreferenceFieldRefs {
     readonly id: FieldRef<"NotificationPreference", 'String'>
     readonly identityId: FieldRef<"NotificationPreference", 'String'>
-    readonly enabled: FieldRef<"NotificationPreference", 'Boolean'>
-    readonly channels: FieldRef<"NotificationPreference", 'String'>
-    readonly categories: FieldRef<"NotificationPreference", 'String'>
+    readonly globalChannels: FieldRef<"NotificationPreference", 'String'>
+    readonly workflowOverrides: FieldRef<"NotificationPreference", 'String'>
     readonly doNotDisturb: FieldRef<"NotificationPreference", 'String'>
     readonly rateLimit: FieldRef<"NotificationPreference", 'String'>
     readonly version: FieldRef<"NotificationPreference", 'Int'>
@@ -122721,7 +124003,9 @@ export namespace Prisma {
     identityId: 'identityId',
     type: 'type',
     category: 'category',
-    status: 'status',
+    workflowKey: 'workflowKey',
+    topic: 'topic',
+    idempotencyKey: 'idempotencyKey',
     title: 'title',
     content: 'content',
     importance: 'importance',
@@ -122731,8 +124015,9 @@ export namespace Prisma {
     metadata: 'metadata',
     actions: 'actions',
     navigationIntent: 'navigationIntent',
+    correlationId: 'correlationId',
+    causationId: 'causationId',
     readAt: 'readAt',
-    sentAt: 'sentAt',
     expiresAt: 'expiresAt',
     version: 'version',
     createdAt: 'createdAt',
@@ -122776,12 +124061,27 @@ export namespace Prisma {
   export type NotificationHistoryScalarFieldEnum = (typeof NotificationHistoryScalarFieldEnum)[keyof typeof NotificationHistoryScalarFieldEnum]
 
 
+  export const NotificationDeliveryDecisionRecordScalarFieldEnum: {
+    id: 'id',
+    identityId: 'identityId',
+    notificationId: 'notificationId',
+    channel: 'channel',
+    outcome: 'outcome',
+    reason: 'reason',
+    preferenceSource: 'preferenceSource',
+    retryAt: 'retryAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type NotificationDeliveryDecisionRecordScalarFieldEnum = (typeof NotificationDeliveryDecisionRecordScalarFieldEnum)[keyof typeof NotificationDeliveryDecisionRecordScalarFieldEnum]
+
+
   export const NotificationPreferenceScalarFieldEnum: {
     id: 'id',
     identityId: 'identityId',
-    enabled: 'enabled',
-    channels: 'channels',
-    categories: 'categories',
+    globalChannels: 'globalChannels',
+    workflowOverrides: 'workflowOverrides',
     doNotDisturb: 'doNotDisturb',
     rateLimit: 'rateLimit',
     version: 'version',
@@ -127473,7 +128773,9 @@ export namespace Prisma {
     identityId?: StringFilter<"Notification"> | string
     type?: StringFilter<"Notification"> | string
     category?: StringFilter<"Notification"> | string
-    status?: StringFilter<"Notification"> | string
+    workflowKey?: StringFilter<"Notification"> | string
+    topic?: StringFilter<"Notification"> | string
+    idempotencyKey?: StringFilter<"Notification"> | string
     title?: StringFilter<"Notification"> | string
     content?: StringFilter<"Notification"> | string
     importance?: StringFilter<"Notification"> | string
@@ -127483,8 +128785,9 @@ export namespace Prisma {
     metadata?: StringNullableFilter<"Notification"> | string | null
     actions?: StringNullableFilter<"Notification"> | string | null
     navigationIntent?: StringNullableFilter<"Notification"> | string | null
+    correlationId?: StringNullableFilter<"Notification"> | string | null
+    causationId?: StringNullableFilter<"Notification"> | string | null
     readAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
-    sentAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     expiresAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     version?: IntFilter<"Notification"> | number
     createdAt?: DateTimeFilter<"Notification"> | Date | string
@@ -127494,6 +128797,7 @@ export namespace Prisma {
     channels?: NotificationChannelListRelationFilter
     history?: NotificationHistoryListRelationFilter
     dispatchOutboxes?: NotificationDispatchOutboxListRelationFilter
+    deliveryDecisions?: NotificationDeliveryDecisionRecordListRelationFilter
     account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
   }
 
@@ -127502,7 +128806,9 @@ export namespace Prisma {
     identityId?: SortOrder
     type?: SortOrder
     category?: SortOrder
-    status?: SortOrder
+    workflowKey?: SortOrder
+    topic?: SortOrder
+    idempotencyKey?: SortOrder
     title?: SortOrder
     content?: SortOrder
     importance?: SortOrder
@@ -127512,8 +128818,9 @@ export namespace Prisma {
     metadata?: SortOrderInput | SortOrder
     actions?: SortOrderInput | SortOrder
     navigationIntent?: SortOrderInput | SortOrder
+    correlationId?: SortOrderInput | SortOrder
+    causationId?: SortOrderInput | SortOrder
     readAt?: SortOrderInput | SortOrder
-    sentAt?: SortOrderInput | SortOrder
     expiresAt?: SortOrderInput | SortOrder
     version?: SortOrder
     createdAt?: SortOrder
@@ -127523,18 +128830,22 @@ export namespace Prisma {
     channels?: NotificationChannelOrderByRelationAggregateInput
     history?: NotificationHistoryOrderByRelationAggregateInput
     dispatchOutboxes?: NotificationDispatchOutboxOrderByRelationAggregateInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordOrderByRelationAggregateInput
     account?: AccountOrderByWithRelationInput
   }
 
   export type NotificationWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    identityId_idempotencyKey?: NotificationIdentityIdIdempotencyKeyCompoundUniqueInput
     AND?: NotificationWhereInput | NotificationWhereInput[]
     OR?: NotificationWhereInput[]
     NOT?: NotificationWhereInput | NotificationWhereInput[]
     identityId?: StringFilter<"Notification"> | string
     type?: StringFilter<"Notification"> | string
     category?: StringFilter<"Notification"> | string
-    status?: StringFilter<"Notification"> | string
+    workflowKey?: StringFilter<"Notification"> | string
+    topic?: StringFilter<"Notification"> | string
+    idempotencyKey?: StringFilter<"Notification"> | string
     title?: StringFilter<"Notification"> | string
     content?: StringFilter<"Notification"> | string
     importance?: StringFilter<"Notification"> | string
@@ -127544,8 +128855,9 @@ export namespace Prisma {
     metadata?: StringNullableFilter<"Notification"> | string | null
     actions?: StringNullableFilter<"Notification"> | string | null
     navigationIntent?: StringNullableFilter<"Notification"> | string | null
+    correlationId?: StringNullableFilter<"Notification"> | string | null
+    causationId?: StringNullableFilter<"Notification"> | string | null
     readAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
-    sentAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     expiresAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     version?: IntFilter<"Notification"> | number
     createdAt?: DateTimeFilter<"Notification"> | Date | string
@@ -127555,15 +128867,18 @@ export namespace Prisma {
     channels?: NotificationChannelListRelationFilter
     history?: NotificationHistoryListRelationFilter
     dispatchOutboxes?: NotificationDispatchOutboxListRelationFilter
+    deliveryDecisions?: NotificationDeliveryDecisionRecordListRelationFilter
     account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-  }, "id">
+  }, "id" | "identityId_idempotencyKey">
 
   export type NotificationOrderByWithAggregationInput = {
     id?: SortOrder
     identityId?: SortOrder
     type?: SortOrder
     category?: SortOrder
-    status?: SortOrder
+    workflowKey?: SortOrder
+    topic?: SortOrder
+    idempotencyKey?: SortOrder
     title?: SortOrder
     content?: SortOrder
     importance?: SortOrder
@@ -127573,8 +128888,9 @@ export namespace Prisma {
     metadata?: SortOrderInput | SortOrder
     actions?: SortOrderInput | SortOrder
     navigationIntent?: SortOrderInput | SortOrder
+    correlationId?: SortOrderInput | SortOrder
+    causationId?: SortOrderInput | SortOrder
     readAt?: SortOrderInput | SortOrder
-    sentAt?: SortOrderInput | SortOrder
     expiresAt?: SortOrderInput | SortOrder
     version?: SortOrder
     createdAt?: SortOrder
@@ -127596,7 +128912,9 @@ export namespace Prisma {
     identityId?: StringWithAggregatesFilter<"Notification"> | string
     type?: StringWithAggregatesFilter<"Notification"> | string
     category?: StringWithAggregatesFilter<"Notification"> | string
-    status?: StringWithAggregatesFilter<"Notification"> | string
+    workflowKey?: StringWithAggregatesFilter<"Notification"> | string
+    topic?: StringWithAggregatesFilter<"Notification"> | string
+    idempotencyKey?: StringWithAggregatesFilter<"Notification"> | string
     title?: StringWithAggregatesFilter<"Notification"> | string
     content?: StringWithAggregatesFilter<"Notification"> | string
     importance?: StringWithAggregatesFilter<"Notification"> | string
@@ -127606,8 +128924,9 @@ export namespace Prisma {
     metadata?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     actions?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     navigationIntent?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    correlationId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    causationId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     readAt?: DateTimeNullableWithAggregatesFilter<"Notification"> | Date | string | null
-    sentAt?: DateTimeNullableWithAggregatesFilter<"Notification"> | Date | string | null
     expiresAt?: DateTimeNullableWithAggregatesFilter<"Notification"> | Date | string | null
     version?: IntWithAggregatesFilter<"Notification"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
@@ -127784,15 +129103,95 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"NotificationHistory"> | Date | string
   }
 
+  export type NotificationDeliveryDecisionRecordWhereInput = {
+    AND?: NotificationDeliveryDecisionRecordWhereInput | NotificationDeliveryDecisionRecordWhereInput[]
+    OR?: NotificationDeliveryDecisionRecordWhereInput[]
+    NOT?: NotificationDeliveryDecisionRecordWhereInput | NotificationDeliveryDecisionRecordWhereInput[]
+    id?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    identityId?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    notificationId?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    channel?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    outcome?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    reason?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    preferenceSource?: StringNullableFilter<"NotificationDeliveryDecisionRecord"> | string | null
+    retryAt?: DateTimeNullableFilter<"NotificationDeliveryDecisionRecord"> | Date | string | null
+    createdAt?: DateTimeFilter<"NotificationDeliveryDecisionRecord"> | Date | string
+    updatedAt?: DateTimeFilter<"NotificationDeliveryDecisionRecord"> | Date | string
+    notification?: XOR<NotificationScalarRelationFilter, NotificationWhereInput>
+  }
+
+  export type NotificationDeliveryDecisionRecordOrderByWithRelationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    notificationId?: SortOrder
+    channel?: SortOrder
+    outcome?: SortOrder
+    reason?: SortOrder
+    preferenceSource?: SortOrderInput | SortOrder
+    retryAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    notification?: NotificationOrderByWithRelationInput
+  }
+
+  export type NotificationDeliveryDecisionRecordWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    notificationId_channel?: NotificationDeliveryDecisionRecordNotificationIdChannelCompoundUniqueInput
+    AND?: NotificationDeliveryDecisionRecordWhereInput | NotificationDeliveryDecisionRecordWhereInput[]
+    OR?: NotificationDeliveryDecisionRecordWhereInput[]
+    NOT?: NotificationDeliveryDecisionRecordWhereInput | NotificationDeliveryDecisionRecordWhereInput[]
+    identityId?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    notificationId?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    channel?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    outcome?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    reason?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    preferenceSource?: StringNullableFilter<"NotificationDeliveryDecisionRecord"> | string | null
+    retryAt?: DateTimeNullableFilter<"NotificationDeliveryDecisionRecord"> | Date | string | null
+    createdAt?: DateTimeFilter<"NotificationDeliveryDecisionRecord"> | Date | string
+    updatedAt?: DateTimeFilter<"NotificationDeliveryDecisionRecord"> | Date | string
+    notification?: XOR<NotificationScalarRelationFilter, NotificationWhereInput>
+  }, "id" | "notificationId_channel">
+
+  export type NotificationDeliveryDecisionRecordOrderByWithAggregationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    notificationId?: SortOrder
+    channel?: SortOrder
+    outcome?: SortOrder
+    reason?: SortOrder
+    preferenceSource?: SortOrderInput | SortOrder
+    retryAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: NotificationDeliveryDecisionRecordCountOrderByAggregateInput
+    _max?: NotificationDeliveryDecisionRecordMaxOrderByAggregateInput
+    _min?: NotificationDeliveryDecisionRecordMinOrderByAggregateInput
+  }
+
+  export type NotificationDeliveryDecisionRecordScalarWhereWithAggregatesInput = {
+    AND?: NotificationDeliveryDecisionRecordScalarWhereWithAggregatesInput | NotificationDeliveryDecisionRecordScalarWhereWithAggregatesInput[]
+    OR?: NotificationDeliveryDecisionRecordScalarWhereWithAggregatesInput[]
+    NOT?: NotificationDeliveryDecisionRecordScalarWhereWithAggregatesInput | NotificationDeliveryDecisionRecordScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"NotificationDeliveryDecisionRecord"> | string
+    identityId?: StringWithAggregatesFilter<"NotificationDeliveryDecisionRecord"> | string
+    notificationId?: StringWithAggregatesFilter<"NotificationDeliveryDecisionRecord"> | string
+    channel?: StringWithAggregatesFilter<"NotificationDeliveryDecisionRecord"> | string
+    outcome?: StringWithAggregatesFilter<"NotificationDeliveryDecisionRecord"> | string
+    reason?: StringWithAggregatesFilter<"NotificationDeliveryDecisionRecord"> | string
+    preferenceSource?: StringNullableWithAggregatesFilter<"NotificationDeliveryDecisionRecord"> | string | null
+    retryAt?: DateTimeNullableWithAggregatesFilter<"NotificationDeliveryDecisionRecord"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"NotificationDeliveryDecisionRecord"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"NotificationDeliveryDecisionRecord"> | Date | string
+  }
+
   export type NotificationPreferenceWhereInput = {
     AND?: NotificationPreferenceWhereInput | NotificationPreferenceWhereInput[]
     OR?: NotificationPreferenceWhereInput[]
     NOT?: NotificationPreferenceWhereInput | NotificationPreferenceWhereInput[]
     id?: StringFilter<"NotificationPreference"> | string
     identityId?: StringFilter<"NotificationPreference"> | string
-    enabled?: BoolFilter<"NotificationPreference"> | boolean
-    channels?: StringFilter<"NotificationPreference"> | string
-    categories?: StringFilter<"NotificationPreference"> | string
+    globalChannels?: StringFilter<"NotificationPreference"> | string
+    workflowOverrides?: StringFilter<"NotificationPreference"> | string
     doNotDisturb?: StringNullableFilter<"NotificationPreference"> | string | null
     rateLimit?: StringNullableFilter<"NotificationPreference"> | string | null
     version?: IntFilter<"NotificationPreference"> | number
@@ -127804,9 +129203,8 @@ export namespace Prisma {
   export type NotificationPreferenceOrderByWithRelationInput = {
     id?: SortOrder
     identityId?: SortOrder
-    enabled?: SortOrder
-    channels?: SortOrder
-    categories?: SortOrder
+    globalChannels?: SortOrder
+    workflowOverrides?: SortOrder
     doNotDisturb?: SortOrderInput | SortOrder
     rateLimit?: SortOrderInput | SortOrder
     version?: SortOrder
@@ -127821,9 +129219,8 @@ export namespace Prisma {
     AND?: NotificationPreferenceWhereInput | NotificationPreferenceWhereInput[]
     OR?: NotificationPreferenceWhereInput[]
     NOT?: NotificationPreferenceWhereInput | NotificationPreferenceWhereInput[]
-    enabled?: BoolFilter<"NotificationPreference"> | boolean
-    channels?: StringFilter<"NotificationPreference"> | string
-    categories?: StringFilter<"NotificationPreference"> | string
+    globalChannels?: StringFilter<"NotificationPreference"> | string
+    workflowOverrides?: StringFilter<"NotificationPreference"> | string
     doNotDisturb?: StringNullableFilter<"NotificationPreference"> | string | null
     rateLimit?: StringNullableFilter<"NotificationPreference"> | string | null
     version?: IntFilter<"NotificationPreference"> | number
@@ -127835,9 +129232,8 @@ export namespace Prisma {
   export type NotificationPreferenceOrderByWithAggregationInput = {
     id?: SortOrder
     identityId?: SortOrder
-    enabled?: SortOrder
-    channels?: SortOrder
-    categories?: SortOrder
+    globalChannels?: SortOrder
+    workflowOverrides?: SortOrder
     doNotDisturb?: SortOrderInput | SortOrder
     rateLimit?: SortOrderInput | SortOrder
     version?: SortOrder
@@ -127857,9 +129253,8 @@ export namespace Prisma {
     NOT?: NotificationPreferenceScalarWhereWithAggregatesInput | NotificationPreferenceScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"NotificationPreference"> | string
     identityId?: StringWithAggregatesFilter<"NotificationPreference"> | string
-    enabled?: BoolWithAggregatesFilter<"NotificationPreference"> | boolean
-    channels?: StringWithAggregatesFilter<"NotificationPreference"> | string
-    categories?: StringWithAggregatesFilter<"NotificationPreference"> | string
+    globalChannels?: StringWithAggregatesFilter<"NotificationPreference"> | string
+    workflowOverrides?: StringWithAggregatesFilter<"NotificationPreference"> | string
     doNotDisturb?: StringNullableWithAggregatesFilter<"NotificationPreference"> | string | null
     rateLimit?: StringNullableWithAggregatesFilter<"NotificationPreference"> | string | null
     version?: IntWithAggregatesFilter<"NotificationPreference"> | number
@@ -137116,7 +138511,9 @@ export namespace Prisma {
     id: string
     type: string
     category: string
-    status: string
+    workflowKey: string
+    topic: string
+    idempotencyKey: string
     title: string
     content: string
     importance: string
@@ -137126,8 +138523,9 @@ export namespace Prisma {
     metadata?: string | null
     actions?: string | null
     navigationIntent?: string | null
+    correlationId?: string | null
+    causationId?: string | null
     readAt?: Date | string | null
-    sentAt?: Date | string | null
     expiresAt?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -137137,6 +138535,7 @@ export namespace Prisma {
     channels?: NotificationChannelCreateNestedManyWithoutNotificationInput
     history?: NotificationHistoryCreateNestedManyWithoutNotificationInput
     dispatchOutboxes?: NotificationDispatchOutboxCreateNestedManyWithoutNotificationInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordCreateNestedManyWithoutNotificationInput
     account: AccountCreateNestedOneWithoutNotificationsInput
   }
 
@@ -137145,7 +138544,9 @@ export namespace Prisma {
     identityId: string
     type: string
     category: string
-    status: string
+    workflowKey: string
+    topic: string
+    idempotencyKey: string
     title: string
     content: string
     importance: string
@@ -137155,8 +138556,9 @@ export namespace Prisma {
     metadata?: string | null
     actions?: string | null
     navigationIntent?: string | null
+    correlationId?: string | null
+    causationId?: string | null
     readAt?: Date | string | null
-    sentAt?: Date | string | null
     expiresAt?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -137166,13 +138568,16 @@ export namespace Prisma {
     channels?: NotificationChannelUncheckedCreateNestedManyWithoutNotificationInput
     history?: NotificationHistoryUncheckedCreateNestedManyWithoutNotificationInput
     dispatchOutboxes?: NotificationDispatchOutboxUncheckedCreateNestedManyWithoutNotificationInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordUncheckedCreateNestedManyWithoutNotificationInput
   }
 
   export type NotificationUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    workflowKey?: StringFieldUpdateOperationsInput | string
+    topic?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     importance?: StringFieldUpdateOperationsInput | string
@@ -137182,8 +138587,9 @@ export namespace Prisma {
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     actions?: NullableStringFieldUpdateOperationsInput | string | null
     navigationIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    causationId?: NullableStringFieldUpdateOperationsInput | string | null
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -137193,6 +138599,7 @@ export namespace Prisma {
     channels?: NotificationChannelUpdateManyWithoutNotificationNestedInput
     history?: NotificationHistoryUpdateManyWithoutNotificationNestedInput
     dispatchOutboxes?: NotificationDispatchOutboxUpdateManyWithoutNotificationNestedInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordUpdateManyWithoutNotificationNestedInput
     account?: AccountUpdateOneRequiredWithoutNotificationsNestedInput
   }
 
@@ -137201,7 +138608,9 @@ export namespace Prisma {
     identityId?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    workflowKey?: StringFieldUpdateOperationsInput | string
+    topic?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     importance?: StringFieldUpdateOperationsInput | string
@@ -137211,8 +138620,9 @@ export namespace Prisma {
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     actions?: NullableStringFieldUpdateOperationsInput | string | null
     navigationIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    causationId?: NullableStringFieldUpdateOperationsInput | string | null
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -137222,6 +138632,7 @@ export namespace Prisma {
     channels?: NotificationChannelUncheckedUpdateManyWithoutNotificationNestedInput
     history?: NotificationHistoryUncheckedUpdateManyWithoutNotificationNestedInput
     dispatchOutboxes?: NotificationDispatchOutboxUncheckedUpdateManyWithoutNotificationNestedInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordUncheckedUpdateManyWithoutNotificationNestedInput
   }
 
   export type NotificationCreateManyInput = {
@@ -137229,7 +138640,9 @@ export namespace Prisma {
     identityId: string
     type: string
     category: string
-    status: string
+    workflowKey: string
+    topic: string
+    idempotencyKey: string
     title: string
     content: string
     importance: string
@@ -137239,8 +138652,9 @@ export namespace Prisma {
     metadata?: string | null
     actions?: string | null
     navigationIntent?: string | null
+    correlationId?: string | null
+    causationId?: string | null
     readAt?: Date | string | null
-    sentAt?: Date | string | null
     expiresAt?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -137253,7 +138667,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    workflowKey?: StringFieldUpdateOperationsInput | string
+    topic?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     importance?: StringFieldUpdateOperationsInput | string
@@ -137263,8 +138679,9 @@ export namespace Prisma {
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     actions?: NullableStringFieldUpdateOperationsInput | string | null
     navigationIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    causationId?: NullableStringFieldUpdateOperationsInput | string | null
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -137278,7 +138695,9 @@ export namespace Prisma {
     identityId?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    workflowKey?: StringFieldUpdateOperationsInput | string
+    topic?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     importance?: StringFieldUpdateOperationsInput | string
@@ -137288,8 +138707,9 @@ export namespace Prisma {
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     actions?: NullableStringFieldUpdateOperationsInput | string | null
     navigationIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    causationId?: NullableStringFieldUpdateOperationsInput | string | null
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -137476,12 +138896,101 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type NotificationDeliveryDecisionRecordCreateInput = {
+    id: string
+    identityId: string
+    channel: string
+    outcome: string
+    reason: string
+    preferenceSource?: string | null
+    retryAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    notification: NotificationCreateNestedOneWithoutDeliveryDecisionsInput
+  }
+
+  export type NotificationDeliveryDecisionRecordUncheckedCreateInput = {
+    id: string
+    identityId: string
+    notificationId: string
+    channel: string
+    outcome: string
+    reason: string
+    preferenceSource?: string | null
+    retryAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type NotificationDeliveryDecisionRecordUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    channel?: StringFieldUpdateOperationsInput | string
+    outcome?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    preferenceSource?: NullableStringFieldUpdateOperationsInput | string | null
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    notification?: NotificationUpdateOneRequiredWithoutDeliveryDecisionsNestedInput
+  }
+
+  export type NotificationDeliveryDecisionRecordUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    notificationId?: StringFieldUpdateOperationsInput | string
+    channel?: StringFieldUpdateOperationsInput | string
+    outcome?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    preferenceSource?: NullableStringFieldUpdateOperationsInput | string | null
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationDeliveryDecisionRecordCreateManyInput = {
+    id: string
+    identityId: string
+    notificationId: string
+    channel: string
+    outcome: string
+    reason: string
+    preferenceSource?: string | null
+    retryAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type NotificationDeliveryDecisionRecordUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    channel?: StringFieldUpdateOperationsInput | string
+    outcome?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    preferenceSource?: NullableStringFieldUpdateOperationsInput | string | null
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationDeliveryDecisionRecordUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    notificationId?: StringFieldUpdateOperationsInput | string
+    channel?: StringFieldUpdateOperationsInput | string
+    outcome?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    preferenceSource?: NullableStringFieldUpdateOperationsInput | string | null
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type NotificationPreferenceCreateInput = {
     id: string
     identityId: string
-    enabled?: boolean
-    channels: string
-    categories: string
+    globalChannels: string
+    workflowOverrides: string
     doNotDisturb?: string | null
     rateLimit?: string | null
     version?: number
@@ -137493,9 +139002,8 @@ export namespace Prisma {
   export type NotificationPreferenceUncheckedCreateInput = {
     id: string
     identityId: string
-    enabled?: boolean
-    channels: string
-    categories: string
+    globalChannels: string
+    workflowOverrides: string
     doNotDisturb?: string | null
     rateLimit?: string | null
     version?: number
@@ -137507,9 +139015,8 @@ export namespace Prisma {
   export type NotificationPreferenceUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
-    enabled?: BoolFieldUpdateOperationsInput | boolean
-    channels?: StringFieldUpdateOperationsInput | string
-    categories?: StringFieldUpdateOperationsInput | string
+    globalChannels?: StringFieldUpdateOperationsInput | string
+    workflowOverrides?: StringFieldUpdateOperationsInput | string
     doNotDisturb?: NullableStringFieldUpdateOperationsInput | string | null
     rateLimit?: NullableStringFieldUpdateOperationsInput | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -137521,9 +139028,8 @@ export namespace Prisma {
   export type NotificationPreferenceUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
-    enabled?: BoolFieldUpdateOperationsInput | boolean
-    channels?: StringFieldUpdateOperationsInput | string
-    categories?: StringFieldUpdateOperationsInput | string
+    globalChannels?: StringFieldUpdateOperationsInput | string
+    workflowOverrides?: StringFieldUpdateOperationsInput | string
     doNotDisturb?: NullableStringFieldUpdateOperationsInput | string | null
     rateLimit?: NullableStringFieldUpdateOperationsInput | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -137535,9 +139041,8 @@ export namespace Prisma {
   export type NotificationPreferenceCreateManyInput = {
     id: string
     identityId: string
-    enabled?: boolean
-    channels: string
-    categories: string
+    globalChannels: string
+    workflowOverrides: string
     doNotDisturb?: string | null
     rateLimit?: string | null
     version?: number
@@ -137549,9 +139054,8 @@ export namespace Prisma {
   export type NotificationPreferenceUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
-    enabled?: BoolFieldUpdateOperationsInput | boolean
-    channels?: StringFieldUpdateOperationsInput | string
-    categories?: StringFieldUpdateOperationsInput | string
+    globalChannels?: StringFieldUpdateOperationsInput | string
+    workflowOverrides?: StringFieldUpdateOperationsInput | string
     doNotDisturb?: NullableStringFieldUpdateOperationsInput | string | null
     rateLimit?: NullableStringFieldUpdateOperationsInput | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -137563,9 +139067,8 @@ export namespace Prisma {
   export type NotificationPreferenceUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
-    enabled?: BoolFieldUpdateOperationsInput | boolean
-    channels?: StringFieldUpdateOperationsInput | string
-    categories?: StringFieldUpdateOperationsInput | string
+    globalChannels?: StringFieldUpdateOperationsInput | string
+    workflowOverrides?: StringFieldUpdateOperationsInput | string
     doNotDisturb?: NullableStringFieldUpdateOperationsInput | string | null
     rateLimit?: NullableStringFieldUpdateOperationsInput | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -146627,12 +148130,29 @@ export namespace Prisma {
     labelId?: SortOrder
   }
 
+  export type NotificationDeliveryDecisionRecordListRelationFilter = {
+    every?: NotificationDeliveryDecisionRecordWhereInput
+    some?: NotificationDeliveryDecisionRecordWhereInput
+    none?: NotificationDeliveryDecisionRecordWhereInput
+  }
+
+  export type NotificationDeliveryDecisionRecordOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type NotificationIdentityIdIdempotencyKeyCompoundUniqueInput = {
+    identityId: string
+    idempotencyKey: string
+  }
+
   export type NotificationCountOrderByAggregateInput = {
     id?: SortOrder
     identityId?: SortOrder
     type?: SortOrder
     category?: SortOrder
-    status?: SortOrder
+    workflowKey?: SortOrder
+    topic?: SortOrder
+    idempotencyKey?: SortOrder
     title?: SortOrder
     content?: SortOrder
     importance?: SortOrder
@@ -146642,8 +148162,9 @@ export namespace Prisma {
     metadata?: SortOrder
     actions?: SortOrder
     navigationIntent?: SortOrder
+    correlationId?: SortOrder
+    causationId?: SortOrder
     readAt?: SortOrder
-    sentAt?: SortOrder
     expiresAt?: SortOrder
     version?: SortOrder
     createdAt?: SortOrder
@@ -146661,7 +148182,9 @@ export namespace Prisma {
     identityId?: SortOrder
     type?: SortOrder
     category?: SortOrder
-    status?: SortOrder
+    workflowKey?: SortOrder
+    topic?: SortOrder
+    idempotencyKey?: SortOrder
     title?: SortOrder
     content?: SortOrder
     importance?: SortOrder
@@ -146671,8 +148194,9 @@ export namespace Prisma {
     metadata?: SortOrder
     actions?: SortOrder
     navigationIntent?: SortOrder
+    correlationId?: SortOrder
+    causationId?: SortOrder
     readAt?: SortOrder
-    sentAt?: SortOrder
     expiresAt?: SortOrder
     version?: SortOrder
     createdAt?: SortOrder
@@ -146686,7 +148210,9 @@ export namespace Prisma {
     identityId?: SortOrder
     type?: SortOrder
     category?: SortOrder
-    status?: SortOrder
+    workflowKey?: SortOrder
+    topic?: SortOrder
+    idempotencyKey?: SortOrder
     title?: SortOrder
     content?: SortOrder
     importance?: SortOrder
@@ -146696,8 +148222,9 @@ export namespace Prisma {
     metadata?: SortOrder
     actions?: SortOrder
     navigationIntent?: SortOrder
+    correlationId?: SortOrder
+    causationId?: SortOrder
     readAt?: SortOrder
-    sentAt?: SortOrder
     expiresAt?: SortOrder
     version?: SortOrder
     createdAt?: SortOrder
@@ -146805,12 +148332,55 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type NotificationDeliveryDecisionRecordNotificationIdChannelCompoundUniqueInput = {
+    notificationId: string
+    channel: string
+  }
+
+  export type NotificationDeliveryDecisionRecordCountOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    notificationId?: SortOrder
+    channel?: SortOrder
+    outcome?: SortOrder
+    reason?: SortOrder
+    preferenceSource?: SortOrder
+    retryAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type NotificationDeliveryDecisionRecordMaxOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    notificationId?: SortOrder
+    channel?: SortOrder
+    outcome?: SortOrder
+    reason?: SortOrder
+    preferenceSource?: SortOrder
+    retryAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type NotificationDeliveryDecisionRecordMinOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    notificationId?: SortOrder
+    channel?: SortOrder
+    outcome?: SortOrder
+    reason?: SortOrder
+    preferenceSource?: SortOrder
+    retryAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type NotificationPreferenceCountOrderByAggregateInput = {
     id?: SortOrder
     identityId?: SortOrder
-    enabled?: SortOrder
-    channels?: SortOrder
-    categories?: SortOrder
+    globalChannels?: SortOrder
+    workflowOverrides?: SortOrder
     doNotDisturb?: SortOrder
     rateLimit?: SortOrder
     version?: SortOrder
@@ -146826,9 +148396,8 @@ export namespace Prisma {
   export type NotificationPreferenceMaxOrderByAggregateInput = {
     id?: SortOrder
     identityId?: SortOrder
-    enabled?: SortOrder
-    channels?: SortOrder
-    categories?: SortOrder
+    globalChannels?: SortOrder
+    workflowOverrides?: SortOrder
     doNotDisturb?: SortOrder
     rateLimit?: SortOrder
     version?: SortOrder
@@ -146840,9 +148409,8 @@ export namespace Prisma {
   export type NotificationPreferenceMinOrderByAggregateInput = {
     id?: SortOrder
     identityId?: SortOrder
-    enabled?: SortOrder
-    channels?: SortOrder
-    categories?: SortOrder
+    globalChannels?: SortOrder
+    workflowOverrides?: SortOrder
     doNotDisturb?: SortOrder
     rateLimit?: SortOrder
     version?: SortOrder
@@ -154231,6 +155799,13 @@ export namespace Prisma {
     connect?: NotificationDispatchOutboxWhereUniqueInput | NotificationDispatchOutboxWhereUniqueInput[]
   }
 
+  export type NotificationDeliveryDecisionRecordCreateNestedManyWithoutNotificationInput = {
+    create?: XOR<NotificationDeliveryDecisionRecordCreateWithoutNotificationInput, NotificationDeliveryDecisionRecordUncheckedCreateWithoutNotificationInput> | NotificationDeliveryDecisionRecordCreateWithoutNotificationInput[] | NotificationDeliveryDecisionRecordUncheckedCreateWithoutNotificationInput[]
+    connectOrCreate?: NotificationDeliveryDecisionRecordCreateOrConnectWithoutNotificationInput | NotificationDeliveryDecisionRecordCreateOrConnectWithoutNotificationInput[]
+    createMany?: NotificationDeliveryDecisionRecordCreateManyNotificationInputEnvelope
+    connect?: NotificationDeliveryDecisionRecordWhereUniqueInput | NotificationDeliveryDecisionRecordWhereUniqueInput[]
+  }
+
   export type AccountCreateNestedOneWithoutNotificationsInput = {
     create?: XOR<AccountCreateWithoutNotificationsInput, AccountUncheckedCreateWithoutNotificationsInput>
     connectOrCreate?: AccountCreateOrConnectWithoutNotificationsInput
@@ -154256,6 +155831,13 @@ export namespace Prisma {
     connectOrCreate?: NotificationDispatchOutboxCreateOrConnectWithoutNotificationInput | NotificationDispatchOutboxCreateOrConnectWithoutNotificationInput[]
     createMany?: NotificationDispatchOutboxCreateManyNotificationInputEnvelope
     connect?: NotificationDispatchOutboxWhereUniqueInput | NotificationDispatchOutboxWhereUniqueInput[]
+  }
+
+  export type NotificationDeliveryDecisionRecordUncheckedCreateNestedManyWithoutNotificationInput = {
+    create?: XOR<NotificationDeliveryDecisionRecordCreateWithoutNotificationInput, NotificationDeliveryDecisionRecordUncheckedCreateWithoutNotificationInput> | NotificationDeliveryDecisionRecordCreateWithoutNotificationInput[] | NotificationDeliveryDecisionRecordUncheckedCreateWithoutNotificationInput[]
+    connectOrCreate?: NotificationDeliveryDecisionRecordCreateOrConnectWithoutNotificationInput | NotificationDeliveryDecisionRecordCreateOrConnectWithoutNotificationInput[]
+    createMany?: NotificationDeliveryDecisionRecordCreateManyNotificationInputEnvelope
+    connect?: NotificationDeliveryDecisionRecordWhereUniqueInput | NotificationDeliveryDecisionRecordWhereUniqueInput[]
   }
 
   export type NotificationChannelUpdateManyWithoutNotificationNestedInput = {
@@ -154298,6 +155880,20 @@ export namespace Prisma {
     update?: NotificationDispatchOutboxUpdateWithWhereUniqueWithoutNotificationInput | NotificationDispatchOutboxUpdateWithWhereUniqueWithoutNotificationInput[]
     updateMany?: NotificationDispatchOutboxUpdateManyWithWhereWithoutNotificationInput | NotificationDispatchOutboxUpdateManyWithWhereWithoutNotificationInput[]
     deleteMany?: NotificationDispatchOutboxScalarWhereInput | NotificationDispatchOutboxScalarWhereInput[]
+  }
+
+  export type NotificationDeliveryDecisionRecordUpdateManyWithoutNotificationNestedInput = {
+    create?: XOR<NotificationDeliveryDecisionRecordCreateWithoutNotificationInput, NotificationDeliveryDecisionRecordUncheckedCreateWithoutNotificationInput> | NotificationDeliveryDecisionRecordCreateWithoutNotificationInput[] | NotificationDeliveryDecisionRecordUncheckedCreateWithoutNotificationInput[]
+    connectOrCreate?: NotificationDeliveryDecisionRecordCreateOrConnectWithoutNotificationInput | NotificationDeliveryDecisionRecordCreateOrConnectWithoutNotificationInput[]
+    upsert?: NotificationDeliveryDecisionRecordUpsertWithWhereUniqueWithoutNotificationInput | NotificationDeliveryDecisionRecordUpsertWithWhereUniqueWithoutNotificationInput[]
+    createMany?: NotificationDeliveryDecisionRecordCreateManyNotificationInputEnvelope
+    set?: NotificationDeliveryDecisionRecordWhereUniqueInput | NotificationDeliveryDecisionRecordWhereUniqueInput[]
+    disconnect?: NotificationDeliveryDecisionRecordWhereUniqueInput | NotificationDeliveryDecisionRecordWhereUniqueInput[]
+    delete?: NotificationDeliveryDecisionRecordWhereUniqueInput | NotificationDeliveryDecisionRecordWhereUniqueInput[]
+    connect?: NotificationDeliveryDecisionRecordWhereUniqueInput | NotificationDeliveryDecisionRecordWhereUniqueInput[]
+    update?: NotificationDeliveryDecisionRecordUpdateWithWhereUniqueWithoutNotificationInput | NotificationDeliveryDecisionRecordUpdateWithWhereUniqueWithoutNotificationInput[]
+    updateMany?: NotificationDeliveryDecisionRecordUpdateManyWithWhereWithoutNotificationInput | NotificationDeliveryDecisionRecordUpdateManyWithWhereWithoutNotificationInput[]
+    deleteMany?: NotificationDeliveryDecisionRecordScalarWhereInput | NotificationDeliveryDecisionRecordScalarWhereInput[]
   }
 
   export type AccountUpdateOneRequiredWithoutNotificationsNestedInput = {
@@ -154348,6 +155944,20 @@ export namespace Prisma {
     update?: NotificationDispatchOutboxUpdateWithWhereUniqueWithoutNotificationInput | NotificationDispatchOutboxUpdateWithWhereUniqueWithoutNotificationInput[]
     updateMany?: NotificationDispatchOutboxUpdateManyWithWhereWithoutNotificationInput | NotificationDispatchOutboxUpdateManyWithWhereWithoutNotificationInput[]
     deleteMany?: NotificationDispatchOutboxScalarWhereInput | NotificationDispatchOutboxScalarWhereInput[]
+  }
+
+  export type NotificationDeliveryDecisionRecordUncheckedUpdateManyWithoutNotificationNestedInput = {
+    create?: XOR<NotificationDeliveryDecisionRecordCreateWithoutNotificationInput, NotificationDeliveryDecisionRecordUncheckedCreateWithoutNotificationInput> | NotificationDeliveryDecisionRecordCreateWithoutNotificationInput[] | NotificationDeliveryDecisionRecordUncheckedCreateWithoutNotificationInput[]
+    connectOrCreate?: NotificationDeliveryDecisionRecordCreateOrConnectWithoutNotificationInput | NotificationDeliveryDecisionRecordCreateOrConnectWithoutNotificationInput[]
+    upsert?: NotificationDeliveryDecisionRecordUpsertWithWhereUniqueWithoutNotificationInput | NotificationDeliveryDecisionRecordUpsertWithWhereUniqueWithoutNotificationInput[]
+    createMany?: NotificationDeliveryDecisionRecordCreateManyNotificationInputEnvelope
+    set?: NotificationDeliveryDecisionRecordWhereUniqueInput | NotificationDeliveryDecisionRecordWhereUniqueInput[]
+    disconnect?: NotificationDeliveryDecisionRecordWhereUniqueInput | NotificationDeliveryDecisionRecordWhereUniqueInput[]
+    delete?: NotificationDeliveryDecisionRecordWhereUniqueInput | NotificationDeliveryDecisionRecordWhereUniqueInput[]
+    connect?: NotificationDeliveryDecisionRecordWhereUniqueInput | NotificationDeliveryDecisionRecordWhereUniqueInput[]
+    update?: NotificationDeliveryDecisionRecordUpdateWithWhereUniqueWithoutNotificationInput | NotificationDeliveryDecisionRecordUpdateWithWhereUniqueWithoutNotificationInput[]
+    updateMany?: NotificationDeliveryDecisionRecordUpdateManyWithWhereWithoutNotificationInput | NotificationDeliveryDecisionRecordUpdateManyWithWhereWithoutNotificationInput[]
+    deleteMany?: NotificationDeliveryDecisionRecordScalarWhereInput | NotificationDeliveryDecisionRecordScalarWhereInput[]
   }
 
   export type AccountCreateNestedOneWithoutNotificationChannelsInput = {
@@ -154404,6 +156014,20 @@ export namespace Prisma {
     upsert?: NotificationUpsertWithoutHistoryInput
     connect?: NotificationWhereUniqueInput
     update?: XOR<XOR<NotificationUpdateToOneWithWhereWithoutHistoryInput, NotificationUpdateWithoutHistoryInput>, NotificationUncheckedUpdateWithoutHistoryInput>
+  }
+
+  export type NotificationCreateNestedOneWithoutDeliveryDecisionsInput = {
+    create?: XOR<NotificationCreateWithoutDeliveryDecisionsInput, NotificationUncheckedCreateWithoutDeliveryDecisionsInput>
+    connectOrCreate?: NotificationCreateOrConnectWithoutDeliveryDecisionsInput
+    connect?: NotificationWhereUniqueInput
+  }
+
+  export type NotificationUpdateOneRequiredWithoutDeliveryDecisionsNestedInput = {
+    create?: XOR<NotificationCreateWithoutDeliveryDecisionsInput, NotificationUncheckedCreateWithoutDeliveryDecisionsInput>
+    connectOrCreate?: NotificationCreateOrConnectWithoutDeliveryDecisionsInput
+    upsert?: NotificationUpsertWithoutDeliveryDecisionsInput
+    connect?: NotificationWhereUniqueInput
+    update?: XOR<XOR<NotificationUpdateToOneWithWhereWithoutDeliveryDecisionsInput, NotificationUpdateWithoutDeliveryDecisionsInput>, NotificationUncheckedUpdateWithoutDeliveryDecisionsInput>
   }
 
   export type NotificationCreateNestedOneWithoutDispatchOutboxesInput = {
@@ -158307,7 +159931,9 @@ export namespace Prisma {
     id: string
     type: string
     category: string
-    status: string
+    workflowKey: string
+    topic: string
+    idempotencyKey: string
     title: string
     content: string
     importance: string
@@ -158317,8 +159943,9 @@ export namespace Prisma {
     metadata?: string | null
     actions?: string | null
     navigationIntent?: string | null
+    correlationId?: string | null
+    causationId?: string | null
     readAt?: Date | string | null
-    sentAt?: Date | string | null
     expiresAt?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -158328,13 +159955,16 @@ export namespace Prisma {
     channels?: NotificationChannelCreateNestedManyWithoutNotificationInput
     history?: NotificationHistoryCreateNestedManyWithoutNotificationInput
     dispatchOutboxes?: NotificationDispatchOutboxCreateNestedManyWithoutNotificationInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordCreateNestedManyWithoutNotificationInput
   }
 
   export type NotificationUncheckedCreateWithoutAccountInput = {
     id: string
     type: string
     category: string
-    status: string
+    workflowKey: string
+    topic: string
+    idempotencyKey: string
     title: string
     content: string
     importance: string
@@ -158344,8 +159974,9 @@ export namespace Prisma {
     metadata?: string | null
     actions?: string | null
     navigationIntent?: string | null
+    correlationId?: string | null
+    causationId?: string | null
     readAt?: Date | string | null
-    sentAt?: Date | string | null
     expiresAt?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -158355,6 +159986,7 @@ export namespace Prisma {
     channels?: NotificationChannelUncheckedCreateNestedManyWithoutNotificationInput
     history?: NotificationHistoryUncheckedCreateNestedManyWithoutNotificationInput
     dispatchOutboxes?: NotificationDispatchOutboxUncheckedCreateNestedManyWithoutNotificationInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordUncheckedCreateNestedManyWithoutNotificationInput
   }
 
   export type NotificationCreateOrConnectWithoutAccountInput = {
@@ -160576,7 +162208,9 @@ export namespace Prisma {
     identityId?: StringFilter<"Notification"> | string
     type?: StringFilter<"Notification"> | string
     category?: StringFilter<"Notification"> | string
-    status?: StringFilter<"Notification"> | string
+    workflowKey?: StringFilter<"Notification"> | string
+    topic?: StringFilter<"Notification"> | string
+    idempotencyKey?: StringFilter<"Notification"> | string
     title?: StringFilter<"Notification"> | string
     content?: StringFilter<"Notification"> | string
     importance?: StringFilter<"Notification"> | string
@@ -160586,8 +162220,9 @@ export namespace Prisma {
     metadata?: StringNullableFilter<"Notification"> | string | null
     actions?: StringNullableFilter<"Notification"> | string | null
     navigationIntent?: StringNullableFilter<"Notification"> | string | null
+    correlationId?: StringNullableFilter<"Notification"> | string | null
+    causationId?: StringNullableFilter<"Notification"> | string | null
     readAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
-    sentAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     expiresAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     version?: IntFilter<"Notification"> | number
     createdAt?: DateTimeFilter<"Notification"> | Date | string
@@ -171942,6 +173577,40 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type NotificationDeliveryDecisionRecordCreateWithoutNotificationInput = {
+    id: string
+    identityId: string
+    channel: string
+    outcome: string
+    reason: string
+    preferenceSource?: string | null
+    retryAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type NotificationDeliveryDecisionRecordUncheckedCreateWithoutNotificationInput = {
+    id: string
+    identityId: string
+    channel: string
+    outcome: string
+    reason: string
+    preferenceSource?: string | null
+    retryAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type NotificationDeliveryDecisionRecordCreateOrConnectWithoutNotificationInput = {
+    where: NotificationDeliveryDecisionRecordWhereUniqueInput
+    create: XOR<NotificationDeliveryDecisionRecordCreateWithoutNotificationInput, NotificationDeliveryDecisionRecordUncheckedCreateWithoutNotificationInput>
+  }
+
+  export type NotificationDeliveryDecisionRecordCreateManyNotificationInputEnvelope = {
+    data: NotificationDeliveryDecisionRecordCreateManyNotificationInput | NotificationDeliveryDecisionRecordCreateManyNotificationInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AccountCreateWithoutNotificationsInput = {
     status?: string
     profile: JsonNullValueInput | InputJsonValue
@@ -172141,6 +173810,38 @@ export namespace Prisma {
   export type NotificationDispatchOutboxUpdateManyWithWhereWithoutNotificationInput = {
     where: NotificationDispatchOutboxScalarWhereInput
     data: XOR<NotificationDispatchOutboxUpdateManyMutationInput, NotificationDispatchOutboxUncheckedUpdateManyWithoutNotificationInput>
+  }
+
+  export type NotificationDeliveryDecisionRecordUpsertWithWhereUniqueWithoutNotificationInput = {
+    where: NotificationDeliveryDecisionRecordWhereUniqueInput
+    update: XOR<NotificationDeliveryDecisionRecordUpdateWithoutNotificationInput, NotificationDeliveryDecisionRecordUncheckedUpdateWithoutNotificationInput>
+    create: XOR<NotificationDeliveryDecisionRecordCreateWithoutNotificationInput, NotificationDeliveryDecisionRecordUncheckedCreateWithoutNotificationInput>
+  }
+
+  export type NotificationDeliveryDecisionRecordUpdateWithWhereUniqueWithoutNotificationInput = {
+    where: NotificationDeliveryDecisionRecordWhereUniqueInput
+    data: XOR<NotificationDeliveryDecisionRecordUpdateWithoutNotificationInput, NotificationDeliveryDecisionRecordUncheckedUpdateWithoutNotificationInput>
+  }
+
+  export type NotificationDeliveryDecisionRecordUpdateManyWithWhereWithoutNotificationInput = {
+    where: NotificationDeliveryDecisionRecordScalarWhereInput
+    data: XOR<NotificationDeliveryDecisionRecordUpdateManyMutationInput, NotificationDeliveryDecisionRecordUncheckedUpdateManyWithoutNotificationInput>
+  }
+
+  export type NotificationDeliveryDecisionRecordScalarWhereInput = {
+    AND?: NotificationDeliveryDecisionRecordScalarWhereInput | NotificationDeliveryDecisionRecordScalarWhereInput[]
+    OR?: NotificationDeliveryDecisionRecordScalarWhereInput[]
+    NOT?: NotificationDeliveryDecisionRecordScalarWhereInput | NotificationDeliveryDecisionRecordScalarWhereInput[]
+    id?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    identityId?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    notificationId?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    channel?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    outcome?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    reason?: StringFilter<"NotificationDeliveryDecisionRecord"> | string
+    preferenceSource?: StringNullableFilter<"NotificationDeliveryDecisionRecord"> | string | null
+    retryAt?: DateTimeNullableFilter<"NotificationDeliveryDecisionRecord"> | Date | string | null
+    createdAt?: DateTimeFilter<"NotificationDeliveryDecisionRecord"> | Date | string
+    updatedAt?: DateTimeFilter<"NotificationDeliveryDecisionRecord"> | Date | string
   }
 
   export type AccountUpsertWithoutNotificationsInput = {
@@ -172459,7 +174160,9 @@ export namespace Prisma {
     id: string
     type: string
     category: string
-    status: string
+    workflowKey: string
+    topic: string
+    idempotencyKey: string
     title: string
     content: string
     importance: string
@@ -172469,8 +174172,9 @@ export namespace Prisma {
     metadata?: string | null
     actions?: string | null
     navigationIntent?: string | null
+    correlationId?: string | null
+    causationId?: string | null
     readAt?: Date | string | null
-    sentAt?: Date | string | null
     expiresAt?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -172479,6 +174183,7 @@ export namespace Prisma {
     isRead?: boolean
     history?: NotificationHistoryCreateNestedManyWithoutNotificationInput
     dispatchOutboxes?: NotificationDispatchOutboxCreateNestedManyWithoutNotificationInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordCreateNestedManyWithoutNotificationInput
     account: AccountCreateNestedOneWithoutNotificationsInput
   }
 
@@ -172487,7 +174192,9 @@ export namespace Prisma {
     identityId: string
     type: string
     category: string
-    status: string
+    workflowKey: string
+    topic: string
+    idempotencyKey: string
     title: string
     content: string
     importance: string
@@ -172497,8 +174204,9 @@ export namespace Prisma {
     metadata?: string | null
     actions?: string | null
     navigationIntent?: string | null
+    correlationId?: string | null
+    causationId?: string | null
     readAt?: Date | string | null
-    sentAt?: Date | string | null
     expiresAt?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -172507,6 +174215,7 @@ export namespace Prisma {
     isRead?: boolean
     history?: NotificationHistoryUncheckedCreateNestedManyWithoutNotificationInput
     dispatchOutboxes?: NotificationDispatchOutboxUncheckedCreateNestedManyWithoutNotificationInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordUncheckedCreateNestedManyWithoutNotificationInput
   }
 
   export type NotificationCreateOrConnectWithoutChannelsInput = {
@@ -172688,7 +174397,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    workflowKey?: StringFieldUpdateOperationsInput | string
+    topic?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     importance?: StringFieldUpdateOperationsInput | string
@@ -172698,8 +174409,9 @@ export namespace Prisma {
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     actions?: NullableStringFieldUpdateOperationsInput | string | null
     navigationIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    causationId?: NullableStringFieldUpdateOperationsInput | string | null
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -172708,6 +174420,7 @@ export namespace Prisma {
     isRead?: BoolFieldUpdateOperationsInput | boolean
     history?: NotificationHistoryUpdateManyWithoutNotificationNestedInput
     dispatchOutboxes?: NotificationDispatchOutboxUpdateManyWithoutNotificationNestedInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordUpdateManyWithoutNotificationNestedInput
     account?: AccountUpdateOneRequiredWithoutNotificationsNestedInput
   }
 
@@ -172716,7 +174429,9 @@ export namespace Prisma {
     identityId?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    workflowKey?: StringFieldUpdateOperationsInput | string
+    topic?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     importance?: StringFieldUpdateOperationsInput | string
@@ -172726,8 +174441,9 @@ export namespace Prisma {
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     actions?: NullableStringFieldUpdateOperationsInput | string | null
     navigationIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    causationId?: NullableStringFieldUpdateOperationsInput | string | null
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -172736,6 +174452,7 @@ export namespace Prisma {
     isRead?: BoolFieldUpdateOperationsInput | boolean
     history?: NotificationHistoryUncheckedUpdateManyWithoutNotificationNestedInput
     dispatchOutboxes?: NotificationDispatchOutboxUncheckedUpdateManyWithoutNotificationNestedInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordUncheckedUpdateManyWithoutNotificationNestedInput
   }
 
   export type AccountCreateWithoutNotificationHistoryInput = {
@@ -172895,7 +174612,9 @@ export namespace Prisma {
     id: string
     type: string
     category: string
-    status: string
+    workflowKey: string
+    topic: string
+    idempotencyKey: string
     title: string
     content: string
     importance: string
@@ -172905,8 +174624,9 @@ export namespace Prisma {
     metadata?: string | null
     actions?: string | null
     navigationIntent?: string | null
+    correlationId?: string | null
+    causationId?: string | null
     readAt?: Date | string | null
-    sentAt?: Date | string | null
     expiresAt?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -172915,6 +174635,7 @@ export namespace Prisma {
     isRead?: boolean
     channels?: NotificationChannelCreateNestedManyWithoutNotificationInput
     dispatchOutboxes?: NotificationDispatchOutboxCreateNestedManyWithoutNotificationInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordCreateNestedManyWithoutNotificationInput
     account: AccountCreateNestedOneWithoutNotificationsInput
   }
 
@@ -172923,7 +174644,9 @@ export namespace Prisma {
     identityId: string
     type: string
     category: string
-    status: string
+    workflowKey: string
+    topic: string
+    idempotencyKey: string
     title: string
     content: string
     importance: string
@@ -172933,8 +174656,9 @@ export namespace Prisma {
     metadata?: string | null
     actions?: string | null
     navigationIntent?: string | null
+    correlationId?: string | null
+    causationId?: string | null
     readAt?: Date | string | null
-    sentAt?: Date | string | null
     expiresAt?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -172943,6 +174667,7 @@ export namespace Prisma {
     isRead?: boolean
     channels?: NotificationChannelUncheckedCreateNestedManyWithoutNotificationInput
     dispatchOutboxes?: NotificationDispatchOutboxUncheckedCreateNestedManyWithoutNotificationInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordUncheckedCreateNestedManyWithoutNotificationInput
   }
 
   export type NotificationCreateOrConnectWithoutHistoryInput = {
@@ -173124,7 +174849,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    workflowKey?: StringFieldUpdateOperationsInput | string
+    topic?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     importance?: StringFieldUpdateOperationsInput | string
@@ -173134,8 +174861,9 @@ export namespace Prisma {
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     actions?: NullableStringFieldUpdateOperationsInput | string | null
     navigationIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    causationId?: NullableStringFieldUpdateOperationsInput | string | null
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -173144,6 +174872,7 @@ export namespace Prisma {
     isRead?: BoolFieldUpdateOperationsInput | boolean
     channels?: NotificationChannelUpdateManyWithoutNotificationNestedInput
     dispatchOutboxes?: NotificationDispatchOutboxUpdateManyWithoutNotificationNestedInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordUpdateManyWithoutNotificationNestedInput
     account?: AccountUpdateOneRequiredWithoutNotificationsNestedInput
   }
 
@@ -173152,7 +174881,9 @@ export namespace Prisma {
     identityId?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    workflowKey?: StringFieldUpdateOperationsInput | string
+    topic?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     importance?: StringFieldUpdateOperationsInput | string
@@ -173162,8 +174893,9 @@ export namespace Prisma {
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     actions?: NullableStringFieldUpdateOperationsInput | string | null
     navigationIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    causationId?: NullableStringFieldUpdateOperationsInput | string | null
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -173172,13 +174904,16 @@ export namespace Prisma {
     isRead?: BoolFieldUpdateOperationsInput | boolean
     channels?: NotificationChannelUncheckedUpdateManyWithoutNotificationNestedInput
     dispatchOutboxes?: NotificationDispatchOutboxUncheckedUpdateManyWithoutNotificationNestedInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordUncheckedUpdateManyWithoutNotificationNestedInput
   }
 
-  export type NotificationCreateWithoutDispatchOutboxesInput = {
+  export type NotificationCreateWithoutDeliveryDecisionsInput = {
     id: string
     type: string
     category: string
-    status: string
+    workflowKey: string
+    topic: string
+    idempotencyKey: string
     title: string
     content: string
     importance: string
@@ -173188,8 +174923,9 @@ export namespace Prisma {
     metadata?: string | null
     actions?: string | null
     navigationIntent?: string | null
+    correlationId?: string | null
+    causationId?: string | null
     readAt?: Date | string | null
-    sentAt?: Date | string | null
     expiresAt?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -173198,15 +174934,18 @@ export namespace Prisma {
     isRead?: boolean
     channels?: NotificationChannelCreateNestedManyWithoutNotificationInput
     history?: NotificationHistoryCreateNestedManyWithoutNotificationInput
+    dispatchOutboxes?: NotificationDispatchOutboxCreateNestedManyWithoutNotificationInput
     account: AccountCreateNestedOneWithoutNotificationsInput
   }
 
-  export type NotificationUncheckedCreateWithoutDispatchOutboxesInput = {
+  export type NotificationUncheckedCreateWithoutDeliveryDecisionsInput = {
     id: string
     identityId: string
     type: string
     category: string
-    status: string
+    workflowKey: string
+    topic: string
+    idempotencyKey: string
     title: string
     content: string
     importance: string
@@ -173216,8 +174955,9 @@ export namespace Prisma {
     metadata?: string | null
     actions?: string | null
     navigationIntent?: string | null
+    correlationId?: string | null
+    causationId?: string | null
     readAt?: Date | string | null
-    sentAt?: Date | string | null
     expiresAt?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -173226,6 +174966,147 @@ export namespace Prisma {
     isRead?: boolean
     channels?: NotificationChannelUncheckedCreateNestedManyWithoutNotificationInput
     history?: NotificationHistoryUncheckedCreateNestedManyWithoutNotificationInput
+    dispatchOutboxes?: NotificationDispatchOutboxUncheckedCreateNestedManyWithoutNotificationInput
+  }
+
+  export type NotificationCreateOrConnectWithoutDeliveryDecisionsInput = {
+    where: NotificationWhereUniqueInput
+    create: XOR<NotificationCreateWithoutDeliveryDecisionsInput, NotificationUncheckedCreateWithoutDeliveryDecisionsInput>
+  }
+
+  export type NotificationUpsertWithoutDeliveryDecisionsInput = {
+    update: XOR<NotificationUpdateWithoutDeliveryDecisionsInput, NotificationUncheckedUpdateWithoutDeliveryDecisionsInput>
+    create: XOR<NotificationCreateWithoutDeliveryDecisionsInput, NotificationUncheckedCreateWithoutDeliveryDecisionsInput>
+    where?: NotificationWhereInput
+  }
+
+  export type NotificationUpdateToOneWithWhereWithoutDeliveryDecisionsInput = {
+    where?: NotificationWhereInput
+    data: XOR<NotificationUpdateWithoutDeliveryDecisionsInput, NotificationUncheckedUpdateWithoutDeliveryDecisionsInput>
+  }
+
+  export type NotificationUpdateWithoutDeliveryDecisionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    workflowKey?: StringFieldUpdateOperationsInput | string
+    topic?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    importance?: StringFieldUpdateOperationsInput | string
+    urgency?: StringFieldUpdateOperationsInput | string
+    relatedEntityType?: NullableStringFieldUpdateOperationsInput | string | null
+    relatedEntityId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableStringFieldUpdateOperationsInput | string | null
+    actions?: NullableStringFieldUpdateOperationsInput | string | null
+    navigationIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    causationId?: NullableStringFieldUpdateOperationsInput | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    channels?: NotificationChannelUpdateManyWithoutNotificationNestedInput
+    history?: NotificationHistoryUpdateManyWithoutNotificationNestedInput
+    dispatchOutboxes?: NotificationDispatchOutboxUpdateManyWithoutNotificationNestedInput
+    account?: AccountUpdateOneRequiredWithoutNotificationsNestedInput
+  }
+
+  export type NotificationUncheckedUpdateWithoutDeliveryDecisionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    workflowKey?: StringFieldUpdateOperationsInput | string
+    topic?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    importance?: StringFieldUpdateOperationsInput | string
+    urgency?: StringFieldUpdateOperationsInput | string
+    relatedEntityType?: NullableStringFieldUpdateOperationsInput | string | null
+    relatedEntityId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableStringFieldUpdateOperationsInput | string | null
+    actions?: NullableStringFieldUpdateOperationsInput | string | null
+    navigationIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    causationId?: NullableStringFieldUpdateOperationsInput | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    channels?: NotificationChannelUncheckedUpdateManyWithoutNotificationNestedInput
+    history?: NotificationHistoryUncheckedUpdateManyWithoutNotificationNestedInput
+    dispatchOutboxes?: NotificationDispatchOutboxUncheckedUpdateManyWithoutNotificationNestedInput
+  }
+
+  export type NotificationCreateWithoutDispatchOutboxesInput = {
+    id: string
+    type: string
+    category: string
+    workflowKey: string
+    topic: string
+    idempotencyKey: string
+    title: string
+    content: string
+    importance: string
+    urgency: string
+    relatedEntityType?: string | null
+    relatedEntityId?: string | null
+    metadata?: string | null
+    actions?: string | null
+    navigationIntent?: string | null
+    correlationId?: string | null
+    causationId?: string | null
+    readAt?: Date | string | null
+    expiresAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    isRead?: boolean
+    channels?: NotificationChannelCreateNestedManyWithoutNotificationInput
+    history?: NotificationHistoryCreateNestedManyWithoutNotificationInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordCreateNestedManyWithoutNotificationInput
+    account: AccountCreateNestedOneWithoutNotificationsInput
+  }
+
+  export type NotificationUncheckedCreateWithoutDispatchOutboxesInput = {
+    id: string
+    identityId: string
+    type: string
+    category: string
+    workflowKey: string
+    topic: string
+    idempotencyKey: string
+    title: string
+    content: string
+    importance: string
+    urgency: string
+    relatedEntityType?: string | null
+    relatedEntityId?: string | null
+    metadata?: string | null
+    actions?: string | null
+    navigationIntent?: string | null
+    correlationId?: string | null
+    causationId?: string | null
+    readAt?: Date | string | null
+    expiresAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    isRead?: boolean
+    channels?: NotificationChannelUncheckedCreateNestedManyWithoutNotificationInput
+    history?: NotificationHistoryUncheckedCreateNestedManyWithoutNotificationInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordUncheckedCreateNestedManyWithoutNotificationInput
   }
 
   export type NotificationCreateOrConnectWithoutDispatchOutboxesInput = {
@@ -173401,7 +175282,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    workflowKey?: StringFieldUpdateOperationsInput | string
+    topic?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     importance?: StringFieldUpdateOperationsInput | string
@@ -173411,8 +175294,9 @@ export namespace Prisma {
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     actions?: NullableStringFieldUpdateOperationsInput | string | null
     navigationIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    causationId?: NullableStringFieldUpdateOperationsInput | string | null
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -173421,6 +175305,7 @@ export namespace Prisma {
     isRead?: BoolFieldUpdateOperationsInput | boolean
     channels?: NotificationChannelUpdateManyWithoutNotificationNestedInput
     history?: NotificationHistoryUpdateManyWithoutNotificationNestedInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordUpdateManyWithoutNotificationNestedInput
     account?: AccountUpdateOneRequiredWithoutNotificationsNestedInput
   }
 
@@ -173429,7 +175314,9 @@ export namespace Prisma {
     identityId?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    workflowKey?: StringFieldUpdateOperationsInput | string
+    topic?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     importance?: StringFieldUpdateOperationsInput | string
@@ -173439,8 +175326,9 @@ export namespace Prisma {
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     actions?: NullableStringFieldUpdateOperationsInput | string | null
     navigationIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    causationId?: NullableStringFieldUpdateOperationsInput | string | null
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -173449,6 +175337,7 @@ export namespace Prisma {
     isRead?: BoolFieldUpdateOperationsInput | boolean
     channels?: NotificationChannelUncheckedUpdateManyWithoutNotificationNestedInput
     history?: NotificationHistoryUncheckedUpdateManyWithoutNotificationNestedInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordUncheckedUpdateManyWithoutNotificationNestedInput
   }
 
   export type AccountUpsertWithoutNotificationDispatchOutboxesInput = {
@@ -189203,7 +191092,9 @@ export namespace Prisma {
     id: string
     type: string
     category: string
-    status: string
+    workflowKey: string
+    topic: string
+    idempotencyKey: string
     title: string
     content: string
     importance: string
@@ -189213,8 +191104,9 @@ export namespace Prisma {
     metadata?: string | null
     actions?: string | null
     navigationIntent?: string | null
+    correlationId?: string | null
+    causationId?: string | null
     readAt?: Date | string | null
-    sentAt?: Date | string | null
     expiresAt?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -191001,7 +192893,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    workflowKey?: StringFieldUpdateOperationsInput | string
+    topic?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     importance?: StringFieldUpdateOperationsInput | string
@@ -191011,8 +192905,9 @@ export namespace Prisma {
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     actions?: NullableStringFieldUpdateOperationsInput | string | null
     navigationIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    causationId?: NullableStringFieldUpdateOperationsInput | string | null
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -191022,13 +192917,16 @@ export namespace Prisma {
     channels?: NotificationChannelUpdateManyWithoutNotificationNestedInput
     history?: NotificationHistoryUpdateManyWithoutNotificationNestedInput
     dispatchOutboxes?: NotificationDispatchOutboxUpdateManyWithoutNotificationNestedInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordUpdateManyWithoutNotificationNestedInput
   }
 
   export type NotificationUncheckedUpdateWithoutAccountInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    workflowKey?: StringFieldUpdateOperationsInput | string
+    topic?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     importance?: StringFieldUpdateOperationsInput | string
@@ -191038,8 +192936,9 @@ export namespace Prisma {
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     actions?: NullableStringFieldUpdateOperationsInput | string | null
     navigationIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    causationId?: NullableStringFieldUpdateOperationsInput | string | null
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -191049,13 +192948,16 @@ export namespace Prisma {
     channels?: NotificationChannelUncheckedUpdateManyWithoutNotificationNestedInput
     history?: NotificationHistoryUncheckedUpdateManyWithoutNotificationNestedInput
     dispatchOutboxes?: NotificationDispatchOutboxUncheckedUpdateManyWithoutNotificationNestedInput
+    deliveryDecisions?: NotificationDeliveryDecisionRecordUncheckedUpdateManyWithoutNotificationNestedInput
   }
 
   export type NotificationUncheckedUpdateManyWithoutAccountInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    workflowKey?: StringFieldUpdateOperationsInput | string
+    topic?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     importance?: StringFieldUpdateOperationsInput | string
@@ -191065,8 +192967,9 @@ export namespace Prisma {
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     actions?: NullableStringFieldUpdateOperationsInput | string | null
     navigationIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    causationId?: NullableStringFieldUpdateOperationsInput | string | null
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -193435,6 +195338,18 @@ export namespace Prisma {
     finishedAt?: Date | string | null
   }
 
+  export type NotificationDeliveryDecisionRecordCreateManyNotificationInput = {
+    id: string
+    identityId: string
+    channel: string
+    outcome: string
+    reason: string
+    preferenceSource?: string | null
+    retryAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type NotificationChannelUpdateWithoutNotificationInput = {
     id?: StringFieldUpdateOperationsInput | string
     channelType?: StringFieldUpdateOperationsInput | string
@@ -193586,6 +195501,42 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     finishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type NotificationDeliveryDecisionRecordUpdateWithoutNotificationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    channel?: StringFieldUpdateOperationsInput | string
+    outcome?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    preferenceSource?: NullableStringFieldUpdateOperationsInput | string | null
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationDeliveryDecisionRecordUncheckedUpdateWithoutNotificationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    channel?: StringFieldUpdateOperationsInput | string
+    outcome?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    preferenceSource?: NullableStringFieldUpdateOperationsInput | string | null
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationDeliveryDecisionRecordUncheckedUpdateManyWithoutNotificationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    channel?: StringFieldUpdateOperationsInput | string
+    outcome?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    preferenceSource?: NullableStringFieldUpdateOperationsInput | string | null
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ReminderHistoryCreateManyTemplateInput = {

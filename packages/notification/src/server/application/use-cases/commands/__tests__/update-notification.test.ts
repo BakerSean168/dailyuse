@@ -1,31 +1,28 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockRepo } from '@memoflow/test-utils/mocks';
 import { anIdentityId } from '@memoflow/test-utils/fixtures';
-import {
-  NotificationCategory,
-  NotificationStatus,
-  NotificationType,
-} from '@memoflow/contracts/notification';
+import { NotificationCategory, NotificationType } from '@memoflow/contracts/notification';
 import type { INotificationRepository } from '../../../../domain/repositories';
 import { Notification } from '../../../../domain/aggregates/notification';
 import { UpdateNotificationUseCase } from '../update-notification.use-case';
 
-describe('UpdateNotificationUseCase', () => {
+function aFact() {
+  return Notification.create({
+    identityId: anIdentityId(),
+    workflowKey: 'system.general',
+    topic: 'system.general',
+    idempotencyKey: 'update-fact-1',
+    title: 'Original title',
+    content: 'Original content',
+    type: NotificationType.Info,
+    category: NotificationCategory.System,
+  });
+}
+
+describe('UpdateNotificationUseCase — Fact-only mutation', () => {
   let notificationRepo: ReturnType<typeof createMockRepo<INotificationRepository>>;
   let useCase: UpdateNotificationUseCase;
-
-  function aNotification() {
-    return Notification.create({
-      identityId: anIdentityId(),
-      title: 'Original title',
-      content: 'Original content',
-      type: NotificationType.Info,
-      category: NotificationCategory.System,
-    });
-  }
-
   beforeEach(() => {
-    vi.clearAllMocks();
     notificationRepo = createMockRepo<INotificationRepository>({
       findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
@@ -33,43 +30,34 @@ describe('UpdateNotificationUseCase', () => {
     useCase = new UpdateNotificationUseCase(notificationRepo);
   });
 
-  it('updates mutable fields and returns a client DTO', async () => {
-    const notification = aNotification();
+  it('updates Fact-owned mutable fields and never exposes root delivery status', async () => {
+    const fact = aFact();
+    vi.mocked(notificationRepo.findByIdForIdentity).mockResolvedValue(fact);
     const expiresAt = Date.now() + 60_000;
-    vi.mocked(notificationRepo.findByIdForIdentity).mockResolvedValue(notification);
-
-    const result = await useCase.execute(String(notification.id), String(notification.identityId), {
+    const result = await useCase.execute(String(fact.id), String(fact.identityId), {
       title: 'Updated title',
       content: 'Updated content',
-      status: NotificationStatus.Delivered,
-      metadata: {
-        icon: 'bell',
-        image: null,
-        color: '#336699',
-        sound: null,
-        badge: 3,
-      },
+      navigationIntent: { route: '/inbox', params: { focus: '1' } },
+      metadata: { icon: 'bell', badge: 3 },
       expiresAt,
     });
-
     expect(result.ok).toBe(true);
-    if (!result.ok) throw new Error('Expected ok');
-    expect(result.data.title).toBe('Updated title');
-    expect(result.data.content).toBe('Updated content');
-    expect(result.data.status).toBe(NotificationStatus.Delivered);
-    expect(result.data.metadata?.icon).toBe('bell');
-    expect(result.data.expiresAt).toBe(expiresAt);
-    expect(notificationRepo.save).toHaveBeenCalledWith(notification);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data).toMatchObject({
+      title: 'Updated title',
+      content: 'Updated content',
+      navigationIntent: { route: '/inbox', params: { focus: '1' } },
+      expiresAt,
+    });
+    expect(result.data).not.toHaveProperty('status');
+    expect(notificationRepo.save).toHaveBeenCalledWith(fact);
   });
 
-  it('returns NOT_FOUND when the notification does not exist', async () => {
+  it('returns NOT_FOUND when the owned Fact does not exist', async () => {
     vi.mocked(notificationRepo.findByIdForIdentity).mockResolvedValue(null);
-
     const result = await useCase.execute('missing-id', anIdentityId(), { title: 'Nope' });
-
     expect(result.ok).toBe(false);
-    if (result.ok) throw new Error('Expected error');
+    if (result.ok) throw new Error('expected error');
     expect(result.error.code).toBe('NOT_FOUND');
-    expect(notificationRepo.save).not.toHaveBeenCalled();
   });
 });

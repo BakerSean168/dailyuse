@@ -10,7 +10,6 @@ export { NotificationHistoryId } from './notification-history-id';
 
 export { NotificationType } from './notification-type';
 export { NotificationCategory } from './notification-category';
-export { NotificationStatus } from './notification-status';
 export { RelatedEntityType } from './related-entity-type';
 export { NotificationChannelType } from './notification-channel-type';
 export { ChannelStatus } from './channel-status';

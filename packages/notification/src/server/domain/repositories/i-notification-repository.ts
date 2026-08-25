@@ -9,7 +9,7 @@
  */
 
 import type { Notification } from '../aggregates/notification';
-import { NotificationCategory, NotificationStatus } from '@memoflow/contracts/notification';
+import { NotificationCategory } from '@memoflow/contracts/notification';
 import type { NotificationChannelType } from '@memoflow/contracts/notification';
 import type { NotificationOutboxDispatchInput } from '@memoflow/contracts/reliable-messaging';
 import type { NotificationDeliveryDecision } from '../services/notification-policy';
@@ -53,7 +53,7 @@ export interface INotificationRepository {
    */
   getDeliveryUsage(
     identityId: string,
-    category: NotificationCategory,
+    workflowKey: string,
     channel: NotificationChannelType,
     now: Date,
   ): Promise<NotificationDeliveryUsage>;
@@ -72,6 +72,9 @@ export interface INotificationRepository {
     id: string,
     options?: { includeChildren?: boolean },
   ): Promise<Notification | null>;
+
+  /** Fact-level idempotency fence scoped to identity. */
+  findByIdempotencyKey(identityId: string, idempotencyKey: string): Promise<Notification | null>;
 
   /**
    * 閫氳繃璐︽埛 UUID 鏌ユ壘鎵€鏈夐€氱煡
@@ -93,20 +96,6 @@ export interface INotificationRepository {
       limit?: number;
       offset?: number;
     },
-  ): Promise<Notification[]>;
-
-  /**
-   * 閫氳繃鐘舵€佹煡鎵鹃€氱煡
-   *
-   * @param identityId 璐︽埛 UUID
-   * @param status 閫氱煡鐘舵€?
-   * @param options.limit 闄愬埗鏁伴噺
-   * @param options.offset 鍋忕Щ閲?
-   */
-  findByStatus(
-    identityId: string,
-    status: NotificationStatus,
-    options?: { limit?: number; offset?: number },
   ): Promise<Notification[]>;
 
   /**

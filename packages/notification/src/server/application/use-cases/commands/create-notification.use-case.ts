@@ -1,136 +1,148 @@
-/**
- * Create Notification Service
- *
- * 创建通知的应用服务
- */
-
-import { NotificationPolicy } from '../../../domain/services/notification-policy';
-import { createLogger } from '@memoflow/utils/logger';
+import { randomUUID } from 'crypto';
 import type {
+  NotificationActionDTO,
   NotificationClientDTO,
+  NotificationMetadataDTO,
+  NotificationNavigationIntentDTO,
   NotificationType,
   NotificationCategory,
   RelatedEntityType,
   NotificationChannelType,
-  NotificationNavigationIntentDTO,
 } from '@memoflow/contracts/notification';
-import { NotificationChannelType as ChannelTypeEnum } from '@memoflow/contracts/notification';
+import {
+  NotificationChannelType as ChannelType,
+  NotificationDeliveryPlanOutcome,
+} from '@memoflow/contracts/notification';
 import type { IdentityId } from '@memoflow/contracts/primitives';
+import type { ImportanceLevel, UrgencyLevel } from '@memoflow/contracts/shared';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
+import { buildIdempotencyKeyString } from '@memoflow/contracts/reliable-messaging';
 import type {
   INotificationRepository,
-  INotificationTemplateRepository,
   INotificationPreferenceRepository,
   NotificationOutboxDispatchPlan,
 } from '../../../domain/repositories';
-import type { NotificationDeliveryDecision } from '../../../domain/services/notification-policy';
-import { randomUUID } from 'crypto';
-import {
-  buildIdempotencyKeyString,
-} from '@memoflow/contracts/reliable-messaging';
-import { toNotificationClientDTO } from './notification-dto-converters';
 import { Notification } from '../../../domain/aggregates/notification';
 import { NotificationChannel } from '../../../domain/entities/notification-channel';
+import { NotificationPolicy, type NotificationDeliveryDecision } from '../../../domain/services/notification-policy';
+import {
+  NotificationWorkflowCatalog,
+  defaultNotificationWorkflowKey,
+} from '../../../domain/services/notification-workflow-catalog';
+import { toNotificationClientDTO } from './notification-dto-converters';
 
-const logger = createLogger('CreateNotificationUseCase');
-
-/**
- * Create Notification Use Case
- */
 export class CreateNotificationUseCase {
-  private readonly policy: NotificationPolicy;
-  private readonly closureChecker: (identityId: string) => Promise<boolean>;
+  private readonly policy = new NotificationPolicy();
 
   constructor(
     private readonly notificationRepository: INotificationRepository,
-    private readonly templateRepository: INotificationTemplateRepository,
     private readonly preferenceRepository: INotificationPreferenceRepository,
-    closureChecker?: (identityId: string) => Promise<boolean>,
+    private readonly closureChecker: (identityId: string) => Promise<boolean>,
     private readonly clock: () => Date = () => new Date(),
+    private readonly workflowCatalog: NotificationWorkflowCatalog = new NotificationWorkflowCatalog(),
   ) {
     if (!closureChecker) {
       throw new Error('[FAIL-CLOSED] CreateNotificationUseCase requires closureChecker');
     }
-    this.closureChecker = closureChecker;
-    this.policy = new NotificationPolicy();
   }
 
   async execute(params: {
     identityId: string;
+    workflowKey?: string;
+    topic?: string;
+    idempotencyKey?: string;
     title: string;
     content: string;
     type: NotificationType;
     category: NotificationCategory;
+    importance?: ImportanceLevel;
+    urgency?: UrgencyLevel;
     relatedEntityType?: RelatedEntityType;
     relatedEntityId?: string;
-    /** R3d：稳定导航意图（点击通知跳转目标）。 */
     navigationIntent?: NotificationNavigationIntentDTO | null;
+    actions?: NotificationActionDTO[];
+    metadata?: NotificationMetadataDTO;
     channels?: NotificationChannelType[];
     expiresAt?: number | null;
-    /** DND bypass is never inferred from type/category; callers must opt in explicitly. */
-    bypassDoNotDisturb?: boolean;
+    correlationId?: string | null;
+    causationId?: string | null;
   }): Promise<Result<NotificationClientDTO>> {
     if (await this.closureChecker(params.identityId)) {
       return error('FORBIDDEN', 'Account is closed or closure in progress');
     }
-    logger.info('📬 [应用服务] 接收创建通知请求', {
-      identityId: params.identityId,
-      title: params.title,
-      type: params.type,
-      category: params.category,
-    });
+
+    const workflowKey = params.workflowKey?.trim() || defaultNotificationWorkflowKey(params.category);
+    const workflow = this.workflowCatalog.resolve(workflowKey, params.topic);
+    const idempotencyKey = params.idempotencyKey?.trim() || `notification:${randomUUID()}`;
+
+    if (params.idempotencyKey) {
+      const existing = await this.notificationRepository.findByIdempotencyKey(
+        params.identityId,
+        idempotencyKey,
+      );
+      if (existing) return ok(toNotificationClientDTO(existing.toServerDTO()));
+    }
 
     const preference = await this.preferenceRepository.findByIdentityId(params.identityId);
-    const channels = params.channels ?? [ChannelTypeEnum.InApp];
+    const requestedChannels = [...new Set(params.channels ?? [ChannelType.InApp])];
     const now = this.clock();
-
-    // Notification is the durable user-visible Fact. Delivery policy is evaluated
-    // independently per channel below and must never erase read/unread truth.
     const notification = Notification.create({
       identityId: params.identityId as IdentityId,
+      workflowKey: workflow.workflowKey,
+      topic: workflow.topic,
+      idempotencyKey,
       title: params.title,
       content: params.content,
       type: params.type,
       category: params.category,
+      importance: params.importance,
+      urgency: params.urgency,
+      relatedEntityType: params.relatedEntityType ?? null,
+      relatedEntityId: params.relatedEntityId ?? null,
       navigationIntent: params.navigationIntent ?? null,
+      actions: params.actions,
+      metadata: params.metadata,
       expiresAt: params.expiresAt,
+      correlationId: params.correlationId ?? null,
+      causationId: params.causationId ?? null,
     });
 
     const outboxDispatches: NotificationOutboxDispatchPlan[] = [];
     const deliveryDecisions: NotificationDeliveryDecision[] = [];
 
-    for (const channelType of channels) {
+    for (const channelType of requestedChannels) {
       const rateLimitUsage = preference?.rateLimit?.enabled
         ? await this.notificationRepository.getDeliveryUsage(
             params.identityId,
-            params.category,
+            workflow.workflowKey,
             channelType,
             now,
           )
         : undefined;
       const decision = this.policy.evaluate({
-        category: params.category,
+        workflow,
         channel: channelType,
         preference,
         doNotDisturb: preference?.doNotDisturb,
         rateLimit: preference?.rateLimit,
         rateLimitUsage,
         now,
-        bypassDoNotDisturb: params.bypassDoNotDisturb === true,
       });
       deliveryDecisions.push(decision);
 
-      if (decision.outcome === 'suppressed' || decision.outcome === 'rate_limited') {
+      if (
+        decision.outcome === NotificationDeliveryPlanOutcome.Suppressed
+        || decision.outcome === NotificationDeliveryPlanOutcome.RateLimited
+        || decision.outcome === NotificationDeliveryPlanOutcome.Disabled
+        || decision.outcome === NotificationDeliveryPlanOutcome.Unsupported
+      ) {
         continue;
       }
-      if (decision.outcome === 'deferred' && !decision.retryAt) {
-        logger.warn('DND decision has no retryAt; keeping delivery suppressed rather than enqueueing immediately', {
-          identityId: params.identityId,
-          channelType,
-        });
+      if (decision.outcome === NotificationDeliveryPlanOutcome.Deferred && !decision.retryAt) {
         continue;
       }
+
       const channel = NotificationChannel.create({
         notificationId: notification.id,
         channelType,
@@ -138,13 +150,12 @@ export class CreateNotificationUseCase {
       });
       notification.addChannel(channel);
 
-      const occurrenceKey = `${notification.id}:${channelType}`;
-      const idempotencyKey = buildIdempotencyKeyString({
+      const occurrenceKey = `${idempotencyKey}:${channelType}`;
+      const dispatchIdempotencyKey = buildIdempotencyKeyString({
         identityId: params.identityId,
         source: 'notification',
         occurrenceKey,
       });
-
       outboxDispatches.push({
         operationId: randomUUID(),
         identityId: params.identityId,
@@ -153,6 +164,8 @@ export class CreateNotificationUseCase {
         channel: channelType,
         payloadJson: JSON.stringify({
           notificationId: String(notification.id),
+          workflowKey: workflow.workflowKey,
+          topic: workflow.topic,
           title: params.title,
           content: params.content,
           type: params.type,
@@ -160,22 +173,28 @@ export class CreateNotificationUseCase {
           channelType,
           navigationIntent: params.navigationIntent ?? null,
         }),
-        idempotencyKey,
-        ...(decision.outcome === 'deferred' ? { deferUntil: decision.retryAt } : {}),
+        idempotencyKey: dispatchIdempotencyKey,
+        ...(decision.outcome === NotificationDeliveryPlanOutcome.Deferred
+          ? { deferUntil: decision.retryAt }
+          : {}),
       });
     }
 
-    notification.send();
-    await this.notificationRepository.save(notification, outboxDispatches, deliveryDecisions);
-    const clientDTO = toNotificationClientDTO(notification.toServerDTO());
-
-    logger.info('✅✅✅ [应用服务] 通知创建完成', {
-      notificationId: clientDTO.id,
-      identityId: clientDTO.identityId,
-      title: clientDTO.title,
-      status: clientDTO.status,
-    });
-
-    return ok(clientDTO);
+    try {
+      await this.notificationRepository.save(notification, outboxDispatches, deliveryDecisions);
+    } catch (cause) {
+      // The persistence unique key is the concurrency fence. A same-key writer may
+      // win after our initial read; re-read only when the caller supplied a stable
+      // Fact idempotency key, and never hide an unrelated persistence failure.
+      if (params.idempotencyKey) {
+        const racedExisting = await this.notificationRepository.findByIdempotencyKey(
+          params.identityId,
+          idempotencyKey,
+        );
+        if (racedExisting) return ok(toNotificationClientDTO(racedExisting.toServerDTO()));
+      }
+      throw cause;
+    }
+    return ok(toNotificationClientDTO(notification.toServerDTO()));
   }
 }

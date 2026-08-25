@@ -19,14 +19,13 @@ import { parseJsonSafe } from '@memoflow/utils/shared';
 
 import type {
   NotificationCategory,
-  NotificationStatus,
   NotificationChannelType,
   ChannelStatus,
   NotificationActionDTO,
   NotificationMetadataDTO,
   NotificationNavigationIntentDTO,
 } from '@memoflow/contracts/notification';
-import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import type { ImportanceLevel, UrgencyLevel } from '@memoflow/contracts/shared';
 import { Notification } from '../../../../domain/aggregates/notification';
 import { NotificationChannel } from '../../../../domain/entities/notification-channel';
 import { NotificationHistory } from '../../../../domain/entities/notification-history';
@@ -50,18 +49,21 @@ export type PrismaNotificationRow = {
   content: string;
   type: string;
   category: string;
+  workflowKey: string;
+  topic: string;
+  idempotencyKey: string;
   importance: string;
   urgency: string;
-  status: string;
   isRead: boolean;
   readAt: Date | null;
-  sentAt: Date | null;
   expiresAt: Date | null;
   relatedEntityType: string | null;
   relatedEntityId: string | null;
   metadata: string | null;
   actions: string | null;
   navigationIntent: string | null;
+  correlationId: string | null;
+  causationId: string | null;
   version: number;
   createdAt: Date;
   updatedAt: Date;
@@ -79,7 +81,6 @@ export type PrismaNotificationChannelRow = {
   retryCount: number;
   error: string | null;
   response: string | null;
-  sentAt: Date | null;
   failedAt: Date | null;
   attempts: number;
 };
@@ -157,12 +158,19 @@ export class NotificationPrismaMapper {
     return Notification.load({
       id: NotificationId.of(row.id),
       identityId: row.identityId as never,
+      workflowKey: row.workflowKey,
+      topic: row.topic,
+      idempotencyKey: row.idempotencyKey,
       title: row.title,
       content: row.content,
       type: row.type as never,
       category: row.category as NotificationCategory,
       importance: (row.importance || 'Moderate') as ImportanceLevel,
-      status: row.status as NotificationStatus,
+      urgency: (row.urgency || 'Medium') as UrgencyLevel,
+      relatedEntityType: row.relatedEntityType as never,
+      relatedEntityId: row.relatedEntityId,
+      correlationId: row.correlationId,
+      causationId: row.causationId,
       isRead: row.isRead,
       readAt: row.readAt ? row.readAt.getTime() : null,
       actions: actions ? actions.map((a) => NotificationAction.fromDTO(a)) : null,

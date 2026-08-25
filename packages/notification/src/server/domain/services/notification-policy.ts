@@ -1,114 +1,152 @@
-import type { NotificationCategory, NotificationChannelType } from '@memoflow/contracts/notification';
+import {
+  NotificationDeliveryPlanOutcome,
+  NotificationDeliveryReason,
+  NotificationDndBehavior,
+  NotificationPreferenceControl,
+  NotificationPreferenceDecisionSource,
+  type NotificationChannelType,
+  type NotificationDeliveryPlanOutcome as DeliveryPlanOutcome,
+  type NotificationDeliveryReason as DeliveryReason,
+  type NotificationPreferenceDecisionSource as PreferenceDecisionSource,
+  type NotificationWorkflowDefinitionDTO,
+} from '@memoflow/contracts/notification';
 import { BusinessRuleViolationError } from '@memoflow/utils/errors';
 import type { NotificationPreference } from '../aggregates/notification-preference';
-import { DoNotDisturbConfig } from '../value-objects/do-not-disturb-config';
-import { RateLimit } from '../value-objects/rate-limit';
-
-export type NotificationDeliveryOutcome =
-  | 'deliver_now'
-  | 'suppressed'
-  | 'deferred'
-  | 'rate_limited';
-
-export type NotificationDeliveryReason =
-  | 'allowed'
-  | 'user_preference_disabled'
-  | 'dnd_active'
-  | 'rate_limit_hour'
-  | 'rate_limit_day';
+import type { DoNotDisturbConfig } from '../value-objects/do-not-disturb-config';
+import type { RateLimit } from '../value-objects/rate-limit';
 
 export interface NotificationDeliveryDecision {
   channel: NotificationChannelType;
-  outcome: NotificationDeliveryOutcome;
-  reason: NotificationDeliveryReason;
+  outcome: DeliveryPlanOutcome;
+  reason: DeliveryReason;
+  preferenceSource?: PreferenceDecisionSource;
   retryAt?: Date;
 }
 
 export interface NotificationPolicyContext {
-  category: NotificationCategory;
+  workflow: NotificationWorkflowDefinitionDTO;
   channel: NotificationChannelType;
   preference?: NotificationPreference | null;
   doNotDisturb?: DoNotDisturbConfig | null;
   rateLimit?: RateLimit | null;
   rateLimitUsage?: { hourCount: number; dayCount: number };
   now?: Date;
-  /**
-   * Critical/workflow bypass is opt-in only. Nothing in NotificationType or
-   * category implicitly bypasses account-level DND.
-   */
-  bypassDoNotDisturb?: boolean;
 }
 
 export class NotificationPolicy {
-  public evaluate(context: NotificationPolicyContext): NotificationDeliveryDecision {
-    if (context.preference) {
-      const allowed = context.preference.shouldSendNotification(
-        context.category,
+  evaluate(context: NotificationPolicyContext): NotificationDeliveryDecision {
+    const capability = context.workflow.channels[context.channel];
+    if (!capability?.supported) {
+      return {
+        channel: context.channel,
+        outcome: NotificationDeliveryPlanOutcome.Unsupported,
+        reason: NotificationDeliveryReason.UnsupportedChannel,
+        preferenceSource: NotificationPreferenceDecisionSource.WorkflowDefault,
+      };
+    }
+
+    let enabled = capability.enabledByDefault;
+    let source: PreferenceDecisionSource = NotificationPreferenceDecisionSource.WorkflowDefault;
+    let enabledReason: DeliveryReason = enabled
+      ? NotificationDeliveryReason.WorkflowDefaultEnabled
+      : NotificationDeliveryReason.WorkflowDefaultDisabled;
+
+    if (capability.preferenceControl === NotificationPreferenceControl.ReadOnly) {
+      enabled = true;
+      source = NotificationPreferenceDecisionSource.ReadOnlyAllowlist;
+      enabledReason = NotificationDeliveryReason.ReadOnlyAllowlist;
+    } else {
+      const global = context.preference?.getGlobalChannel(context.channel);
+      if (global !== undefined) {
+        enabled = global;
+        source = NotificationPreferenceDecisionSource.UserGlobal;
+        enabledReason = global
+          ? NotificationDeliveryReason.UserGlobalEnabled
+          : NotificationDeliveryReason.UserGlobalDisabled;
+      }
+
+      const workflowOverride = context.preference?.getWorkflowChannelOverride(
+        context.workflow.workflowKey,
         context.channel,
       );
-      if (!allowed) {
+      if (workflowOverride !== undefined) {
+        enabled = workflowOverride;
+        source = NotificationPreferenceDecisionSource.WorkflowOverride;
+        enabledReason = workflowOverride
+          ? NotificationDeliveryReason.WorkflowOverrideEnabled
+          : NotificationDeliveryReason.WorkflowOverrideDisabled;
+      }
+    }
+
+    if (!enabled) {
+      return {
+        channel: context.channel,
+        outcome: NotificationDeliveryPlanOutcome.Disabled,
+        reason: enabledReason,
+        preferenceSource: source,
+      };
+    }
+
+    const now = context.now ?? new Date();
+    if (
+      context.doNotDisturb?.isActiveAt(now)
+      && capability.dndBehavior !== NotificationDndBehavior.Bypass
+    ) {
+      if (capability.dndBehavior === NotificationDndBehavior.Suppress) {
         return {
           channel: context.channel,
-          outcome: 'suppressed',
-          reason: 'user_preference_disabled',
+          outcome: NotificationDeliveryPlanOutcome.Suppressed,
+          reason: NotificationDeliveryReason.DndActive,
+          preferenceSource: source,
         };
       }
+      const retryAt = context.doNotDisturb.nextInactiveAt(now);
+      return {
+        channel: context.channel,
+        outcome: NotificationDeliveryPlanOutcome.Deferred,
+        reason: NotificationDeliveryReason.DndActive,
+        preferenceSource: source,
+        ...(retryAt ? { retryAt } : {}),
+      };
     }
 
     if (context.rateLimit?.enabled && context.rateLimitUsage) {
       if (context.rateLimitUsage.hourCount >= context.rateLimit.maxPerHour) {
         return {
           channel: context.channel,
-          outcome: 'rate_limited',
-          reason: 'rate_limit_hour',
+          outcome: NotificationDeliveryPlanOutcome.RateLimited,
+          reason: NotificationDeliveryReason.RateLimitHour,
+          preferenceSource: source,
         };
       }
       if (context.rateLimitUsage.dayCount >= context.rateLimit.maxPerDay) {
         return {
           channel: context.channel,
-          outcome: 'rate_limited',
-          reason: 'rate_limit_day',
-        };
-      }
-    }
-
-    if (context.doNotDisturb && !context.bypassDoNotDisturb) {
-      const now = context.now ?? new Date();
-      if (context.doNotDisturb.isActiveAt(now)) {
-        const retryAt = context.doNotDisturb.nextInactiveAt(now);
-        return {
-          channel: context.channel,
-          outcome: 'deferred',
-          reason: 'dnd_active',
-          ...(retryAt ? { retryAt } : {}),
+          outcome: NotificationDeliveryPlanOutcome.RateLimited,
+          reason: NotificationDeliveryReason.RateLimitDay,
+          preferenceSource: source,
         };
       }
     }
 
     return {
       channel: context.channel,
-      outcome: 'deliver_now',
-      reason: 'allowed',
+      outcome: NotificationDeliveryPlanOutcome.Enqueued,
+      reason: enabledReason,
+      preferenceSource: source,
     };
   }
 
-  /**
-   * Compatibility guard for callers/tests that still need exception semantics.
-   * The production create path uses evaluate() so one blocked channel cannot
-   * abort the Notification Fact or accidentally authorize sibling channels.
-   */
-  public assertCanSend(context: NotificationPolicyContext): void {
+  assertCanSend(context: NotificationPolicyContext): void {
     const decision = this.evaluate(context);
-    if (decision.outcome === 'deliver_now') {
+    if (
+      decision.outcome === NotificationDeliveryPlanOutcome.Enqueued
+      || decision.outcome === NotificationDeliveryPlanOutcome.Deferred
+    ) {
       return;
     }
-
-    const message =
-      decision.outcome === 'suppressed'
-        ? 'User preferences block this notification.'
-        : decision.outcome === 'deferred'
-          ? 'Do-not-disturb is active.'
-          : 'Notification rate limit exceeded.';
-    throw new BusinessRuleViolationError(message);
+    throw new BusinessRuleViolationError(
+      `Notification delivery blocked: ${decision.outcome}/${decision.reason}`,
+    );
   }
 }

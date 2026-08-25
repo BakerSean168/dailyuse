@@ -26,7 +26,11 @@ describe('notification client dto dual retired (residual 863)', () => {
 
   it('keeps sole NotificationServerDTO interface; channel dual remains residual 861 Omit', () => {
     expect(server).toMatch(/export interface NotificationServerDTO\b/);
-    expect(server).toContain('Residual 863');
+    expect(server).toContain('workflowKey: string;');
+    expect(server).toContain('topic: string;');
+    expect(server).toContain('idempotencyKey: string;');
+    expect(server).toContain('isRead: boolean;');
+    expect(server).not.toMatch(/^\s*status\s*:/m);
     expect(server).not.toMatch(/export type NotificationServerDTO\s*=/);
     expect(channelServer).toContain('Residual 861');
     expect(channelServer).toContain(

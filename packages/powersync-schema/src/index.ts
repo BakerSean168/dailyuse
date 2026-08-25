@@ -646,7 +646,9 @@ const notifications = new Table({
   identity_id: column.text,
   type: column.text,
   category: column.text,
-  status: column.text,
+  workflow_key: column.text,
+  topic: column.text,
+  idempotency_key: column.text,
   title: column.text,
   content: column.text,
   importance: column.text,
@@ -655,8 +657,10 @@ const notifications = new Table({
   related_entity_id: column.text,
   metadata: column.text, // JSON
   actions: column.text, // JSON
+  navigation_intent: column.text, // JSON
+  correlation_id: column.text,
+  causation_id: column.text,
   read_at: column.text,
-  sent_at: column.text,
   expires_at: column.text,
   version: column.integer,
   created_at: column.text,
@@ -678,6 +682,18 @@ const notification_channels = new Table({
   attempts: column.integer,
   sent_at: column.text,
   failed_at: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+});
+
+const notification_delivery_decisions = new Table({
+  identity_id: column.text,
+  notification_id: column.text,
+  channel: column.text,
+  outcome: column.text,
+  reason: column.text,
+  preference_source: column.text,
+  retry_at: column.text,
   created_at: column.text,
   updated_at: column.text,
 });
@@ -753,9 +769,8 @@ const notification_history = new Table({
 
 const notification_preferences = new Table({
   identity_id: column.text,
-  enabled: column.integer, // boolean
-  channels: column.text, // JSON
-  categories: column.text, // JSON
+  global_channels: column.text, // JSON Partial<Record<channel, boolean>>
+  workflow_overrides: column.text, // JSON workflowKey -> channel overrides
   do_not_disturb: column.text, // JSON
   rate_limit: column.text, // JSON
   version: column.integer,
@@ -1136,6 +1151,7 @@ export const PowerSyncAppSchema = new Schema({
   // Notification
   notifications,
   notification_channels,
+  notification_delivery_decisions,
   notification_dispatch_outbox,
   desktop_delivery_acks,
   notification_history,

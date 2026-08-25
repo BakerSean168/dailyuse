@@ -54,3 +54,5 @@ export type { INotificationPreferenceRepository } from './repositories/i-notific
 
 // Services
 export * from './services';
+
+export { NotificationWorkflowCatalog, defaultNotificationWorkflowKey } from './services/notification-workflow-catalog';

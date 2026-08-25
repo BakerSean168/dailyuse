@@ -1036,7 +1036,9 @@ model Notification {
   identityId        String    @map("identity_id")
   type              String
   category          String
-  status            String
+  workflowKey       String    @map("workflow_key")
+  topic             String
+  idempotencyKey    String    @map("idempotency_key")
   title             String
   content           String
   importance        String
@@ -1046,8 +1048,9 @@ model Notification {
   metadata          String?
   actions           String?
   navigationIntent  String?   @map("navigation_intent")
+  correlationId     String?   @map("correlation_id")
+  causationId       String?   @map("causation_id")
   readAt            DateTime? @map("read_at")
-  sentAt            DateTime? @map("sent_at")
   expiresAt         DateTime? @map("expires_at")
   version           Int       @default(1)
   createdAt         DateTime  @default(now()) @map("created_at")
@@ -1055,12 +1058,14 @@ model Notification {
   deletedAt         DateTime? @map("deleted_at")
   isRead            Boolean   @default(false) @map("is_read")
 
-  channels         NotificationChannel[]
-  history          NotificationHistory[]
-  dispatchOutboxes NotificationDispatchOutbox[]
-  account          Account                      @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  channels          NotificationChannel[]
+  history           NotificationHistory[]
+  dispatchOutboxes  NotificationDispatchOutbox[]
+  deliveryDecisions NotificationDeliveryDecisionRecord[]
+  account           Account                              @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
-  @@index([status])
+  @@unique([identityId, idempotencyKey])
+  @@index([identityId, workflowKey])
   @@map("notifications")
 }
 
@@ -1104,18 +1109,36 @@ model NotificationHistory {
   @@map("notification_history")
 }
 
+model NotificationDeliveryDecisionRecord {
+  id               String    @id
+  identityId       String    @map("identity_id")
+  notificationId   String    @map("notification_id")
+  channel          String
+  outcome          String
+  reason           String
+  preferenceSource String?   @map("preference_source")
+  retryAt          DateTime? @map("retry_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, channel])
+  @@index([identityId])
+  @@map("notification_delivery_decisions")
+}
+
 model NotificationPreference {
-  id           String    @id
-  identityId   String    @unique @map("identity_id")
-  enabled      Boolean   @default(true)
-  channels     String
-  categories   String
-  doNotDisturb String?   @map("do_not_disturb")
-  rateLimit    String?   @map("rate_limit")
-  version      Int       @default(1)
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  deletedAt    DateTime? @map("deleted_at")
+  id                String    @id
+  identityId        String    @unique @map("identity_id")
+  globalChannels    String    @map("global_channels")
+  workflowOverrides String    @map("workflow_overrides")
+  doNotDisturb      String?   @map("do_not_disturb")
+  rateLimit         String?   @map("rate_limit")
+  version           Int       @default(1)
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
 
   @@index([identityId])
   @@map("notification_preferences")
