@@ -10,6 +10,8 @@ import type {
 } from '../../../primitives';
 
 import type { TaskTemplateStatus } from '../value-objects/task-template-status';
+import type { TaskPlanOutcome } from '../value-objects/task-plan-outcome';
+import type { TaskPlanCompletionPolicy } from '../value-objects/task-plan-completion-policy';
 import type { TaskInstanceStatus } from '../value-objects/task-instance-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type {
@@ -37,6 +39,11 @@ export interface TaskTemplateClientDTO {
   tags: string[];
   color: string | null;
   status: TaskTemplateStatus;
+  outcome: TaskPlanOutcome;
+  completionPolicy: TaskPlanCompletionPolicy;
+  closedAt: TransferDate | null;
+  archivedAt: TransferDate | null;
+  abandonedReason: string | null;
   lastGeneratedDate: TransferDate | null;
   generateAheadDays: number | null; // null for ONE_TIME tasks
   version: number;

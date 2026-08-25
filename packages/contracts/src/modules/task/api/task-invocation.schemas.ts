@@ -24,6 +24,7 @@ import {
   GenerateInstancesSchema,
   TaskGoalBindingSchema,
   UpdateTaskTemplateSchema,
+  AbandonTaskPlanSchema,
 } from './task-template.dto';
 import {
   CompleteTaskInstanceSchema,
@@ -86,6 +87,13 @@ export const TaskTemplateIdCommandInvocationSchema = z.object({
   params: TaskTemplateIdParamsSchema,
 });
 export type TaskTemplateIdCommandInvocation = z.infer<typeof TaskTemplateIdCommandInvocationSchema>;
+
+/** POST /:id/abandon — explicit user abandonment of the Task plan. */
+export const AbandonTaskPlanInvocationSchema = z.object({
+  params: TaskTemplateIdParamsSchema,
+  body: AbandonTaskPlanSchema,
+});
+export type AbandonTaskPlanInvocation = z.infer<typeof AbandonTaskPlanInvocationSchema>;
 
 // ============================================================================
 // Instance mutations

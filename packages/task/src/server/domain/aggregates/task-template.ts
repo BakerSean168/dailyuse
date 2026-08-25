@@ -8,7 +8,12 @@ import type {
   TaskEventMap,
   TaskGoalBindingTrigger as TaskGoalBindingTriggerValue,
 } from '@memoflow/contracts/task';
-import { RecurrenceEndConditionType, TaskGoalBindingTrigger } from '@memoflow/contracts/task';
+import {
+  RecurrenceEndConditionType,
+  TaskGoalBindingTrigger,
+  TaskPlanCompletionPolicy,
+  TaskPlanOutcome,
+} from '@memoflow/contracts/task';
 import { ImportanceLevel, PriorityLevel } from '@memoflow/contracts/shared';
 import { DependencyStatus, TaskType } from '../value-objects';
 import { TaskInstanceStatus, TaskTimeType as TimeType } from '../../domain/value-objects';
@@ -50,6 +55,16 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   // ===== Constructor (use factory methods to create) =====
   protected constructor(state: TaskTemplateState) {
     super(state.id);
+    if (!TaskTemplateStatus.isValid(String(state.status))) {
+      throw new InvalidTaskTemplateStateError(`Invalid persisted TaskTemplateStatus: ${String(state.status)}`, {
+        templateId: state.id, currentStatus: state.status, attemptedAction: 'load',
+      });
+    }
+    if (state.outcome !== undefined && !Object.values(TaskPlanOutcome).includes(state.outcome)) {
+      throw new InvalidTaskTemplateStateError(`Invalid persisted TaskPlanOutcome: ${String(state.outcome)}`, {
+        templateId: state.id, currentStatus: state.status, attemptedAction: 'load',
+      });
+    }
 
     const { id: _, ...rest } = state;
     this._props = {
@@ -74,6 +89,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       dependencyStatus: rest.dependencyStatus ?? DependencyStatus.None,
       isBlocked: rest.isBlocked ?? false,
       blockingReason: rest.blockingReason ?? null,
+      outcome: rest.outcome ?? TaskPlanOutcome.Open,
+      completionPolicy: rest.completionPolicy ?? TaskPlanCompletionPolicy.AllowCorrection,
+      closedAt: rest.closedAt ?? null,
+      archivedAt: rest.archivedAt ?? null,
+      abandonedReason: rest.abandonedReason ?? null,
       deletedAt: rest.deletedAt ?? null,
       version: rest.version ?? 1,
     };
@@ -181,6 +201,26 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
   public get status(): TaskTemplateStatus {
     return this._props.status;
+  }
+
+  public get outcome() {
+    return this._props.outcome;
+  }
+
+  public get completionPolicy() {
+    return this._props.completionPolicy;
+  }
+
+  public get closedAt(): Instant | null {
+    return this._props.closedAt;
+  }
+
+  public get archivedAt(): Instant | null {
+    return this._props.archivedAt;
+  }
+
+  public get abandonedReason(): string | null {
+    return this._props.abandonedReason;
   }
 
   public get lastGeneratedDate(): Instant | null {
@@ -344,8 +384,30 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this.advanceVersion();
   }
 
+  public updateCompletionPolicy(policy: (typeof TaskPlanCompletionPolicy)[keyof typeof TaskPlanCompletionPolicy]): void {
+    if (this._props.status === TaskTemplateStatus.Closed || this._props.deletedAt !== null) {
+      throw new InvalidTaskTemplateStateError('Cannot change completion policy on a closed or deleted task plan', {
+        templateId: this.id, currentStatus: this._props.status, attemptedAction: 'updateCompletionPolicy',
+      });
+    }
+    this._props.completionPolicy = policy;
+    this._props.updatedAt = Date.now();
+    this.addHistory('completion_policy_updated', { policy });
+  }
+
   public archive(): void {
     lifecyclePolicy.archive(this);
+    this.advanceVersion();
+  }
+
+  public abandon(reason?: string): void {
+    lifecyclePolicy.abandon(this, reason);
+    this.advanceVersion();
+  }
+
+  /** Apply deterministic evaluator output; Abandoned is only changed explicitly. */
+  public applyPlanOutcome(outcome: typeof TaskPlanOutcome.Succeeded | typeof TaskPlanOutcome.Failed | typeof TaskPlanOutcome.Open): void {
+    lifecyclePolicy.applyEvaluation(this, outcome);
     this.advanceVersion();
   }
 
@@ -767,6 +829,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       tags: [...this._props.tags],
       color: this._props.color,
       status: this._props.status,
+      outcome: this._props.outcome,
+      completionPolicy: this._props.completionPolicy,
+      closedAt: this._props.closedAt,
+      archivedAt: this._props.archivedAt,
+      abandonedReason: this._props.abandonedReason,
       lastGeneratedDate: this._props.lastGeneratedDate ?? null,
       generateAheadDays: this._props.generateAheadDays,
       parentTaskId: this._props.parentTaskId,
@@ -826,6 +893,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       tags: [...this._props.tags],
       color: this._props.color,
       status: this._props.status,
+      outcome: this._props.outcome,
+      completionPolicy: this._props.completionPolicy,
+      closedAt: this._props.closedAt,
+      archivedAt: this._props.archivedAt,
+      abandonedReason: this._props.abandonedReason,
       lastGeneratedDate: this._props.lastGeneratedDate ?? null,
       generateAheadDays: this._props.generateAheadDays,
       createdAt: this._props.createdAt,
@@ -893,6 +965,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       tags: params.tags ?? [],
       color: params.color ?? null,
       status: TaskTemplateStatus.Active,
+      outcome: TaskPlanOutcome.Open,
+      completionPolicy: TaskPlanCompletionPolicy.AllowCorrection,
+      closedAt: null,
+      archivedAt: null,
+      abandonedReason: null,
       folderId: params.folderId ?? null,
       goalBinding: null,
       checklist: [],
@@ -948,6 +1025,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       tags: params.tags ?? [],
       color: params.color ?? null,
       status: TaskTemplateStatus.Active,
+      outcome: TaskPlanOutcome.Open,
+      completionPolicy: TaskPlanCompletionPolicy.AllowCorrection,
+      closedAt: null,
+      archivedAt: null,
+      abandonedReason: null,
       folderId: params.folderId ?? null,
       goalBinding: null,
       checklist: [],
@@ -997,6 +1079,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       progressTrigger: TaskGoalBindingTriggerValue;
     } | null;
     parentTaskId?: TaskTemplateId;
+    completionPolicy?: (typeof TaskPlanCompletionPolicy)[keyof typeof TaskPlanCompletionPolicy];
   }): TaskTemplate {
     TaskTemplate.assertIdentityId(params.identityId, 'create');
     const title = TaskTemplate.normalizeTitle(params.title, 'create');
@@ -1028,6 +1111,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       tags: params.tags ?? [],
       color: params.color ?? null,
       status: TaskTemplateStatus.Active,
+      outcome: TaskPlanOutcome.Open,
+      completionPolicy: params.completionPolicy ?? TaskPlanCompletionPolicy.AllowCorrection,
+      closedAt: null,
+      archivedAt: null,
+      abandonedReason: null,
       folderId: params.folderId ?? null,
       goalBinding: params.goalBinding
         ? TaskGoalBinding.create({

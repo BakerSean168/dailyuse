@@ -1,19 +1,10 @@
-/**
- * Lifecycle state transition policy for TaskTemplate.
- *
- * Pure functions for activate/pause/archive/delete/restore operations.
- * Extracted from TaskTemplate aggregate to reduce aggregate size.
- */
-
-import type { TaskEventMap } from '@memoflow/contracts/task';
+/** Canonical Task plan lifecycle/outcome transitions (ADR-057). */
+import type { TaskEventMap, TaskPlanOutcomeValue } from '@memoflow/contracts/task';
+import { TaskPlanOutcome } from '@memoflow/contracts/task';
 import { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
-import {
-  InvalidTaskTemplateStateError,
-  TaskTemplateArchivedError,
-} from '../value-objects/task-errors';
+import { InvalidTaskTemplateStateError } from '../value-objects/task-errors';
 import type { TaskTemplateProps } from './task-template.state';
 
-/** Mutable context for lifecycle operations. */
 export interface LifecycleContext {
   readonly id: import('../../domain/value-objects/task-template-id').TaskTemplateId;
   props: TaskTemplateProps;
@@ -22,20 +13,21 @@ export interface LifecycleContext {
   toServerDTO(): import('@memoflow/contracts/task').TaskTemplateServerDTO;
 }
 
-/** Activates the template. */
-export function activate(ctx: LifecycleContext): void {
-  if (ctx.props.status === TaskTemplateStatus.Deleted) {
-    throw new InvalidTaskTemplateStateError('Cannot activate a deleted template', {
+function assertNotDeleted(ctx: LifecycleContext, action: string): void {
+  if (ctx.props.deletedAt !== null) {
+    throw new InvalidTaskTemplateStateError(`Cannot ${action} a deleted template`, {
       templateId: ctx.id,
       currentStatus: ctx.props.status,
-      attemptedAction: 'activate',
+      attemptedAction: action,
     });
   }
-  if (ctx.props.status === TaskTemplateStatus.Active) {
-    throw new InvalidTaskTemplateStateError('Template is already active', {
-      templateId: ctx.id,
-      currentStatus: ctx.props.status,
-      attemptedAction: 'activate',
+}
+
+export function activate(ctx: LifecycleContext): void {
+  assertNotDeleted(ctx, 'activate');
+  if (ctx.props.status !== TaskTemplateStatus.Paused || ctx.props.outcome !== TaskPlanOutcome.Open) {
+    throw new InvalidTaskTemplateStateError('Can only activate an open paused plan', {
+      templateId: ctx.id, currentStatus: ctx.props.status, attemptedAction: 'activate',
     });
   }
   ctx.props.status = TaskTemplateStatus.Active;
@@ -49,18 +41,16 @@ export function activate(ctx: LifecycleContext): void {
   });
 }
 
-/** Pauses the template. */
 export function pause(ctx: LifecycleContext): void {
-  if (ctx.props.status !== TaskTemplateStatus.Active) {
-    throw new InvalidTaskTemplateStateError('Can only pause active templates', {
-      templateId: ctx.id,
-      currentStatus: ctx.props.status,
-      attemptedAction: 'pause',
+  assertNotDeleted(ctx, 'pause');
+  if (ctx.props.status !== TaskTemplateStatus.Active || ctx.props.outcome !== TaskPlanOutcome.Open) {
+    throw new InvalidTaskTemplateStateError('Can only pause an active open plan', {
+      templateId: ctx.id, currentStatus: ctx.props.status, attemptedAction: 'pause',
     });
   }
   ctx.props.status = TaskTemplateStatus.Paused;
   ctx.props.updatedAt = Date.now();
-  ctx.addHistory('Paused');
+  ctx.addHistory('paused');
   ctx.publishDomainEvent<TaskEventMap['task:template-paused']>('task:template-paused', {
     identityId: ctx.props.identityId,
     taskTemplateId: ctx.id,
@@ -69,36 +59,29 @@ export function pause(ctx: LifecycleContext): void {
   });
 }
 
-/** Archives the template. */
+/** Archive is display/visibility metadata, not business lifecycle/outcome. */
 export function archive(ctx: LifecycleContext): void {
-  if (ctx.props.status === TaskTemplateStatus.Deleted) {
-    throw new InvalidTaskTemplateStateError('Cannot archive a deleted template', {
-      templateId: ctx.id,
-      currentStatus: ctx.props.status,
-      attemptedAction: 'archive',
+  assertNotDeleted(ctx, 'archive');
+  if (ctx.props.archivedAt !== null) {
+    throw new InvalidTaskTemplateStateError('Template is already archived', {
+      templateId: ctx.id, currentStatus: ctx.props.status, attemptedAction: 'archive',
     });
   }
-  if (ctx.props.status === TaskTemplateStatus.Archived) {
-    throw new TaskTemplateArchivedError(ctx.id);
-  }
-  ctx.props.status = TaskTemplateStatus.Archived;
+  ctx.props.archivedAt = Date.now();
   ctx.props.updatedAt = Date.now();
-  ctx.addHistory('Archived');
+  ctx.addHistory('archived');
 }
 
-/** Soft-deletes the template. */
+/** Deletion means mistaken creation; it never fabricates a plan outcome. */
 export function softDelete(ctx: LifecycleContext): void {
-  if (ctx.props.status === TaskTemplateStatus.Deleted) {
+  if (ctx.props.deletedAt !== null) {
     throw new InvalidTaskTemplateStateError('Template is already deleted', {
-      templateId: ctx.id,
-      currentStatus: ctx.props.status,
-      attemptedAction: 'softDelete',
+      templateId: ctx.id, currentStatus: ctx.props.status, attemptedAction: 'softDelete',
     });
   }
-  ctx.props.status = TaskTemplateStatus.Deleted;
   ctx.props.deletedAt = Date.now();
   ctx.props.updatedAt = Date.now();
-  ctx.addHistory('Deleted');
+  ctx.addHistory('deleted_as_mistaken_creation');
   ctx.publishDomainEvent<TaskEventMap['task:deleted']>('task:deleted', {
     identityId: ctx.props.identityId,
     taskTemplateId: ctx.id,
@@ -108,17 +91,57 @@ export function softDelete(ctx: LifecycleContext): void {
   });
 }
 
-/** Restores a soft-deleted template. */
+/** Restores mistaken deletion or removes archive visibility, without changing plan facts. */
 export function restore(ctx: LifecycleContext): void {
-  if (ctx.props.status !== TaskTemplateStatus.Deleted) {
-    throw new InvalidTaskTemplateStateError('Can only restore deleted templates', {
-      templateId: ctx.id,
-      currentStatus: ctx.props.status,
-      attemptedAction: 'restore',
+  if (ctx.props.deletedAt === null && ctx.props.archivedAt === null) {
+    throw new InvalidTaskTemplateStateError('Template is neither deleted nor archived', {
+      templateId: ctx.id, currentStatus: ctx.props.status, attemptedAction: 'restore',
     });
   }
-  ctx.props.status = TaskTemplateStatus.Active;
   ctx.props.deletedAt = null;
+  ctx.props.archivedAt = null;
   ctx.props.updatedAt = Date.now();
   ctx.addHistory('restored');
+}
+
+/** Explicit user intent; never inferred from occurrence facts. */
+export function abandon(ctx: LifecycleContext, reason?: string): void {
+  assertNotDeleted(ctx, 'abandon');
+  if (ctx.props.status === TaskTemplateStatus.Closed) {
+    throw new InvalidTaskTemplateStateError('Task plan is already closed', {
+      templateId: ctx.id, currentStatus: ctx.props.status, attemptedAction: 'abandon',
+    });
+  }
+  const now = Date.now();
+  ctx.props.status = TaskTemplateStatus.Closed;
+  ctx.props.outcome = TaskPlanOutcome.Abandoned;
+  ctx.props.closedAt = now;
+  ctx.props.abandonedReason = reason ?? null;
+  ctx.props.updatedAt = now;
+  ctx.addHistory('abandoned', { reason: reason ?? null });
+}
+
+/** Automatic evaluator result; unknown/correctable facts remain Open, never default to Failed. */
+export function applyEvaluation(
+  ctx: LifecycleContext,
+  outcome: Exclude<TaskPlanOutcomeValue, 'Abandoned'>,
+): void {
+  if (ctx.props.outcome === TaskPlanOutcome.Abandoned) return;
+  if (ctx.props.outcome === outcome &&
+      ((outcome === TaskPlanOutcome.Open && ctx.props.status !== TaskTemplateStatus.Closed) ||
+       (outcome !== TaskPlanOutcome.Open && ctx.props.status === TaskTemplateStatus.Closed))) {
+    return;
+  }
+  const now = Date.now();
+  ctx.props.outcome = outcome;
+  if (outcome === TaskPlanOutcome.Open) {
+    if (ctx.props.status === TaskTemplateStatus.Closed) ctx.props.status = TaskTemplateStatus.Active;
+    ctx.props.closedAt = null;
+  } else {
+    ctx.props.status = TaskTemplateStatus.Closed;
+    ctx.props.closedAt = now;
+  }
+  ctx.props.abandonedReason = null;
+  ctx.props.updatedAt = now;
+  ctx.addHistory('plan_outcome_evaluated', { outcome });
 }

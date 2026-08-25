@@ -98,16 +98,15 @@ describe('task domain value objects', () => {
     expect(TaskTemplateStatus.getAll()).toEqual([
       TaskTemplateStatus.Active,
       TaskTemplateStatus.Paused,
-      TaskTemplateStatus.Archived,
-      TaskTemplateStatus.Deleted,
+      TaskTemplateStatus.Closed,
     ]);
     expect(TaskTemplateStatus.of('Active')).toBe(TaskTemplateStatus.Active);
     expect(TaskTemplateStatus.isValid('Paused')).toBe(true);
     expect(TaskTemplateStatus.isActive(TaskTemplateStatus.Active)).toBe(true);
     expect(TaskTemplateStatus.isPaused(TaskTemplateStatus.Paused)).toBe(true);
-    expect(TaskTemplateStatus.isArchived(TaskTemplateStatus.Archived)).toBe(true);
-    expect(TaskTemplateStatus.isDeleted(TaskTemplateStatus.Deleted)).toBe(true);
-    expect(TaskTemplateStatus.isAvailable(TaskTemplateStatus.Archived)).toBe(true);
+    expect(TaskTemplateStatus.isClosed(TaskTemplateStatus.Closed)).toBe(true);
+    expect(TaskTemplateStatus.isAvailable(TaskTemplateStatus.Paused)).toBe(true);
+    expect(TaskTemplateStatus.isAvailable(TaskTemplateStatus.Closed)).toBe(false);
     expect(TaskTemplateStatus.isExecutable(TaskTemplateStatus.Active)).toBe(true);
     expect(TaskTimeType.getAll()).toEqual([
       TaskTimeType.AllDay,

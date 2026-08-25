@@ -52,7 +52,7 @@ export class GetTaskDashboardUseCase {
       this.getHighPriorityTasks(identityId, 5),
       this.getRecentCompletedTasks(identityId, 10),
       this.countTasks(identityId, { status: TaskTemplateStatus.Active }),
-      this.countTasks(identityId, { status: TaskTemplateStatus.Archived }),
+      this.countTasks(identityId, { status: TaskTemplateStatus.Closed }),
     ]);
 
     const _completionRate =
@@ -104,7 +104,7 @@ export class GetTaskDashboardUseCase {
   private async getRecentCompletedTasks(identityId: string, limit: number): Promise<TaskTemplateClientDTO[]> {
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const tasks = await this.templateRepository.findOneTimeTasks(identityId, {
-      status: TaskTemplateStatus.Archived,
+      status: TaskTemplateStatus.Closed,
     });
 
     return tasks

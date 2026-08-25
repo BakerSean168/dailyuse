@@ -7,7 +7,7 @@
 
 import { IdentityId } from '@memoflow/domain-shared';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
-import { DayOfWeek, TaskType } from '@memoflow/contracts/task';
+import { DayOfWeek, TaskType, TaskPlanCompletionPolicy, TaskPlanOutcome } from '@memoflow/contracts/task';
 import { anIdentityId } from '@memoflow/test-utils/fixtures';
 import {
   TaskTemplateId,
@@ -104,6 +104,11 @@ export function aTaskTemplateState(overrides: Partial<TaskTemplateState> = {}): 
     tags: overrides.tags ?? [],
     color: overrides.color ?? null,
     status: overrides.status ?? TaskTemplateStatus.Active,
+    outcome: overrides.outcome ?? TaskPlanOutcome.Open,
+    completionPolicy: overrides.completionPolicy ?? TaskPlanCompletionPolicy.AllowCorrection,
+    closedAt: overrides.closedAt ?? null,
+    archivedAt: overrides.archivedAt ?? null,
+    abandonedReason: overrides.abandonedReason ?? null,
     folderId: overrides.folderId ?? null,
     goalBinding: overrides.goalBinding ?? null,
     checklist: overrides.checklist ?? [],

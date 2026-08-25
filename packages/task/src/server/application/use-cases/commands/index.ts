@@ -16,3 +16,5 @@ export * from './start-task-instance.use-case';
 export * from './unbind-task-from-goal.use-case';
 export * from './update-task-dependency.use-case';
 export * from './update-task-template.use-case';
+
+export * from './abandon-task-plan.use-case';

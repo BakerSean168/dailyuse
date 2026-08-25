@@ -28,6 +28,7 @@ import { UpdateTaskTemplateUseCase } from '../application/use-cases/commands/upd
 import { ActivateTaskTemplateUseCase } from '../application/use-cases/commands/activate-task-template.use-case';
 import { PauseTaskTemplateUseCase } from '../application/use-cases/commands/pause-task-template.use-case';
 import { ArchiveTaskTemplateUseCase } from '../application/use-cases/commands/archive-task-template.use-case';
+import { AbandonTaskPlanUseCase } from '../application/use-cases/commands/abandon-task-plan.use-case';
 import { DeleteTaskTemplateUseCase } from '../application/use-cases/commands/delete-task-template.use-case';
 import { CompleteTaskInstanceUseCase } from '../application/use-cases/commands/complete-task-instance.use-case';
 import { UncompleteTaskInstanceUseCase } from '../application/use-cases/commands/uncomplete-task-instance.use-case';
@@ -115,6 +116,7 @@ export interface TaskModuleUseCases {
   readonly activateTaskTemplate: ActivateTaskTemplateUseCase;
   readonly pauseTaskTemplate: PauseTaskTemplateUseCase;
   readonly archiveTaskTemplate: ArchiveTaskTemplateUseCase;
+  readonly abandonTaskPlan: AbandonTaskPlanUseCase;
   readonly deleteTaskTemplate: DeleteTaskTemplateUseCase;
   readonly generateTaskInstances: GenerateTaskInstancesUseCase;
   readonly bindTaskToGoal: BindTaskToGoalUseCase;
@@ -237,6 +239,7 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
       taskWriteTransactionRunner,
     ),
     archiveTaskTemplate: new ArchiveTaskTemplateUseCase(taskTemplateRepository),
+    abandonTaskPlan: new AbandonTaskPlanUseCase(taskTemplateRepository, taskWriteTransactionRunner),
     deleteTaskTemplate: new DeleteTaskTemplateUseCase(
       taskTemplateRepository,
       taskInstanceRepository,
@@ -266,8 +269,8 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
       taskInstanceRepository,
       taskWriteTransactionRunner,
     ),
-    skipTaskInstance: new SkipTaskInstanceUseCase(taskInstanceRepository),
-    markTaskInstanceMissed: new MarkTaskInstanceMissedUseCase(taskInstanceRepository),
+    skipTaskInstance: new SkipTaskInstanceUseCase(taskInstanceRepository, taskWriteTransactionRunner),
+    markTaskInstanceMissed: new MarkTaskInstanceMissedUseCase(taskInstanceRepository, taskWriteTransactionRunner),
     startTaskInstance: new StartTaskInstanceUseCase(taskInstanceRepository),
     deleteTaskInstance: new DeleteTaskInstanceUseCase(taskInstanceRepository),
 
@@ -339,6 +342,7 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
     pauseTaskTemplate: (id, identityId) => useCases.pauseTaskTemplate.execute(id, identityId),
     archiveTaskTemplate: (id, identityId) =>
       useCases.archiveTaskTemplate.execute(id, identityId),
+    abandonTaskPlan: (id, identityId, input) => useCases.abandonTaskPlan.execute(id, identityId, input),
     deleteTaskTemplate: (id, identityId) => useCases.deleteTaskTemplate.execute(id, identityId),
     generateTaskInstances: (id, identityId, input) =>
       useCases.generateTaskInstances.execute(id, identityId, input),

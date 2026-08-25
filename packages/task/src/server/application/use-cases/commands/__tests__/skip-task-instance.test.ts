@@ -4,6 +4,7 @@ import { createMockRepo } from '@memoflow/test-utils/mocks';
 import { aTaskInstance } from '../../../../../testing';
 import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
 import { SkipTaskInstanceUseCase } from '../skip-task-instance.use-case';
+import { createInlineTaskWriteTransactionRunner } from '../task-write-support';
 
 describe('SkipTaskInstanceUseCase', () => {
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
@@ -14,7 +15,10 @@ describe('SkipTaskInstanceUseCase', () => {
       findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new SkipTaskInstanceUseCase(instanceRepo);
+    useCase = new SkipTaskInstanceUseCase(
+      instanceRepo,
+      createInlineTaskWriteTransactionRunner({ instanceRepository: instanceRepo }),
+    );
   });
 
   it('should return NOT_FOUND when instance does not exist', async () => {

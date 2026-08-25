@@ -14,6 +14,7 @@ import type {
   UpdateTaskTemplateReq,
   GenerateInstancesReq,
   BindToGoalReq,
+  AbandonTaskPlanReq,
   CompleteTaskInstanceReq,
   MarkTaskInstanceMissedReq,
   SkipTaskInstanceReq,
@@ -66,6 +67,11 @@ function taskTemplateFromDTO(dto: TaskTemplateClientDTO): TaskTemplate {
     tags: dto.tags ?? [],
     color: dto.color,
     status: dto.status,
+    outcome: dto.outcome,
+    completionPolicy: dto.completionPolicy,
+    closedAt: dto.closedAt,
+    archivedAt: dto.archivedAt,
+    abandonedReason: dto.abandonedReason,
     lastGeneratedDate: dto.lastGeneratedDate ?? null,
     generateAheadDays: dto.generateAheadDays,
     version: dto.version,
@@ -163,6 +169,7 @@ export class TaskClientService implements TaskClientPort {
     this.activateTemplate = this.activateTemplate.bind(this);
     this.pauseTemplate = this.pauseTemplate.bind(this);
     this.archiveTemplate = this.archiveTemplate.bind(this);
+    this.abandonPlan = this.abandonPlan.bind(this);
     this.generateInstances = this.generateInstances.bind(this);
     this.getInstancesByDateRange = this.getInstancesByDateRange.bind(this);
     this.bindToGoal = this.bindToGoal.bind(this);
@@ -258,6 +265,11 @@ export class TaskClientService implements TaskClientPort {
 
   async archiveTemplate(id: string): Promise<Result<TaskTemplate>> {
     const result = await this.templateApi.archiveTaskTemplate(id);
+    return mapResult(result, (dto) => taskTemplateFromDTO(dto));
+  }
+
+  async abandonPlan(id: string, request?: AbandonTaskPlanReq): Promise<Result<TaskTemplate>> {
+    const result = await this.templateApi.abandonTaskPlan(id, request);
     return mapResult(result, (dto) => taskTemplateFromDTO(dto));
   }
 

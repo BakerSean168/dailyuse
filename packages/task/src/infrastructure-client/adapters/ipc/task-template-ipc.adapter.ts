@@ -16,6 +16,7 @@ import type {
   UpdateTaskTemplateReq,
   GenerateInstancesReq,
   BindToGoalReq,
+  AbandonTaskPlanReq,
   QueryTaskTemplateGraphRes,
   TaskTemplateInstancesQuery,
 } from '@memoflow/contracts/task';
@@ -62,7 +63,7 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
   }
 
   async activateTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    return this.ipcClient.invoke(TaskChannels.TEMPLATE_RESTORE, { id });
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_ACTIVATE, { id });
   }
 
   async pauseTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
@@ -71,6 +72,10 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
 
   async archiveTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
     return this.ipcClient.invoke(TaskChannels.TEMPLATE_ARCHIVE, { id });
+  }
+
+  async abandonTaskPlan(id: string, request?: AbandonTaskPlanReq): Promise<Result<TaskTemplateClientDTO>> {
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_ABANDON, { id, request: request ?? {} });
   }
 
   async generateInstances(

@@ -4,7 +4,7 @@ import { TaskFolderId } from '../../../../domain/value-objects/task-folder-id';
 import { TaskTemplateId } from '../../../../domain/value-objects/task-template-id';
 import { TaskTemplateStatus } from '../../../../domain/value-objects/task-template-status';
 import { IdentityId } from '@memoflow/domain-shared';
-import { TaskType } from '@memoflow/contracts/task';
+import { TaskPlanCompletionPolicy, TaskPlanOutcome, TaskType, type TaskPlanCompletionPolicyValue, type TaskPlanOutcomeValue } from '@memoflow/contracts/task';
 import type { DependencyStatus, RecurrenceFrequency, ReminderTimeUnit, TaskTimeType } from '@memoflow/contracts/task';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import {
@@ -21,6 +21,11 @@ export type PowerSyncTaskTemplateRow = {
   name: string;
   description: string | null;
   status: string;
+  outcome: string | null;
+  completion_policy: string | null;
+  closed_at: string | null;
+  archived_at: string | null;
+  abandoned_reason: string | null;
   importance: string;
   priority: number | null;
   color: string | null;
@@ -127,6 +132,11 @@ export class PowerSyncTaskTemplateMapper {
       tags: data.tags ? (JSON.parse(data.tags) as string[]) : [],
       color: data.color ?? null,
       status: (data.status as TaskTemplateStatus) ?? TaskTemplateStatus.Active,
+      outcome: (data.outcome ?? TaskPlanOutcome.Open) as TaskPlanOutcomeValue,
+      completionPolicy: (data.completion_policy ?? TaskPlanCompletionPolicy.AllowCorrection) as TaskPlanCompletionPolicyValue,
+      closedAt: data.closed_at ? new Date(data.closed_at).getTime() : null,
+      archivedAt: data.archived_at ? new Date(data.archived_at).getTime() : null,
+      abandonedReason: data.abandoned_reason ?? null,
       folderId: data.folder_id ? TaskFolderId.of(data.folder_id) : null,
       goalBinding:
         data.goal_id != null ||
@@ -178,6 +188,11 @@ export class PowerSyncTaskTemplateMapper {
       name: dto.name,
       description: dto.description ?? null,
       status: dto.status,
+      outcome: dto.outcome,
+      completionPolicy: dto.completionPolicy,
+      closedAt: dto.closedAt != null ? new Date(dto.closedAt).toISOString() : null,
+      archivedAt: dto.archivedAt != null ? new Date(dto.archivedAt).toISOString() : null,
+      abandonedReason: dto.abandonedReason,
       importance: dto.importance,
       priority: dto.priority ?? null,
       color: dto.color ?? null,

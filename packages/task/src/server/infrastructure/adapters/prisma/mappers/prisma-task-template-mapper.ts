@@ -8,7 +8,13 @@
 import type { TaskTemplate as PrismaTaskTemplate } from '@memoflow/database';
 import { toDateOrNull } from '@memoflow/utils/shared';
 import { TaskTemplate } from '../../../../domain/aggregates/task-template';
-import { RecurrenceFrequency } from '@memoflow/contracts/task';
+import {
+  RecurrenceFrequency,
+  TaskPlanCompletionPolicy,
+  TaskPlanOutcome,
+  type TaskPlanCompletionPolicyValue,
+  type TaskPlanOutcomeValue,
+} from '@memoflow/contracts/task';
 import { TaskType } from '@memoflow/contracts/task';
 import type { TaskTimeType } from '@memoflow/contracts/task';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
@@ -25,6 +31,14 @@ import {
   ChecklistItemDefinition,
 } from '../../../../domain/value-objects';
 import { toDependencyStatus } from './task-row.mapper';
+
+type PrismaTaskTemplateVNext = PrismaTaskTemplate & {
+  outcome?: string;
+  completionPolicy?: string;
+  closedAt?: Date | null;
+  archivedAt?: Date | null;
+  abandonedReason?: string | null;
+};
 
 /** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
 function requiredInstant(value: Date | string | number | null | undefined): number {
@@ -47,6 +61,7 @@ export class PrismaTaskTemplateMapper {
    * Prisma record → TaskTemplate aggregate root
    */
   static toDomain(data: PrismaTaskTemplate): TaskTemplate {
+    const vnext = data as PrismaTaskTemplateVNext;
     let timeConfig = null;
     if (data.timeConfigType) {
       timeConfig = TaskTimeConfig.create({
@@ -125,6 +140,11 @@ export class PrismaTaskTemplateMapper {
       tags,
       color: data.color,
       status: data.status as TaskTemplateStatus,
+      outcome: (vnext.outcome ?? TaskPlanOutcome.Open) as TaskPlanOutcomeValue,
+      completionPolicy: (vnext.completionPolicy ?? TaskPlanCompletionPolicy.AllowCorrection) as TaskPlanCompletionPolicyValue,
+      closedAt: optionalInstant(vnext.closedAt),
+      archivedAt: optionalInstant(vnext.archivedAt),
+      abandonedReason: vnext.abandonedReason ?? null,
       lastGeneratedDate: optionalInstant(data.lastGeneratedDate),
       generateAheadDays: data.generateAheadDays,
       parentTaskId: data.parentTaskId ? TaskTemplateId.of(data.parentTaskId) : null,
@@ -182,6 +202,11 @@ export class PrismaTaskTemplateMapper {
       name: dto.name,
       description: dto.description,
       status: dto.status,
+      outcome: dto.outcome,
+      completionPolicy: dto.completionPolicy,
+      closedAt: toDateOrNull(dto.closedAt),
+      archivedAt: toDateOrNull(dto.archivedAt),
+      abandonedReason: dto.abandonedReason,
       importance: dto.importance,
       color: dto.color,
       tags: typeof dto.tags === 'string' ? dto.tags : JSON.stringify(dto.tags),

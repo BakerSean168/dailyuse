@@ -77,6 +77,7 @@ import { ok } from '@memoflow/contracts/result';
 import { TaskChannels, type IElectronModuleContext } from '@memoflow/contracts/electron';
 import type { ListTaskTemplateFilters } from '@memoflow/contracts/task';
 import {
+  AbandonTaskPlanInvocationSchema,
   BindTaskToGoalInvocationSchema,
   CompleteTaskInstanceInvocationSchema,
   CreateTaskDependencyInvocationSchema,
@@ -311,13 +312,24 @@ export function createTaskElectronModule(
         installed.push(TaskChannels.TEMPLATE_ARCHIVE);
         registerValidatedChannel(
           ctx,
-          TaskChannels.TEMPLATE_RESTORE,
+          TaskChannels.TEMPLATE_ACTIVATE,
           TaskTemplateIdCommandInvocationSchema,
           (data, requestContext) =>
             templateController.activateTemplate(data.params.id, requestContext),
           (args) => ({ params: { id: (args as { id?: string }).id ?? (args as string) } }),
         );
-        installed.push(TaskChannels.TEMPLATE_RESTORE);
+        installed.push(TaskChannels.TEMPLATE_ACTIVATE);
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.TEMPLATE_ABANDON,
+          AbandonTaskPlanInvocationSchema,
+          (data, requestContext) => templateController.abandonPlan(data.params.id, data.body, requestContext),
+          (args) => ({
+            params: { id: (args as { id?: string }).id },
+            body: (args as { request?: unknown }).request,
+          }),
+        );
+        installed.push(TaskChannels.TEMPLATE_ABANDON);
         registerValidatedChannel(
           ctx,
           TaskChannels.TEMPLATE_PAUSE,

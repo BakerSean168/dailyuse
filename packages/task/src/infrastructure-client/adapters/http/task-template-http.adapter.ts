@@ -16,6 +16,7 @@ import type {
   UpdateTaskTemplateReq,
   GenerateInstancesReq,
   BindToGoalReq,
+  AbandonTaskPlanReq,
   QueryTaskTemplateGraphRes,
   TaskTemplateInstancesQuery,
 } from '@memoflow/contracts/task';
@@ -86,6 +87,10 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
 
   async archiveTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${id}/archive`);
+  }
+
+  async abandonTaskPlan(id: string, request?: AbandonTaskPlanReq): Promise<Result<TaskTemplateClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/abandon`, request ?? {});
   }
 
   // ===== Aggregate Control: Instance Management =====

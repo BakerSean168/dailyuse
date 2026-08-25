@@ -129,6 +129,7 @@ export class CreateTaskTemplateUseCase {
             folderId: request.folderId ?? undefined,
             tags: request.tags,
             color: request.color ?? undefined,
+            completionPolicy: request.completionPolicy,
             goalBinding: request.goalBinding
               ? {
                   goalId: request.goalBinding.goalId,

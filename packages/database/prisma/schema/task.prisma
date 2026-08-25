@@ -43,7 +43,12 @@ model TaskTemplate {
   // ============ 基础信息 ============
   name        String
   description String?
-  status      String /// TaskTemplateStatus
+  status      String /// Task lifecycle: Active | Paused | Closed
+  outcome     String   @default("Open") /// Open | Succeeded | Failed | Abandoned
+  completionPolicy String @default("AllowCorrection") @map("completion_policy")
+  closedAt    DateTime? @map("closed_at")
+  archivedAt  DateTime? @map("archived_at")
+  abandonedReason String? @map("abandoned_reason")
   importance  String  @default("moderate") /// ImportanceLevel
   priority    Int? /// 动态计算的优先级分数
   color       String?

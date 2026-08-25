@@ -24,6 +24,7 @@ import {
   TaskTemplateInstancesQuerySchema,
   UpdateTaskTemplateInvocationSchema,
   GenerateInstancesInvocationSchema,
+  AbandonTaskPlanInvocationSchema,
   BindTaskToGoalInvocationSchema,
   TaskTemplateIdCommandInvocationSchema,
 } from '@memoflow/contracts/task';
@@ -278,6 +279,29 @@ export function registerTaskTemplateRoutes(
     },
     [auth],
     (data, ctx) => controller.activateTemplate(data.params.id, ctx),
+  );
+
+  // POST /:id/abandon — Explicitly close a plan as Abandoned
+  r.routeWithValidation(
+    {
+      method: 'post',
+      path: '/:id/abandon',
+      summary: '主动放弃任务计划',
+      request: {
+        params: AbandonTaskPlanInvocationSchema.shape.params,
+        body: { content: { 'application/json': { schema: AbandonTaskPlanInvocationSchema.shape.body } } },
+      },
+      responses: {
+        200: successResponse(TaskTemplateResponseSchema, '计划已放弃'),
+        404: errorResponse('模板不存在'),
+      },
+      validation: {
+        schema: AbandonTaskPlanInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
+    },
+    [auth],
+    (data, ctx) => controller.abandonPlan(data.params.id, data.body, ctx),
   );
 
   // POST /:id/pause — Pause template

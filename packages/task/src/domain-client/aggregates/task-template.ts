@@ -20,6 +20,8 @@ import type {
   TaskGoalBinding,
   TaskGoalBindingDTO,
   TaskTemplateStatus,
+  TaskPlanOutcomeValue,
+  TaskPlanCompletionPolicyValue,
 } from '@memoflow/contracts/task';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type {TaskFolderId, GoalId, KeyResultId, Instant} from '@memoflow/contracts/primitives';
@@ -42,6 +44,11 @@ export interface TaskTemplateState {
   tags: string[];
   color: string | null;
   status: TaskTemplateStatus;
+  outcome: TaskPlanOutcomeValue;
+  completionPolicy: TaskPlanCompletionPolicyValue;
+  closedAt: Instant | null;
+  archivedAt: Instant | null;
+  abandonedReason: string | null;
   lastGeneratedDate: Instant | null;
   generateAheadDays: number | null;
   version: number;
@@ -130,9 +137,12 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.color;
   }
 
-  get status(): TaskTemplateStatus {
-    return this._props.status;
-  }
+  get status(): TaskTemplateStatus { return this._props.status; }
+  get outcome(): TaskPlanOutcomeValue { return this._props.outcome; }
+  get completionPolicy(): TaskPlanCompletionPolicyValue { return this._props.completionPolicy; }
+  get closedAt(): Instant | null { return this._props.closedAt; }
+  get archivedAt(): Instant | null { return this._props.archivedAt; }
+  get abandonedReason(): string | null { return this._props.abandonedReason; }
 
   get lastGeneratedDate(): Instant | null {
     const v = this._props.lastGeneratedDate;
@@ -294,6 +304,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       tags: [...this._props.tags],
       color: this._props.color,
       status: this._props.status,
+      outcome: this._props.outcome,
+      completionPolicy: this._props.completionPolicy,
+      closedAt: this._props.closedAt,
+      archivedAt: this._props.archivedAt,
+      abandonedReason: this._props.abandonedReason,
       lastGeneratedDate: this._props.lastGeneratedDate ?? null,
       generateAheadDays: this._props.generateAheadDays,
       version: this._props.version,

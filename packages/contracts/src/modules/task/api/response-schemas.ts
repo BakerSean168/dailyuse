@@ -25,6 +25,8 @@ import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { DependencyType } from '../value-objects/dependency-type';
 import { TaskInstanceStatus } from '../value-objects/task-instance-status';
 import { TaskTemplateStatus } from '../value-objects/task-template-status';
+import { TaskPlanOutcome } from '../value-objects/task-plan-outcome';
+import { TaskPlanCompletionPolicy } from '../value-objects/task-plan-completion-policy';
 
 // ============ TaskTemplate Response Schema ============
 
@@ -43,6 +45,11 @@ export const TaskTemplateResponseSchema = z.object({
   tags: z.array(z.string()),
   color: z.string().nullable(),
   status: z.enum(TaskTemplateStatus),
+  outcome: z.enum(TaskPlanOutcome),
+  completionPolicy: z.enum(TaskPlanCompletionPolicy),
+  closedAt: z.number().nullable(),
+  archivedAt: z.number().nullable(),
+  abandonedReason: z.string().nullable(),
   lastGeneratedDate: z.number().nullable(),
   generateAheadDays: z.number().nullable(),
   version: z.number(),

@@ -15,6 +15,7 @@ import type {
   UpdateTaskTemplateReq,
   GenerateInstancesReq,
   BindToGoalReq,
+  AbandonTaskPlanReq,
   QueryTaskTemplateGraphRes,
   TaskTemplateInstancesQuery,
 } from '@memoflow/contracts/task';
@@ -45,6 +46,7 @@ export interface ITaskTemplateApiClient {
   activateTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>>;
   pauseTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>>;
   archiveTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>>;
+  abandonTaskPlan(id: string, request?: AbandonTaskPlanReq): Promise<Result<TaskTemplateClientDTO>>;
   generateInstances(
     templateId: string,
     request: GenerateInstancesReq,

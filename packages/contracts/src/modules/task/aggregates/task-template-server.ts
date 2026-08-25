@@ -9,6 +9,8 @@ import type {
   TransferDate,
 } from '../../../primitives';
 import type { TaskTemplateStatus } from '../value-objects/task-template-status';
+import type { TaskPlanOutcome } from '../value-objects/task-plan-outcome';
+import type { TaskPlanCompletionPolicy } from '../value-objects/task-plan-completion-policy';
 import type { TaskInstanceServerDTO } from './task-instance-server';
 import type {
   TaskTimeConfigDTO,
@@ -44,6 +46,11 @@ export interface TaskTemplateServerDTO {
   tags: string[];
   color: string | null;
   status: TaskTemplateStatus;
+  outcome: TaskPlanOutcome;
+  completionPolicy: TaskPlanCompletionPolicy;
+  closedAt: TransferDate | null;
+  archivedAt: TransferDate | null;
+  abandonedReason: string | null;
 
   goalBinding: TaskGoalBindingDTO | null;
 

@@ -195,6 +195,9 @@ export class UpdateTaskTemplateUseCase {
             : null;
           template.updateReminderConfig(nextReminderConfig);
         }
+        if (request.completionPolicy !== undefined && request.completionPolicy !== template.completionPolicy) {
+          template.updateCompletionPolicy(request.completionPolicy);
+        }
         if (request.goalBinding !== undefined) {
           if (template.goalBinding) {
             template.unbindFromGoal();

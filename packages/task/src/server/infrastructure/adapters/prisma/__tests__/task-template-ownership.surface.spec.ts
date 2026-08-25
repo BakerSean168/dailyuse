@@ -151,10 +151,10 @@ describe('task template ownership surface', () => {
       "throw new Error('Task template not found for the current identity.');",
     );
     expect(powersync).toContain(
-      'UPDATE task_templates SET status = ?, deleted_at = ?, updated_at = ? WHERE id = ? AND identity_id = ?',
+      'UPDATE task_templates SET deleted_at = ?, updated_at = ? WHERE id = ? AND identity_id = ?',
     );
     expect(powersync).toContain(
-      'UPDATE task_templates SET status = ?, deleted_at = NULL, updated_at = ? WHERE id = ? AND identity_id = ?',
+      'UPDATE task_templates SET deleted_at = NULL, archived_at = NULL, updated_at = ? WHERE id = ? AND identity_id = ?',
     );
   });
 

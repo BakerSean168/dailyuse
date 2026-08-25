@@ -137,15 +137,16 @@ describe('TaskInstanceGenerationService', () => {
       expect(service.shouldRefillInstances(paused)).toBe(false);
     });
 
-    it('should return false for Archived templates', () => {
+    it('archive metadata does not stop an otherwise Active recurring plan', () => {
       const archived = aLoadedTaskTemplate({
         taskType: TaskType.Recurring,
-        status: TaskTemplateStatus.Archived,
+        status: TaskTemplateStatus.Active,
+        archivedAt: Date.now(),
         timeConfig: anAllDayTimeConfig(),
         recurrenceRule: aDailyRecurrenceRule(),
+        lastGeneratedDate: null,
       });
-
-      expect(service.shouldRefillInstances(archived)).toBe(false);
+      expect(service.shouldRefillInstances(archived)).toBe(true);
     });
 
     it('should return true for Active template with no lastGeneratedDate', () => {

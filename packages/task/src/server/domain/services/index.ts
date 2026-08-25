@@ -23,3 +23,5 @@
 export { TaskInstanceGenerationService } from './task-instance-generation-service';
 export { TaskDependencyPolicy } from './task-dependency-policy';
 export { calculateTaskPriority } from './priority-calculator.service';
+
+export { TaskPlanOutcomeEvaluator } from './task-plan-outcome-evaluator';

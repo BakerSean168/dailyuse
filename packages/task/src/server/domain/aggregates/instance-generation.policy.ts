@@ -10,11 +10,7 @@ import { createTimeFacade } from '@memoflow/time';
 const taskTime = createTimeFacade();
 import { TaskType } from '../value-objects';
 import { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
-import {
-  InvalidDateRangeError,
-  TaskTemplateArchivedError,
-  InvalidTaskTemplateStateError,
-} from '../value-objects/task-errors';
+import { InvalidDateRangeError, InvalidTaskTemplateStateError } from '../value-objects/task-errors';
 import type { RecurrenceRule, TaskTimeConfig } from '../value-objects';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { IdentityId } from '@memoflow/domain-shared';
@@ -60,14 +56,9 @@ export function createInstanceFromTemplate(
   ctx: InstanceGenerationContext,
   params: CreateInstanceParams,
 ): TaskInstance {
-  if (ctx.status === TaskTemplateStatus.Archived) {
-    throw new TaskTemplateArchivedError(ctx.templateId);
-  }
-  if (ctx.status === TaskTemplateStatus.Deleted) {
-    throw new InvalidTaskTemplateStateError('Cannot create instance from deleted template', {
-      templateId: ctx.templateId,
-      currentStatus: ctx.status,
-      attemptedAction: 'createInstance',
+  if (ctx.status !== TaskTemplateStatus.Active) {
+    throw new InvalidTaskTemplateStateError('Can only create instances for active task plans', {
+      templateId: ctx.templateId, currentStatus: ctx.status, attemptedAction: 'createInstance',
     });
   }
   if (typeof params.instanceDate !== 'number' || isNaN(params.instanceDate)) {
@@ -141,9 +132,6 @@ export function generateInstances(
 ): InstanceGenerationResult {
   if (fromDate >= toDate) {
     throw new InvalidDateRangeError(fromDate, toDate);
-  }
-  if (ctx.status === TaskTemplateStatus.Archived) {
-    throw new TaskTemplateArchivedError(ctx.templateId);
   }
   if (ctx.status !== TaskTemplateStatus.Active) {
     throw new InvalidTaskTemplateStateError('Can only generate instances for active templates', {

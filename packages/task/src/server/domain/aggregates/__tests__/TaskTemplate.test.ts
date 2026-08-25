@@ -27,6 +27,8 @@ import {
   DayOfWeek,
   RecurrenceEndConditionType,
   TaskGoalBindingTrigger,
+  TaskPlanCompletionPolicy,
+  TaskPlanOutcome,
 } from '@memoflow/contracts/task';
 import { TaskType } from '../../value-objects';
 import {
@@ -39,7 +41,6 @@ import {
 } from '../../value-objects';
 import {
   InvalidTaskTemplateStateError,
-  TaskTemplateArchivedError,
   InvalidGoalBindingError,
   InvalidDateRangeError,
 } from '../../value-objects/task-errors';
@@ -106,6 +107,11 @@ function makeState(overrides: Partial<TaskTemplateState> = {}): TaskTemplateStat
     tags: overrides.tags ?? [],
     color: overrides.color ?? null,
     status: overrides.status ?? TaskTemplateStatus.Active,
+    outcome: overrides.outcome ?? TaskPlanOutcome.Open,
+    completionPolicy: overrides.completionPolicy ?? TaskPlanCompletionPolicy.AllowCorrection,
+    closedAt: overrides.closedAt ?? null,
+    archivedAt: overrides.archivedAt ?? null,
+    abandonedReason: overrides.abandonedReason ?? null,
     folderId: overrides.folderId ?? null,
     goalBinding: overrides.goalBinding ?? null,
     checklist: overrides.checklist ?? [],
@@ -504,9 +510,11 @@ describe('TaskTemplate Aggregate', () => {
         expect(() => template.pause()).toThrow(InvalidTaskTemplateStateError);
       });
 
-      it('should throw when pausing an archived template', () => {
+      it('archive metadata does not block pausing an active plan', () => {
         template.archive();
-        expect(() => template.pause()).toThrow(InvalidTaskTemplateStateError);
+        template.pause();
+        expect(template.status).toBe(TaskTemplateStatus.Paused);
+        expect(template.archivedAt).not.toBeNull();
       });
 
       it('should throw when pausing a deleted template', () => {
@@ -522,10 +530,12 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.status).toBe(TaskTemplateStatus.Active);
       });
 
-      it('should activate an archived template', () => {
+      it('archive metadata does not block resuming a paused plan', () => {
+        template.pause();
         template.archive();
         template.activate();
         expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.archivedAt).not.toBeNull();
       });
 
       it('should throw when activating an already active template', () => {
@@ -539,20 +549,22 @@ describe('TaskTemplate Aggregate', () => {
     });
 
     describe('archive()', () => {
-      it('should archive an active template', () => {
+      it('archives an active template without changing lifecycle', () => {
         template.archive();
-        expect(template.status).toBe(TaskTemplateStatus.Archived);
+        expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.archivedAt).not.toBeNull();
       });
 
-      it('should archive a paused template', () => {
+      it('archives a paused template without changing lifecycle', () => {
         template.pause();
         template.archive();
-        expect(template.status).toBe(TaskTemplateStatus.Archived);
+        expect(template.status).toBe(TaskTemplateStatus.Paused);
+        expect(template.archivedAt).not.toBeNull();
       });
 
-      it('should throw when archiving an already archived template', () => {
+      it('rejects duplicate archive metadata', () => {
         template.archive();
-        expect(() => template.archive()).toThrow(TaskTemplateArchivedError);
+        expect(() => template.archive()).toThrow(InvalidTaskTemplateStateError);
       });
 
       it('should throw when archiving a deleted template', () => {
@@ -562,9 +574,10 @@ describe('TaskTemplate Aggregate', () => {
     });
 
     describe('softDelete()', () => {
-      it('should soft-delete an active template', () => {
+      it('soft-delete marks mistaken creation without fabricating lifecycle/outcome', () => {
         template.softDelete();
-        expect(template.status).toBe(TaskTemplateStatus.Deleted);
+        expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.outcome).toBe(TaskPlanOutcome.Open);
         expect(template.deletedAt).not.toBeNull();
       });
 
@@ -581,24 +594,27 @@ describe('TaskTemplate Aggregate', () => {
         expect(() => template.softDelete()).toThrow(InvalidTaskTemplateStateError);
       });
 
-      it('should soft-delete a paused template', () => {
+      it('soft-delete preserves a paused lifecycle', () => {
         template.pause();
         template.softDelete();
-        expect(template.status).toBe(TaskTemplateStatus.Deleted);
+        expect(template.status).toBe(TaskTemplateStatus.Paused);
       });
 
-      it('should soft-delete an archived template', () => {
+      it('soft-delete preserves archive metadata separately', () => {
         template.archive();
         template.softDelete();
-        expect(template.status).toBe(TaskTemplateStatus.Deleted);
+        expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.archivedAt).not.toBeNull();
+        expect(template.deletedAt).not.toBeNull();
       });
     });
 
     describe('restore()', () => {
-      it('should restore a deleted template to Active', () => {
+      it('restores mistaken deletion without changing lifecycle', () => {
+        template.pause();
         template.softDelete();
         template.restore();
-        expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.status).toBe(TaskTemplateStatus.Paused);
         expect(template.deletedAt).toBeNull();
       });
 
@@ -612,21 +628,23 @@ describe('TaskTemplate Aggregate', () => {
       });
     });
 
-    describe('full lifecycle', () => {
-      it('Active → Paused → Active → Archived → Active → Deleted → Restored', () => {
+    describe('lifecycle vs metadata', () => {
+      it('keeps Active/Paused lifecycle independent from archive/delete metadata', () => {
         expect(template.status).toBe(TaskTemplateStatus.Active);
         template.pause();
         expect(template.status).toBe(TaskTemplateStatus.Paused);
         template.activate();
         expect(template.status).toBe(TaskTemplateStatus.Active);
         template.archive();
-        expect(template.status).toBe(TaskTemplateStatus.Archived);
-        template.activate();
         expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.archivedAt).not.toBeNull();
         template.softDelete();
-        expect(template.status).toBe(TaskTemplateStatus.Deleted);
+        expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.deletedAt).not.toBeNull();
         template.restore();
         expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.archivedAt).toBeNull();
+        expect(template.deletedAt).toBeNull();
       });
     });
   });
@@ -1105,18 +1123,18 @@ describe('TaskTemplate Aggregate', () => {
         expect(() => template.generateInstances(date + 1, date)).toThrow(InvalidDateRangeError);
       });
 
-      it('should throw for archived templates', () => {
+      it('should throw for closed plans', () => {
         const template = TaskTemplate.load(
           makeState({
             taskType: TaskType.Recurring,
-            status: TaskTemplateStatus.Archived,
+            status: TaskTemplateStatus.Closed,
+            outcome: TaskPlanOutcome.Succeeded,
             timeConfig: makeAllDayTimeConfig(),
             recurrenceRule: makeDailyRule(),
           }),
         );
-
         expect(() => template.generateInstances(Date.now(), Date.now() + 86400000)).toThrow(
-          TaskTemplateArchivedError,
+          InvalidTaskTemplateStateError,
         );
       });
 
@@ -1337,27 +1355,14 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.instances.length).toBe(1);
       });
 
-      it('should throw for archived template', () => {
+      it('should throw for closed plan', () => {
         const template = TaskTemplate.load(
           makeState({
-            status: TaskTemplateStatus.Archived,
+            status: TaskTemplateStatus.Closed,
+            outcome: TaskPlanOutcome.Succeeded,
             timeConfig: makeAllDayTimeConfig(),
           }),
         );
-
-        expect(() => template.createInstance({ instanceDate: Date.now() })).toThrow(
-          TaskTemplateArchivedError,
-        );
-      });
-
-      it('should throw for deleted template', () => {
-        const template = TaskTemplate.load(
-          makeState({
-            status: TaskTemplateStatus.Deleted,
-            timeConfig: makeAllDayTimeConfig(),
-          }),
-        );
-
         expect(() => template.createInstance({ instanceDate: Date.now() })).toThrow(
           InvalidTaskTemplateStateError,
         );
@@ -1730,11 +1735,12 @@ describe('TaskTemplate Aggregate', () => {
         expect(() => template.bindToGoal('goal-789', 'kr-012', 5)).toThrow(InvalidGoalBindingError);
       });
 
-      it('should throw for archived template', () => {
-        const template = TaskTemplate.load(makeState({ status: TaskTemplateStatus.Archived }));
-
+      it('should throw for closed plan', () => {
+        const template = TaskTemplate.load(
+          makeState({ status: TaskTemplateStatus.Closed, outcome: TaskPlanOutcome.Succeeded }),
+        );
         expect(() => template.bindToGoal('goal-123', 'kr-456', 10)).toThrow(
-          TaskTemplateArchivedError,
+          InvalidGoalBindingError,
         );
       });
     });
@@ -1755,21 +1761,15 @@ describe('TaskTemplate Aggregate', () => {
         expect(() => template.unbindFromGoal()).toThrow(InvalidGoalBindingError);
       });
 
-      it('should throw for archived template', () => {
+      it('should throw for closed plan', () => {
         const binding = TaskGoalBinding.fromDTO({
-          goalId: 'goal-123',
-          keyResultId: 'kr-456',
-          goalRecordValue: 10,
+          goalId: 'goal-123', keyResultId: 'kr-456', goalRecordValue: 10,
           progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
         });
         const template = TaskTemplate.load(
-          makeState({
-            status: TaskTemplateStatus.Archived,
-            goalBinding: binding,
-          }),
+          makeState({ status: TaskTemplateStatus.Closed, outcome: TaskPlanOutcome.Succeeded, goalBinding: binding }),
         );
-
-        expect(() => template.unbindFromGoal()).toThrow(TaskTemplateArchivedError);
+        expect(() => template.unbindFromGoal()).toThrow(InvalidGoalBindingError);
       });
     });
 
@@ -2264,7 +2264,7 @@ describe('TaskTemplate Aggregate', () => {
       const deletedAt = new Date('2025-01-01');
       const template = TaskTemplate.load(
         makeState({
-          status: TaskTemplateStatus.Deleted,
+          status: TaskTemplateStatus.Active,
           deletedAt,
         }),
       );

@@ -58,7 +58,10 @@ describe('Instance maintenance use-cases', () => {
       vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
       vi.mocked(instanceRepo.save).mockResolvedValue(undefined);
 
-      const result = await new MarkTaskInstanceMissedUseCase(instanceRepo).execute(
+      const result = await new MarkTaskInstanceMissedUseCase(
+        instanceRepo,
+        createInlineTaskWriteTransactionRunner({ instanceRepository: instanceRepo }),
+      ).execute(
         'i-1',
         'identity-1',
         { reason: 'No completion evidence' },

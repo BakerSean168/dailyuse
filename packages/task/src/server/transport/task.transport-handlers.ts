@@ -46,6 +46,7 @@ export function createTaskTransportHandlers(api: TaskApplicationPort): TaskTrans
       activateTemplate: api.activateTaskTemplate,
       pauseTemplate: api.pauseTaskTemplate,
       archiveTemplate: api.archiveTaskTemplate,
+      abandonPlan: api.abandonTaskPlan,
       listByPriority: api.listTaskTemplatesByPriority,
       generateInstances: api.generateTaskInstances,
       bindToGoal: api.bindTaskToGoal,

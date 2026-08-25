@@ -1,5 +1,6 @@
 import type { ActivateTaskTemplateUseCase } from './use-cases/commands/activate-task-template.use-case';
 import type { ArchiveTaskTemplateUseCase } from './use-cases/commands/archive-task-template.use-case';
+import type { AbandonTaskPlanUseCase } from './use-cases/commands/abandon-task-plan.use-case';
 import type { BindTaskToGoalUseCase } from './use-cases/commands/bind-task-to-goal.use-case';
 import type { MarkTaskInstanceMissedUseCase } from './use-cases/commands/mark-task-instance-missed.use-case';
 import type { CompleteTaskInstanceUseCase } from './use-cases/commands/complete-task-instance.use-case';
@@ -41,6 +42,7 @@ export interface TaskApplicationPort {
   activateTaskTemplate: TaskPortFn<ActivateTaskTemplateUseCase['execute']>;
   pauseTaskTemplate: TaskPortFn<PauseTaskTemplateUseCase['execute']>;
   archiveTaskTemplate: TaskPortFn<ArchiveTaskTemplateUseCase['execute']>;
+  abandonTaskPlan: TaskPortFn<AbandonTaskPlanUseCase['execute']>;
   deleteTaskTemplate: TaskPortFn<DeleteTaskTemplateUseCase['execute']>;
   generateTaskInstances: TaskPortFn<GenerateTaskInstancesUseCase['execute']>;
   bindTaskToGoal: TaskPortFn<BindTaskToGoalUseCase['execute']>;

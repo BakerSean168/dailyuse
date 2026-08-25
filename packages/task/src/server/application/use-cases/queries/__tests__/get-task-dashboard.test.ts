@@ -49,7 +49,7 @@ describe('GetTaskDashboardUseCase', () => {
     expect(templateRepo.findUpcomingTasks).toHaveBeenCalledWith(testIdentityId, 7);
     expect(templateRepo.findSortedByPriority).toHaveBeenCalledWith(testIdentityId, 5);
     expect(templateRepo.findOneTimeTasks).toHaveBeenCalledWith(testIdentityId, {
-      status: TaskTemplateStatus.Archived,
+      status: TaskTemplateStatus.Closed,
     });
     expect(templateRepo.countTasks).toHaveBeenCalledTimes(2);
   });
@@ -82,7 +82,7 @@ describe('GetTaskDashboardUseCase', () => {
   it('should compute summary totals correctly', async () => {
     vi.mocked(templateRepo.countTasks)
       .mockResolvedValueOnce(10) // Active
-      .mockResolvedValueOnce(5); // Archived/Completed
+      .mockResolvedValueOnce(5); // Closed
 
     const result = await useCase.execute(testIdentityId);
 
@@ -96,12 +96,12 @@ describe('GetTaskDashboardUseCase', () => {
   it('should filter recent completed tasks by 7-day window', async () => {
     const now = Date.now();
     const recentTask = aLoadedTaskTemplate({
-      status: TaskTemplateStatus.Archived,
+      status: TaskTemplateStatus.Closed,
       taskType: TaskType.OneTime,
       updatedAt: new Date(now - 1 * 24 * 60 * 60 * 1000), // 1 day ago
     });
     const oldTask = aLoadedTaskTemplate({
-      status: TaskTemplateStatus.Archived,
+      status: TaskTemplateStatus.Closed,
       taskType: TaskType.OneTime,
       updatedAt: new Date(now - 10 * 24 * 60 * 60 * 1000), // 10 days ago
     });
@@ -114,7 +114,7 @@ describe('GetTaskDashboardUseCase', () => {
     // but the findOneTimeTasks was called
     expect(result).toBeOk();
     expect(templateRepo.findOneTimeTasks).toHaveBeenCalledWith(testIdentityId, {
-      status: TaskTemplateStatus.Archived,
+      status: TaskTemplateStatus.Closed,
     });
   });
 

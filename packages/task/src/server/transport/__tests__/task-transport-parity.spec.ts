@@ -86,6 +86,7 @@ function createPortStub(): TaskApplicationPort {
     activateTaskTemplate: fn({ template: FAKE_TEMPLATE }),
     pauseTaskTemplate: fn({ template: FAKE_TEMPLATE }),
     archiveTaskTemplate: fn(FAKE_TEMPLATE),
+    abandonTaskPlan: fn(FAKE_TEMPLATE),
     generateTaskInstances: fn([FAKE_INSTANCE]),
     bindTaskToGoal: fn(FAKE_TEMPLATE),
     unbindTaskFromGoal: fn(FAKE_TEMPLATE),
@@ -360,7 +361,7 @@ describe('task transport parity (Phase 4) — production registrations', () => {
         'template activate',
         {
           httpKey: 'template POST /:id/activate',
-          ipcChannel: TaskChannels.TEMPLATE_RESTORE,
+          ipcChannel: TaskChannels.TEMPLATE_ACTIVATE,
           httpReq: { params: { id: TEMPLATE_ID } },
           ipcArgs: { id: TEMPLATE_ID },
           validInvocation: { params: { id: TEMPLATE_ID } },
@@ -409,6 +410,27 @@ describe('task transport parity (Phase 4) — production registrations', () => {
             expect(mock).toHaveBeenCalledTimes(2);
             for (const call of mock.mock.calls) {
               expect(call[0]).toBe(TEMPLATE_ID);
+            }
+          },
+        },
+      ],
+      [
+        'template abandon',
+        {
+          httpKey: 'template POST /:id/abandon',
+          ipcChannel: TaskChannels.TEMPLATE_ABANDON,
+          httpReq: { params: { id: TEMPLATE_ID }, body: { reason: 'User stopped' } },
+          ipcArgs: { id: TEMPLATE_ID, request: { reason: 'User stopped' } },
+          validInvocation: { params: { id: TEMPLATE_ID }, body: { reason: 'User stopped' } },
+          malformedHttpReq: { params: { id: 'bad' }, body: {} },
+          malformedIpcArgs: { id: 'bad', request: {} },
+          assertPort: (port) => {
+            const mock = port.abandonTaskPlan as ReturnType<typeof vi.fn>;
+            expect(mock).toHaveBeenCalledTimes(2);
+            for (const call of mock.mock.calls) {
+              expect(call[0]).toBe(TEMPLATE_ID);
+              expect(call[1]).toBe('identity-1');
+              expect(call[2]).toEqual({ reason: 'User stopped' });
             }
           },
         },

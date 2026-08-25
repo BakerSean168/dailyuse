@@ -44,6 +44,11 @@ export class PowerSyncTaskTemplateRepository
              name = ?,
              description = ?,
              status = ?,
+             outcome = ?,
+             completion_policy = ?,
+             closed_at = ?,
+             archived_at = ?,
+             abandoned_reason = ?,
              importance = ?,
              priority = ?,
              color = ?,
@@ -87,6 +92,11 @@ export class PowerSyncTaskTemplateRepository
           data.name,
           data.description,
           data.status,
+          data.outcome,
+          data.completionPolicy,
+          data.closedAt,
+          data.archivedAt,
+          data.abandonedReason,
           data.importance,
           data.priority,
           data.color,
@@ -130,7 +140,7 @@ export class PowerSyncTaskTemplateRepository
     } else {
       await this.db.execute(
         `INSERT INTO task_templates (
-          id, identity_id, name, description, status, importance, priority, color, tags, folder_id,
+          id, identity_id, name, description, status, outcome, completion_policy, closed_at, archived_at, abandoned_reason, importance, priority, color, tags, folder_id,
           parent_task_id, time_config_type, time_config_start_time, time_config_end_time,
           time_config_duration_minutes, time_config_time_point, time_config_time_range_start,
           time_config_time_range_end, recurrence_rule_type, recurrence_rule_interval,
@@ -140,13 +150,18 @@ export class PowerSyncTaskTemplateRepository
           last_generated_date, generate_ahead_days, goal_id, key_result_id, goal_record_value,
           goal_progress_trigger, checklist, blocking_reason,
           dependency_status, is_blocked, version, created_at, updated_at, deleted_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           data.id,
           data.identityId,
           data.name,
           data.description,
           data.status,
+          data.outcome,
+          data.completionPolicy,
+          data.closedAt,
+          data.archivedAt,
+          data.abandonedReason,
           data.importance,
           data.priority,
           data.color,
@@ -285,8 +300,8 @@ export class PowerSyncTaskTemplateRepository
     }
     const now = new Date().toISOString();
     await this.db.execute(
-      'UPDATE task_templates SET status = ?, deleted_at = ?, updated_at = ? WHERE id = ? AND identity_id = ?',
-      ['Deleted', now, now, id, identityId],
+      'UPDATE task_templates SET deleted_at = ?, updated_at = ? WHERE id = ? AND identity_id = ?',
+      [now, now, id, identityId],
     );
   }
 
@@ -296,8 +311,8 @@ export class PowerSyncTaskTemplateRepository
       throw new Error('Task template not found for the current identity.');
     }
     await this.db.execute(
-      'UPDATE task_templates SET status = ?, deleted_at = NULL, updated_at = ? WHERE id = ? AND identity_id = ?',
-      ['Active', new Date().toISOString(), id, identityId],
+      'UPDATE task_templates SET deleted_at = NULL, archived_at = NULL, updated_at = ? WHERE id = ? AND identity_id = ?',
+      [new Date().toISOString(), id, identityId],
     );
   }
 

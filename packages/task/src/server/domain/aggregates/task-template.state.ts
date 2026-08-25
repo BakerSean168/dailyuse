@@ -2,6 +2,10 @@ import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { Instant } from '@memoflow/contracts/primitives';
 import type { IdentityId } from '@memoflow/domain-shared';
 import type { DependencyStatus, TaskType } from '../value-objects';
+import type {
+  TaskPlanCompletionPolicyValue,
+  TaskPlanOutcomeValue,
+} from '@memoflow/contracts/task';
 import type { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
 import type { TaskTemplateId } from '../../domain/value-objects/task-template-id';
 import type { TaskFolderId } from '../../domain/value-objects/task-folder-id';
@@ -23,6 +27,11 @@ export interface TaskTemplateState {
   tags: string[];
   color: string | null;
   status: TaskTemplateStatus;
+  outcome: TaskPlanOutcomeValue;
+  completionPolicy: TaskPlanCompletionPolicyValue;
+  closedAt: Instant | null;
+  archivedAt: Instant | null;
+  abandonedReason: string | null;
   folderId: TaskFolderId | null;
   goalBinding: TaskGoalBinding | null;
   checklist: ChecklistItemDefinition[];

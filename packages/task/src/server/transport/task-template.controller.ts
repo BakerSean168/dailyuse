@@ -25,6 +25,7 @@ import type {
   UpdateTaskTemplateReq,
   GenerateInstancesReq,
   BindToGoalReq,
+  AbandonTaskPlanReq,
 } from '@memoflow/contracts/task';
 import type { Context } from '@memoflow/contracts/shared';
 import type { TaskFolderId, GoalId } from '@memoflow/contracts/primitives';
@@ -37,6 +38,7 @@ import type { DeleteTaskTemplateUseCase } from '../application/use-cases/command
 import type { ActivateTaskTemplateUseCase } from '../application/use-cases/commands/activate-task-template.use-case';
 import type { PauseTaskTemplateUseCase } from '../application/use-cases/commands/pause-task-template.use-case';
 import type { ArchiveTaskTemplateUseCase } from '../application/use-cases/commands/archive-task-template.use-case';
+import type { AbandonTaskPlanUseCase } from '../application/use-cases/commands/abandon-task-plan.use-case';
 import type { ListTaskTemplatesByPriorityUseCase } from '../application/use-cases/queries/list-task-templates-by-priority.use-case';
 import type { GenerateTaskInstancesUseCase } from '../application/use-cases/commands/generate-task-instances.use-case';
 import type { BindTaskToGoalUseCase } from '../application/use-cases/commands/bind-task-to-goal.use-case';
@@ -58,6 +60,7 @@ export interface TaskTemplateUseCases {
   activateTemplate: TaskControllerFn<ActivateTaskTemplateUseCase['execute']>;
   pauseTemplate: TaskControllerFn<PauseTaskTemplateUseCase['execute']>;
   archiveTemplate: TaskControllerFn<ArchiveTaskTemplateUseCase['execute']>;
+  abandonPlan: TaskControllerFn<AbandonTaskPlanUseCase['execute']>;
   listByPriority: TaskControllerFn<ListTaskTemplatesByPriorityUseCase['execute']>;
   generateInstances: TaskControllerFn<GenerateTaskInstancesUseCase['execute']>;
   bindToGoal: TaskControllerFn<BindTaskToGoalUseCase['execute']>;
@@ -237,6 +240,14 @@ export class TaskTemplateController {
    */
   async archiveTemplate(id: string, ctx: Context): Promise<Result<TaskTemplateClientDTO>> {
     return await this.useCases.archiveTemplate(id, ctx.identityId);
+  }
+
+  async abandonPlan(
+    id: string,
+    request: AbandonTaskPlanReq,
+    ctx: Context,
+  ): Promise<Result<TaskTemplateClientDTO>> {
+    return await this.useCases.abandonPlan(id, ctx.identityId, request);
   }
 
   /**

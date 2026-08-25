@@ -10,6 +10,7 @@ import type {
   RescheduleTaskRes,
 } from '../api';
 import type {
+  AbandonTaskPlanInvocation,
   BindTaskToGoalInvocation,
   CompleteTaskInstanceInvocation,
   CreateTaskDependencyInvocation,
@@ -35,7 +36,8 @@ export type TaskRpcMap = {
   'task:template:create': [CreateTaskTemplateReq, CreateTaskTemplateRes];
   'task:template:update': [UpdateTaskTemplateInvocation, TaskTemplateResponse];
   'task:template:delete': [TaskTemplateIdCommandInvocation, null];
-  'task:template:restore': [TaskTemplateIdCommandInvocation, TaskTemplateResponse];
+  'task:template:activate': [TaskTemplateIdCommandInvocation, TaskTemplateResponse];
+  'task:template:abandon': [AbandonTaskPlanInvocation, TaskTemplateResponse];
   'task:template:pause': [TaskTemplateIdCommandInvocation, TaskTemplateResponse];
   'task:template:archive': [TaskTemplateIdCommandInvocation, TaskTemplateResponse];
   'task:template:generate-instances': [GenerateInstancesInvocation, TaskInstanceResponse[]];

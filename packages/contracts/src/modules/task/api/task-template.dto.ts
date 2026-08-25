@@ -5,6 +5,7 @@ import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { TaskTemplateClientDTO } from '../aggregates/task-template-client';
 import type { TaskInstanceClientDTO } from '../aggregates/task-instance-client';
 import { TaskType } from '../value-objects/task-type';
+import { TaskPlanCompletionPolicy } from '../value-objects/task-plan-completion-policy';
 import type { TaskGraphDependencyDTO } from './task-dependency.dto';
 import { TaskReminderConfigSchema } from '../value-objects/task-reminder-config';
 import { TaskGoalBindingSchema } from '../value-objects/task-goal-binding';
@@ -42,6 +43,7 @@ export const CreateTaskTemplateSchema = z
     tags: z.array(z.string()).default([]).optional(),
     color: z.string().optional().nullable(),
     goalBinding: TaskGoalBindingSchema.optional().nullable(),
+    completionPolicy: z.enum(TaskPlanCompletionPolicy).optional(),
   })
   .strict();
 
@@ -71,6 +73,7 @@ export const UpdateTaskTemplateSchema = z
     tags: z.array(z.string()).optional(),
     color: z.string().optional().nullable(),
     goalBinding: TaskGoalBindingSchema.optional().nullable(),
+    completionPolicy: z.enum(TaskPlanCompletionPolicy).optional(),
     /** R2-5a：乐观锁期望版本（可选；提供时校验，旧客户端可不传）。 */
     expectedVersion: z.number().int().positive().optional(),
   })
@@ -78,6 +81,11 @@ export const UpdateTaskTemplateSchema = z
 
 export type UpdateTaskTemplateReq = z.infer<typeof UpdateTaskTemplateSchema>;
 export type UpdateTaskTemplateRes = TaskTemplateClientDTO;
+
+export const AbandonTaskPlanSchema = z.object({
+  reason: z.string().trim().min(1).optional(),
+}).default({});
+export type AbandonTaskPlanReq = z.infer<typeof AbandonTaskPlanSchema>;
 
 // Public transport schema - NO identityId (injected from Context)
 export const ListTaskTemplateFiltersSchema = z.object({

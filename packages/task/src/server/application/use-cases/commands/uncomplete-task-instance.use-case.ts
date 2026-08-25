@@ -6,6 +6,7 @@ import {
   type TaskWriteRepositories,
   type TaskWriteTransactionRunner,
 } from './task-write-support';
+import { reevaluateTaskPlanOutcome } from './task-plan-outcome-reevaluation';
 
 /**
  * Uncomplete Task Instance Use Case
@@ -48,6 +49,7 @@ export class UncompleteTaskInstanceUseCase {
 
     instance.uncomplete();
     await repositories.instanceRepository.save(instance);
+    await reevaluateTaskPlanOutcome(repositories, identityId, String(instance.templateId));
     return ok({ instance: instance.toClientDTO() });
   }
 }

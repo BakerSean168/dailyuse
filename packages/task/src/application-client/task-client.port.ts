@@ -4,6 +4,7 @@ import type {
   UpdateTaskTemplateReq,
   GenerateInstancesReq,
   BindToGoalReq,
+  AbandonTaskPlanReq,
   CompleteTaskInstanceReq,
   MarkTaskInstanceMissedReq,
   SkipTaskInstanceReq,
@@ -33,6 +34,7 @@ export interface TaskClientPort {
   activateTemplate(id: string): Promise<Result<TaskTemplate>>;
   pauseTemplate(id: string): Promise<Result<TaskTemplate>>;
   archiveTemplate(id: string): Promise<Result<TaskTemplate>>;
+  abandonPlan(id: string, request?: AbandonTaskPlanReq): Promise<Result<TaskTemplate>>;
   generateInstances(templateId: string, request: GenerateInstancesReq): Promise<Result<TaskInstance[]>>;
   getInstancesByDateRange(templateId: string, from: number, to: number): Promise<Result<TaskInstance[]>>;
   bindToGoal(templateId: string, request: BindToGoalReq): Promise<Result<TaskTemplate>>;

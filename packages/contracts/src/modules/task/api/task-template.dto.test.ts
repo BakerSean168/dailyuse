@@ -10,6 +10,8 @@ import {
 } from './response-schemas';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { TaskTemplateStatus } from '../value-objects/task-template-status';
+import { TaskPlanOutcome } from '../value-objects/task-plan-outcome';
+import { TaskPlanCompletionPolicy } from '../value-objects/task-plan-completion-policy';
 import { TaskTimeType } from '../value-objects/task-time-type';
 import { TaskType } from '../value-objects/task-type';
 
@@ -57,6 +59,11 @@ function validTemplateResponse() {
     tags: ['planning'],
     color: null,
     status: TaskTemplateStatus.Active,
+    outcome: TaskPlanOutcome.Open,
+    completionPolicy: TaskPlanCompletionPolicy.AllowCorrection,
+    closedAt: null,
+    archivedAt: null,
+    abandonedReason: null,
     lastGeneratedDate: null,
     generateAheadDays: null,
     version: 1,
