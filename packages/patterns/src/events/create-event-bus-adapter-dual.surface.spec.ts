@@ -16,9 +16,9 @@ describe('createEventBusAdapter dual retired (residual 1031)', () => {
   it('owns sole createEventBusAdapter helper body', () => {
     expect(sole).toContain('Residual 1031');
     expect(sole).toMatch(/export function createEventBusAdapter\b/);
-    expect(sole).toContain('sender.send(event.eventType, event.payload, {');
+    expect(sole).toContain('await sender.dispatch(event.eventType, event.payload, {');
     expect(sole).toContain('idempotencyKey: event.idempotencyKey,');
-    expect(sole).toContain('sender.send(eventType, payload)');
+    expect(sole).toContain('await sender.dispatch(eventType, payload)');
   });
 
   it('goal re-exports sole without local dual body', () => {
@@ -34,10 +34,13 @@ describe('createEventBusAdapter dual retired (residual 1031)', () => {
     expect(root).not.toContain("from './goal'");
   });
 
-  it('adapter publishes via sender.send', async () => {
+  it('adapter publishes via delivery-scoped sender.dispatch', async () => {
     const sent: Array<{ type: string; payload: unknown }> = [];
     const adapter = createEventBusAdapter({
       send(eventType, payload) {
+        sent.push({ type: `fire-and-forget:${eventType}`, payload });
+      },
+      async dispatch(eventType, payload) {
         sent.push({ type: eventType, payload });
       },
     });

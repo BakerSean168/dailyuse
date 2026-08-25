@@ -59,29 +59,38 @@ class UserId extends ValueObject { ... }
 class User extends Entity<UserId> { ... }
 ```
 
-### 3. Event System (`event`)
+### 3. Runtime Event System (`domain`)
 
-A unified, cross-platform event bus (`CrossPlatformEventBus`) supporting:
-- **Pub/Sub**: `publish(event)` / `on(eventType, handler)`
-- **Request/Response**: `invoke(requestType, payload)` / `handle(requestType, handler)`
-- **Type Safety**: Strongly typed events and requests.
+`CrossPlatformEventBus` is a **runtime-local**, typed event bus backed by [Emittery](https://github.com/sindresorhus/emittery). It is used for ADR-033 notification-style reactions inside one JavaScript runtime.
+
+- **`send(type, payload)`**: fire-and-forget notification. The caller does not wait for subscribers and subscriber failures are isolated/logged.
+- **`dispatch(type, payload, metadata?)`**: delivery-scoped async publish. The returned promise belongs only to this emission and completes after all subscribers finish; reliable repository publishing uses this seam.
+- **`on` / `off` / `destroy`**: subscribe and lifecycle cleanup.
+- **Type safety**: business events remain defined through MemoFlow event maps/contracts; Emittery's internal `{ name, data }` envelope is not exposed to feature handlers.
+
+This is **not** a distributed event bus. API, Electron main, and browser renderer each have their own runtime-local instance. Request/response uses Ports, HTTP, or Electron IPC; durable cross-process delivery uses the existing Outbox/Queue infrastructure.
 
 **Usage:**
 
 ```typescript
-import { eventBus } from '@memoflow/utils';
+import { eventBus } from '@memoflow/utils/domain';
 
-// Subscribe
-eventBus.on('USER_CREATED', async (event) => {
-  console.log('User created:', event.payload);
+// Notification-style subscriber.
+eventBus.on('task:instance-completed', async (event) => {
+  await updateProjection(event);
 });
 
-// Publish
-await eventBus.publish({
-  eventType: 'USER_CREATED',
-  payload: { id: '123' }
+// Fire-and-forget business notification.
+eventBus.send('task:instance-completed', payload);
+
+// Infrastructure that must know this delivery completed.
+await eventBus.dispatch('task:instance-completed', payload, {
+  aggregateId: taskId,
+  idempotencyKey,
 });
 ```
+
+See ADR-033 and ADR-064 for the communication and delivery boundaries.
 
 ### 4. Frontend Utilities (`frontend`)
 

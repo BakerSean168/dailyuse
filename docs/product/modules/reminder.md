@@ -5,10 +5,14 @@ tags:
   - reminder
 description: 提醒模块当前功能资产说明
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-08-25T17:49:00+08:00
 ---
 
 # 提醒模块说明
+
+> **调度补充决策（2026-08-25）：** ADR-059 的 Routine Coach 产品方向保持不变；durable wall-clock trigger 将进一步收敛为 **Scheduler 唯一 wake-up authority + Reminder/Routine Domain 唯一 occurrence/next-trigger truth**。当前并行的 Reminder Cron 调度权将按迁移计划退役，但 `ReminderOccurrence` 的幂等、lease/fencing 与可靠事务能力保留。详见 [ADR-062](../../architecture/adr/ADR-062-reminder-routine-single-scheduling-authority.md)。
+
+> **文档状态说明（2026-08-25）：** 本文继续记录当前 `packages/reminder` 已实现的资产与行为，便于迁移期间核对事实。经产品重新推演，Reminder vNext 不再被定义为全局提醒基础设施，而是向独立的 AI-native `Routine Coach`（习惯节律 / 健康干预 / 专注协议）业务领域演进。目标设计见 [Routine Coach vNext](../routine-coach-vnext.md)，长期架构决策见 [ADR-059](../../architecture/adr/ADR-059-routine-coach-domain-runtime-and-surfaces.md)，OSS 调研见 [Routine / Break / Focus OSS 调研](../../analysis/2026-08-25-routine-break-focus-oss-study.md)。
 
 ## 1. 功能定位
 

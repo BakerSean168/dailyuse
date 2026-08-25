@@ -5,168 +5,193 @@ export interface EventDeliveryMetadata {
   idempotencyKey?: string;
 }
 
-import mitt, { type Emitter, type Handler } from 'mitt';
+import Emittery, { type UnsubscribeFunction } from 'emittery';
 import { createLogger } from '../logger';
 
 // 基础类型约束
 type EventMap = Record<string, any>;
 
+type RuntimeEventEnvelope = {
+  payload: unknown;
+  metadata?: EventDeliveryMetadata;
+};
+
+type RuntimeEventMap = Record<string, RuntimeEventEnvelope>;
+
+type RuntimeEventHandler<T> = (
+  event: T,
+  metadata?: EventDeliveryMetadata,
+) => void | Promise<void>;
+
+type RegisteredHandler = RuntimeEventHandler<unknown>;
+
 const logger = createLogger('CrossPlatformEventBus');
 
 /**
- * 跨平台单向事件总线
- * 基于 mitt 实现，支持浏览器和 Node.js 环境。
+ * 跨平台单向事件总线。
  *
- * 只承载「通知式反应」（ADR-033 范式 A）：发布方 `send`，订阅方 `on`/`off`，
- * 发布方不关心也不等待订阅方返回。同进程请求-响应走 Port（范式 B），
- * 跨进程走 `@memoflow/ipc-client` / HTTP（范式 C）。
+ * 底层使用 Emittery 的 async-first delivery：每次 `dispatch()` 都拥有独立 Promise，
+ * 并发事件不会共享 drain/error 状态。`send()` 保留通知式 fire-and-forget 语义；
+ * 需要可靠发布边界的基础设施通过 `dispatch()` 等待本次 delivery 的全部订阅者。
+ *
+ * 只承载「通知式反应」（ADR-033 范式 A）。同进程请求-响应走 Port（范式 B），
+ * 跨进程走 `@memoflow/ipc-client` / HTTP（范式 C）。本总线只在当前 JS runtime
+ * 内生效，不承担跨进程可靠投递；durable integration events 继续走 Outbox/Queue。
  *
  * @see docs/architecture/adr/ADR-033-cross-module-communication-patterns.md
+ * @see docs/architecture/adr/ADR-064-emittery-runtime-event-delivery.md
  */
 export class CrossPlatformEventBus<TEvents extends EventMap = EventMap> {
-  private emitter: Emitter<any>;
+  private readonly emitter = new Emittery<RuntimeEventMap>();
+  private readonly subscriptions = new Map<
+    string,
+    Map<RegisteredHandler, UnsubscribeFunction[]>
+  >();
   private debugEnabled = false;
-  private inFlight = new Set<Promise<unknown>>();
-  /** 同步抛出的 handler 错误（仅在最近的 send() 期间累积，send 前清空）。 */
-  private pendingErrors: unknown[] = [];
-
-  constructor() {
-    this.emitter = mitt();
-  }
 
   /**
-   * 等待当前 in-flight 的 handler 完成（at-least-once 投递边界）。
-   * 发布方可在 ack durable outbox 前调用，确保消费方事务先于 ack。
+   * 发布通知式事件，不等待订阅者完成，也不把订阅者错误冒泡给调用方。
    *
-   * 与通知式 `send`（fire-and-forget、错误隔离）不同，`awaitDrain` 面向可靠
-   * 发布者：若任一 handler 同步抛出或异步 reject，这里会抛出第一个错误，
-   * 使可靠 publisher 能阻止 completed 并进入 retry/failed。默认 send 仍保持
-   * 通知式隔离语义（ADR-033 不变）。
-   */
-  async awaitDrain(): Promise<void> {
-    const errors: unknown[] = this.pendingErrors.slice();
-    this.pendingErrors = [];
-    while (this.inFlight.size > 0) {
-      const pending = Array.from(this.inFlight);
-      const settled = await Promise.allSettled(pending);
-      for (const outcome of settled) {
-        if (outcome.status === 'rejected') {
-          errors.push(outcome.reason);
-        }
-      }
-    }
-    if (errors.length > 0) {
-      const first = errors[0];
-      throw first instanceof Error ? first : new Error(String(first));
-    }
-  }
-
-  /**
-   * 发布单向事件。
-   *
-   * 遍历订阅者并逐个 try/catch：任一订阅者抛错只记录日志，不影响其余订阅者，
-   * 也不冒泡给发布方（H3 错误隔离）。日志受 debug 门控，热路径不展开 payload（M1）。
-   *
-   * @param eventType 事件类型
-   * @param payload 事件负载
+   * 订阅者仍由 Emittery 异步并行执行；失败会被记录，但不会形成未处理的 Promise rejection。
+   * 需要把 handler 完成/失败作为可靠交付边界时，应调用 `dispatch()`。
    */
   send<K extends keyof TEvents>(
     eventType: K,
     payload: TEvents[K],
     metadata?: EventDeliveryMetadata,
   ): void {
-    const type = eventType as string;
-    if (this.debugEnabled) logger.debug(`📤 Send: ${type}`, payload);
-
-    // send 是通知式入口：清掉上一次 fire-and-forget send 遗留的同步错误，
-    // 这样紧随其后的 awaitDrain() 只会看到本次 send 期间的错误。
-    this.pendingErrors = [];
-
-    // mitt 内部对同一 key 的 handler 是同步顺序调用；这里取出快照逐个隔离执行，
-    // 避免某个订阅者抛错中断后续订阅者（mitt.emit 本身无 per-handler 隔离）。
-    const handlers = this.emitter.all.get(type) as Array<Handler<any>> | undefined;
-    if (!handlers || handlers.length === 0) return;
-
-    for (const handler of [...handlers]) {
-      this.invokeHandler(type, handler, payload, metadata);
-    }
+    void this.dispatch(eventType, payload, metadata).catch(() => undefined);
   }
 
-  private invokeHandler(
-    type: string,
-    handler: Handler<any>,
-    payload: unknown,
+  /**
+   * 发布并等待「本次事件」的全部订阅者完成。
+   *
+   * Emittery 为每次 emit 返回独立 Promise，因此并发 dispatch 之间不会共享 pending/error
+   * 状态。任一 handler throw/reject 时，Emittery 会在所有并行 handler 都完成后以
+   * AggregateError 拒绝该 Promise，可靠 publisher 可据此阻止 ack 并进入 retry/fallback。
+   */
+  async dispatch<K extends keyof TEvents>(
+    eventType: K,
+    payload: TEvents[K],
     metadata?: EventDeliveryMetadata,
-  ): void {
-    let result: unknown;
+  ): Promise<void> {
+    const type = eventType as string;
+    if (this.debugEnabled) logger.debug(`📤 Dispatch: ${type}`, payload);
+
     try {
-      result =
-        metadata === undefined
-          ? (handler as (event: unknown) => unknown)(payload)
-          : (handler as (event: unknown, metadata: EventDeliveryMetadata) => unknown)(payload, metadata);
+      await this.emitter.emit(type, { payload, metadata });
     } catch (error) {
-      // 同步抛出：send 本身仍不冒泡（H3 隔离），但记录给 awaitDrain()，
-      // 让可靠发布者能感知该 handler 失败（阻止错误 ack）。
-      logger.error(`❌ Event handler failed: ${type}`, error);
-      this.pendingErrors.push(error);
-      return;
-    }
-    if (result && typeof (result as PromiseLike<unknown>).then === 'function') {
-      const tracked = Promise.resolve(result);
-      this.inFlight.add(tracked);
-      void tracked
-        .then(
-          () => undefined,
-          (error) => {
-            logger.error(`❌ Async event handler failed: ${type}`, error);
-          },
-        )
-        .finally(() => {
-          this.inFlight.delete(tracked);
-        });
+      const aggregateErrors = this.getAggregateErrors(error);
+      this.logDeliveryFailure(type, error);
+
+      // Emittery always wraps listener failures in AggregateError. MemoFlow historically
+      // surfaced the original handler error when only one subscriber failed, and reliable
+      // outbox publishers persist that message as diagnostic state. Preserve that contract
+      // while keeping AggregateError when multiple independent subscribers fail.
+      if (aggregateErrors?.length === 1) {
+        throw aggregateErrors[0];
+      }
+      throw error;
     }
   }
 
   /**
    * 订阅单向事件。
-   * @param eventType 事件类型
-   * @param handler 监听器函数
+   *
+   * 保留 MemoFlow 原有 payload-first handler 契约；Emittery 的内部 event envelope
+   * 不泄漏到业务层。第二参数 metadata 仅供需要投递元数据的基础设施消费者使用。
    */
-  on<K extends keyof TEvents>(eventType: K, handler: (event: TEvents[K]) => void): this {
-    if (this.debugEnabled) logger.debug(`👂 On: ${String(eventType)}`);
-    this.emitter.on(eventType as string, handler);
+  on<K extends keyof TEvents>(eventType: K, handler: RuntimeEventHandler<TEvents[K]>): this {
+    const type = eventType as string;
+    if (this.debugEnabled) logger.debug(`👂 On: ${type}`);
+
+    const registeredHandler = handler as RegisteredHandler;
+    const unsubscribe = this.emitter.on(type, ({ data }) =>
+      registeredHandler(data.payload, data.metadata),
+    );
+
+    let byHandler = this.subscriptions.get(type);
+    if (!byHandler) {
+      byHandler = new Map();
+      this.subscriptions.set(type, byHandler);
+    }
+    const registrations = byHandler.get(registeredHandler) ?? [];
+    registrations.push(unsubscribe);
+    byHandler.set(registeredHandler, registrations);
+
     return this;
   }
 
   /**
    * 移除事件监听器。
-   * @param eventType 事件类型
-   * @param handler 监听器函数
+   *
+   * 传入 handler 时移除该 handler 最近一次注册；未传 handler 时移除该事件的全部监听器。
    */
-  off<K extends keyof TEvents>(eventType: K, handler?: (event: TEvents[K]) => void): this {
-    if (this.debugEnabled) logger.debug(`🔇 Off: ${String(eventType)}`);
-    this.emitter.off(eventType as string, handler);
+  off<K extends keyof TEvents>(eventType: K, handler?: RuntimeEventHandler<TEvents[K]>): this {
+    const type = eventType as string;
+    if (this.debugEnabled) logger.debug(`🔇 Off: ${type}`);
+
+    const byHandler = this.subscriptions.get(type);
+    if (!byHandler) return this;
+
+    if (!handler) {
+      for (const registrations of byHandler.values()) {
+        for (const unsubscribe of registrations) unsubscribe();
+      }
+      this.subscriptions.delete(type);
+      return this;
+    }
+
+    const registeredHandler = handler as RegisteredHandler;
+    const registrations = byHandler.get(registeredHandler);
+    const unsubscribe = registrations?.pop();
+    unsubscribe?.();
+
+    if (!registrations || registrations.length === 0) {
+      byHandler.delete(registeredHandler);
+    }
+    if (byHandler.size === 0) {
+      this.subscriptions.delete(type);
+    }
+
     return this;
   }
 
-  /**
-   * 销毁实例，清空所有监听器。
-   */
+  /** 销毁实例，清空所有监听器。 */
   destroy(): void {
     if (this.debugEnabled) logger.debug('💥 Destroying EventBus');
-    this.emitter.all.clear();
+    this.emitter.clearListeners();
+    this.subscriptions.clear();
   }
 
-  /**
-   * 获取诊断信息。
-   */
+  /** 获取诊断信息。listenersCount 保持历史语义：有监听器的 event type 数量。 */
   getStats() {
     return {
-      listenersCount: this.emitter.all.size,
+      listenersCount: this.subscriptions.size,
     };
   }
 
   setDebugMode(enabled: boolean): void {
     this.debugEnabled = enabled;
+  }
+
+  private getAggregateErrors(error: unknown): unknown[] | undefined {
+    return error instanceof Error &&
+      'errors' in error &&
+      Array.isArray((error as Error & { errors?: unknown[] }).errors)
+      ? (error as Error & { errors: unknown[] }).errors
+      : undefined;
+  }
+
+  private logDeliveryFailure(type: string, error: unknown): void {
+    const aggregateErrors = this.getAggregateErrors(error);
+
+    if (aggregateErrors) {
+      for (const cause of aggregateErrors) {
+        logger.error(`❌ Event handler failed: ${type}`, cause);
+      }
+      return;
+    }
+    logger.error(`❌ Event handler failed: ${type}`, error);
   }
 }

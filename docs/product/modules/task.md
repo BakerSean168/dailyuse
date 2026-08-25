@@ -5,7 +5,7 @@ tags:
   - task
 description: 任务模块当前功能资产说明
 created: 2026-06-02T00:00:00
-updated: 2026-08-01T00:00:00+08:00
+updated: 2026-08-25T15:03:00+08:00
 ---
 
 # 任务模块说明
@@ -93,3 +93,31 @@ updated: 2026-08-01T00:00:00+08:00
 - [目标模块说明](./goal.md)
 - [日程模块说明](./schedule.md)
 - [任务模块文件索引](../module-index/task-files.md)
+
+## 11. Goal / Task vNext 已采纳方向（2026-08-25）
+
+本文件 1-10 节继续描述**当前实现资产**。下一阶段 Task 不再以 `TaskTemplate management + DAG` 为默认用户心智，而是收敛到个人 `Action + Execution`：
+
+- Task 首页改为 Today / Upcoming / All / Completed 的 Task instance-first 体验；
+- `快速任务` 与 `新建任务计划` 合并为 `新建任务`；
+- recurrence 继续保留，重复设置进入渐进式披露与二级管理；
+- TaskFolder、parent hierarchy、Dependency/DAG/CriticalPath、dynamic priority score 退役；
+- Shared Label 取代 TaskFolder / JSON string tags；
+- Goal/KR Link 与 automatic Contribution 解耦；
+- 保留并产品化 `EachCompletion` / `PlanCompletion` 两种贡献结算；
+- `PlanCompletion` 仅允许 finite recurrence，继续使用 ADR-038 的 durable outbox / idempotent GoalRecord 基础设施。
+- `Expired` instance status 退役；Overdue 改为派生事实，过期后仍允许补录；
+- occurrence 新增 `Missed`，并与 `Skipped`（豁免/不适用）严格区分；
+- Task Plan 增加 success/failure/abandon outcome：Failed 由 completion policy 推导，Abandoned 由用户显式触发，Delete 只处理误创建。
+
+正式决策与实施顺序见：
+
+- [ADR-053: Goal / Task 个人产品边界与信息架构收敛](../../architecture/adr/ADR-053-goal-task-personal-product-boundary.md)
+- [ADR-054: Shared Labels 与 System Views 分离](../../architecture/adr/ADR-054-shared-labels-and-system-views.md)
+- [ADR-055: Key Result Measurement & Progress V2](../../architecture/adr/ADR-055-key-result-measurement-progress-v2.md)
+- [ADR-056: Task Plan → Goal Link / Contribution / Settlement](../../architecture/adr/ADR-056-task-plan-goal-link-contribution-settlement.md)
+- [ADR-057: Task Occurrence Outcome、Overdue 与 Task Plan 生命周期](../../architecture/adr/ADR-057-task-occurrence-outcome-and-plan-lifecycle.md)
+- [Goal / Task OSS 直接复用与可插拔可行性评估](../../analysis/2026-08-25-goal-task-oss-reuse-feasibility.md)
+- [Goal / Task vNext 产品设计](../goal-task-vnext.md)
+- [Goal / Task vNext Active Plan](../../plan/active/2026-08-25-goal-task-vnext-refactor.md)
+- [ADR-058: OSS-first 标准能力复用与领域所有权边界](../../architecture/adr/ADR-058-oss-first-standard-capability-reuse.md)

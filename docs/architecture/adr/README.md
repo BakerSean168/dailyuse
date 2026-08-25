@@ -4,7 +4,7 @@ tags:
   - index
 description: 架构决策记录索引
 created: 2025-11-23T15:00:00
-updated: 2026-08-20T00:00:00+08:00
+updated: 2026-08-25T19:05:00+08:00
 ---
 
 # ADR 索引
@@ -53,7 +53,7 @@ updated: 2026-08-20T00:00:00+08:00
 | [ADR-035](./ADR-035-unified-assistant-agent-host.md)                | 统一助手与可插拔 Agent Host                              | 已被 ADR-050 取代 | 2026-07-17 |
 | [ADR-036](./ADR-036-auth-account-boundary-and-verification.md)                | Auth / Account 边界与验证安全模型                          | 已采纳 | 2026-07-17 |
 | [ADR-037](./ADR-037-product-time-system.md)                       | 产品时间体系（Instant/Ymd、TransferDate、门面与风格） | 已采纳 | 2026-07-26 |
-| [ADR-038](./ADR-038-goal-consistency-and-reliable-task-contributions.md) | Goal 一致性与可靠 Task 贡献链路 | 已采纳 | 2026-08-01 |
+| [ADR-038](./ADR-038-goal-consistency-and-reliable-task-contributions.md) | Goal 一致性与可靠 Task 贡献链路 | 已采纳（Task binding 语义由 ADR-056 修订） | 2026-08-01 |
 | [ADR-039](./ADR-039-cloud-auth-and-local-profile-access.md) | Cloud Auth 与 Local Profile Access 分离 | 已采纳 | 2026-08-02 |
 | [ADR-040](./ADR-040-test-system-v2.md) | Test System V2 单一归属与稳定门禁 | 已采纳 | 2026-08-04 |
 | [ADR-041](./ADR-041-ci-cd-platform-v2.md) | CI/CD Platform V2 解耦与可扩展交付平台 | 已接受 | 2026-08-05 |
@@ -67,7 +67,19 @@ updated: 2026-08-20T00:00:00+08:00
 | [ADR-049](./ADR-049-domain-outcome-and-failure-contracts.md) | Domain Outcomes and Failure Contracts — 领域故障、应用结果、公开失败、provider ACL 与传输投影 | 已采纳（实施中） | 2026-08-17 |
 | [ADR-050](./ADR-050-mastra-native-ai-runtime.md) | MemoFlow AI vNext — Mastra-native Runtime 与单一状态所有权 | 已采纳 | 2026-08-20 |
 | [ADR-051](./ADR-051-ai-primitive-taxonomy.md) | AI Primitive Taxonomy — Agent / Tool / Workflow / Skill / Memory / Context | 已采纳 | 2026-08-20 |
-| [ADR-052](./ADR-052-goal-create-reference-workflow.md) | `goal.create` Reference Workflow 与确定性业务执行 | 已采纳 | 2026-08-20 |
+| [ADR-052](./ADR-052-goal-create-reference-workflow.md) | `goal.create` Reference Workflow 与确定性业务执行 | 已采纳（Goal/Task draft schema 由 ADR-053~056 修订） | 2026-08-20 |
+| [ADR-053](./ADR-053-goal-task-personal-product-boundary.md) | Goal / Task 个人产品边界与信息架构收敛 | 已采纳（待实施） | 2026-08-25 |
+| [ADR-054](./ADR-054-shared-labels-and-system-views.md) | Shared Labels 与 System Views 分离 | 已采纳（待实施） | 2026-08-25 |
+| [ADR-055](./ADR-055-key-result-measurement-progress-v2.md) | Key Result Measurement & Progress V2 | 已采纳（待实施） | 2026-08-25 |
+| [ADR-056](./ADR-056-task-plan-goal-link-contribution-settlement.md) | Task Plan → Goal Link / Contribution / Settlement | 已采纳（待实施） | 2026-08-25 |
+| [ADR-057](./ADR-057-task-occurrence-outcome-and-plan-lifecycle.md) | Task Occurrence Outcome、Overdue 与 Task Plan 生命周期 | 已采纳（待实施） | 2026-08-25 |
+| [ADR-058](./ADR-058-oss-first-standard-capability-reuse.md) | OSS-first 标准能力复用与领域所有权边界 | 已采纳（从 Goal / Task vNext 开始执行） | 2026-08-25 |
+| [ADR-059](./ADR-059-routine-coach-domain-runtime-and-surfaces.md) | Routine Coach 领域、Runtime 与交互 Surface | 已采纳（待实施） | 2026-08-25 |
+| [ADR-060](./ADR-060-schedule-planner-and-scheduler-boundary.md) | Schedule / Planner 与 Scheduler / Temporal Engine 分离 | 已采纳（待实施） | 2026-08-25 |
+| [ADR-061](./ADR-061-business-module-scheduling-port-and-handler-registry.md) | 业务模块通过 Scheduling Port 与 Handler Registry 接入 Scheduler | 已采纳（待实施） | 2026-08-25 |
+| [ADR-062](./ADR-062-reminder-routine-single-scheduling-authority.md) | Reminder / Routine 单一调度权与可靠 Occurrence 执行 | 已采纳（待实施） | 2026-08-25 |
+| [ADR-063](./ADR-063-notification-fact-delivery-policy-and-device-surfaces.md) | Notification Fact、Delivery Policy 与 Device Surface 分离 | 已采纳（待实施） | 2026-08-25 |
+| [ADR-064](./ADR-064-emittery-runtime-event-delivery.md) | Runtime EventBus 采用 Emittery 与 Delivery-scoped Async Publish | 已采纳并实施 | 2026-08-25 |
 
 ## 维护规则
 

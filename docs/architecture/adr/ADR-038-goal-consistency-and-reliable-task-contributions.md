@@ -18,6 +18,8 @@ updated: 2026-08-01T22:05:00+08:00
 **日期：** 2026-08-01
 **影响范围：** Goal、Task、contracts、database、PowerSync、API、Desktop、app-vue、app-react、AI Executor
 
+> **2026-08-25 修订说明：** 本 ADR 的事务、乐观并发、outbox、幂等来源相关性继续有效；`TaskGoalBinding` 的产品/领域语义由 [ADR-056](./ADR-056-task-plan-goal-link-contribution-settlement.md) 修订为 optional Goal/KR link + optional contribution，并将 `AllInstancesCompleted` 提升为 `PlanCompletion` settlement 语义。
+
 ## 1. 背景
 
 “目标 → KR → 任务 → 进度”旅程目前由多个浅 **Module** 共同编排：
