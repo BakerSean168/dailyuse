@@ -4,7 +4,7 @@ tags:
   - active
 description: 进行中的计划目录与当前状态
 created: 2026-04-26T00:00:00
-updated: 2026-08-25T09:49:00+08:00
+updated: 2026-08-25T12:25:00+08:00
 ---
 
 # Active Plans
@@ -16,6 +16,7 @@ updated: 2026-08-25T09:49:00+08:00
 | 计划                                                                                                     | 当前状态                                                                                         |
 | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | [GitHub App + MagicDNS 产品闭环与复审问题收敛](./2026-08-25-github-app-magicdns-product-hardening.md) | **In progress**：先修 OAuth callback + App runtime/installation，再收敛本轮 PM review findings |
+| [AI Provider Onboarding V2](./2026-08-25-ai-provider-onboarding-v2.md)                                  | **In progress**：Provider connection → credential validation → model discovery → explicit selection → atomic save |
 
 ## 近期完成的基础计划
 
