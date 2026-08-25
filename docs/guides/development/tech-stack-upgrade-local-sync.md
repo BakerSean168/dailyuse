@@ -161,8 +161,8 @@ docker compose -f docker-compose.local.yml --env-file .env.production.local up -
 docker ps --format '{{.Names}} {{.Image}} {{.Status}}'
 # 期望：postgres 镜像含 0.8.5-pg18，redis:8-alpine，api/web 等 healthy
 
-curl -s -o /dev/null -w 'api:%{http_code}\n' http://localhost:53080/info
-curl -s -o /dev/null -w 'web:%{http_code}\n' http://localhost:58080/
+curl -s -o /dev/null -w 'api:%{http_code}\n' http://localhost:20201/info
+curl -s -o /dev/null -w 'web:%{http_code}\n' http://localhost:20200/
 ```
 
 默认端口见 [`local.docker.md`](./local.docker.md)。

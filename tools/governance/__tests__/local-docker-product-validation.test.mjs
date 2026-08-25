@@ -22,26 +22,26 @@ function healthyRuntime(overrides = {}) {
   return {
     expectedRevision: revision,
     expectedServices: {
-      web: { hostPort: 58080, targetPort: 80 },
-      api: { hostPort: 53080, targetPort: 3000 },
+      web: { hostPort: 20200, targetPort: 80 },
+      api: { hostPort: 20201, targetPort: 3000 },
     },
     composeServices: {
       web: {
         name: 'memoflow-web-1',
         state: 'running',
         health: 'healthy',
-        publishers: [{ PublishedPort: 58080, TargetPort: 80, Protocol: 'tcp' }],
+        publishers: [{ PublishedPort: 20200, TargetPort: 80, Protocol: 'tcp' }],
       },
       api: {
         name: 'memoflow-api-1',
         state: 'running',
         health: 'healthy',
-        publishers: [{ PublishedPort: 53080, TargetPort: 3000, Protocol: 'tcp' }],
+        publishers: [{ PublishedPort: 20201, TargetPort: 3000, Protocol: 'tcp' }],
       },
     },
     listeners: {
-      58080: { open: true, owner: 'docker-compose:web' },
-      53080: { open: true, owner: 'docker-compose:api' },
+      20200: { open: true, owner: 'docker-compose:web' },
+      20201: { open: true, owner: 'docker-compose:api' },
     },
     containerRevisions: {
       web: revision,
@@ -65,14 +65,14 @@ describe('local Docker product validation evidence', () => {
   it('rejects stale images and a listener that is not mapped to the expected container port', () => {
     const fixture = healthyRuntime();
     fixture.composeServices.web.publishers = [
-      { PublishedPort: 58080, TargetPort: 8080, Protocol: 'tcp' },
+      { PublishedPort: 20200, TargetPort: 8080, Protocol: 'tcp' },
     ];
     fixture.containerRevisions.api = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 
     const result = evaluateLocalDockerRuntimeEvidence(fixture);
 
     expect(result.ok).toBe(false);
-    expect(result.errors.join('\n')).toMatch(/web.*58080.*80/);
+    expect(result.errors.join('\n')).toMatch(/web.*20200.*80/);
     expect(result.errors.join('\n')).toMatch(/api.*revision/);
   });
 

@@ -67,7 +67,7 @@ async function main(): Promise<void> {
         '[playwright-api-server] This is almost certainly Docker local-docker or host-dev, NOT the Playwright API dist.',
       );
       console.error(
-        '[playwright-api-server] Fix: free :3000 (e.g. pnpm docker:local:down if API_HOST_PORT was 3000), ensure local-docker uses 53080, then re-run e2e.',
+        '[playwright-api-server] Fix: free :3000 (e.g. pnpm docker:local:down if API_HOST_PORT was 3000), ensure local-docker uses 20201, then re-run e2e.',
       );
       console.error(
         '[playwright-api-server] See docs/guides/development/runtime-lanes.md and pnpm runtime:preflight --profile e2e',

@@ -83,23 +83,23 @@
         "app": "pnpm docker:local:up"
       },
       "ports": {
-        "api": 53080,
-        "web": 58080,
-        "powersync": 58081,
-        "postgres": 55432,
-        "redis": 56379
+        "api": 20201,
+        "web": 20200,
+        "powersync": 20202,
+        "postgres": 20210,
+        "redis": 20211
       },
       "hostPortEnv": {
-        "API_HOST_PORT": 53080,
-        "WEB_HOST_PORT": 58080,
-        "POWERSYNC_HOST_PORT": 58081,
-        "POSTGRES_HOST_PORT": 55432,
-        "REDIS_HOST_PORT": 56379
+        "API_HOST_PORT": 20201,
+        "WEB_HOST_PORT": 20200,
+        "POWERSYNC_HOST_PORT": 20202,
+        "POSTGRES_HOST_PORT": 20210,
+        "REDIS_HOST_PORT": 20211
       },
       "urls": {
-        "api": "http://localhost:53080",
-        "web": "http://localhost:58080",
-        "powersync": "http://localhost:58081"
+        "api": "http://localhost:20201",
+        "web": "http://localhost:20200",
+        "powersync": "http://localhost:20202"
       },
       "mutexWith": [
         "host-dev",

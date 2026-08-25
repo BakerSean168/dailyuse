@@ -263,7 +263,7 @@ function applyLocalDockerHostPortIsolation(
   }
 
   // Keep public PowerSync URL aligned with isolated host port when unset or still pointing at classic ports.
-  const powersyncHostPort = resolved.forced.POWERSYNC_HOST_PORT ?? '58081';
+  const powersyncHostPort = resolved.forced.POWERSYNC_HOST_PORT ?? '20202';
   const machinePowerSyncUrl = allowMachineOverride
     ? (machineEnvFileMap.get('POWERSYNC_URL')?.trim() ?? '')
     : '';
@@ -355,7 +355,7 @@ export function createLocalComposeRuntimeEnv(options = {}) {
   }
 
   const powerSyncFallbacks = {
-    POWERSYNC_URL: 'http://localhost:58081',
+    POWERSYNC_URL: 'http://localhost:20202',
     POWERSYNC_KEY_ID: developmentEnv.get('POWERSYNC_KEY_ID') ?? 'powersync-dev-d90f228f',
     POWERSYNC_PRIVATE_KEY: developmentEnv.get('POWERSYNC_PRIVATE_KEY') ?? '',
     POWERSYNC_PUBLIC_KEY_N: developmentEnv.get('POWERSYNC_PUBLIC_KEY_N') ?? '',
