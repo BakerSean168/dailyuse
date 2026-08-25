@@ -5,7 +5,7 @@ tags:
   - goal
 description: 目标模块当前功能资产说明
 created: 2026-06-02T00:00:00
-updated: 2026-08-01T00:00:00+08:00
+updated: 2026-08-25T14:28:00+08:00
 ---
 
 # 目标模块说明
@@ -86,3 +86,26 @@ updated: 2026-08-01T00:00:00+08:00
 - [AI 创建 Goal 当前工作流说明](../../guides/development/ai-goal-creation-current-workflow.md)
 - [Goal workflow v1 文档集](../../guides/ai/goal-workflow-v1/README.md)
 - [目标模块文件索引](../module-index/goal-files.md)
+
+## 11. Goal / Task vNext 已采纳方向（2026-08-25）
+
+本文件 1-10 节继续描述**当前实现资产**。下一阶段已采纳的目标模型不再继续扩展 Folder / Category / Focus / Comparison，而是收敛到个人 `Direction + Measurement`：
+
+- GoalFolder、Category、Parent Goal、Importance/Priority、Focus、Comparison 退役；
+- Shared Label 成为唯一用户分类体系；
+- `目标日期` 产品文案改为 `截止日期`；
+- KR 删除 `valueType`，采用 Measurement V2；
+- weight 保留 1-5 相对系数、默认 3，并移入高级设置；
+- Goal overall progress 与“所有 KR 是否满足”分离；
+- Goal 与 Task 保持模块独立，通过 Goal/KR link、GoalRecord contribution 和 deep-link 自然连接；
+- Review 收敛为带系统快照的轻量反思记录。
+
+正式决策与实施顺序见：
+
+- [ADR-053: Goal / Task 个人产品边界与信息架构收敛](../../architecture/adr/ADR-053-goal-task-personal-product-boundary.md)
+- [ADR-054: Shared Labels 与 System Views 分离](../../architecture/adr/ADR-054-shared-labels-and-system-views.md)
+- [ADR-055: Key Result Measurement & Progress V2](../../architecture/adr/ADR-055-key-result-measurement-progress-v2.md)
+- [ADR-056: Task Plan → Goal Link / Contribution / Settlement](../../architecture/adr/ADR-056-task-plan-goal-link-contribution-settlement.md)
+- [Goal / Task vNext 产品设计](../goal-task-vnext.md)
+- [Goal / Task vNext Active Plan](../../plan/active/2026-08-25-goal-task-vnext-refactor.md)
+- [ADR-058: OSS-first 标准能力复用与领域所有权边界](../../architecture/adr/ADR-058-oss-first-standard-capability-reuse.md)

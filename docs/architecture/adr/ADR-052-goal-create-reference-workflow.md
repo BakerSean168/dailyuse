@@ -17,6 +17,8 @@ updated: 2026-08-20T00:00:00+08:00
 **日期：** 2026-08-20  
 **依赖：** ADR-050、ADR-051
 
+> **2026-08-25 产品模型修订：** 本 ADR 的 Mastra workflow / HITL / idempotent apply 架构继续有效；`GoalPlanDraft` 中的 `category`、`importance`、旧 KR `valueType`、旧 Task binding 等字段不再是目标模型真值。实施时按 [ADR-053](./ADR-053-goal-task-personal-product-boundary.md)、[ADR-054](./ADR-054-shared-labels-and-system-views.md)、[ADR-055](./ADR-055-key-result-measurement-progress-v2.md)、[ADR-056](./ADR-056-task-plan-goal-link-contribution-settlement.md) 更新 draft schema。
+
 ## 1. 决策
 
 `goal.create` 是 **由 MemoFlow Assistant 发起的 Mastra durable Workflow**，不是一个 user-facing Goal Agent，也不是通用 `AgentAction[]` 执行计划。

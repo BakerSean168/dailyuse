@@ -5,10 +5,12 @@ tags:
   - schedule
 description: 日程模块当前功能资产说明
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-08-25T17:49:00+08:00
 ---
 
 # 日程模块说明
+
+> **vNext 方向（2026-08-25）：** 当前文档继续记录现有 Schedule 资产。新的正式边界把用户可见的 Schedule 收敛为 **Calendar / Planner**，把 `ScheduleTask`/queue/lease/retry 等后台能力定义为内部 **Scheduler / Temporal Engine**。业务模块通过 neutral `ScheduledIntent + SchedulingPort.reconcile` 接入，不再长期直接构造 `ScheduleTask`。详见 [Scheduling / Notification vNext](../scheduling-notification-vnext.md)、[ADR-060](../../architecture/adr/ADR-060-schedule-planner-and-scheduler-boundary.md)、[ADR-061](../../architecture/adr/ADR-061-business-module-scheduling-port-and-handler-registry.md)。
 
 ## 1. 功能定位
 

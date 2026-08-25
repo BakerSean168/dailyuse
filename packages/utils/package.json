@@ -52,7 +52,7 @@
     "@memoflow/contracts": "workspace:*",
     "date-fns": "^4.1.0",
     "lodash-es": "^4.17.21",
-    "mitt": "^3.0.1",
+    "emittery": "^2.0.0",
     "uuid": "^14.0.1",
     "winston": "3.19.0",
     "winston-daily-rotate-file": "5.0.0",

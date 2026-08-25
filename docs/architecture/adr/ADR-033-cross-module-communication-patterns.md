@@ -92,6 +92,10 @@
 - **治理**：`raw-event-bus-audit.mjs` 已确保 `send`/`on` 走 typed seam；后续可增加 audit 检查"是否在业务代码中出现 `.invoke(` / `.handle(` 且不属于 IPC/HTTP adapter"。
 - **Phase 6 跨模块读取 Port 治理**：`tools/governance/architecture-surface-audit.mjs` + `architecture-surface-manifest.json` 的 `READ_PORT_GOAL_TASK_BINDING` / `READ_PORT_AI_ANALYTICS` / `READ_PORT_AI_KNOWLEDGE_SOURCE` 规则锁定消费者拥有契约、Application 只依赖抽象、宿主 composer 注入 adapter、消费者不 deep-import provider 基础设施；删除注入或绕过 Port 会使审计变红。
 
+## 2026-08-25 实现层修订（ADR-064）
+
+本 ADR 的三范式语义不变；runtime-local EventBus 的 async delivery implementation 由 ADR-064 修订：底层从 `mitt` + bus-global `awaitDrain()` 改为 Emittery。业务通知仍使用 fire-and-forget `send()`；需要把本次 handler completion 作为可靠发布边界的 infrastructure adapter 使用 delivery-scoped `dispatch()`。这不授权业务代码把 `dispatch()` 当作 EventBus RPC；请求-响应仍必须使用 Port / IPC / HTTP。
+
 ## References
 
 - ADR-002 采用 DDD 架构模式

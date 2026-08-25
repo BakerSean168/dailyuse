@@ -4,7 +4,7 @@ tags:
   - active
 description: 进行中的计划目录与当前状态
 created: 2026-04-26T00:00:00
-updated: 2026-08-25T12:25:00+08:00
+updated: 2026-08-25T19:18:00+08:00
 ---
 
 # Active Plans
@@ -13,10 +13,13 @@ updated: 2026-08-25T12:25:00+08:00
 
 ## 当前计划
 
-| 计划                                                                                                     | 当前状态                                                                                         |
-| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| [GitHub App + MagicDNS 产品闭环与复审问题收敛](./2026-08-25-github-app-magicdns-product-hardening.md) | **In progress**：先修 OAuth callback + App runtime/installation，再收敛本轮 PM review findings |
-| [AI Provider Onboarding V2](./2026-08-25-ai-provider-onboarding-v2.md)                                  | **In progress**：Provider connection → credential validation → model discovery → explicit selection → atomic save |
+| 计划                                                                                                                        | 当前状态                                                                                                                                                                                   |
+| --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [MemoFlow Core vNext — Unified Refactor Orchestration](./2026-08-25-core-vnext-orchestration.md)                            | **Primary orchestration / active**：统一 Goal/Task/Routine/Planner/Scheduler/Notification/EventBus；按 Wave + parallel lane + Contract/Schema Train 执行，并强制 Build/Borrow/Imitate gate |
+| [Goal / Task vNext — Personal Outcome & Execution Refactor](./2026-08-25-goal-task-vnext-refactor.md)                       | **Planned / active**：OSS-first Gate → Shared Labels → Goal/KR 简化 → Task occurrence/outcome → Link/Contribution settlement → UI/Mobile/AI parity                                         |
+| [Scheduling / Notification vNext — Boundary & Reliability Refactor](./2026-08-25-scheduling-notification-vnext-refactor.md) | **Planned / active**：neutral scheduling contract → stable key/atomic reconcile → handler registry → Reminder 单一调度权 → Notification policy → Planner 收敛                              |
+| [GitHub App + MagicDNS 产品闭环与复审问题收敛](./2026-08-25-github-app-magicdns-product-hardening.md)                       | **In progress**：先修 OAuth callback + App runtime/installation，再收敛本轮 PM review findings                                                                                             |
+| [AI Provider Onboarding V2](./2026-08-25-ai-provider-onboarding-v2.md)                                                      | **In progress**：Provider connection → credential validation → model discovery → explicit selection → atomic save                                                                          |
 
 ## 近期完成的基础计划
 

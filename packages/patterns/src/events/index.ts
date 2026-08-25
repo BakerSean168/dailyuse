@@ -83,9 +83,10 @@ import type { EventDeliveryMetadata } from '@memoflow/utils/domain';
 export type { EventDeliveryMetadata };
 
 export interface IEventSender {
+  /** 通知式 fire-and-forget 发布。 */
   send(eventType: string, payload: unknown, metadata?: EventDeliveryMetadata): void;
-  /** 等待当前 in-flight 异步 handler 完成（at-least-once 交付边界）。 */
-  awaitDrain?(): Promise<void>;
+  /** 等待本次 delivery 的全部 handler 完成；用于可靠发布边界。 */
+  dispatch(eventType: string, payload: unknown, metadata?: EventDeliveryMetadata): Promise<void>;
 }
 
 /**
@@ -112,20 +113,14 @@ export interface IEventSender {
 export function createEventBusAdapter(sender: IEventSender): IEventBus {
   return {
     async publish(event) {
-      sender.send(event.eventType, event.payload, {
+      await sender.dispatch(event.eventType, event.payload, {
         aggregateId: event.aggregateId,
         occurredAt: event.occurredAt,
         idempotencyKey: event.idempotencyKey,
       });
-      if (sender.awaitDrain) {
-        await sender.awaitDrain();
-      }
     },
     async send(eventType, payload) {
-      sender.send(eventType, payload);
-      if (sender.awaitDrain) {
-        await sender.awaitDrain();
-      }
+      await sender.dispatch(eventType, payload);
     },
   };
 }

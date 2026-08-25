@@ -5,10 +5,12 @@ tags:
   - notification
 description: 通知模块当前功能资产说明
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-08-25T17:49:00+08:00
 ---
 
 # 通知模块说明
+
+> **vNext 方向（2026-08-25）：** Notification 将明确区分 **Notification Fact（用户可追溯消息事实）** 与 **per-channel Delivery Attempt**。每个渠道必须独立经过 workflow/user preference、DND、rate-limit 和 device capability policy；Scheduler 不再直接拥有 Notification delivery。详见 [Scheduling / Notification vNext](../scheduling-notification-vnext.md) 与 [ADR-063](../../architecture/adr/ADR-063-notification-fact-delivery-policy-and-device-surfaces.md)。
 
 ## 1. 功能定位
 

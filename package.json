@@ -126,7 +126,6 @@
     "dotenv-expand": "13.0.0",
     "echarts": "^6.1.0",
     "ioredis": "5.11.1",
-    "mitt": "^3.0.1",
     "multer": "2.0.2",
     "node-cron": "^4.2.1",
     "node-schedule": "^2.1.1",
