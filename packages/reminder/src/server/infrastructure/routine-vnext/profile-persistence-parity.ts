@@ -3,6 +3,7 @@ import type {
   RoutineDefinitionState,
   RoutineProfileState,
 } from '../../domain/routine';
+import { serializeRoutineTrigger } from './trigger-persistence-parity';
 
 /**
  * Lane-owned persistence contract used to keep Prisma and PowerSync mappings
@@ -21,6 +22,7 @@ export interface RoutineDefinitionPrismaRecord {
   name: string;
   description: string | null;
   enabled: boolean;
+  triggerJson: string | null;
   version: number;
   createdAt: Date;
   updatedAt: Date;
@@ -54,6 +56,7 @@ export interface RoutineDefinitionPowerSyncRecord {
   name: string;
   description: string | null;
   enabled: 0 | 1;
+  trigger_json: string | null;
   version: number;
   created_at: string;
   updated_at: string;
@@ -84,7 +87,17 @@ export interface ProfileMembershipPowerSyncRecord {
 export function routineDefinitionToPrisma(
   state: RoutineDefinitionState,
 ): RoutineDefinitionPrismaRecord {
-  return { ...state };
+  return {
+    id: state.id,
+    identityId: state.identityId,
+    name: state.name,
+    description: state.description,
+    enabled: state.enabled,
+    triggerJson: serializeRoutineTrigger(state.trigger),
+    version: state.version,
+    createdAt: state.createdAt,
+    updatedAt: state.updatedAt,
+  };
 }
 
 export function routineProfileToPrisma(state: RoutineProfileState): RoutineProfilePrismaRecord {
@@ -106,6 +119,7 @@ export function routineDefinitionToPowerSync(
     name: state.name,
     description: state.description,
     enabled: boolInt(state.enabled),
+    trigger_json: serializeRoutineTrigger(state.trigger),
     version: state.version,
     created_at: state.createdAt.toISOString(),
     updated_at: state.updatedAt.toISOString(),
@@ -151,6 +165,7 @@ export function normalizePrismaRoutineDefinition(
     name: record.name,
     description: record.description,
     enabled: record.enabled,
+    triggerJson: record.triggerJson,
     version: record.version,
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
@@ -166,6 +181,7 @@ export function normalizePowerSyncRoutineDefinition(
     name: record.name,
     description: record.description,
     enabled: record.enabled === 1,
+    triggerJson: record.trigger_json,
     version: record.version,
     createdAt: record.created_at,
     updatedAt: record.updated_at,

@@ -18,6 +18,7 @@
       "@memoflow/contracts/schedule": ["../contracts/src/modules/schedule/index.ts"],
       "@memoflow/contracts/reliable-messaging": ["../contracts/src/modules/reliable-messaging/index.ts"],
       "@memoflow/contracts/operations": ["../contracts/src/modules/operations/index.ts"],
+      "@memoflow/time": ["../time/src/index.ts"],
       "@memoflow/test-utils": ["../test-utils/src/index.ts"],
       "@memoflow/test-utils/*": ["../test-utils/src/*", "../test-utils/src/*.ts"],
       "@memoflow/utils": ["../utils/src/index.ts"],

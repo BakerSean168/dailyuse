@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import type { RoutineTrigger } from './trigger';
 
 /** Canonical Routine Coach definition (ADR-059). */
 export interface RoutineDefinitionState {
@@ -7,6 +8,7 @@ export interface RoutineDefinitionState {
   name: string;
   description: string | null;
   enabled: boolean;
+  trigger: RoutineTrigger | null;
   version: number;
   createdAt: Date;
   updatedAt: Date;
@@ -21,6 +23,7 @@ export class RoutineDefinition {
     name: string;
     description?: string | null;
     enabled?: boolean;
+    trigger?: RoutineTrigger | null;
     now?: Date;
   }): RoutineDefinition {
     assertNonEmpty(input.identityId, 'identityId');
@@ -32,14 +35,17 @@ export class RoutineDefinition {
       name: input.name.trim(),
       description: input.description?.trim() || null,
       enabled: input.enabled ?? true,
+      trigger: input.trigger ?? null,
       version: 1,
       createdAt: now,
       updatedAt: now,
     });
   }
 
-  static load(state: RoutineDefinitionState): RoutineDefinition {
-    return new RoutineDefinition({ ...state });
+  static load(
+    state: Omit<RoutineDefinitionState, 'trigger'> & { trigger?: RoutineTrigger | null },
+  ): RoutineDefinition {
+    return new RoutineDefinition({ ...state, trigger: state.trigger ?? null });
   }
 
   get id(): string { return this.state.id; }
@@ -47,6 +53,7 @@ export class RoutineDefinition {
   get name(): string { return this.state.name; }
   get description(): string | null { return this.state.description; }
   get enabled(): boolean { return this.state.enabled; }
+  get trigger(): RoutineTrigger | null { return this.state.trigger; }
   get version(): number { return this.state.version; }
   get createdAt(): Date { return this.state.createdAt; }
   get updatedAt(): Date { return this.state.updatedAt; }
@@ -60,6 +67,12 @@ export class RoutineDefinition {
   disable(now = new Date()): void {
     if (!this.state.enabled) return;
     this.state.enabled = false;
+    this.touch(now);
+  }
+
+  setTrigger(trigger: RoutineTrigger | null, now = new Date()): void {
+    if (this.state.trigger === trigger) return;
+    this.state.trigger = trigger;
     this.touch(now);
   }
 

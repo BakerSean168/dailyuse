@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createElapsedTrigger,
   ProfileMembership,
   RoutineDefinition,
   RoutineProfile,
@@ -29,6 +30,7 @@ describe('Routine vNext Prisma / PowerSync parity contract', () => {
       name: 'Drink Water',
       description: 'Hydration intervention',
       enabled: true,
+      trigger: createElapsedTrigger({ durationMs: 60 * 60_000 }),
       now,
     });
     const profile = RoutineProfile.create({
@@ -47,8 +49,11 @@ describe('Routine vNext Prisma / PowerSync parity contract', () => {
       now,
     });
 
-    expect(normalizePrismaRoutineDefinition(routineDefinitionToPrisma(routine.snapshot())))
-      .toEqual(normalizePowerSyncRoutineDefinition(routineDefinitionToPowerSync(routine.snapshot())));
+    const prismaDefinition = routineDefinitionToPrisma(routine.snapshot());
+    const powerSyncDefinition = routineDefinitionToPowerSync(routine.snapshot());
+    expect(prismaDefinition.triggerJson).toContain('\"type\":\"Elapsed\"');
+    expect(normalizePrismaRoutineDefinition(prismaDefinition))
+      .toEqual(normalizePowerSyncRoutineDefinition(powerSyncDefinition));
     expect(normalizePrismaRoutineProfile(routineProfileToPrisma(profile.snapshot())))
       .toEqual(normalizePowerSyncRoutineProfile(routineProfileToPowerSync(profile.snapshot())));
     expect(normalizePrismaMembership(profileMembershipToPrisma(membership.snapshot())))

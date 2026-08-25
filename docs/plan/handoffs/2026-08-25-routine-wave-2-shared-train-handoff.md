@@ -7,7 +7,7 @@ tags:
   - schema-train
 description: ROUTINE-2301..2303 feature-lane handoff for Core vNext shared Contract/Schema/PowerSync integration.
 created: 2026-08-25T23:41:00+08:00
-updated: 2026-08-25T23:41:00+08:00
+updated: 2026-08-26T00:32:00+08:00
 ---
 
 # Core vNext Routine Domain / Wave 2 — Shared Train Handoff
@@ -145,9 +145,103 @@ New canonical tables contain **no `control_mode`**. `ControlMode` remains only o
 
 The canonical M:N model also supersedes the legacy single `reminder_group_id` relationship. Do not delete ReminderOccurrence or the Reminder runtime reliability tables as part of this schema migration.
 
-## ROUTINE-2302 — pending feature-lane details
+## ROUTINE-2302 — Trigger / Schema Train request
 
-To be appended by this worker after the trigger model is complete.
+Canonical domain implementation:
+
+```text
+packages/reminder/src/server/domain/routine/trigger.ts
+packages/reminder/src/server/infrastructure/routine-vnext/trigger-persistence-parity.ts
+```
+
+`RoutineDefinition.trigger` is the long-lived trigger truth. Add this field to both physical representations of `routine_definitions`:
+
+```text
+Prisma/Postgres: trigger_json TEXT NULL @map("trigger_json")
+PowerSync/SQLite: trigger_json TEXT NULL
+```
+
+The JSON payload is a tagged union with exactly these variants and timing owners:
+
+```text
+WallClock   -> timingOwner = scheduler
+Elapsed     -> timingOwner = local-runtime
+ActiveUsage -> timingOwner = local-runtime
+```
+
+`Protocol` is intentionally not a trigger variant.
+
+### WallClock
+
+Required payload:
+
+```text
+type = WallClock
+timingOwner = scheduler
+localTime = Hm
+timeZone = validated IANA zone
+recurrence = {
+  startDate: Ymd
+  frequency: daily | weekly | monthly | yearly
+  interval: positive integer
+  byWeekday: 0..6[]
+  count: positive integer | null
+  until: Instant | null
+}
+```
+
+Occurrence math must call Wave 1 `RecurrenceEnginePort`. Do not duplicate RRULE/date math in Routine or Scheduler.
+
+### Elapsed / ActiveUsage
+
+These are local deterministic runtime truth:
+
+```text
+Elapsed.durationMs + anchor
+ActiveUsage.requiredActiveMs + anchor + naturalBreakCredit
+```
+
+They must **not** produce durable `ScheduleTask`/`ScheduledIntent` projection. W4 owns the desktop/local runtime implementation.
+
+### Legacy migration
+
+```text
+FixedTime -> WallClock
+legacy timezone null -> explicit UTC (the existing legacy contract)
+
+Interval -> Elapsed by default
+Interval -> ActiveUsage only with explicit migration evidence
+legacy Interval.startTime -> runtime anchor state, not long-lived trigger config
+```
+
+Do not infer ActiveUsage from a numeric interval alone.
+
+### TemporaryOverride / snooze
+
+The W2 domain contract is real state, not response analytics:
+
+```text
+snoozeUntil
+suppressUntil
+overrideIntervalMs
+expiresAt
+reason
+source = user | ai | runtime
+```
+
+It does not rewrite `RoutineDefinition.trigger`. The lane supplies a validated persistence codec so W4 can crash-recover this state. Do **not** add the override JSON to `routine_definitions`; W4 should persist it in the local runtime-state store/table appropriate to its ownership.
+
+The canonical effective-enabled evaluator consumes only the derived gate `temporaryOverrideAllowsExecution`; the override contract itself remains separate state.
+
+### Trigger ownership matrix
+
+| Trigger | Timing truth owner | Durable Scheduler projection | Runtime implementation now |
+| --- | --- | --- | --- |
+| WallClock | Scheduler + RecurrenceEnginePort projection contract | yes, **Wave 3 only** | domain calculation contract only |
+| Elapsed | local deterministic runtime | no | W4 |
+| ActiveUsage | local deterministic runtime + Activity/Idle sensors | no | W4 |
+
+No W2 code adds a second wall-clock authority or edits the existing Scheduler engine.
 
 ## ROUTINE-2303 — pending feature-lane details
 
