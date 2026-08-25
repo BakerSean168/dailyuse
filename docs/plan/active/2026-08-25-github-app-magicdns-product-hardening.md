@@ -16,7 +16,7 @@ status: active
 
 ## Outcome
 
-在 GCP Dev 的真实 MagicDNS 访问环境中，用同一个 **Memoflow Dev Test GitHub App** 完成两条彼此隔离的能力链：
+在 GCP Dev 的真实 MagicDNS 访问环境中，用同一个 **MemoFlow Dev Test GitHub App** 完成两条彼此隔离的能力链：
 
 1. **身份认证**：GitHub App user authorization / OAuth 仅用于登录身份，scope 保持 `read:user user:email`，不借此获取 repository Contents 权限；
 2. **知识仓库**：GitHub App installation + 短期 installation token 仅访问用户明确安装的 private repository，并为 webhook/read model/RAG 提供最小权限链。
@@ -28,7 +28,7 @@ status: active
 - canonical `main@c175f5bb5`；GCP local Docker Web/API/Migrator OCI revision 与 main 一致。
 - MagicDNS Web：`http://gcp-dev-01.taile92a8e.ts.net:58080`；API：`http://gcp-dev-01.taile92a8e.ts.net:53080`。
 - canonical MagicDNS prod-like E2E：Auth + Phase A–E **15/15**；PR #271 required CI / Web Flow 4 shards / Oracles 全绿。
-- GitHub identity provider 已注册；运行时 `GITHUB_OAUTH_CLIENT_ID` 与 GitHub App `Memoflow Dev Test` Client ID 一致，secret 已配置。
+- GitHub identity provider 已注册；运行时 `GITHUB_OAUTH_CLIENT_ID` 与 GitHub App `MemoFlow Dev Test` Client ID 一致，secret 已配置。
 - Better Auth 当前公开 `AUTH_BASE_URL=http://gcp-dev-01.taile92a8e.ts.net:53080/api/auth`，因此实际发出的 user-authorization callback 为：
   `http://gcp-dev-01.taile92a8e.ts.net:53080/api/auth/callback/github`。
 - GitHub App UI 当前登记的 Redirect URI 为：
