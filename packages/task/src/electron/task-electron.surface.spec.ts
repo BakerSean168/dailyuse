@@ -19,7 +19,8 @@ describe('TaskElectronModule channel surface', () => {
     expect(source).toContain('TaskChannels.TEMPLATE_LIST');
     expect(source).toContain('TaskChannels.INSTANCE_LIST');
     expect(source).toContain('TaskChannels.INSTANCE_UNCOMPLETE');
-    expect(source).toContain('TaskChannels.DEPENDENCY_CREATE');
+    expect(source).not.toContain('TaskChannels.DEPENDENCY_CREATE');
+    expect(TaskChannels).not.toHaveProperty('DEPENDENCY_CREATE');
   });
 
   it('does not expose retired unsupported task:instance:update channel', () => {

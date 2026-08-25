@@ -36,7 +36,6 @@ export interface TaskInstanceState {
   occurrenceKey: string | null;
   timeConfig: TaskTimeConfig;
   importance: ImportanceLevel;
-  priority?: number;
   status: TaskInstanceStatus;
   completionRecord: CompletionRecord | null;
   skipRecord: SkipRecord | null;
@@ -87,9 +86,6 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     return this._props.importance;
   }
 
-  public get priority(): number | undefined {
-    return this._props.priority;
-  }
 
   /**
    * Canonical completion-window end for this occurrence.
@@ -384,7 +380,6 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       instanceDate: this._props.instanceDate,
       timeConfig: this._props.timeConfig.toDTO(),
       importance: this._props.importance,
-      priority: this._props.priority,
       status: this._props.status,
       isOverdue: this.isOverdue(),
       actualStartTime: this._props.actualStartTime,
@@ -405,7 +400,6 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       instanceDate: this._props.instanceDate,
       timeConfig: this._props.timeConfig.toDTO(),
       importance: this._props.importance,
-      priority: this._props.priority,
       status: this._props.status,
       isOverdue: this.isOverdue(),
       actualStartTime: this._props.actualStartTime,

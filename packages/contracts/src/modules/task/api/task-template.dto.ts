@@ -1,12 +1,11 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { IdentityId, TaskFolderId, GoalId, TaskTemplateId } from '../../../primitives';
+import type { IdentityId, GoalId, TaskTemplateId } from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { TaskTemplateClientDTO } from '../aggregates/task-template-client';
 import type { TaskInstanceClientDTO } from '../aggregates/task-instance-client';
 import { TaskType } from '../value-objects/task-type';
 import { TaskPlanCompletionPolicy } from '../value-objects/task-plan-completion-policy';
-import type { TaskGraphDependencyDTO } from './task-dependency.dto';
 import { TaskReminderConfigSchema } from '../value-objects/task-reminder-config';
 import { TaskGoalBindingSchema } from '../value-objects/task-goal-binding';
 import { RecurrenceConfigSchema } from '../value-objects/recurrence-rule';
@@ -38,8 +37,6 @@ export const CreateTaskTemplateSchema = z
     recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
     reminderConfig: TaskReminderConfigSchema.optional().nullable(),
     importance: z.enum(ImportanceLevel),
-    parentTaskId: brandedId<TaskTemplateId>().optional().nullable(),
-    folderId: brandedId<TaskFolderId>().optional().nullable(),
     tags: z.array(z.string()).default([]).optional(),
     color: z.string().optional().nullable(),
     goalBinding: TaskGoalBindingSchema.optional().nullable(),
@@ -68,8 +65,6 @@ export const UpdateTaskTemplateSchema = z
     recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
     reminderConfig: TaskReminderConfigSchema.optional().nullable(),
     importance: z.enum(ImportanceLevel).optional(),
-    parentTaskId: brandedId<TaskTemplateId>().optional().nullable(),
-    folderId: brandedId<TaskFolderId>().optional().nullable(),
     tags: z.array(z.string()).optional(),
     color: z.string().optional().nullable(),
     goalBinding: TaskGoalBindingSchema.optional().nullable(),
@@ -90,7 +85,6 @@ export type AbandonTaskPlanReq = z.infer<typeof AbandonTaskPlanSchema>;
 // Public transport schema - NO identityId (injected from Context)
 export const ListTaskTemplateFiltersSchema = z.object({
   status: z.array(z.string()).optional(),
-  folderId: brandedId<TaskFolderId>().optional(),
   goalId: brandedId<GoalId>().optional(),
   tags: z.array(z.string()).optional(),
 });
@@ -108,7 +102,6 @@ export type TaskTemplateInstancesQuery = z.infer<typeof TaskTemplateInstancesQue
 export interface QueryTaskTemplatesInternal {
   identityId: IdentityId;
   status?: string[];
-  folderId?: TaskFolderId;
   goalId?: GoalId;
   tags?: string[];
 }
@@ -117,15 +110,6 @@ export interface QueryTaskTemplatesRes {
   total: number;
 }
 
-// Residual 797: TaskGraphDependencyDTO dual retired — sole TaskDependencyResponseSchema
-// (semantic type is z.infer alias owned via task-dependency.dto; re-exported for graph consumers).
-export type { TaskGraphDependencyDTO };
-
-export interface QueryTaskTemplateGraphRes {
-  templates: TaskTemplateClientDTO[];
-  dependencies: TaskGraphDependencyDTO[];
-  total: number;
-}
 
 export const GenerateInstancesSchema = z.object({
   fromDate: z.number(),

@@ -96,34 +96,20 @@ describe('task template ownership surface', () => {
     );
   });
 
-  it('list findByFolderId/findByGoalId require identityId (residual 140)', () => {
-    expect(port).toContain(
-      'findByFolderId(identityId: string, folderId: string): Promise<TaskTemplate[]>;',
-    );
-    expect(port).toContain(
-      'findByGoalId(identityId: string, goalId: string): Promise<TaskTemplate[]>;',
-    );
-    expect(prisma).toContain('where: { identityId, folderId, deletedAt: null }');
-    expect(prisma).toContain('async findByFolderId(identityId: string, folderId: string)');
+  it('findByGoalId remains identity scoped while folder lookup is retired', () => {
+    expect(port).toContain('findByGoalId(identityId: string, goalId: string): Promise<TaskTemplate[]>;');
     expect(prisma).toContain('async findByGoalId(identityId: string, goalId: string)');
-    expect(listUseCase).toContain('findByFolderId(request.identityId, request.folderId)');
     expect(listUseCase).toContain('findByGoalId(request.identityId, request.goalId)');
-    expect(listUseCase).not.toMatch(/findByFolderId\(request\.folderId\)/);
-    expect(listUseCase).not.toMatch(/findByGoalId\(request\.goalId\)/);
+    expect(port).not.toContain('findByFolderId');
+    expect(prisma).not.toContain('findByFolderId');
   });
 
-  it('findByKeyResultId/findSubtasks require identityId (residual 142)', () => {
-    expect(port).toContain(
-      'findByKeyResultId(identityId: string, keyResultId: string): Promise<TaskTemplate[]>;',
-    );
-    expect(port).toContain(
-      'findSubtasks(identityId: string, parentTaskId: string): Promise<TaskTemplate[]>;',
-    );
+  it('findByKeyResultId remains identity scoped while hierarchy lookup is retired', () => {
+    expect(port).toContain('findByKeyResultId(identityId: string, keyResultId: string): Promise<TaskTemplate[]>;');
     expect(prisma).toContain('async findByKeyResultId(identityId: string, keyResultId: string)');
-    expect(prisma).toContain('async findSubtasks(identityId: string, parentTaskId: string)');
-    expect(prisma).toContain('where: { identityId, parentTaskId, deletedAt: null }');
     expect(prisma).toMatch(/identityId,\s*keyResultId,\s*deletedAt: null/);
-    expect(prisma).not.toContain('JSON.parse(record.goalBinding');
+    expect(port).not.toContain('findSubtasks');
+    expect(prisma).not.toContain('findSubtasks');
   });
 
   it('port deleteBatch requires identityId (residual 156)', () => {

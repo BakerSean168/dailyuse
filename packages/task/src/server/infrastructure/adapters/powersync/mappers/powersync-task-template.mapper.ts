@@ -1,11 +1,10 @@
 import { TaskTemplate } from '../../../../domain/aggregates/task-template';
 import type { TaskTemplateState } from '../../../../domain/aggregates/task-template.state';
-import { TaskFolderId } from '../../../../domain/value-objects/task-folder-id';
 import { TaskTemplateId } from '../../../../domain/value-objects/task-template-id';
 import { TaskTemplateStatus } from '../../../../domain/value-objects/task-template-status';
 import { IdentityId } from '@memoflow/domain-shared';
 import { TaskPlanCompletionPolicy, TaskPlanOutcome, TaskType, type TaskPlanCompletionPolicyValue, type TaskPlanOutcomeValue } from '@memoflow/contracts/task';
-import type { DependencyStatus, RecurrenceFrequency, ReminderTimeUnit, TaskTimeType } from '@memoflow/contracts/task';
+import type { RecurrenceFrequency, ReminderTimeUnit, TaskTimeType } from '@memoflow/contracts/task';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import {
   ChecklistItemDefinition,
@@ -27,11 +26,8 @@ export type PowerSyncTaskTemplateRow = {
   archived_at: string | null;
   abandoned_reason: string | null;
   importance: string;
-  priority: number | null;
   color: string | null;
   tags: string | null;
-  folder_id: string | null;
-  parent_task_id: string | null;
   time_config_type: string | null;
   time_config_start_time: string | null;
   time_config_end_time: string | null;
@@ -57,9 +53,6 @@ export type PowerSyncTaskTemplateRow = {
   goal_record_value: number | null;
   goal_progress_trigger: string | null;
   checklist: string | null;
-  blocking_reason: string | null;
-  dependency_status: string | null;
-  is_blocked: number | boolean | null;
   version: number | null;
   created_at: string;
   updated_at: string;
@@ -137,7 +130,6 @@ export class PowerSyncTaskTemplateMapper {
       closedAt: data.closed_at ? new Date(data.closed_at).getTime() : null,
       archivedAt: data.archived_at ? new Date(data.archived_at).getTime() : null,
       abandonedReason: data.abandoned_reason ?? null,
-      folderId: data.folder_id ? TaskFolderId.of(data.folder_id) : null,
       goalBinding:
         data.goal_id != null ||
         data.key_result_id != null ||
@@ -155,7 +147,6 @@ export class PowerSyncTaskTemplateMapper {
             ChecklistItemDefinition.fromDTO(item),
           )
         : [],
-      parentTaskId: data.parent_task_id ? TaskTemplateId.of(data.parent_task_id) : null,
       lastGeneratedDate: data.last_generated_date ? new Date(data.last_generated_date).getTime() : null,
       generateAheadDays: data.generate_ahead_days ?? null,
       startDate: null,
@@ -164,9 +155,6 @@ export class PowerSyncTaskTemplateMapper {
       estimatedMinutes: null,
       actualMinutes: null,
       note: null,
-      dependencyStatus: (data.dependency_status ?? 'NONE') as DependencyStatus,
-      isBlocked: data.is_blocked === true || data.is_blocked === 1,
-      blockingReason: data.blocking_reason ?? null,
       createdAt: new Date(data.created_at).getTime(),
       updatedAt: new Date(data.updated_at).getTime(),
       deletedAt: data.deleted_at ? new Date(data.deleted_at).getTime() : null,
@@ -194,11 +182,8 @@ export class PowerSyncTaskTemplateMapper {
       archivedAt: dto.archivedAt != null ? new Date(dto.archivedAt).toISOString() : null,
       abandonedReason: dto.abandonedReason,
       importance: dto.importance,
-      priority: dto.priority ?? null,
       color: dto.color ?? null,
       tags: JSON.stringify(dto.tags ?? []),
-      folderId: dto.folderId ?? null,
-      parentTaskId: dto.parentTaskId ?? null,
       timeConfigType: timeConfig?.timeType ?? null,
       timeConfigStartTime:
         timeConfig?.startDate != null ? new Date(timeConfig.startDate).toISOString() : null,
@@ -232,9 +217,6 @@ export class PowerSyncTaskTemplateMapper {
       goalRecordValue: dto.goalBinding?.goalRecordValue ?? null,
       goalProgressTrigger: dto.goalBinding?.progressTrigger ?? null,
       checklist: dto.checklist?.length ? JSON.stringify(dto.checklist) : null,
-      blockingReason: dto.blockingReason ?? null,
-      dependencyStatus: dto.dependencyStatus ?? 'NONE',
-      isBlocked: dto.isBlocked ? 1 : 0,
       version: dto.version,
       createdAt: new Date(dto.createdAt).toISOString(),
       updatedAt: new Date(dto.updatedAt).toISOString(),

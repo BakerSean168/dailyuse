@@ -5,7 +5,6 @@
 import type {
   TaskTemplateId,
   IdentityId,
-  TaskFolderId,
   TransferDate,
 } from '../../../primitives';
 import type { TaskTemplateStatus } from '../value-objects/task-template-status';
@@ -42,7 +41,6 @@ export interface TaskTemplateServerDTO {
   generateAheadDays: number | null;
 
   importance: ImportanceLevel;
-  priority?: number;
   tags: string[];
   color: string | null;
   status: TaskTemplateStatus;
@@ -54,15 +52,10 @@ export interface TaskTemplateServerDTO {
 
   goalBinding: TaskGoalBindingDTO | null;
 
-  parentTaskId: TaskTemplateId | null;
   checklist: ChecklistItemDefinitionDTO[]; // To be defined later
 
-  dependencyStatus?: string; // 'NONE' | 'WAITING' | 'READY' | 'BLOCKED'
-  isBlocked?: boolean;
-  blockingReason: string | null;
 
   // === Other ===
-  folderId: TaskFolderId | null;
   version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;

@@ -8,13 +8,6 @@ import type {
   CompleteTaskInstanceReq,
   MarkTaskInstanceMissedReq,
   SkipTaskInstanceReq,
-  CreateTaskDependencyBody,
-  UpdateTaskDependencyBody,
-  ValidateDependencyBody,
-  ValidateDependencyResponse,
-  TaskDependencyClientDTO,
-  TaskGraphDependencyDTO,
-  DependencyChainClientDTO,
 } from '@memoflow/contracts/task';
 import type { TaskTemplateListParams } from './ports/task-template-api-client.port';
 import type { TaskTemplate } from '../domain-client/aggregates/task-template';
@@ -26,11 +19,9 @@ export interface TaskClientPort {
     Result<{ template: TaskTemplate; instanceCount: number; todayInstanceCreated: boolean }>
   >;
   listTemplates(params?: TaskTemplateListParams): Promise<Result<{ templates: TaskTemplate[]; total: number }>>;
-  getTaskGraph(params?: TaskTemplateListParams): Promise<Result<{ templates: TaskTemplate[]; dependencies: TaskGraphDependencyDTO[]; total: number }>>;
   getTemplate(id: string): Promise<Result<TaskTemplate>>;
   updateTemplate(id: string, request: UpdateTaskTemplateReq): Promise<Result<TaskTemplate>>;
   deleteTemplate(id: string): Promise<Result<void>>;
-  getTemplatesWithPrioritySorting(params?: { limit?: number }): Promise<Result<TaskTemplate[]>>;
   activateTemplate(id: string): Promise<Result<TaskTemplate>>;
   pauseTemplate(id: string): Promise<Result<TaskTemplate>>;
   archiveTemplate(id: string): Promise<Result<TaskTemplate>>;
@@ -54,12 +45,4 @@ export interface TaskClientPort {
     request?: MarkTaskInstanceMissedReq,
   ): Promise<Result<TaskInstance>>;
 
-  // Task Dependency Operations
-  createDependency(taskId: string, request: CreateTaskDependencyBody): Promise<Result<TaskDependencyClientDTO>>;
-  getDependencies(taskId: string): Promise<Result<TaskDependencyClientDTO[]>>;
-  getDependents(taskId: string): Promise<Result<TaskDependencyClientDTO[]>>;
-  getDependencyChain(taskId: string): Promise<Result<DependencyChainClientDTO>>;
-  validateDependency(request: ValidateDependencyBody): Promise<Result<ValidateDependencyResponse>>;
-  updateDependency(id: string, request: UpdateTaskDependencyBody): Promise<Result<TaskDependencyClientDTO>>;
-  deleteDependency(id: string): Promise<Result<void>>;
 }

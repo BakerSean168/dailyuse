@@ -133,8 +133,6 @@ describe('PrismaTaskTemplateMapper', () => {
       expect(domain.importance).toBe('Moderate');
       expect(domain.color).toBeNull();
       expect(domain.tags).toEqual([]);
-      expect(domain.folderId).toBeNull();
-      expect(domain.parentTaskId).toBeNull();
       expect(domain.status).toBe('Active');
       expect(domain.version).toBe(1);
       expect(domain.timeConfig).toBeNull();
@@ -142,7 +140,6 @@ describe('PrismaTaskTemplateMapper', () => {
       expect(domain.reminderConfig).toBeNull();
       expect(domain.goalBinding).toBeNull();
       expect(domain.checklist).toEqual([]);
-      expect(domain.isBlocked).toBe(false);
     });
 
     it('maps full Prisma row with all fields to domain', () => {
@@ -155,8 +152,6 @@ describe('PrismaTaskTemplateMapper', () => {
       expect(domain.importance).toBe('Important');
       expect(domain.color).toBe('#FF5733');
       expect(domain.tags).toEqual(['urgent', 'work']);
-      expect(domain.folderId).toBe(FOLDER_ID_1);
-      expect(domain.parentTaskId).toBe(TEMPLATE_ID_1);
       expect(domain.status).toBe('Active');
       expect(domain.version).toBe(2);
     });
@@ -248,14 +243,6 @@ describe('PrismaTaskTemplateMapper', () => {
       expect(domain.checklist).toEqual([]);
     });
 
-    it('maps blocking status correctly', () => {
-      const row = createFullRow();
-      const domain = PrismaTaskTemplateMapper.toDomain(row);
-
-      expect(domain.isBlocked).toBe(true);
-      expect(domain.blockingReason).toBe('Waiting for approval');
-      expect(domain.dependencyStatus).toBe('Blocked');
-    });
   });
 
   describe('toPersistence', () => {
@@ -291,8 +278,6 @@ describe('PrismaTaskTemplateMapper', () => {
       expect(persistence.name).toBe('Complex Recurring Task');
       expect(persistence.importance).toBe('Important');
       expect(persistence.color).toBe('#FF5733');
-      expect(persistence.folderId).toBe(FOLDER_ID_1);
-      expect(persistence.parentTaskId).toBe(TEMPLATE_ID_1);
       expect(persistence.timeConfigType).toBe('FixedTime');
       expect(persistence.timeConfigTimePoint).toBe('09:00');
       expect(persistence.recurrenceRuleType).toBe('DAILY');
@@ -300,8 +285,6 @@ describe('PrismaTaskTemplateMapper', () => {
       expect(persistence.reminderConfigEnabled).toBe(true);
       expect(persistence.reminderConfigTimeOffsetMinutes).toBe(15);
       expect(persistence.generateAheadDays).toBe(7);
-      expect(persistence.isBlocked).toBe(true);
-      expect(persistence.blockingReason).toBe('Waiting for approval');
     });
 
     it('serializes JSON collections and expands the goal binding', () => {
@@ -346,7 +329,6 @@ describe('PrismaTaskTemplateMapper', () => {
 
       expect(persistence.description).toBeNull();
       expect(persistence.color).toBeNull();
-      expect(persistence.folderId).toBeNull();
       expect(persistence.timeConfigType).toBeNull();
       expect(persistence.goalId).toBeNull();
     });

@@ -9,22 +9,10 @@
  * 时保持 enum 收窄与默认回退。
  */
 import { describe, expect, it } from 'vitest';
-import { toDependencyStatus, toImportanceLevel } from '../task-row.mapper';
-import { DependencyStatus } from '@memoflow/contracts/task';
+import { toImportanceLevel } from '../task-row.mapper';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 
 describe('task row mappers', () => {
-  it('toDependencyStatus preserves known values', () => {
-    expect(toDependencyStatus('Ready')).toBe(DependencyStatus.Ready);
-    expect(toDependencyStatus('Blocked')).toBe(DependencyStatus.Blocked);
-  });
-
-  it('toDependencyStatus falls back to the legal None value for absent values', () => {
-    expect(toDependencyStatus(null)).toBe(DependencyStatus.None);
-    expect(toDependencyStatus(undefined)).toBe(DependencyStatus.None);
-    expect(toDependencyStatus('unknown-value')).toBe(DependencyStatus.None);
-    expect(toDependencyStatus('NONE')).toBe(DependencyStatus.None);
-  });
 
   it('toImportanceLevel preserves known values', () => {
     expect(toImportanceLevel('Important')).toBe(ImportanceLevel.Important);

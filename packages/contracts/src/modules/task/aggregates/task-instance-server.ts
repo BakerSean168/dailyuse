@@ -31,7 +31,6 @@ export interface TaskInstanceServerDTO {
   identityId: IdentityId;
 
   importance: ImportanceLevel;
-  priority?: number;
 
   status: TaskInstanceStatus;
   /** Derived read-model flag; never persisted. */

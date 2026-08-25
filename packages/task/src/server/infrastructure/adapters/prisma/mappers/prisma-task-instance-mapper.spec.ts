@@ -71,7 +71,6 @@ describe('PrismaTaskInstanceMapper', () => {
       expect(domain.identityId).toBe(IDENTITY_ID_1);
       expect(domain.instanceDate).toBe(row.instanceDate.getTime());
       expect(domain.importance).toBe('Moderate');
-      expect(domain.priority).toBeUndefined();
       expect(domain.status).toBe('Pending');
       expect(domain.actualStartTime).toBeNull();
       expect(domain.actualEndTime).toBeNull();
@@ -90,7 +89,6 @@ describe('PrismaTaskInstanceMapper', () => {
       expect(domain.identityId).toBe(IDENTITY_ID_2);
       expect(domain.instanceDate).toBe(row.instanceDate.getTime());
       expect(domain.importance).toBe('Important');
-      expect(domain.priority).toBe(1);
       expect(domain.status).toBe('Completed');
       expect(domain.actualStartTime).toBe(row.actualStartTime!.getTime());
       expect(domain.actualEndTime).toBe(row.actualEndTime!.getTime());
@@ -172,7 +170,6 @@ describe('PrismaTaskInstanceMapper', () => {
       expect(persistence.identityId).toBe(IDENTITY_ID_3);
       expect(persistence.importance).toBe('Minor');
       expect(persistence.status).toBe('Pending');
-      expect(persistence.priority).toBeNull();
       expect(persistence.actualStartTime).toBeNull();
       expect(persistence.actualEndTime).toBeNull();
       expect(persistence.comment).toBeNull();
@@ -186,7 +183,6 @@ describe('PrismaTaskInstanceMapper', () => {
 
       expect(persistence.templateId).toBe(TEMPLATE_ID_2);
       expect(persistence.importance).toBe('Important');
-      expect(persistence.priority).toBe(1);
       expect(persistence.status).toBe('Completed');
       expect(persistence.comment).toBe('Task completed on time');
       expect(persistence.version).toBe(3);

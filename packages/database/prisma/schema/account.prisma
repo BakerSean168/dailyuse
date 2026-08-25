@@ -58,7 +58,6 @@ model Account {
   walletAccounts                  WalletAccount[]
   walletTransactions              WalletTransaction[] @relation("AccountWalletTransactions")
   activityLedger                  ActivityLedger[]
-  taskFolders                     TaskFolder[]
   taskTemplates                   TaskTemplate[]
   taskInstances                   TaskInstance[]
   taskStatistics                  TaskStatistic?
@@ -72,7 +71,6 @@ model Account {
   dashboardConfigs                DashboardConfig?
 
   // PowerSync: denormalized identity relations
-  taskDependencies               TaskDependency[]                @relation("AccountTaskDependencies")
   taskTemplateHistory            TaskTemplateHistory[]           @relation("AccountTaskTemplateHistory")
   scheduleExecutions             ScheduleExecution[]             @relation("AccountScheduleExecutions")
   reminderHistory                ReminderHistory[]               @relation("AccountReminderHistory")

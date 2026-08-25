@@ -16,7 +16,6 @@ import type {
   GenerateInstancesReq,
   BindToGoalReq,
   AbandonTaskPlanReq,
-  QueryTaskTemplateGraphRes,
   TaskTemplateInstancesQuery,
 } from '@memoflow/contracts/task';
 
@@ -30,7 +29,6 @@ export interface ITaskTemplateApiClient {
   getTaskTemplates(
     params?: TaskTemplateListParams,
   ): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>>;
-  getTaskGraph(params?: TaskTemplateListParams): Promise<Result<QueryTaskTemplateGraphRes>>;
   getTaskTemplateById(
     id: string,
     includeChildren?: boolean,
@@ -40,9 +38,6 @@ export interface ITaskTemplateApiClient {
     request: UpdateTaskTemplateReq,
   ): Promise<Result<TaskTemplateClientDTO>>;
   deleteTaskTemplate(id: string): Promise<Result<void>>;
-  getTasksWithPrioritySorting(params?: {
-    limit?: number;
-  }): Promise<Result<TaskTemplateClientDTO[]>>;
   activateTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>>;
   pauseTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>>;
   archiveTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>>;

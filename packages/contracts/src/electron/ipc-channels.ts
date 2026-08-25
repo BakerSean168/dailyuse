@@ -1,7 +1,6 @@
 export const TaskChannels = {
   TEMPLATE_LIST: 'task:template:list',
   TEMPLATE_GET: 'task:template:get',
-  TEMPLATE_GRAPH: 'task:template:graph',
   TEMPLATE_CREATE: 'task:template:create',
   TEMPLATE_UPDATE: 'task:template:update',
   TEMPLATE_DELETE: 'task:template:delete',
@@ -11,7 +10,6 @@ export const TaskChannels = {
   TEMPLATE_PAUSE: 'task:template:pause',
   TEMPLATE_GENERATE_INSTANCES: 'task:template:generate-instances',
   TEMPLATE_GET_INSTANCES: 'task:template:get-instances',
-  TEMPLATE_GET_BY_PRIORITY: 'task:template:get-by-priority',
   TEMPLATE_BIND_GOAL: 'task:template:bind-goal',
   TEMPLATE_UNBIND_GOAL: 'task:template:unbind-goal',
   INSTANCE_LIST: 'task:instance:list',
@@ -23,13 +21,6 @@ export const TaskChannels = {
   INSTANCE_UNCOMPLETE: 'task:instance:uncomplete',
   INSTANCE_SKIP: 'task:instance:skip',
   INSTANCE_MARK_MISSED: 'task:instance:mark-missed',
-  DEPENDENCY_CREATE: 'task:dependency:create',
-  DEPENDENCY_LIST: 'task:dependency:list',
-  DEPENDENCY_DEPENDENTS: 'task:dependency:dependents',
-  DEPENDENCY_CHAIN: 'task:dependency:chain',
-  DEPENDENCY_VALIDATE: 'task:dependency:validate',
-  DEPENDENCY_DELETE: 'task:dependency:delete',
-  DEPENDENCY_UPDATE: 'task:dependency:update',
 } as const;
 
 export const GoalChannels = {

@@ -7,6 +7,7 @@
 import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
 import type { TaskFilters } from '../../../domain/repositories/i-task-template-repository';
 import type { TaskTemplateClientDTO } from '@memoflow/contracts/task';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { TaskTemplateStatus } from '@memoflow/contracts/task';
 import type { Result } from '@memoflow/contracts/result';
 import { ok } from '@memoflow/contracts/result';
@@ -16,7 +17,6 @@ interface TaskDashboardResponse {
   overdueTasks: TaskTemplateClientDTO[];
   upcomingTasks: TaskTemplateClientDTO[];
   highPriorityTasks: TaskTemplateClientDTO[];
-  blockedTasks: TaskTemplateClientDTO[];
   summary: {
     totalTasks: number;
     completedToday: number;
@@ -38,7 +38,6 @@ export class GetTaskDashboardUseCase {
     const [
       today,
       overdue,
-      blocked,
       upcoming,
       highPriority,
       _recentCompleted,
@@ -47,7 +46,6 @@ export class GetTaskDashboardUseCase {
     ] = await Promise.all([
       this.getTodayTasks(identityId),
       this.getOverdueTasks(identityId),
-      this.getBlockedTasks(identityId),
       this.getUpcomingTasks(identityId, 7),
       this.getHighPriorityTasks(identityId, 5),
       this.getRecentCompletedTasks(identityId, 10),
@@ -65,7 +63,6 @@ export class GetTaskDashboardUseCase {
       overdueTasks: overdue,
       upcomingTasks: upcoming,
       highPriorityTasks: highPriority,
-      blockedTasks: blocked,
       summary: {
         totalTasks: totalActive + totalCompleted,
         completedToday: totalCompleted,
@@ -86,10 +83,6 @@ export class GetTaskDashboardUseCase {
     return tasks.map((t) => t.toClientDTO());
   }
 
-  private async getBlockedTasks(identityId: string): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findBlockedTasks(identityId);
-    return tasks.map((t) => t.toClientDTO());
-  }
 
   private async getUpcomingTasks(identityId: string, daysAhead: number): Promise<TaskTemplateClientDTO[]> {
     const tasks = await this.templateRepository.findUpcomingTasks(identityId, daysAhead);
@@ -97,8 +90,18 @@ export class GetTaskDashboardUseCase {
   }
 
   private async getHighPriorityTasks(identityId: string, limit: number): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findSortedByPriority(identityId, limit);
-    return tasks.map((t) => t.toClientDTO());
+    const rank: Record<string, number> = {
+      [ImportanceLevel.Vital]: 0,
+      [ImportanceLevel.Important]: 1,
+      [ImportanceLevel.Moderate]: 2,
+      [ImportanceLevel.Minor]: 3,
+      [ImportanceLevel.Trivial]: 4,
+    };
+    const tasks = await this.templateRepository.findActiveTemplates(identityId);
+    return tasks
+      .sort((left, right) => rank[left.importance] - rank[right.importance])
+      .slice(0, limit)
+      .map((task) => task.toClientDTO());
   }
 
   private async getRecentCompletedTasks(identityId: string, limit: number): Promise<TaskTemplateClientDTO[]> {

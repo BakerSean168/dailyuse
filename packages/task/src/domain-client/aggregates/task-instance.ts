@@ -29,7 +29,6 @@ export interface TaskInstanceState {
   instanceDate: Instant;
   timeConfig: TaskTimeConfig;
   importance: ImportanceLevel | undefined;
-  priority: number | undefined;
   status: TaskInstanceStatus;
   isOverdue: boolean;
   actualStartTime: Instant | null;
@@ -73,9 +72,6 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     return this._props.importance;
   }
 
-  get priority(): number | undefined {
-    return this._props.priority;
-  }
 
   get status(): TaskInstanceStatus {
     return this._props.status;
@@ -148,7 +144,6 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       instanceDate: this._props.instanceDate,
       timeConfig: this.serializeTimeConfig(this._props.timeConfig),
       importance: this._props.importance,
-      priority: this._props.priority,
       status: this._props.status,
       isOverdue: this._props.isOverdue,
       actualStartTime: this._props.actualStartTime ?? null,

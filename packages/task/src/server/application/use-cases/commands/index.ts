@@ -4,9 +4,7 @@ export * from './bind-task-to-goal.use-case';
 export * from './mark-task-instance-missed.use-case';
 export * from './complete-task-instance.use-case';
 export * from './uncomplete-task-instance.use-case';
-export * from './create-task-dependency.use-case';
 export * from './create-task-template.use-case';
-export * from './delete-task-dependency.use-case';
 export * from './delete-task-instance.use-case';
 export * from './delete-task-template.use-case';
 export * from './generate-task-instances.use-case';
@@ -14,7 +12,6 @@ export * from './pause-task-template.use-case';
 export * from './skip-task-instance.use-case';
 export * from './start-task-instance.use-case';
 export * from './unbind-task-from-goal.use-case';
-export * from './update-task-dependency.use-case';
 export * from './update-task-template.use-case';
 
 export * from './abandon-task-plan.use-case';

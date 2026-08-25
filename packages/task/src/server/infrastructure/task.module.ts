@@ -19,8 +19,6 @@ import type {
 } from '../domain/repositories/i-task-template-repository';
 import { createTaskInstanceMaintenanceRuntime } from './runtime/task-instance-maintenance-runtime';
 import type { ITaskInstanceRepository } from '../domain/repositories/i-task-instance-repository';
-import type { ITaskDependencyRepository } from '../domain/repositories/i-task-dependency-repository';
-import type { ITaskFolderRepository } from '../domain/repositories/i-task-folder-repository';
 import { CreateTaskTemplateUseCase } from '../application/use-cases/commands/create-task-template.use-case';
 import { GetTaskTemplateUseCase } from '../application/use-cases/queries/get-task-template.use-case';
 import { ListTaskTemplatesUseCase } from '../application/use-cases/queries/list-task-templates.use-case';
@@ -44,14 +42,6 @@ import { GenerateTaskInstancesUseCase } from '../application/use-cases/commands/
 import { BindTaskToGoalUseCase } from '../application/use-cases/commands/bind-task-to-goal.use-case';
 import { UnbindTaskFromGoalUseCase } from '../application/use-cases/commands/unbind-task-from-goal.use-case';
 import { MarkTaskInstanceMissedUseCase } from '../application/use-cases/commands/mark-task-instance-missed.use-case';
-import { CreateTaskDependencyUseCase } from '../application/use-cases/commands/create-task-dependency.use-case';
-import { DeleteTaskDependencyUseCase } from '../application/use-cases/commands/delete-task-dependency.use-case';
-import { UpdateTaskDependencyUseCase } from '../application/use-cases/commands/update-task-dependency.use-case';
-import { ListTaskTemplatesByPriorityUseCase } from '../application/use-cases/queries/list-task-templates-by-priority.use-case';
-import { ListTaskDependenciesUseCase } from '../application/use-cases/queries/list-task-dependencies.use-case';
-import { GetDependencyChainUseCase } from '../application/use-cases/queries/get-dependency-chain.use-case';
-import { ValidateTaskDependencyUseCase } from '../application/use-cases/queries/validate-task-dependency.use-case';
-import { GetTaskTemplateGraphUseCase } from '../application/use-cases/queries/get-task-template-graph.use-case';
 import type { TaskWriteTransactionRunner } from '../application/use-cases/commands/task-write-support';
 import type { TaskApplicationPort } from '../application';
 import { createLogger } from '@memoflow/utils/logger';
@@ -91,8 +81,6 @@ export type TaskRuntimeContributionsInput =
 export interface TaskModuleDependencies {
   readonly taskTemplateRepository: ITaskTemplateRepository;
   readonly taskInstanceRepository: ITaskInstanceRepository;
-  readonly taskDependencyRepository: ITaskDependencyRepository;
-  readonly taskFolderRepository?: ITaskFolderRepository;
   readonly taskWriteTransactionRunner: TaskWriteTransactionRunner;
   readonly runtimeContributions?: TaskRuntimeContributionsInput;
 }
@@ -125,8 +113,6 @@ export interface TaskModuleUseCases {
   // Template queries
   readonly getTaskTemplate: GetTaskTemplateUseCase;
   readonly listTaskTemplates: ListTaskTemplatesUseCase;
-  readonly getTaskTemplateGraph: GetTaskTemplateGraphUseCase;
-  readonly listTaskTemplatesByPriority: ListTaskTemplatesByPriorityUseCase;
 
   // Instance commands
   readonly completeTaskInstance: CompleteTaskInstanceUseCase;
@@ -143,15 +129,7 @@ export interface TaskModuleUseCases {
   readonly listTaskInstancesByStatus: ListTaskInstancesByStatusUseCase;
   readonly getTaskInstancesByDateRange: GetTaskInstancesByDateRangeUseCase;
 
-  // Dependency commands
-  readonly createTaskDependency: CreateTaskDependencyUseCase;
-  readonly deleteTaskDependency: DeleteTaskDependencyUseCase;
-  readonly updateTaskDependency: UpdateTaskDependencyUseCase;
 
-  // Dependency queries
-  readonly listTaskDependencies: ListTaskDependenciesUseCase;
-  readonly getDependencyChain: GetDependencyChainUseCase;
-  readonly validateTaskDependency: ValidateTaskDependencyUseCase;
 }
 
 // ---------------------------------------------------------------------------
@@ -170,8 +148,6 @@ export interface TaskModuleUseCases {
 export interface TaskModuleInstance {
   readonly taskTemplateRepository: ITaskTemplateRepository;
   readonly taskInstanceRepository: ITaskInstanceRepository;
-  readonly taskDependencyRepository: ITaskDependencyRepository;
-  readonly taskFolderRepository?: ITaskFolderRepository;
   readonly useCases: TaskModuleUseCases;
   readonly api: TaskApplicationPort;
   start(): void;
@@ -211,7 +187,6 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
   const {
     taskTemplateRepository,
     taskInstanceRepository,
-    taskDependencyRepository,
     taskWriteTransactionRunner,
   } = dependencies;
   const listTaskTemplates = new ListTaskTemplatesUseCase(taskTemplateRepository, taskInstanceRepository);
@@ -256,8 +231,6 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
     // Template queries
     getTaskTemplate: new GetTaskTemplateUseCase(taskTemplateRepository, taskInstanceRepository),
     listTaskTemplates,
-    getTaskTemplateGraph: new GetTaskTemplateGraphUseCase(listTaskTemplates, taskDependencyRepository),
-    listTaskTemplatesByPriority: new ListTaskTemplatesByPriorityUseCase(taskTemplateRepository),
 
     // Instance commands
     completeTaskInstance: new CompleteTaskInstanceUseCase(
@@ -284,16 +257,8 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
     listTaskInstancesByStatus: new ListTaskInstancesByStatusUseCase(taskInstanceRepository),
     getTaskInstancesByDateRange: new GetTaskInstancesByDateRangeUseCase(taskInstanceRepository),
 
-    // Dependency commands
-    createTaskDependency: new CreateTaskDependencyUseCase(taskDependencyRepository),
-    deleteTaskDependency: new DeleteTaskDependencyUseCase(taskDependencyRepository),
-    updateTaskDependency: new UpdateTaskDependencyUseCase(taskDependencyRepository),
 
-    // Dependency queries
-    listTaskDependencies: new ListTaskDependenciesUseCase(taskDependencyRepository),
-    getDependencyChain: new GetDependencyChainUseCase(taskDependencyRepository),
-    validateTaskDependency: new ValidateTaskDependencyUseCase(taskDependencyRepository),
-  };
+    };
 }
 
 /**
@@ -316,8 +281,6 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
   const {
     taskTemplateRepository,
     taskInstanceRepository,
-    taskDependencyRepository,
-    taskFolderRepository,
   } = dependencies;
 
   const runtimeContributions = [
@@ -353,9 +316,6 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
     getTaskTemplate: (id, identityId, includeChildren) =>
       useCases.getTaskTemplate.execute(id, identityId, includeChildren),
     listTaskTemplates: (query) => useCases.listTaskTemplates.execute(query),
-    getTaskTemplateGraph: (query) => useCases.getTaskTemplateGraph.execute(query),
-    listTaskTemplatesByPriority: (identityId, limit) =>
-      useCases.listTaskTemplatesByPriority.execute(identityId, limit),
     completeTaskInstance: (id, identityId, input) =>
       useCases.completeTaskInstance.execute(id, identityId, input),
     uncompleteTaskInstance: (id, identityId) =>
@@ -375,26 +335,11 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
       useCases.listTaskInstancesByStatus.execute(identityId, status),
     getTaskInstancesByDateRange: (identityId, startDate, endDate) =>
       useCases.getTaskInstancesByDateRange.execute(identityId, startDate, endDate),
-    createTaskDependency: (input) => useCases.createTaskDependency.execute(input),
-    deleteTaskDependency: (id, identityId) =>
-      useCases.deleteTaskDependency.execute(id, identityId),
-    updateTaskDependency: (id, identityId, input) =>
-      useCases.updateTaskDependency.execute(id, identityId, input),
-    listTaskDependencies: (taskId, identityId) =>
-      useCases.listTaskDependencies.executeDependencies(taskId, identityId),
-    listTaskDependents: (taskId, identityId) =>
-      useCases.listTaskDependencies.executeDependents(taskId, identityId),
-    getDependencyChain: (taskId, identityId) =>
-      useCases.getDependencyChain.execute(taskId, identityId),
-    validateTaskDependency: (predecessorTaskId, successorTaskId, identityId) =>
-      useCases.validateTaskDependency.execute(predecessorTaskId, successorTaskId, identityId),
   };
 
   return {
     taskTemplateRepository,
     taskInstanceRepository,
-    taskDependencyRepository,
-    taskFolderRepository,
     useCases,
     api,
     async start(): Promise<void> {
@@ -443,6 +388,3 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
     },
   };
 }
-
-
-

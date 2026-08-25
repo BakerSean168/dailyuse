@@ -44,7 +44,6 @@ export class PowerSyncTaskInstanceRepository
              instance_date = ?,
              status = ?,
              importance = ?,
-             priority = ?,
              time_config = ?,
              actual_start_time = ?,
              actual_end_time = ?,
@@ -59,7 +58,6 @@ export class PowerSyncTaskInstanceRepository
           data.instanceDate,
           data.status,
           data.importance,
-          data.priority,
           data.timeConfig,
           data.actualStartTime,
           data.actualEndTime,
@@ -73,9 +71,9 @@ export class PowerSyncTaskInstanceRepository
     } else {
       await this.db.execute(
         `INSERT INTO task_instances (
-          id, template_id, identity_id, instance_date, status, importance, priority, time_config,
+          id, template_id, identity_id, instance_date, status, importance, time_config,
           actual_start_time, actual_end_time, comment, version, created_at, updated_at, deleted_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           data.id,
           data.templateId,
@@ -83,7 +81,6 @@ export class PowerSyncTaskInstanceRepository
           data.instanceDate,
           data.status,
           data.importance,
-          data.priority,
           data.timeConfig,
           data.actualStartTime,
           data.actualEndTime,

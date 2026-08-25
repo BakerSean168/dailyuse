@@ -19,7 +19,7 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { TaskDependencyId, TaskInstanceId, TaskTemplateId } from '../../../primitives';
+import type { TaskInstanceId, TaskTemplateId } from '../../../primitives';
 import {
   GenerateInstancesSchema,
   TaskGoalBindingSchema,
@@ -31,11 +31,6 @@ import {
   MarkTaskInstanceMissedSchema,
   SkipTaskInstanceSchema,
 } from './task-instance.dto';
-import {
-  CreateDependencyBodySchema,
-  UpdateDependencyBodySchema,
-  ValidateDependencyBodySchema,
-} from './task-dependency.dto';
 
 // ============================================================================
 // Shared route params
@@ -49,13 +44,6 @@ export type TaskTemplateIdParams = z.infer<typeof TaskTemplateIdParamsSchema>;
 export const TaskInstanceIdParamsSchema = z.object({ id: brandedId<TaskInstanceId>() });
 export type TaskInstanceIdParams = z.infer<typeof TaskInstanceIdParamsSchema>;
 
-/** `:taskId` path param for a dependency route. 依赖路由的 `:taskId` path 参数。 */
-export const TaskDependencyTaskIdParamsSchema = z.object({ taskId: brandedId<TaskTemplateId>() });
-export type TaskDependencyTaskIdParams = z.infer<typeof TaskDependencyTaskIdParamsSchema>;
-
-/** `:id` path param for a dependency-scoped route. 依赖作用域路由的 `:id` path 参数。 */
-export const TaskDependencyIdParamsSchema = z.object({ id: brandedId<TaskDependencyId>() });
-export type TaskDependencyIdParams = z.infer<typeof TaskDependencyIdParamsSchema>;
 
 // ============================================================================
 // Template mutations
@@ -127,33 +115,3 @@ export const TaskInstanceIdCommandInvocationSchema = z.object({
   params: TaskInstanceIdParamsSchema,
 });
 export type TaskInstanceIdCommandInvocation = z.infer<typeof TaskInstanceIdCommandInvocationSchema>;
-
-// ============================================================================
-// Dependency mutations
-// ============================================================================
-
-/** POST /:taskId/dependencies — create a dependency (successor from path). 创建依赖。 */
-export const CreateTaskDependencyInvocationSchema = z.object({
-  params: TaskDependencyTaskIdParamsSchema,
-  body: CreateDependencyBodySchema,
-});
-export type CreateTaskDependencyInvocation = z.infer<typeof CreateTaskDependencyInvocationSchema>;
-
-/** PUT /dependencies/:id — update a dependency. 更新依赖。 */
-export const UpdateTaskDependencyInvocationSchema = z.object({
-  params: TaskDependencyIdParamsSchema,
-  body: UpdateDependencyBodySchema,
-});
-export type UpdateTaskDependencyInvocation = z.infer<typeof UpdateTaskDependencyInvocationSchema>;
-
-/** DELETE /dependencies/:id — delete a dependency (id-only). 删除依赖。 */
-export const DeleteTaskDependencyInvocationSchema = z.object({
-  params: TaskDependencyIdParamsSchema,
-});
-export type DeleteTaskDependencyInvocation = z.infer<typeof DeleteTaskDependencyInvocationSchema>;
-
-/** POST /dependencies/validate — validate a potential dependency. 验证依赖。 */
-export const ValidateTaskDependencyInvocationSchema = ValidateDependencyBodySchema;
-export type ValidateTaskDependencyInvocation = z.infer<
-  typeof ValidateTaskDependencyInvocationSchema
->;

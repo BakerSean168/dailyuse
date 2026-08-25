@@ -12,7 +12,6 @@ import { anIdentityId } from '@memoflow/test-utils/fixtures';
 import {
   TaskTemplateId,
   TaskInstanceId,
-  TaskFolderId,
   TaskTimeConfig,
   RecurrenceRule,
   TaskReminderConfig,
@@ -39,7 +38,6 @@ export interface OneTimeTaskOverrides {
   dueDate?: number;
   estimatedMinutes?: number;
   note?: string;
-  folderId?: TaskFolderId;
   tags?: string[];
   color?: string;
 }
@@ -54,7 +52,6 @@ export function aOneTimeTask(overrides: OneTimeTaskOverrides = {}): TaskTemplate
     dueDate: overrides.dueDate,
     estimatedMinutes: overrides.estimatedMinutes,
     note: overrides.note,
-    folderId: overrides.folderId,
     tags: overrides.tags,
     color: overrides.color,
   });
@@ -68,7 +65,6 @@ export interface RecurringTaskOverrides {
   timeConfig?: TaskTimeConfig;
   recurrenceRule?: RecurrenceRule;
   reminderConfig?: TaskReminderConfig;
-  folderId?: TaskFolderId;
   tags?: string[];
   color?: string;
   generateAheadDays?: number;
@@ -83,7 +79,6 @@ export function aRecurringTask(overrides: RecurringTaskOverrides = {}): TaskTemp
     timeConfig: overrides.timeConfig ?? anAllDayTimeConfig(),
     recurrenceRule: overrides.recurrenceRule ?? aDailyRecurrenceRule(),
     reminderConfig: overrides.reminderConfig,
-    folderId: overrides.folderId,
     tags: overrides.tags,
     color: overrides.color,
     generateAheadDays: overrides.generateAheadDays,
@@ -109,10 +104,8 @@ export function aTaskTemplateState(overrides: Partial<TaskTemplateState> = {}): 
     closedAt: overrides.closedAt ?? null,
     archivedAt: overrides.archivedAt ?? null,
     abandonedReason: overrides.abandonedReason ?? null,
-    folderId: overrides.folderId ?? null,
     goalBinding: overrides.goalBinding ?? null,
     checklist: overrides.checklist ?? [],
-    parentTaskId: overrides.parentTaskId ?? null,
     timeConfig: overrides.timeConfig ?? null,
     recurrenceRule: overrides.recurrenceRule ?? null,
     reminderConfig: overrides.reminderConfig ?? null,
@@ -124,9 +117,6 @@ export function aTaskTemplateState(overrides: Partial<TaskTemplateState> = {}): 
     estimatedMinutes: overrides.estimatedMinutes ?? null,
     actualMinutes: overrides.actualMinutes ?? null,
     note: overrides.note ?? null,
-    dependencyStatus: overrides.dependencyStatus ?? 'None',
-    isBlocked: overrides.isBlocked ?? false,
-    blockingReason: overrides.blockingReason ?? null,
     createdAt: overrides.createdAt ?? now,
     updatedAt: overrides.updatedAt ?? now,
     deletedAt: overrides.deletedAt ?? null,
@@ -219,9 +209,4 @@ export function aTaskTemplateId(value?: string): TaskTemplateId {
 export function aTaskInstanceId(value?: string): TaskInstanceId {
   if (value) return TaskInstanceId.of(value);
   return TaskInstanceId.generate();
-}
-
-export function aTaskFolderId(value?: string): TaskFolderId {
-  if (value) return TaskFolderId.of(value);
-  return TaskFolderId.generate();
 }

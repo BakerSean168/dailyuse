@@ -24,7 +24,7 @@ import type {
   TaskPlanCompletionPolicyValue,
 } from '@memoflow/contracts/task';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
-import type {TaskFolderId, GoalId, KeyResultId, Instant} from '@memoflow/contracts/primitives';
+import type { GoalId, KeyResultId, Instant } from '@memoflow/contracts/primitives';
 import { AggregateRoot } from '@memoflow/utils/domain';
 import { TaskTemplateId } from '../../server/domain/value-objects/task-template-id';
 import { IdentityId } from '@memoflow/domain-shared';
@@ -38,9 +38,7 @@ export interface TaskTemplateState {
   recurrenceRule: RecurrenceRule | null;
   reminderConfig: TaskReminderConfig | null;
   importance: ImportanceLevel;
-  priority: number | undefined;
   goalBinding: TaskGoalBinding | null;
-  folderId: TaskFolderId | null;
   tags: string[];
   color: string | null;
   status: TaskTemplateStatus;
@@ -55,16 +53,12 @@ export interface TaskTemplateState {
   createdAt: Instant;
   updatedAt: Instant;
   deletedAt: Instant | null;
-  parentTaskId: TaskTemplateId | null;
   startDate: Instant | null;
   dueDate: Instant | null;
   completedAt: Instant | null;
   estimatedMinutes: number | null;
   actualMinutes: number | null;
   comment: string | null;
-  blockingReason: string | null;
-  dependencyStatus?: string;
-  isBlocked?: boolean;
   instanceCount: number;
   completedInstanceCount: number;
   pendingInstanceCount: number;
@@ -117,17 +111,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.importance;
   }
 
-  get priority(): number | undefined {
-    return this._props.priority;
-  }
 
   get goalBinding(): TaskGoalBinding | null {
     return this._props.goalBinding;
   }
 
-  get folderId(): TaskFolderId | null {
-    return this._props.folderId;
-  }
 
   get tags(): string[] {
     return [...this._props.tags];
@@ -174,9 +162,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return v as Instant;
   }
 
-  get parentTaskId(): TaskTemplateId | null {
-    return this._props.parentTaskId;
-  }
 
   get startDate(): Instant | null {
     const v = this._props.startDate;
@@ -208,17 +193,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.comment;
   }
 
-  get dependencyStatus(): string | undefined {
-    return this._props.dependencyStatus;
-  }
-
-  get isBlocked(): boolean | undefined {
-    return this._props.isBlocked;
-  }
-
-  get blockingReason(): string | null {
-    return this._props.blockingReason;
-  }
 
   get instanceCount(): number {
     return this._props.instanceCount;
@@ -296,11 +270,9 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
         : null,
       reminderConfig: this._props.reminderConfig as TaskReminderConfigDTO | null,
       importance: this._props.importance,
-      priority: this._props.priority,
       goalBinding: this._props.goalBinding
         ? this.serializeGoalBinding(this._props.goalBinding)
         : null,
-      folderId: this._props.folderId,
       tags: [...this._props.tags],
       color: this._props.color,
       status: this._props.status,
@@ -315,16 +287,12 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       createdAt: this._props.createdAt,
       updatedAt: this._props.updatedAt,
       deletedAt: this._props.deletedAt ?? null,
-      parentTaskId: this._props.parentTaskId,
       startDate: this._props.startDate ?? null,
       dueDate: this._props.dueDate ?? null,
       completedAt: this._props.completedAt ?? null,
       estimatedMinutes: this._props.estimatedMinutes,
       actualMinutes: this._props.actualMinutes,
       comment: this._props.comment,
-      dependencyStatus: this._props.dependencyStatus,
-      isBlocked: this._props.isBlocked,
-      blockingReason: this._props.blockingReason,
       instanceCount: this._props.instanceCount,
       completedInstanceCount: this._props.completedInstanceCount,
       pendingInstanceCount: this._props.pendingInstanceCount,

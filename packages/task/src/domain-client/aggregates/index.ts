@@ -5,4 +5,3 @@
 
 export { TaskTemplate, type TaskTemplateState } from './task-template.js';
 export { TaskInstance, type TaskInstanceState } from './task-instance.js';
-export { TaskFolder, type TaskFolderState } from './task-folder.js';

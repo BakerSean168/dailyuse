@@ -14,12 +14,11 @@ import {
   TaskPlanCompletionPolicy,
   TaskPlanOutcome,
 } from '@memoflow/contracts/task';
-import { ImportanceLevel, PriorityLevel } from '@memoflow/contracts/shared';
-import { DependencyStatus, TaskType } from '../value-objects';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
+import { TaskType } from '../value-objects';
 import { TaskInstanceStatus, TaskTimeType as TimeType } from '../../domain/value-objects';
 import { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
 import { TaskTemplateId } from '../../domain/value-objects/task-template-id';
-import { TaskFolderId } from '../../domain/value-objects/task-folder-id';
 import { IdentityId } from '@memoflow/domain-shared';
 import type { Instant } from '@memoflow/contracts/primitives';
 import { createTimeFacade } from '@memoflow/time';
@@ -40,7 +39,6 @@ import type { TaskTemplateProps, TaskTemplateState } from './task-template.state
 import * as instanceGen from './instance-generation.policy';
 import * as goalPolicy from './task-template-goal.policy';
 import * as lifecyclePolicy from './task-template-lifecycle.policy';
-import * as oneTimePolicy from './task-template-onetime.policy';
 import * as recurrencePolicy from './task-template-recurrence.policy';
 import { InvalidTaskTemplateStateError, InvalidDateRangeError } from '../value-objects/task-errors';
 
@@ -71,9 +69,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       ...rest,
       description: rest.description ?? null,
       color: rest.color ?? null,
-      folderId: rest.folderId ?? null,
       goalBinding: rest.goalBinding ?? null,
-      parentTaskId: rest.parentTaskId ?? null,
       timeConfig: rest.timeConfig ?? null,
       recurrenceRule: rest.recurrenceRule ?? null,
       reminderConfig: rest.reminderConfig ?? null,
@@ -86,9 +82,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       estimatedMinutes: rest.estimatedMinutes ?? null,
       actualMinutes: rest.actualMinutes ?? null,
       note: rest.note ?? null,
-      dependencyStatus: rest.dependencyStatus ?? DependencyStatus.None,
-      isBlocked: rest.isBlocked ?? false,
-      blockingReason: rest.blockingReason ?? null,
       outcome: rest.outcome ?? TaskPlanOutcome.Open,
       completionPolicy: rest.completionPolicy ?? TaskPlanCompletionPolicy.AllowCorrection,
       closedAt: rest.closedAt ?? null,
@@ -187,9 +180,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.goalBinding;
   }
 
-  public get folderId(): TaskFolderId | null {
-    return this._props.folderId;
-  }
 
   public get tags(): string[] {
     return [...this._props.tags];
@@ -237,9 +227,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return [...this._props.checklist];
   }
 
-  public get parentTaskId(): TaskTemplateId | null {
-    return this._props.parentTaskId;
-  }
 
   public get startDate(): Instant | null {
     const v = this._props.startDate;
@@ -271,17 +258,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.note;
   }
 
-  public get dependencyStatus(): DependencyStatus {
-    return this._props.dependencyStatus;
-  }
-
-  public get isBlocked(): boolean {
-    return this._props.isBlocked;
-  }
-
-  public get blockingReason(): string | null {
-    return this._props.blockingReason;
-  }
 
   public get createdAt(): Instant {
     const v = this._props.createdAt;
@@ -712,56 +688,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return goalPolicy.isLinkedToGoal(this._props);
   }
 
-  // ===== Subtask Methods (delegated to task-template-onetime.policy) =====
-
-  public addSubtask(subtaskId: string): void {
-    oneTimePolicy.addSubtask(this, subtaskId);
-  }
-
-  public removeSubtask(subtaskId: string): void {
-    oneTimePolicy.removeSubtask(this, subtaskId);
-  }
-
-  public isSubtask(): boolean {
-    return oneTimePolicy.isSubtask(this._props);
-  }
-
-  public getParentTaskId(): string | null {
-    return this._props.parentTaskId;
-  }
-
-  public updateParentTaskId(parentTaskId: TaskTemplateId | null): void {
-    oneTimePolicy.updateParentTaskId(this, parentTaskId);
-  }
-
-  // ===== Priority Calculation (delegated to task-template-onetime.policy) =====
-
-  public getPriority(): { level: PriorityLevel; score: number } {
-    return oneTimePolicy.getPriority(this._props);
-  }
-
-  public getPriorityScore(): number {
-    return this.getPriority().score;
-  }
-
-  public getPriorityLevel(): PriorityLevel {
-    return this.getPriority().level;
-  }
-
-  // ===== Dependency Management (delegated to task-template-onetime.policy) =====
-
-  public markAsBlocked(reason: string, dependencyTaskId?: string): void {
-    oneTimePolicy.markAsBlocked(this, reason, dependencyTaskId);
-  }
-
-  public markAsReady(): void {
-    oneTimePolicy.markAsReady(this);
-  }
-
-  public updateDependencyStatus(status: DependencyStatus): void {
-    oneTimePolicy.updateDependencyStatus(this, status);
-  }
-
   // ===== History Methods =====
 
   /** Adds a history record. */
@@ -822,10 +748,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       recurrenceRule: this._props.recurrenceRule?.toDTO() ?? null,
       reminderConfig: this._props.reminderConfig?.toDTO() ?? null,
       importance: this._props.importance,
-      priority: this._props.taskType === TaskType.OneTime ? this.getPriority().score : undefined,
       goalBinding: this._props.goalBinding?.toDTO() ?? null,
       checklist: this._props.checklist.map((item) => item.toDTO()),
-      folderId: this._props.folderId,
       tags: [...this._props.tags],
       color: this._props.color,
       status: this._props.status,
@@ -836,10 +760,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       abandonedReason: this._props.abandonedReason,
       lastGeneratedDate: this._props.lastGeneratedDate ?? null,
       generateAheadDays: this._props.generateAheadDays,
-      parentTaskId: this._props.parentTaskId,
-      dependencyStatus: this._props.dependencyStatus,
-      isBlocked: this._props.isBlocked,
-      blockingReason: this._props.blockingReason,
       createdAt: this._props.createdAt,
       updatedAt: this._props.updatedAt,
       deletedAt: this._props.deletedAt ?? null,
@@ -871,7 +791,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       dueInstances.length > 0
         ? Math.round((completedDueInstanceCount / dueInstances.length) * 100)
         : 0;
-    const priority = this._props.taskType === TaskType.OneTime ? this.getPriority() : undefined;
 
     return {
       id: this.id,
@@ -887,9 +806,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       recurrenceRule: this._props.recurrenceRule?.toDTO() ?? null,
       reminderConfig: this._props.reminderConfig?.toDTO() ?? null,
       importance: this._props.importance,
-      priority: priority?.score,
       goalBinding: this._props.goalBinding?.toDTO() ?? null,
-      folderId: this._props.folderId,
       tags: [...this._props.tags],
       color: this._props.color,
       status: this._props.status,
@@ -904,16 +821,12 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       updatedAt: this._props.updatedAt,
       deletedAt: this._props.deletedAt ?? null,
       version: this._props.version,
-      parentTaskId: this._props.parentTaskId,
       startDate: this._props.startDate ?? null,
       dueDate: this._props.dueDate ?? null,
       completedAt: this._props.completedAt ?? null,
       estimatedMinutes: this._props.estimatedMinutes,
       actualMinutes: this._props.actualMinutes,
       comment: this._props.note,
-      dependencyStatus: this._props.dependencyStatus,
-      isBlocked: this._props.isBlocked,
-      blockingReason: this._props.blockingReason,
       history: includeChildren ? this._history.map((entry) => entry.toClientDTO()) : undefined,
       instances: includeChildren
         ? this._instances.map((instance) => instance.toClientDTO())
@@ -945,8 +858,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     dueDate?: Instant;
     estimatedMinutes?: number;
     note?: string;
-    parentTaskId?: TaskTemplateId;
-    folderId?: TaskFolderId;
     tags?: string[];
     color?: string;
   }): TaskTemplate {
@@ -970,10 +881,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       closedAt: null,
       archivedAt: null,
       abandonedReason: null,
-      folderId: params.folderId ?? null,
       goalBinding: null,
       checklist: [],
-      parentTaskId: params.parentTaskId ?? null,
       timeConfig: null,
       recurrenceRule: null,
       reminderConfig: null,
@@ -985,9 +894,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       estimatedMinutes: params.estimatedMinutes ?? null,
       actualMinutes: null,
       note: params.note ?? null,
-      dependencyStatus: DependencyStatus.Waiting,
-      isBlocked: false,
-      blockingReason: null,
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
@@ -1006,7 +912,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     recurrenceRule: RecurrenceRule;
     reminderConfig?: TaskReminderConfig;
     importance?: ImportanceLevel;
-    folderId?: TaskFolderId;
     tags?: string[];
     color?: string;
     generateAheadDays?: number;
@@ -1030,10 +935,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       closedAt: null,
       archivedAt: null,
       abandonedReason: null,
-      folderId: params.folderId ?? null,
       goalBinding: null,
       checklist: [],
-      parentTaskId: null,
       timeConfig: params.timeConfig,
       recurrenceRule: params.recurrenceRule,
       reminderConfig: params.reminderConfig ?? null,
@@ -1045,9 +948,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       estimatedMinutes: null,
       actualMinutes: null,
       note: null,
-      dependencyStatus: DependencyStatus.None,
-      isBlocked: false,
-      blockingReason: null,
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
@@ -1068,7 +968,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     recurrenceRule?: RecurrenceRule;
     reminderConfig?: TaskReminderConfig;
     importance?: ImportanceLevel;
-    folderId?: TaskFolderId;
     tags?: string[];
     color?: string;
     generateAheadDays?: number;
@@ -1078,7 +977,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       goalRecordValue: number;
       progressTrigger: TaskGoalBindingTriggerValue;
     } | null;
-    parentTaskId?: TaskTemplateId;
     completionPolicy?: (typeof TaskPlanCompletionPolicy)[keyof typeof TaskPlanCompletionPolicy];
   }): TaskTemplate {
     TaskTemplate.assertIdentityId(params.identityId, 'create');
@@ -1116,7 +1014,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       closedAt: null,
       archivedAt: null,
       abandonedReason: null,
-      folderId: params.folderId ?? null,
       goalBinding: params.goalBinding
         ? TaskGoalBinding.create({
             ...params.goalBinding,
@@ -1125,7 +1022,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
           })
         : null,
       checklist: [],
-      parentTaskId: params.parentTaskId ?? null,
       timeConfig: params.timeConfig,
       recurrenceRule: params.recurrenceRule ?? null,
       reminderConfig: params.reminderConfig ?? null,
@@ -1137,9 +1033,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       estimatedMinutes: null,
       actualMinutes: null,
       note: null,
-      dependencyStatus: DependencyStatus.None,
-      isBlocked: false,
-      blockingReason: null,
       createdAt: now,
       updatedAt: now,
       deletedAt: null,

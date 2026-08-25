@@ -11,5 +11,3 @@
 
 export type { ITaskInstanceRepository } from './i-task-instance-repository';
 export type { ITaskTemplateRepository, TaskFilters } from './i-task-template-repository';
-export type { ITaskDependencyRepository } from './i-task-dependency-repository';
-export type { ITaskFolderRepository } from './i-task-folder-repository';

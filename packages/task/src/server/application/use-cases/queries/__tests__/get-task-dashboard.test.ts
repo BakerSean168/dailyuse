@@ -17,9 +17,8 @@ describe('GetTaskDashboardUseCase', () => {
     templateRepo = createMockRepo<ITaskTemplateRepository>({
       findTodayTasks: vi.fn().mockResolvedValue([]),
       findOverdueTasks: vi.fn().mockResolvedValue([]),
-      findBlockedTasks: vi.fn().mockResolvedValue([]),
+      findActiveTemplates: vi.fn().mockResolvedValue([]),
       findUpcomingTasks: vi.fn().mockResolvedValue([]),
-      findSortedByPriority: vi.fn().mockResolvedValue([]),
       findOneTimeTasks: vi.fn().mockResolvedValue([]),
       countTasks: vi.fn().mockResolvedValue(0),
     });
@@ -35,7 +34,6 @@ describe('GetTaskDashboardUseCase', () => {
       expect(result.data.overdueTasks).toEqual([]);
       expect(result.data.upcomingTasks).toEqual([]);
       expect(result.data.highPriorityTasks).toEqual([]);
-      expect(result.data.blockedTasks).toEqual([]);
       expect(result.data.summary.totalTasks).toBe(0);
     }
   });
@@ -45,9 +43,8 @@ describe('GetTaskDashboardUseCase', () => {
 
     expect(templateRepo.findTodayTasks).toHaveBeenCalledWith(testIdentityId);
     expect(templateRepo.findOverdueTasks).toHaveBeenCalledWith(testIdentityId);
-    expect(templateRepo.findBlockedTasks).toHaveBeenCalledWith(testIdentityId);
     expect(templateRepo.findUpcomingTasks).toHaveBeenCalledWith(testIdentityId, 7);
-    expect(templateRepo.findSortedByPriority).toHaveBeenCalledWith(testIdentityId, 5);
+    expect(templateRepo.findActiveTemplates).toHaveBeenCalledWith(testIdentityId);
     expect(templateRepo.findOneTimeTasks).toHaveBeenCalledWith(testIdentityId, {
       status: TaskTemplateStatus.Closed,
     });
@@ -120,9 +117,9 @@ describe('GetTaskDashboardUseCase', () => {
 
   it('should return upcoming and high priority tasks', async () => {
     const upcomingTask = aOneTimeTask({ title: 'Upcoming' });
-    const priorityTask = aOneTimeTask({ title: 'Priority' });
+    const priorityTask = aOneTimeTask({ title: 'Priority', importance: 'Vital' });
     vi.mocked(templateRepo.findUpcomingTasks).mockResolvedValue([upcomingTask]);
-    vi.mocked(templateRepo.findSortedByPriority).mockResolvedValue([priorityTask]);
+    vi.mocked(templateRepo.findActiveTemplates).mockResolvedValue([priorityTask]);
 
     const result = await useCase.execute(testIdentityId);
 

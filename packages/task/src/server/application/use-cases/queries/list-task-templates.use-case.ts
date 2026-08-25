@@ -36,8 +36,6 @@ export class ListTaskTemplatesUseCase {
         request.identityId,
         request.status[0] as TaskTemplateStatusType,
       );
-    } else if (request.folderId) {
-      templates = await this.templateRepository.findByFolderId(request.identityId, request.folderId);
     } else if (request.goalId) {
       templates = await this.templateRepository.findByGoalId(request.identityId, request.goalId);
     } else if (request.tags && request.tags.length > 0) {

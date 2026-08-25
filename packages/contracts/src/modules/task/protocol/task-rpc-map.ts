@@ -4,7 +4,6 @@ import type {
   GetTaskTemplateReq,
   GetTaskTemplateRes,
   ListTaskTemplateFilters,
-  QueryTaskTemplateGraphRes,
   QueryTaskTemplatesRes,
   RescheduleTaskReq,
   RescheduleTaskRes,
@@ -13,21 +12,15 @@ import type {
   AbandonTaskPlanInvocation,
   BindTaskToGoalInvocation,
   CompleteTaskInstanceInvocation,
-  CreateTaskDependencyInvocation,
-  DeleteTaskDependencyInvocation,
   GenerateInstancesInvocation,
   MarkTaskInstanceMissedInvocation,
   SkipTaskInstanceInvocation,
   TaskInstanceIdCommandInvocation,
   TaskTemplateIdCommandInvocation,
-  UpdateTaskDependencyInvocation,
   UpdateTaskTemplateInvocation,
-  ValidateTaskDependencyInvocation,
 } from '../api/task-invocation.schemas';
 import type { GetTaskInstancesByRangeReq, GetTaskInstancesByRangeRes } from '../api/task-instance.dto';
-import type { ValidateDependencyResponse } from '../api/task-dependency.dto';
 import type {
-  TaskDependencyResponse,
   TaskInstanceResponse,
   TaskTemplateResponse,
 } from '../api/response-schemas';
@@ -45,7 +38,6 @@ export type TaskRpcMap = {
   'task:template:unbind-goal': [TaskTemplateIdCommandInvocation, TaskTemplateResponse];
   'task:template:get': [GetTaskTemplateReq, GetTaskTemplateRes];
   'task:template:list': [ListTaskTemplateFilters, QueryTaskTemplatesRes];
-  'task:template:graph': [ListTaskTemplateFilters, QueryTaskTemplateGraphRes];
 
   'task:instance:create': [TaskInstanceIdCommandInvocation, TaskInstanceResponse];
   'task:instance:delete': [TaskInstanceIdCommandInvocation, null];
@@ -55,10 +47,6 @@ export type TaskRpcMap = {
   'task:instance:mark-missed': [MarkTaskInstanceMissedInvocation, TaskInstanceResponse];
   'task:instance:get-by-date-range': [GetTaskInstancesByRangeReq, GetTaskInstancesByRangeRes];
 
-  'task:dependency:create': [CreateTaskDependencyInvocation, TaskDependencyResponse];
-  'task:dependency:update': [UpdateTaskDependencyInvocation, TaskDependencyResponse];
-  'task:dependency:delete': [DeleteTaskDependencyInvocation, null];
-  'task:dependency:validate': [ValidateTaskDependencyInvocation, ValidateDependencyResponse];
 
   'task:reschedule-instance': [RescheduleTaskReq, RescheduleTaskRes];
 };

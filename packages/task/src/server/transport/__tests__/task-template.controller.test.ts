@@ -13,7 +13,6 @@ function createMockUseCases(): TaskTemplateUseCases {
     createTemplate: vi.fn(),
     getTemplate: vi.fn(),
     listTemplates: vi.fn(),
-    getTaskGraph: vi.fn(),
     updateTemplate: vi.fn(),
     deleteTemplate: vi.fn(),
     activateTemplate: vi.fn(),
@@ -224,14 +223,13 @@ describe('TaskTemplateController', () => {
       expect(args.status).toEqual(['Active']);
     });
 
-    it('should pass through folderId, goalId, tags filters', async () => {
+    it('should pass through goalId and tags filters', async () => {
       (useCases.listTemplates as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ templates: [], total: 0 }),
       );
 
       await controller.listTemplates(
         {
-          folderId: 'TaskFolderId_550e8400-e29b-41d4-a716-446655440001' as any,
           goalId: 'GoalId_550e8400-e29b-41d4-a716-446655440002' as any,
           tags: ['tag1', 'tag2'],
         },
@@ -239,7 +237,6 @@ describe('TaskTemplateController', () => {
       );
 
       const args = (useCases.listTemplates as ReturnType<typeof vi.fn>).mock.calls[0][0];
-      expect(args.folderId).toBe('TaskFolderId_550e8400-e29b-41d4-a716-446655440001');
       expect(args.goalId).toBe('GoalId_550e8400-e29b-41d4-a716-446655440002');
       expect(args.tags).toEqual(['tag1', 'tag2']);
     });
@@ -259,37 +256,6 @@ describe('TaskTemplateController', () => {
     });
   });
 
-  describe('getTaskGraph', () => {
-    it('should call getTaskGraph use case with identityId and filters', async () => {
-      (useCases.getTaskGraph as ReturnType<typeof vi.fn>).mockResolvedValue(
-        ok({ templates: [], dependencies: [], total: 0 }),
-      );
-
-      await controller.getTaskGraph({ status: ['Active'], tags: ['focus'] }, ctx);
-
-      expect(useCases.getTaskGraph).toHaveBeenCalledOnce();
-      const args = (useCases.getTaskGraph as ReturnType<typeof vi.fn>).mock.calls[0][0];
-      expect(args.identityId).toBe(TEST_IDENTITY_ID);
-      expect(args.status).toEqual(['Active']);
-      expect(args.tags).toEqual(['focus']);
-    });
-
-    it('should return graph payload directly', async () => {
-      const payload: QueryTaskTemplateGraphRes = {
-        templates: [FAKE_TEMPLATE_DTO],
-        dependencies: [],
-        total: 1,
-      };
-      (useCases.getTaskGraph as ReturnType<typeof vi.fn>).mockResolvedValue(ok(payload));
-
-      const result = await controller.getTaskGraph(undefined, ctx);
-
-      expect(isOk(result)).toBe(true);
-      if (isOk(result)) {
-        expect(result.data).toEqual(payload);
-      }
-    });
-  });
 
   // =========================================================================
   // updateTemplate

@@ -5,7 +5,6 @@
 import type {
   TaskTemplateId,
   IdentityId,
-  TaskFolderId,
   TransferDate,
 } from '../../../primitives';
 
@@ -33,9 +32,7 @@ export interface TaskTemplateClientDTO {
   reminderConfig: TaskReminderConfigDTO | null;
   importance: ImportanceLevel;
 
-  priority?: number;
   goalBinding: TaskGoalBindingDTO | null;
-  folderId: TaskFolderId | null;
   tags: string[];
   color: string | null;
   status: TaskTemplateStatus;
@@ -53,16 +50,12 @@ export interface TaskTemplateClientDTO {
   history?: unknown[];
   instances?: unknown[];
 
-  parentTaskId: TaskTemplateId | null;
   startDate: TransferDate | null;
   dueDate: TransferDate | null;
   completedAt: TransferDate | null;
   estimatedMinutes: number | null;
   actualMinutes: number | null;
   comment: string | null;
-  dependencyStatus?: string;
-  isBlocked?: boolean;
-  blockingReason: string | null;
   instanceCount: number;
   completedInstanceCount: number;
   pendingInstanceCount: number;

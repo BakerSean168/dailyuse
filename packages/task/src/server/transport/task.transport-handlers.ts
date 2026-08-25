@@ -11,7 +11,6 @@
  */
 
 import type { TaskApplicationPort } from '../application';
-import type { TaskDependencyUseCases } from './task-dependency.controller';
 import type { TaskInstanceUseCases } from './task-instance.controller';
 import type { TaskTemplateUseCases } from './task-template.controller';
 
@@ -22,7 +21,6 @@ import type { TaskTemplateUseCases } from './task-template.controller';
 export interface TaskTransportHandlers {
   readonly template: TaskTemplateUseCases;
   readonly instance: TaskInstanceUseCases;
-  readonly dependency: TaskDependencyUseCases;
 }
 
 /**
@@ -40,14 +38,12 @@ export function createTaskTransportHandlers(api: TaskApplicationPort): TaskTrans
       createTemplate: api.createTaskTemplate,
       getTemplate: api.getTaskTemplate,
       listTemplates: api.listTaskTemplates,
-      getTaskGraph: api.getTaskTemplateGraph,
       updateTemplate: api.updateTaskTemplate,
       deleteTemplate: api.deleteTaskTemplate,
       activateTemplate: api.activateTaskTemplate,
       pauseTemplate: api.pauseTaskTemplate,
       archiveTemplate: api.archiveTaskTemplate,
       abandonPlan: api.abandonTaskPlan,
-      listByPriority: api.listTaskTemplatesByPriority,
       generateInstances: api.generateTaskInstances,
       bindToGoal: api.bindTaskToGoal,
       unbindFromGoal: api.unbindTaskFromGoal,
@@ -65,15 +61,6 @@ export function createTaskTransportHandlers(api: TaskApplicationPort): TaskTrans
       markMissed: api.markTaskInstanceMissed,
       start: api.startTaskInstance,
       deleteInstance: api.deleteTaskInstance,
-    },
-    dependency: {
-      createDependency: api.createTaskDependency,
-      deleteDependency: api.deleteTaskDependency,
-      updateDependency: api.updateTaskDependency,
-      getDependencies: api.listTaskDependencies,
-      getDependents: api.listTaskDependents,
-      getDependencyChain: api.getDependencyChain,
-      validateDependency: api.validateTaskDependency,
     },
   };
 }

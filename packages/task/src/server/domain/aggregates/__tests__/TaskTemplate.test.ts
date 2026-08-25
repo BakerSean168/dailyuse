@@ -7,8 +7,7 @@
  * - Property updates (title, description, dates, tags, color, etc.)
  * - Instance generation (one-time, recurring daily/weekly)
  * - Goal binding / linking
- * - Dependency management (blocked/ready)
- * - Priority calculation
+ * - Explicit user importance updates
  * - DTO conversion (toServerDTO, toClientDTO)
  * - Domain events
  * - Edge cases & error handling
@@ -19,10 +18,8 @@ import { TaskTemplate } from '../task-template';
 import type { TaskTemplateState } from '../task-template.state';
 import { TaskTemplateStatus } from '../../../domain/value-objects/task-template-status';
 import { TaskTemplateId } from '../../../domain/value-objects/task-template-id';
-import { TaskFolderId } from '../../../domain/value-objects/task-folder-id';
 import { IdentityId } from '@memoflow/domain-shared';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
-import { PriorityLevel } from '@memoflow/contracts/shared';
 import {
   DayOfWeek,
   RecurrenceEndConditionType,
@@ -37,7 +34,6 @@ import {
   TaskReminderConfig,
   TaskGoalBinding,
   ChecklistItemDefinition,
-  DependencyStatus,
 } from '../../value-objects';
 import {
   InvalidTaskTemplateStateError,
@@ -112,10 +108,8 @@ function makeState(overrides: Partial<TaskTemplateState> = {}): TaskTemplateStat
     closedAt: overrides.closedAt ?? null,
     archivedAt: overrides.archivedAt ?? null,
     abandonedReason: overrides.abandonedReason ?? null,
-    folderId: overrides.folderId ?? null,
     goalBinding: overrides.goalBinding ?? null,
     checklist: overrides.checklist ?? [],
-    parentTaskId: overrides.parentTaskId ?? null,
     timeConfig: overrides.timeConfig ?? null,
     recurrenceRule: overrides.recurrenceRule ?? null,
     reminderConfig: overrides.reminderConfig ?? null,
@@ -127,9 +121,6 @@ function makeState(overrides: Partial<TaskTemplateState> = {}): TaskTemplateStat
     estimatedMinutes: overrides.estimatedMinutes ?? null,
     actualMinutes: overrides.actualMinutes ?? null,
     note: overrides.note ?? null,
-    dependencyStatus: overrides.dependencyStatus ?? DependencyStatus.None,
-    isBlocked: overrides.isBlocked ?? false,
-    blockingReason: overrides.blockingReason ?? null,
     createdAt: overrides.createdAt ?? now,
     updatedAt: overrides.updatedAt ?? now,
     deletedAt: overrides.deletedAt ?? null,
@@ -162,7 +153,6 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.reminderConfig).toBeNull();
         expect(template.tags).toEqual([]);
         expect(template.color).toBeNull();
-        expect(template.folderId).toBeNull();
         expect(template.version).toBe(1);
       });
 
@@ -177,7 +167,6 @@ describe('TaskTemplate Aggregate', () => {
 
       it('should accept all optional params', () => {
         const identityId = makeIdentityId();
-        const folderId = TaskFolderId.generate();
         const startDate = new Date('2025-06-15');
         const dueDate = new Date('2025-06-20');
 
@@ -190,7 +179,6 @@ describe('TaskTemplate Aggregate', () => {
           dueDate,
           estimatedMinutes: 60,
           note: 'A note',
-          folderId,
           tags: ['work', 'urgent'],
           color: '#FF0000',
         });
@@ -201,7 +189,6 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.dueDate).toEqual(dueDate);
         expect(template.estimatedMinutes).toBe(60);
         expect(template.note).toBe('A note');
-        expect(template.folderId).toBe(folderId);
         expect(template.tags).toEqual(['work', 'urgent']);
         expect(template.color).toBe('#FF0000');
       });
@@ -282,13 +269,6 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.dueDate).toEqual(sameDate);
       });
 
-      it('should set dependencyStatus to "Pending" for one-time tasks', () => {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-        });
-        expect(template.dependencyStatus).toBe(DependencyStatus.Waiting);
-      });
     });
 
     describe('createRecurringTask()', () => {
@@ -309,7 +289,6 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.timeConfig).toBe(timeConfig);
         expect(template.recurrenceRule).toBe(recurrenceRule);
         expect(template.generateAheadDays).toBe(30);
-        expect(template.dependencyStatus).toBe(DependencyStatus.None);
       });
 
       it('should accept custom generateAheadDays', () => {
@@ -465,13 +444,11 @@ describe('TaskTemplate Aggregate', () => {
         const state = makeState({
           description: undefined as unknown as string | null,
           color: undefined as unknown as string | null,
-          folderId: undefined as unknown as any,
         });
         const template = TaskTemplate.load(state);
 
         expect(template.description).toBeNull();
         expect(template.color).toBeNull();
-        expect(template.folderId).toBeNull();
       });
     });
   });
@@ -1775,228 +1752,6 @@ describe('TaskTemplate Aggregate', () => {
 
   });
 
-  // ==================== Subtasks ====================
-  describe('Subtasks (ONE_TIME)', () => {
-    it('should add subtask to one-time task', () => {
-      const template = TaskTemplate.createOneTimeTask({
-        identityId: makeIdentityId(),
-        title: 'Parent',
-      });
-
-      template.addSubtask('child-123');
-      // Should not throw, history entry added
-      expect(template.history.length).toBeGreaterThan(1);
-    });
-
-    it('should throw when adding subtask to RECURRING task', () => {
-      const template = TaskTemplate.createRecurringTask({
-        identityId: makeIdentityId(),
-        title: 'Recurring',
-        timeConfig: makeAllDayTimeConfig(),
-        recurrenceRule: makeDailyRule(),
-      });
-
-      expect(() => template.addSubtask('child-123')).toThrow(InvalidTaskTemplateStateError);
-    });
-
-    it('should remove subtask from one-time task', () => {
-      const template = TaskTemplate.createOneTimeTask({
-        identityId: makeIdentityId(),
-        title: 'Parent',
-      });
-
-      template.removeSubtask('child-123');
-      expect(template.history.length).toBeGreaterThan(1);
-    });
-
-    it('should throw when removing subtask from RECURRING task', () => {
-      const template = TaskTemplate.createRecurringTask({
-        identityId: makeIdentityId(),
-        title: 'Recurring',
-        timeConfig: makeAllDayTimeConfig(),
-        recurrenceRule: makeDailyRule(),
-      });
-
-      expect(() => template.removeSubtask('child-123')).toThrow(InvalidTaskTemplateStateError);
-    });
-
-    it('should identify as subtask when parentTaskId is set', () => {
-      const parentId = TaskTemplateId.generate();
-      const template = TaskTemplate.load(makeState({ parentTaskId: parentId }));
-
-      expect(template.isSubtask()).toBe(true);
-      expect(template.getParentTaskId()).toBe(parentId);
-    });
-
-    it('should not be a subtask when parentTaskId is null', () => {
-      const template = TaskTemplate.load(makeState({ parentTaskId: null }));
-
-      expect(template.isSubtask()).toBe(false);
-      expect(template.getParentTaskId()).toBeNull();
-    });
-  });
-
-  // ==================== Dependency Management ====================
-  describe('Dependency Management (ONE_TIME)', () => {
-    describe('markAsBlocked()', () => {
-      it('should mark as blocked with reason', () => {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-        });
-
-        template.markAsBlocked('Waiting for prerequisite');
-        expect(template.isBlocked).toBe(true);
-        expect(template.blockingReason).toBe('Waiting for prerequisite');
-        expect(template.dependencyStatus).toBe(DependencyStatus.Blocked);
-      });
-
-      it('should throw for RECURRING tasks', () => {
-        const template = TaskTemplate.createRecurringTask({
-          identityId: makeIdentityId(),
-          title: 'Recurring',
-          timeConfig: makeAllDayTimeConfig(),
-          recurrenceRule: makeDailyRule(),
-        });
-
-        expect(() => template.markAsBlocked('reason')).toThrow(InvalidTaskTemplateStateError);
-      });
-    });
-
-    describe('markAsReady()', () => {
-      it('should mark as ready', () => {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-        });
-
-        template.markAsBlocked('reason');
-        template.markAsReady();
-        expect(template.isBlocked).toBe(false);
-        expect(template.blockingReason).toBeNull();
-        expect(template.dependencyStatus).toBe(DependencyStatus.Ready);
-      });
-
-      it('should throw for RECURRING tasks', () => {
-        const template = TaskTemplate.createRecurringTask({
-          identityId: makeIdentityId(),
-          title: 'Recurring',
-          timeConfig: makeAllDayTimeConfig(),
-          recurrenceRule: makeDailyRule(),
-        });
-
-        expect(() => template.markAsReady()).toThrow(InvalidTaskTemplateStateError);
-      });
-    });
-
-    describe('updateDependencyStatus()', () => {
-      it('should update dependency status', () => {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-        });
-
-        template.updateDependencyStatus(DependencyStatus.Ready);
-        expect(template.dependencyStatus).toBe(DependencyStatus.Ready);
-
-        template.updateDependencyStatus(DependencyStatus.Blocked);
-        expect(template.dependencyStatus).toBe(DependencyStatus.Blocked);
-
-        template.updateDependencyStatus(DependencyStatus.Waiting);
-        expect(template.dependencyStatus).toBe(DependencyStatus.Waiting);
-      });
-
-      it('should throw for RECURRING tasks', () => {
-        const template = TaskTemplate.createRecurringTask({
-          identityId: makeIdentityId(),
-          title: 'Recurring',
-          timeConfig: makeAllDayTimeConfig(),
-          recurrenceRule: makeDailyRule(),
-        });
-
-        expect(() => template.updateDependencyStatus(DependencyStatus.Ready)).toThrow(
-          InvalidTaskTemplateStateError,
-        );
-      });
-    });
-  });
-
-  // ==================== Priority Calculation ====================
-  describe('Priority Calculation (ONE_TIME)', () => {
-    it('should return priority for one-time task', () => {
-      const template = TaskTemplate.createOneTimeTask({
-        identityId: makeIdentityId(),
-        title: 'Task',
-        importance: ImportanceLevel.Vital,
-        dueDate: new Date(Date.now() + 86400000), // tomorrow
-      });
-
-      const priority = template.getPriority();
-      expect(priority).toHaveProperty('level');
-      expect(priority).toHaveProperty('score');
-      expect(priority.score).toBeGreaterThanOrEqual(0);
-      expect(priority.score).toBeLessThanOrEqual(100);
-    });
-
-    it('should return low priority for recurring tasks', () => {
-      const template = TaskTemplate.createRecurringTask({
-        identityId: makeIdentityId(),
-        title: 'Recurring',
-        timeConfig: makeAllDayTimeConfig(),
-        recurrenceRule: makeDailyRule(),
-      });
-
-      const priority = template.getPriority();
-      expect(priority.level).toBe(PriorityLevel.Low);
-      expect(priority.score).toBe(0);
-    });
-
-    it('should return getPriorityScore() matching getPriority().score', () => {
-      vi.useFakeTimers();
-      vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
-
-      try {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-          importance: ImportanceLevel.Important,
-          dueDate: new Date(Date.now() + 2 * 86400000),
-        });
-
-        expect(template.getPriorityScore()).toBe(template.getPriority().score);
-      } finally {
-        vi.useRealTimers();
-      }
-    });
-
-    it('should return getPriorityLevel() matching getPriority().level', () => {
-      const template = TaskTemplate.createOneTimeTask({
-        identityId: makeIdentityId(),
-        title: 'Task',
-        importance: ImportanceLevel.Moderate,
-      });
-
-      expect(template.getPriorityLevel()).toBe(template.getPriority().level);
-    });
-
-    it('should increase priority as due date approaches', () => {
-      const farTemplate = TaskTemplate.createOneTimeTask({
-        identityId: makeIdentityId(),
-        title: 'Far',
-        importance: ImportanceLevel.Moderate,
-        dueDate: new Date(Date.now() + 30 * 86400000),
-      });
-
-      const nearTemplate = TaskTemplate.createOneTimeTask({
-        identityId: makeIdentityId(),
-        title: 'Near',
-        importance: ImportanceLevel.Moderate,
-        dueDate: new Date(Date.now() + 1 * 86400000),
-      });
-
-      expect(nearTemplate.getPriorityScore()).toBeGreaterThan(farTemplate.getPriorityScore());
-    });
-  });
 
   // ==================== History ====================
   describe('History', () => {
@@ -2067,28 +1822,7 @@ describe('TaskTemplate Aggregate', () => {
         expect(dto.instances!.length).toBe(1);
       });
 
-      it('should include priority for ONE_TIME tasks', () => {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-          dueDate: new Date(Date.now() + 86400000),
-        });
 
-        const dto = template.toServerDTO();
-        expect(dto.priority).toBeTypeOf('number');
-      });
-
-      it('should have undefined priority for RECURRING tasks', () => {
-        const template = TaskTemplate.createRecurringTask({
-          identityId: makeIdentityId(),
-          title: 'Recurring',
-          timeConfig: makeAllDayTimeConfig(),
-          recurrenceRule: makeDailyRule(),
-        });
-
-        const dto = template.toServerDTO();
-        expect(dto.priority).toBeUndefined();
-      });
     });
 
     describe('toClientDTO()', () => {

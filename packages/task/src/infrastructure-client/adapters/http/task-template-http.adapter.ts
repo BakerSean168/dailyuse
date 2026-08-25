@@ -17,7 +17,6 @@ import type {
   GenerateInstancesReq,
   BindToGoalReq,
   AbandonTaskPlanReq,
-  QueryTaskTemplateGraphRes,
   TaskTemplateInstancesQuery,
 } from '@memoflow/contracts/task';
 
@@ -43,9 +42,6 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
     return this.httpClient.get(this.baseUrl, { params });
   }
 
-  async getTaskGraph(params?: TaskTemplateListParams): Promise<Result<QueryTaskTemplateGraphRes>> {
-    return this.httpClient.get(`${this.baseUrl}/graph`, { params });
-  }
 
   async getTaskTemplateById(
     id: string,
@@ -69,11 +65,6 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
 
   // ===== Special Query Methods =====
 
-  async getTasksWithPrioritySorting(params?: {
-    limit?: number;
-  }): Promise<Result<TaskTemplateClientDTO[]>> {
-    return this.httpClient.get(`${this.baseUrl}/by-priority`, { params });
-  }
 
   // ===== Task Template State Management =====
 

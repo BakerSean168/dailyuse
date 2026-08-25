@@ -1,14 +1,13 @@
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { Instant } from '@memoflow/contracts/primitives';
 import type { IdentityId } from '@memoflow/domain-shared';
-import type { DependencyStatus, TaskType } from '../value-objects';
+import type { TaskType } from '../value-objects';
 import type {
   TaskPlanCompletionPolicyValue,
   TaskPlanOutcomeValue,
 } from '@memoflow/contracts/task';
 import type { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
 import type { TaskTemplateId } from '../../domain/value-objects/task-template-id';
-import type { TaskFolderId } from '../../domain/value-objects/task-folder-id';
 import type {
   ChecklistItemDefinition,
   RecurrenceRule,
@@ -32,10 +31,8 @@ export interface TaskTemplateState {
   closedAt: Instant | null;
   archivedAt: Instant | null;
   abandonedReason: string | null;
-  folderId: TaskFolderId | null;
   goalBinding: TaskGoalBinding | null;
   checklist: ChecklistItemDefinition[];
-  parentTaskId: TaskTemplateId | null;
   timeConfig: TaskTimeConfig | null;
   recurrenceRule: RecurrenceRule | null;
   reminderConfig: TaskReminderConfig | null;
@@ -47,9 +44,6 @@ export interface TaskTemplateState {
   estimatedMinutes: number | null;
   actualMinutes: number | null;
   note: string | null;
-  dependencyStatus: DependencyStatus;
-  isBlocked: boolean;
-  blockingReason: string | null;
   createdAt: Instant;
   updatedAt: Instant;
   deletedAt: Instant | null;

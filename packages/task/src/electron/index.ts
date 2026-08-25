@@ -80,22 +80,17 @@ import {
   AbandonTaskPlanInvocationSchema,
   BindTaskToGoalInvocationSchema,
   CompleteTaskInstanceInvocationSchema,
-  CreateTaskDependencyInvocationSchema,
   CreateTaskTemplateSchema,
-  DeleteTaskDependencyInvocationSchema,
   GenerateInstancesInvocationSchema,
   MarkTaskInstanceMissedInvocationSchema,
   SkipTaskInstanceInvocationSchema,
   TaskInstanceIdCommandInvocationSchema,
   TaskTemplateIdCommandInvocationSchema,
-  UpdateTaskDependencyInvocationSchema,
   UpdateTaskTemplateInvocationSchema,
-  ValidateTaskDependencyInvocationSchema,
 } from '@memoflow/contracts/task';
 import { createLogger } from '@memoflow/utils/logger';
 import type { TaskModuleInstance } from '../server/infrastructure';
 import { createTaskTransportHandlers } from '../server/transport';
-import { TaskDependencyController } from '../server/transport/task-dependency.controller';
 import { TaskInstanceController } from '../server/transport/task-instance.controller';
 import { TaskTemplateController } from '../server/transport/task-template.controller';
 import { withAuthenticatedValidation, withAuthenticatedValue } from './authenticated-ipc';
@@ -228,7 +223,6 @@ export function createTaskElectronModule(
         const handlers = createTaskTransportHandlers(options.instance.api);
         const templateController = new TaskTemplateController(handlers.template);
         const instanceController = new TaskInstanceController(handlers.instance);
-        const dependencyController = new TaskDependencyController(handlers.dependency);
 
         // --- Template channels ---
         ipcMain.handle(TaskChannels.TEMPLATE_LIST, (_, params) =>
@@ -255,20 +249,6 @@ export function createTaskElectronModule(
           ),
         );
         installed.push(TaskChannels.TEMPLATE_GET);
-        ipcMain.handle(TaskChannels.TEMPLATE_GRAPH, (_, params) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            templateController.getTaskGraph(
-              normalizeTemplateListParams(
-                requestContext,
-                params && typeof params === 'object'
-                  ? (params as Record<string, unknown>)
-                  : undefined,
-              ),
-              requestContext,
-            ),
-          ),
-        );
-        installed.push(TaskChannels.TEMPLATE_GRAPH);
         registerValidatedChannel(
           ctx,
           TaskChannels.TEMPLATE_CREATE,
@@ -360,12 +340,6 @@ export function createTaskElectronModule(
           }),
         );
         installed.push(TaskChannels.TEMPLATE_GET_INSTANCES);
-        ipcMain.handle(TaskChannels.TEMPLATE_GET_BY_PRIORITY, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            templateController.listByPriority(requestContext, payload?.params?.limit),
-          ),
-        );
-        installed.push(TaskChannels.TEMPLATE_GET_BY_PRIORITY);
         registerValidatedChannel(
           ctx,
           TaskChannels.TEMPLATE_BIND_GOAL,
@@ -485,84 +459,6 @@ export function createTaskElectronModule(
         );
         installed.push(TaskChannels.INSTANCE_MARK_MISSED);
 
-        // --- Dependency channels ---
-        registerValidatedChannel(
-          ctx,
-          TaskChannels.DEPENDENCY_CREATE,
-          CreateTaskDependencyInvocationSchema,
-          (data, requestContext) =>
-            dependencyController.createDependency(
-              data.params.taskId,
-              data.body,
-              requestContext.identityId,
-            ),
-          (args) => ({
-            params: { taskId: (args as { taskId?: string }).taskId },
-            body: (args as { request?: unknown }).request,
-          }),
-        );
-        installed.push(TaskChannels.DEPENDENCY_CREATE);
-        ipcMain.handle(TaskChannels.DEPENDENCY_LIST, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            dependencyController.getDependencies(payload?.taskId, requestContext.identityId),
-          ),
-        );
-        installed.push(TaskChannels.DEPENDENCY_LIST);
-        ipcMain.handle(TaskChannels.DEPENDENCY_DEPENDENTS, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            dependencyController.getDependents(payload?.taskId, requestContext.identityId),
-          ),
-        );
-        installed.push(TaskChannels.DEPENDENCY_DEPENDENTS);
-        ipcMain.handle(TaskChannels.DEPENDENCY_CHAIN, (_, payload) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            dependencyController.getDependencyChain(payload?.taskId, requestContext.identityId),
-          ),
-        );
-        installed.push(TaskChannels.DEPENDENCY_CHAIN);
-        registerValidatedChannel(
-          ctx,
-          TaskChannels.DEPENDENCY_VALIDATE,
-          ValidateTaskDependencyInvocationSchema,
-          (data, requestContext) =>
-            dependencyController.validateDependency(data, requestContext.identityId),
-          (args) => ({
-            predecessorTaskId: (args as { predecessorTaskId?: string }).predecessorTaskId,
-            successorTaskId: (args as { successorTaskId?: string }).successorTaskId,
-          }),
-        );
-        installed.push(TaskChannels.DEPENDENCY_VALIDATE);
-        registerValidatedChannel(
-          ctx,
-          TaskChannels.DEPENDENCY_DELETE,
-          DeleteTaskDependencyInvocationSchema,
-          async (data, requestContext) => {
-            const result = await dependencyController.deleteDependency(
-              data.params.id,
-              requestContext.identityId,
-            );
-            if (!result.ok) return result;
-            return ok(null);
-          },
-          (args) => ({ params: { id: (args as { id?: string }).id ?? (args as string) } }),
-        );
-        installed.push(TaskChannels.DEPENDENCY_DELETE);
-        registerValidatedChannel(
-          ctx,
-          TaskChannels.DEPENDENCY_UPDATE,
-          UpdateTaskDependencyInvocationSchema,
-          (data, requestContext) =>
-            dependencyController.updateDependency(
-              data.params.id,
-              data.body,
-              requestContext.identityId,
-            ),
-          (args) => ({
-            params: { id: (args as { id?: string }).id },
-            body: (args as { request?: unknown }).request,
-          }),
-        );
-        installed.push(TaskChannels.DEPENDENCY_UPDATE);
 
         await options.instance.start();
         state = 'registered';

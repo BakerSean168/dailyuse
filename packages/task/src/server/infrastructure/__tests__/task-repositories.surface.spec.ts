@@ -8,8 +8,6 @@ import {
   createTaskPowerSyncRepositories,
   type TaskRepositorySet,
   type TaskWriteTransactionRunner,
-  type ITaskDependencyRepository,
-  type ITaskFolderRepository,
   type ITaskInstanceRepository,
   type ITaskTemplateRepository,
   type TaskModuleInstance,
@@ -38,8 +36,6 @@ describe('task repository factories surface', () => {
     const set = createTaskPrismaRepositories(fakePrisma);
     expect(set).toHaveProperty('taskTemplateRepository');
     expect(set).toHaveProperty('taskInstanceRepository');
-    expect(set).toHaveProperty('taskDependencyRepository');
-    expect(set).toHaveProperty('taskFolderRepository');
     expect(set).toHaveProperty('taskWriteTransactionRunner');
     const typed: TaskRepositorySet = set;
     expect(typeof typed.taskWriteTransactionRunner.run).toBe('function');
@@ -49,8 +45,6 @@ describe('task repository factories surface', () => {
     const set = createTaskPowerSyncRepositories(fakeElectronDb);
     expect(set).toHaveProperty('taskTemplateRepository');
     expect(set).toHaveProperty('taskInstanceRepository');
-    expect(set).toHaveProperty('taskDependencyRepository');
-    expect(set).toHaveProperty('taskFolderRepository');
     expect(set).toHaveProperty('taskWriteTransactionRunner');
     expect(Object.keys(set).sort()).toEqual(
       Object.keys(createTaskPrismaRepositories(fakePrisma)).sort(),
@@ -108,14 +102,10 @@ describe('task repository factories surface', () => {
     // reachable from @memoflow/task; the following value-level assertions pin the
     // field names so a renamed/removed port fails loudly.
     const run = (_t: TaskWriteTransactionRunner) => undefined;
-    const dep = (_t: ITaskDependencyRepository) => undefined;
-    const folder = (_t: ITaskFolderRepository) => undefined;
     const instance = (_t: ITaskInstanceRepository) => undefined;
     const template = (_t: ITaskTemplateRepository) => undefined;
 
     expect(typeof run).toBe('function');
-    expect(typeof dep).toBe('function');
-    expect(typeof folder).toBe('function');
     expect(typeof instance).toBe('function');
     expect(typeof template).toBe('function');
   });

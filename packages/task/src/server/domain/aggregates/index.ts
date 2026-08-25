@@ -12,22 +12,16 @@
  * 【TaskTemplate 聚合根】
  * - 任务模板管理：一次性、循环任务的定义
  * - 任务实例生成：管理任务实例的生成逻辑
- * - 优先级管理：动态计算任务优先级
- * - 有效关联：支持 Goal/KR 、子任务、依赖关系
+ * - 用户优先级：保留显式 importance 输入
+ * - 有效关联：支持 Goal/KR、标签与 checklist
  * 
  * 【TaskInstance 聚合根】
  * - 任务实例管理：具体的任务执行实例
  * - 任务状态跟踪：待办、进行中、已完成、已取消
  * - 执行记录：执行时间、执行时长统计
- * 
- * 【TaskDependency 聚合根】
- * - 依赖关系管理：任务间的编织与顺序
- * - 计算：根据依赖计算任务执行顺序
  */
 
 export { TaskInstance } from './task-instance';
 export type { TaskInstanceState } from './task-instance';
 export { TaskTemplate } from './task-template';
 export type { TaskTemplateProps, TaskTemplateState } from './task-template.state';
-export { TaskDependency } from './task-dependency';
-export type { TaskDependencyState } from './task-dependency';
