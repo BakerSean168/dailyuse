@@ -70,6 +70,16 @@ describe('@memoflow/time facade', () => {
     expect(time.format.hm(combined)).toBe('14:05');
   });
 
+  it('round-trips Instant through the JS Date adapter boundary', () => {
+    const time = createTimeFacade();
+    const instant = asInstant(Date.parse('2026-08-25T12:34:56.789Z'));
+
+    const jsDate = time.codec.toJsDate(instant);
+    expect(jsDate).toBeInstanceOf(Date);
+    expect(jsDate.getTime()).toBe(instant);
+    expect(time.codec.fromJsDate(jsDate)).toBe(instant);
+  });
+
   it('fromJsDate never substitutes now on invalid Date', () => {
     const time = createTimeFacade({ clock: createFixedClock(frozenMs) });
     const invalid = new Date(Number.NaN);

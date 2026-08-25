@@ -9322,6 +9322,38 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/time/src/__tests__/recurrence.conformance.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/time/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/time/src/__tests__/third-party-contract-boundary.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/time/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/time/src/__tests__/time-zone-source.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/time/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/time/src/__tests__/ui-date-adapter.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/time/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/ui-core/src/form/validation.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10202,7 +10234,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 1
+      "fileCount": 5
     },
     {
       "id": "packages/ui-core/vitest.config.ts",
@@ -10869,7 +10901,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 926,
+    "unit": 930,
     "integration": 25,
     "smoke": 3,
     "boundary-ipc": 9,

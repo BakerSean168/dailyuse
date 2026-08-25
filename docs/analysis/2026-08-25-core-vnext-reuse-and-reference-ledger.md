@@ -11,7 +11,7 @@ tags:
   - routine
 description: MemoFlow Core vNext 的 Build / Borrow / Integrate 决策台账，明确哪些能力直接复用成熟库、哪些只借鉴业务语义、哪些继续由 MemoFlow 持有
 created: 2026-08-25T19:18:00+08:00
-updated: 2026-08-25T19:18:00+08:00
+updated: 2026-08-25T20:24:00+08:00
 ---
 
 # Core vNext — OSS / Standard Capability Reuse & Reference Ledger
@@ -51,7 +51,7 @@ Integrate  = 把外部系统作为运行时依赖；当前默认不采用，除�
 | Date picker / calendar primitive         | **Borrow**                          | existing shadcn-vue Calendar + Reka UI                                           | `@memoflow/ui-vue-shadcn`               | 已存在、可访问性 primitives 已接入                                          |
 | Planner calendar rendering               | **Borrow candidate A / preferred**  | FullCalendar Standard Vue 3                                                      | `PlannerCalendarAdapter`                | MIT Standard、成熟 Day/Week/Month/List、drag/resize/revert                  |
 | Planner candidate B                      | **Do not adopt for interactive v1** | Schedule-X v4                                                                    | spike only                              | v4 drag/resize 已进入 Premium，不符合低成本重构目标                         |
-| Task/Routine recurrence math             | **Borrow behind adapter**           | `rrule` first; `ical.js` second candidate                                        | `RecurrenceEnginePort`                  | RFC 5545 是标准能力，不继续扩写按天扫描自研逻辑                             |
+| Task/Routine recurrence math             | **Borrow / selected**                | `rrule@2.8.1`; `ical.js` deferred                                                 | `RecurrenceEnginePort`                  | fixture 已通过；RFC recurrence math 复用，IANA/Instant 仍由 TimeFacade 持有 |
 | ICS import/export                        | **Borrow when needed**              | `ical.js`                                                                        | `ICalendarCodecPort`                    | RFC 5545 parser/serializer 是标准问题；当前不阻塞 vNext                     |
 | Internal cron parsing                    | **Keep**                            | existing `cron-parser`                                                           | Scheduler infra only                    | 适合 internal cron，不允许成为 Task/Routine domain recurrence truth         |
 | Scheduler upper contract                 | **Build**                           | Trigger.dev semantics as reference                                               | `SchedulingPort` / `ScheduledIntent`    | owner/schedulingKey/handlerKey 是 MemoFlow contract                         |
@@ -208,7 +208,43 @@ License: MPL-2.0.
 
 Do not adopt it merely to generate simple Task occurrences if `rrule` passes the MemoFlow fixture with a smaller adapter.
 
-### 4.4 Domain remains MemoFlow-owned
+### 4.4 TIME-1102 spike verdict (2026-08-25)
+
+**Decision: Borrow `rrule@2.8.1` behind MemoFlow-owned `RecurrenceEnginePort`. Defer `ical.js`.**
+
+Conformance evidence executed in the repository covers:
+
+```text
+Daily
+Weekly + BYDAY
+Monthly
+Yearly
+INTERVAL > 1
+COUNT
+UNTIL
+month-end (Jan 31)
+leap day (Feb 29)
+Asia/Tokyo wall clock
+America/New_York spring/fall DST
+next occurrence
+```
+
+The fixture passes through MemoFlow primitives only (`Instant / Ymd / Hm`); no `rrule` type appears in `@memoflow/contracts` or the Task adapter.
+
+Candidate comparison recorded from the npm registry on 2026-08-25:
+
+| Candidate | Version | License | Unpacked size | Registry modified | Verdict |
+| --- | ---: | --- | ---: | --- | --- |
+| `rrule` | 2.8.1 | BSD-3-Clause | 687,245 B | 2023-11-10 | **Selected for recurrence math** |
+| `ical.js` | 2.2.1 | MPL-2.0 | 1,200,090 B | 2025-08-08 | Deferred to ICS/VEVENT interoperability |
+
+Why `ical.js` was not added to the implementation spike: the mandatory MemoFlow recurrence fixture exposed no recurrence case that `rrule` could not model cleanly. Pulling a full ICS parser/serializer into this boundary would add API and package surface without solving an observed gap.
+
+One important implementation finding changed the adapter shape: direct `rrule` `TZID` output was consistent in a bare Node/CJS probe but produced a host-offset-dependent result in the repository's ESM/Vitest execution mode. Therefore MemoFlow **does not delegate product timezone truth to `rrule`**. The selected adapter uses `rrule` in floating UTC-shaped calendar space for recurrence math, then converts wall-clock `Ymd/Hm` to/from `Instant` through the existing ADR-037 timezone boundary. This keeps DST/IANA semantics in one MemoFlow-owned place and makes replacing `rrule` later inexpensive.
+
+Bundle/runtime impact is bounded: `rrule` is an external dependency of `@memoflow/time` rather than a type/API dependency of feature contracts. `@internationalized/date` remains an adapter-test/dev dependency for the internal UI conversion boundary; this worker does not add a new public package export. UI-1101 can promote that adapter through the repository public-surface train when it is actually consumed.
+
+### 4.5 Domain remains MemoFlow-owned
 
 Library computes **dates**, not Task outcome.
 
