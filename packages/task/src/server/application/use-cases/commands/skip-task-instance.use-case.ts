@@ -24,7 +24,7 @@ export class SkipTaskInstanceUseCase {
         if (!instance.canSkip()) return error('VALIDATION_ERROR', 'Cannot skip this task instance');
         instance.skip(request?.reason);
         await repositories.instanceRepository.save(instance);
-        await reevaluateTaskPlanOutcome(repositories, identityId, String(instance.templateId));
+        await reevaluateTaskPlanOutcome(repositories, identityId, String(instance.templateId), instance.id);
         return ok({ instance: instance.toClientDTO() });
       });
     } catch (caughtError) {

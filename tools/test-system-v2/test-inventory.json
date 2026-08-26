@@ -9148,6 +9148,14 @@
       ]
     },
     {
+      "path": "packages/task/src/server/infrastructure/task-plan-settlement.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/task/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/task/src/server/transport/__tests__/task-instance.controller.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10096,7 +10104,7 @@
       "type": "primary",
       "suite": "integration",
       "runner": "vitest",
-      "fileCount": 5
+      "fileCount": 6
     },
     {
       "id": "packages/task/vitest.performance.config.ts",
@@ -10803,7 +10811,7 @@
   "unexpected": [],
   "counts": {
     "unit": 923,
-    "integration": 25,
+    "integration": 26,
     "smoke": 3,
     "boundary-ipc": 9,
     "boundary-main": 5,

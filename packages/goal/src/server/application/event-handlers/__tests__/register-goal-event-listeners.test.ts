@@ -31,7 +31,6 @@ function aCompletedEvent(overrides: Partial<CompletedEvent> = {}): CompletedEven
     completedAt: Date.now(),
     taskTitle: 'Write ADR',
     goalBinding: aGoalBinding(),
-    planSucceeded: false,
     ...overrides,
   };
 }

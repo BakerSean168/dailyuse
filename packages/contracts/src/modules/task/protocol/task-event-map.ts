@@ -12,6 +12,7 @@ import type {
   TaskTemplateRecurrenceChangedEvent,
   TaskUncompletedEvent,
   TaskRescheduledEvent,
+  TaskPlanOutcomeChangedEvent,
 } from '../domain/events';
 
 /**
@@ -33,5 +34,6 @@ export type TaskEventMap = {
   'task:template-schedule-time-changed': TaskTemplateScheduleTimeChangedEvent;
   'task:template-recurrence-changed': TaskTemplateRecurrenceChangedEvent;
   'task:instance-uncompleted': TaskUncompletedEvent;
+  'task:plan-outcome-changed': TaskPlanOutcomeChangedEvent;
   'task:rescheduled': TaskRescheduledEvent;
 };

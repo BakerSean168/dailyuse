@@ -8,6 +8,7 @@ export type { TaskCreatedEvent } from './task-created.event';
 export type { TaskUpdatedEvent } from './task-updated.event';
 export type { TaskDeletedEvent } from './task-deleted.event';
 export type { TaskInstanceCompletedEvent } from './task-instance-completed.event';
+export type { TaskPlanOutcomeChangedEvent } from './task-plan-outcome-changed.event';
 export {
   TaskGoalSettlementSourceType,
   type TaskGoalSettlementSource,
