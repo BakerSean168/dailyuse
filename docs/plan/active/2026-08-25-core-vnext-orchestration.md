@@ -53,7 +53,9 @@ Wave 0 evidence is frozen in [`Core vNext Wave 0 — Baseline / Acceptance / Sha
 | `SCHED-1101~1105` | **DONE** | canonical neutral contracts, first-class scheduling identity, atomic owner reconcile + durable receipt, HandlerRegistry composition hook |
 | `NOTIF-1101/1102` | **DONE** | per-channel policy correctness + production DND/rate-limit path |
 
-**Next executable parallel point after the Wave 1 gate:** `GOAL-2101~2103`, `TASK-2201~2204`, `ROUTINE-2301~2303`, and `NOTIF-2401/2402`. Feature lanes must obey the W2 Contract/Schema Train single-writer rule.
+**Wave 2 execution point (closed 2026-08-26):** `GOAL-2101~2103`, `TASK-2201~2205`, `ROUTINE-2301~2303`, and `NOTIF-2401/2402` are integrated and gate-verified.
+
+**Current next executable parallel point:** `TASK-3101`, `GOAL-3201`, `NOTIF-3301`, and `SETTLE-3501`. These four lanes can start independently from the frozen W2 contracts; handler cutover follows their dependency edges below.
 
 **Wave 1 gate evidence (2026-08-25):**
 
@@ -1066,13 +1068,27 @@ Protocol remains separate.
 
 **Acceptance:** precedence table is deterministic and test-covered.
 
-### Wave 2 gate
+### Wave 2 gate — **CLOSED 2026-08-26**
 
-- domain contracts frozen enough for projector/UI work;
-- no old business field added back to support existing UI;
-- Goal/Task/Routine focused suites green;
-- schema boot and Prisma/PowerSync parity green;
-- recurrence acceptance matrix green.
+- [x] domain contracts frozen enough for projector/UI work;
+- [x] no old business field added back to support existing UI;
+- [x] Goal/Task/Routine focused suites green;
+- [x] schema boot and Prisma/PowerSync parity green;
+- [x] recurrence acceptance matrix green.
+
+| Ticket group | Status | Closure evidence |
+| --- | --- | --- |
+| `GOAL-2101~2103` | **DONE** | Goal = Direction + Measurement; `Active/Completed/Abandoned` + separate archive; KR Measurement V2; Review V2; Goal full suite `79 files / 425 tests`; Prisma integration `21 tests` |
+| `TASK-2201~2205` | **DONE** | occurrence `Pending/InProgress/Completed/Missed/Skipped`; plan lifecycle/outcome; Folder/DAG/critical-path retirement; recurrence adapter; Goal link/contribution V2; Task suite `70 files / 690 tests` |
+| `ROUTINE-2301~2303` | **DONE** | RoutineDefinition/Profile/Membership, trigger ownership, Protocol session state machine; reminder package `60 files / 455 tests`; vNext domain+persistence parity `39 tests`; integration `29 tests` |
+| `NOTIF-2401/2402` | **DONE** | Notification Fact/DeliveryPlan separation and deterministic workflow/global preference hierarchy; notification suite `42 files / 232 tests` |
+| Contract / Schema Train | **DONE** | contracts `63 files / 469 tests`; Prisma generate/schema boot green; database `13 tests`; PowerSync schema `4 tests`; Data Portability `139 tests` |
+| Time / recurrence | **DONE** | time `32 tests`; recurrence conformance matrix `11/11`; Task recurrence consumes `RecurrenceEnginePort` |
+| Presentation / secondary consumers | **DONE** | App Vue `183 files / 706 tests`; React/mobile/web destructive contract cutover; Goal Compare, Goal Folder/Focus, Task Dependency/DAG/check-expired guards removed or inverted; Web `17 files / 71 tests` |
+| Reliability | **DONE** | Task transaction/outbox integration `27 tests`; Goal integration `21 tests`; Routine integration `29 tests`; API Task→Goal host-restart replay `1/1`; Goal Prisma/PowerSync rollback gates green |
+| Repository gate | **DONE** | affected test `35 projects + 6 dependent tasks`; typecheck `36 projects + 29 tasks`; lint `40 projects`; build `34 projects + 1 task`; governance green; test inventory `1065` files; test oracle `success` |
+
+**W2 closure rule:** no compatibility surface may reintroduce Goal Folder/Focus/comparison, Task DAG/dependency/Expired occurrence status, old Goal Review fields, or message-string branching for typed business failures. Physical legacy columns may remain only behind already-approved persistence adapters until their dedicated schema deletion train.
 
 ---
 
