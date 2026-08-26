@@ -189,30 +189,27 @@ export class ReminderGroup extends AggregateRoot<string> {
     }
   }
 
+  /**
+   * @deprecated Legacy name. Routine vNext treats a ReminderGroup as a Profile:
+   * enabling the profile never mutates member Routine state.
+   */
   public enableAllTemplates(): void {
-    if (this._props.controlMode !== ControlMode.Group) {
-      throw new Error('只能在 GROUP 模式下批量启用模板');
-    }
-    this._props.enabled = true;
-    this._props.updatedAt = new Date();
+    this.enable();
   }
 
+  /** @deprecated Legacy name; this only closes the Profile gate. */
   public pauseAllTemplates(): void {
-    if (this._props.controlMode !== ControlMode.Group) {
-      throw new Error('只能在 GROUP 模式下批量暂停模板');
-    }
-    this._props.enabled = false;
-    this._props.updatedAt = new Date();
+    this.pause();
   }
 
+  /** @deprecated Alias for Profile enable; no member takeover occurs. */
   public enableGroupAndAllTemplates(): void {
     this.enable();
-    this.enableAllTemplates();
   }
 
+  /** @deprecated Alias for Profile pause; no member takeover occurs. */
   public pauseGroupAndAllTemplates(): void {
     this.pause();
-    this.pauseAllTemplates();
   }
 
   public updateStats(stats: GroupStats): void {
