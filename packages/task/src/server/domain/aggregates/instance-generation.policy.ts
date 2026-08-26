@@ -239,7 +239,10 @@ export function isActiveOnDate(
   if (!ctx.recurrenceRule) {
     return false;
   }
-  if (ctx.recurrenceRule.endDate && date > ctx.recurrenceRule.endDate) {
+  if (
+    ctx.recurrenceRule.endDate &&
+    startOfLocalDay(date) > startOfLocalDay(ctx.recurrenceRule.endDate)
+  ) {
     return false;
   }
   return true;

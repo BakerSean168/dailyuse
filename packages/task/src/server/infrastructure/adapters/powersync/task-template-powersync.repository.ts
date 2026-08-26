@@ -59,8 +59,6 @@ export class PowerSyncTaskTemplateRepository
       ['recurrence_rule_type', data.recurrenceRuleType],
       ['recurrence_rule_interval', data.recurrenceRuleInterval],
       ['recurrence_rule_days_of_week', data.recurrenceRuleDaysOfWeek],
-      ['recurrence_rule_day_of_month', data.recurrenceRuleDayOfMonth],
-      ['recurrence_rule_month_of_year', data.recurrenceRuleMonthOfYear],
       ['recurrence_rule_end_date', data.recurrenceRuleEndDate],
       ['recurrence_rule_count', data.recurrenceRuleCount],
       ['reminder_config_enabled', data.reminderConfigEnabled],

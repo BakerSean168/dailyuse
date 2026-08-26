@@ -263,8 +263,6 @@ const task_templates = new Table({
   recurrence_rule_type: column.text,
   recurrence_rule_interval: column.integer,
   recurrence_rule_days_of_week: column.text,
-  recurrence_rule_day_of_month: column.integer,
-  recurrence_rule_month_of_year: column.integer,
   recurrence_rule_end_date: column.text,
   recurrence_rule_count: column.integer,
   reminder_config_enabled: column.integer, // boolean
@@ -288,6 +286,7 @@ const task_instances = new Table({
   template_id: column.text, // FK
   identity_id: column.text,
   instance_date: column.text, // DateTime
+  occurrence_key: column.text, // Task vNext deterministic templateId:localDate identity
   status: column.text,
   importance: column.text,
   time_config: column.text, // JSON

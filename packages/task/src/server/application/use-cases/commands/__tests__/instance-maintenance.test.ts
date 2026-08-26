@@ -44,6 +44,7 @@ describe('Instance maintenance use-cases', () => {
 
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
       findByIdentityId: vi.fn().mockResolvedValue([]),
+      findByTemplateId: vi.fn().mockResolvedValue([]),
       saveMany: vi.fn().mockResolvedValue(undefined),
     });
   });

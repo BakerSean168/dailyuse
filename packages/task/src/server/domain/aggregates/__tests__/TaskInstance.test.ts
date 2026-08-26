@@ -630,6 +630,54 @@ describe('TaskInstance Aggregate', () => {
         expect(inst.dueDate).toBe(instanceDate + 86400000 - 1);
       });
 
+      it('uses the local DST day boundary for AllDay dueDate', () => {
+        const originalTz = process.env.TZ;
+        process.env.TZ = 'America/New_York';
+        try {
+          const instanceDate = new Date(2026, 2, 8, 0, 0, 0).getTime();
+          const inst = makeInstance({
+            instanceDate,
+            timeConfig: makeAllDayTimeConfig(new Date(instanceDate)),
+          });
+          expect(inst.dueDate).toBe(new Date(2026, 2, 8, 23, 59, 59, 999).getTime());
+        } finally {
+          if (originalTz === undefined) delete process.env.TZ;
+          else process.env.TZ = originalTz;
+        }
+      });
+
+      it('combines TimePoint with local wall time across spring DST', () => {
+        const originalTz = process.env.TZ;
+        process.env.TZ = 'America/New_York';
+        try {
+          const instanceDate = new Date(2026, 2, 8, 0, 0, 0).getTime();
+          const inst = makeInstance({
+            instanceDate,
+            timeConfig: makeTimePointConfig(9 * 60, new Date(instanceDate)),
+          });
+          expect(new Date(inst.dueDate!).toISOString()).toBe('2026-03-08T13:00:00.000Z');
+        } finally {
+          if (originalTz === undefined) delete process.env.TZ;
+          else process.env.TZ = originalTz;
+        }
+      });
+
+      it('combines TimeRange end with local wall time across spring DST', () => {
+        const originalTz = process.env.TZ;
+        process.env.TZ = 'America/New_York';
+        try {
+          const instanceDate = new Date(2026, 2, 8, 0, 0, 0).getTime();
+          const inst = makeInstance({
+            instanceDate,
+            timeConfig: TaskTimeConfig.createTimeRange(new Date(instanceDate), 9 * 60, 10 * 60 + 30),
+          });
+          expect(new Date(inst.dueDate!).toISOString()).toBe('2026-03-08T14:30:00.000Z');
+        } finally {
+          if (originalTz === undefined) delete process.env.TZ;
+          else process.env.TZ = originalTz;
+        }
+      });
+
       it('should compute dueDate from TimePoint timeConfig', () => {
         const instanceDate = new Date('2025-06-15').getTime();
         const minutesFromMidnight = 540; // 9:00 AM

@@ -109,6 +109,30 @@ describe('TaskInstanceGenerationService', () => {
       expect(forced.length).toBeGreaterThan(0);
     });
 
+    it('advances the generation cursor by a local calendar day across DST', () => {
+      const originalTz = process.env.TZ;
+      process.env.TZ = 'America/New_York';
+      try {
+        const lastGeneratedDate = new Date(2026, 2, 8, 0, 0, 0).getTime();
+        const template = aLoadedTaskTemplate({
+          taskType: TaskType.Recurring,
+          status: TaskTemplateStatus.Active,
+          timeConfig: anAllDayTimeConfig(new Date(lastGeneratedDate)),
+          recurrenceRule: aDailyRecurrenceRule(),
+          lastGeneratedDate,
+        });
+        const spy = vi.spyOn(template, 'generateInstances').mockReturnValue([]);
+        service.generateInstances(template, {
+          targetDate: new Date(2026, 2, 12, 0, 0, 0).getTime(),
+        });
+        const [fromDate] = spy.mock.calls[0];
+        expect(new Date(fromDate).toString()).toContain('Mon Mar 09 2026 00:00:00');
+      } finally {
+        if (originalTz === undefined) delete process.env.TZ;
+          else process.env.TZ = originalTz;
+      }
+    });
+
     it('should delegate to template.generateInstances with correct date range', () => {
       const template = aRecurringTask({ title: 'Spy test' });
       const spy = vi.spyOn(template, 'generateInstances');

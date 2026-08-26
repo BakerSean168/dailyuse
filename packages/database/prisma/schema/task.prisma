@@ -37,8 +37,6 @@ model TaskTemplate {
   recurrenceRuleType        String?   @map("recurrence_rule_type")
   recurrenceRuleInterval    Int?      @map("recurrence_rule_interval")
   recurrenceRuleDaysOfWeek  String?   @map("recurrence_rule_days_of_week")
-  recurrenceRuleDayOfMonth  Int?      @map("recurrence_rule_day_of_month")
-  recurrenceRuleMonthOfYear Int?      @map("recurrence_rule_month_of_year")
   recurrenceRuleEndDate     DateTime? @map("recurrence_rule_end_date")
   recurrenceRuleCount       Int?      @map("recurrence_rule_count")
 

@@ -12,6 +12,9 @@ import { InvalidTaskTemplateStateError } from '../value-objects/task-errors';
 import type { RecurrenceRule } from '../value-objects';
 import type { TaskTemplateId } from '../../domain/value-objects/task-template-id';
 import type { TaskTemplateProps } from './task-template.state';
+import { createTimeFacade } from '@memoflow/time';
+
+const taskTime = createTimeFacade();
 
 /** Context for recurrence operations. */
 export interface RecurrenceContext {
@@ -77,7 +80,7 @@ export function updateRecurrenceEndCondition(
       updatedRule = ctx.props.recurrenceRule.setEndDate(null).setOccurrences(null);
       break;
     case RecurrenceEndConditionType.EndDate: {
-      const endDate = customValue ?? Date.now() + 30 * 86400000;
+      const endDate = customValue ?? taskTime.calendar.addDays(Date.now(), 30);
       updatedRule = ctx.props.recurrenceRule.setEndDate(new Date(endDate));
       break;
     }

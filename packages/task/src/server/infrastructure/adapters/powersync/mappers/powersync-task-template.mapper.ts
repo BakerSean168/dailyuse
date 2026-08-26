@@ -38,8 +38,6 @@ export type PowerSyncTaskTemplateRow = {
   recurrence_rule_type: string | null;
   recurrence_rule_interval: number | null;
   recurrence_rule_days_of_week: string | null;
-  recurrence_rule_day_of_month: number | null;
-  recurrence_rule_month_of_year: number | null;
   recurrence_rule_end_date: string | null;
   recurrence_rule_count: number | null;
   reminder_config_enabled: number | boolean | null;
@@ -200,8 +198,6 @@ export class PowerSyncTaskTemplateMapper {
       recurrenceRuleDaysOfWeek: recurrenceRule?.daysOfWeek
         ? JSON.stringify(recurrenceRule.daysOfWeek)
         : null,
-      recurrenceRuleDayOfMonth: null,
-      recurrenceRuleMonthOfYear: null,
       recurrenceRuleEndDate:
         recurrenceRule?.endDate != null ? new Date(recurrenceRule.endDate).toISOString() : null,
       recurrenceRuleCount: recurrenceRule?.occurrences ?? null,

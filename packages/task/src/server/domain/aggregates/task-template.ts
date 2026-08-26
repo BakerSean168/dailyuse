@@ -521,6 +521,13 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
    * Updates the time configuration.
    */
   public updateTimeConfig(newTimeConfig: TaskTimeConfig | null): void {
+    if (this._props.taskType === TaskType.Recurring && newTimeConfig?.startDate == null) {
+      throw new InvalidTaskTemplateStateError('Recurring Task requires a date', {
+        templateId: this.id,
+        currentStatus: this._props.status,
+        attemptedAction: 'updateTimeConfig',
+      });
+    }
     const oldTimeConfig = this._props.timeConfig?.toDTO() ?? null;
     this._props.timeConfig = newTimeConfig;
     this._props.updatedAt = Date.now();
@@ -918,6 +925,13 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   }): TaskTemplate {
     TaskTemplate.assertIdentityId(params.identityId, 'createRecurringTask');
     const title = TaskTemplate.normalizeTitle(params.title, 'createRecurringTask');
+    if (params.timeConfig.startDate == null) {
+      throw new InvalidTaskTemplateStateError('Recurring Task requires a date', {
+        templateId: '',
+        currentStatus: 'N/A',
+        attemptedAction: 'createRecurringTask',
+      });
+    }
 
     const now = Date.now();
     const template = TaskTemplate.instantiate({
@@ -992,6 +1006,13 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
     if (params.taskType === TaskType.Recurring && !params.recurrenceRule) {
       throw new InvalidTaskTemplateStateError('Recurrence rule is required for Recurring tasks', {
+        templateId: '',
+        currentStatus: 'N/A',
+        attemptedAction: 'create',
+      });
+    }
+    if (params.taskType === TaskType.Recurring && params.timeConfig.startDate == null) {
+      throw new InvalidTaskTemplateStateError('Recurring Task requires a date', {
         templateId: '',
         currentStatus: 'N/A',
         attemptedAction: 'create',

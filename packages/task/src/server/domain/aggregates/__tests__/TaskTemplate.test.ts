@@ -272,6 +272,23 @@ describe('TaskTemplate Aggregate', () => {
     });
 
     describe('createRecurringTask()', () => {
+      it('rejects recurring plans without a date anchor', () => {
+        const unanchored = TaskTimeConfig.create({
+          timeType: 'AllDay',
+          startDate: null,
+          timePoint: null,
+          timeRange: null,
+        });
+        expect(() =>
+          TaskTemplate.createRecurringTask({
+            identityId: makeIdentityId(),
+            title: 'Unanchored recurring task',
+            timeConfig: unanchored,
+            recurrenceRule: makeDailyRule(),
+          }),
+        ).toThrow('Recurring Task requires a date');
+      });
+
       it('should create a valid recurring task', () => {
         const identityId = makeIdentityId();
         const timeConfig = makeAllDayTimeConfig();
@@ -1182,16 +1199,18 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.shouldGenerateInstance(Date.now())).toBe(false);
       });
 
-      it('should return true for daily recurrence on any day', () => {
+      it('should return true for daily recurrence on an anchored schedule day', () => {
+        const startDate = new Date(2026, 0, 1, 12, 0, 0);
         const template = TaskTemplate.load(
           makeState({
             taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
+            timeConfig: makeAllDayTimeConfig(startDate),
             recurrenceRule: makeDailyRule(),
           }),
         );
 
-        expect(template.shouldGenerateInstance(Date.now())).toBe(true);
+        expect(template.shouldGenerateInstance(new Date(2026, 0, 2, 12, 0, 0).getTime())).toBe(true);
       });
 
       it('should respect daily recurrence interval from start date', () => {

@@ -213,8 +213,6 @@ export class PrismaTaskTemplateMapper {
       recurrenceRuleType,
       recurrenceRuleInterval,
       recurrenceRuleDaysOfWeek,
-      recurrenceRuleDayOfMonth: null,
-      recurrenceRuleMonthOfYear: null,
       recurrenceRuleEndDate,
       recurrenceRuleCount,
       reminderConfigEnabled,

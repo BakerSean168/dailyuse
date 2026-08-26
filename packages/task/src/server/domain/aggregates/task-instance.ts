@@ -23,6 +23,15 @@ import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { AggregateRoot } from '@memoflow/utils/domain';
 import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../value-objects';
 import { buildTaskInstanceOccurrenceKey } from '../value-objects/task-instance-occurrence-key';
+import { asHm, asInstant, combineYmdHmWithTimeZone, createTimeFacade, resolveTimeZoneId } from '@memoflow/time';
+
+const taskTime = createTimeFacade();
+
+function minuteOfDayToHm(minute: number): ReturnType<typeof asHm> {
+  const hours = Math.floor(minute / 60);
+  const minutes = minute % 60;
+  return asHm(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`);
+}
 
 /**
  * Internal props interface for TaskInstance
@@ -93,16 +102,23 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
    * The recurrence/generation path supplies `instanceDate` as the occurrence-day anchor.
    */
   public get dueDate(): number | null {
-    const dayStart = this._props.instanceDate;
-    if (this._props.timeConfig.timeType === TimeType.TimePoint) {
-      const minute = this._props.timeConfig.timePoint;
-      return minute == null ? null : dayStart + minute * 60_000;
+    const dayStart = taskTime.calendar.startOfDay(asInstant(this._props.instanceDate));
+    if (this._props.timeConfig.timeType === TimeType.AllDay) {
+      return taskTime.calendar.endOfDay(dayStart);
     }
-    if (this._props.timeConfig.timeType === TimeType.TimeRange) {
-      const minute = this._props.timeConfig.timeRange?.end;
-      return minute == null ? null : dayStart + minute * 60_000;
-    }
-    return dayStart + 86_400_000 - 1;
+
+    const minute =
+      this._props.timeConfig.timeType === TimeType.TimePoint
+        ? this._props.timeConfig.timePoint
+        : this._props.timeConfig.timeRange?.end;
+    if (minute == null) return null;
+
+    const day = taskTime.calendar.toYmd(dayStart);
+    return combineYmdHmWithTimeZone(
+      day,
+      minuteOfDayToHm(minute),
+      resolveTimeZoneId('local'),
+    );
   }
 
   public get status(): TaskInstanceStatus {
