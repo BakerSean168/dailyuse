@@ -1084,9 +1084,10 @@ Protocol remains separate.
 | `NOTIF-2401/2402` | **DONE** | Notification Fact/DeliveryPlan separation and deterministic workflow/global preference hierarchy; notification suite `42 files / 232 tests` |
 | Contract / Schema Train | **DONE** | contracts `63 files / 469 tests`; Prisma generate/schema boot green; database `13 tests`; PowerSync schema `4 tests`; Data Portability `139 tests` |
 | Time / recurrence | **DONE** | time `32 tests`; recurrence conformance matrix `11/11`; Task recurrence consumes `RecurrenceEnginePort` |
-| Presentation / secondary consumers | **DONE** | App Vue `183 files / 706 tests`; React/mobile/web destructive contract cutover; Goal Compare, Goal Folder/Focus, Task Dependency/DAG/check-expired guards removed or inverted; Web `17 files / 71 tests` |
+| Performance budget | **DONE** | Task vNext owns a real perf suite: 20k-occurrence plan outcome evaluation plus 1000-date recurrence expansion; `task:test:perf` `2/2` green; retired priority-sort benchmark paths removed |
+| Presentation / secondary consumers | **DONE** | App Vue `183 files / 713 tests`; React/mobile/web destructive contract cutover; Goal Compare, Goal Folder/Focus, Task Dependency/DAG/check-expired guards removed or inverted; Web `17 files / 71 tests` |
 | Reliability | **DONE** | Task transaction/outbox integration `27 tests`; Goal integration `21 tests`; Routine integration `29 tests`; API Task→Goal host-restart replay `1/1`; Goal Prisma/PowerSync rollback gates green |
-| Repository gate | **DONE** | affected test `35 projects + 6 dependent tasks`; typecheck `36 projects + 29 tasks`; lint `40 projects`; build `34 projects + 1 task`; governance green; test inventory `1065` files; test oracle `success` |
+| Repository gate | **DONE** | affected test `35 projects + 6 dependent tasks`; typecheck `36 projects + 29 tasks`; lint `40 projects`; build `34 projects + 1 task`; governance green; test inventory `1066` files; test oracle `success` |
 
 **W2 closure rule:** no compatibility surface may reintroduce Goal Folder/Focus/comparison, Task DAG/dependency/Expired occurrence status, old Goal Review fields, or message-string branching for typed business failures. Physical legacy columns may remain only behind already-approved persistence adapters until their dedicated schema deletion train.
 

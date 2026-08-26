@@ -1,22 +1,22 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createTestPinia } from '@memoflow/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
 import { useNotificationStore } from './notification-store';
 
 describe('useNotificationStore (UI state only after Query Cache authority pilot)', () => {
   beforeEach(() => {
-    createTestPinia();
+    setActivePinia(createPinia());
   });
 
-  it('manages pagination page/pageSize and read filter UI state', () => {
+  it('executes pagination and read-filter actions against real Pinia state', () => {
     const store = useNotificationStore();
     expect(store.pagination).toEqual({ page: 1, pageSize: 20 });
     expect(store.readFilter).toBe('all');
 
     store.setPage(4);
+    expect(store.pagination.page).toBe(4);
     store.setPageSize(50);
+    expect(store.pagination.pageSize).toBe(50);
     store.setReadFilter('unread');
-
-    expect(store.pagination).toEqual({ page: 4, pageSize: 50 });
     expect(store.readFilter).toBe('unread');
 
     store.reset();
@@ -24,7 +24,7 @@ describe('useNotificationStore (UI state only after Query Cache authority pilot)
     expect(store.readFilter).toBe('all');
   });
 
-  it('holds no server DTO / count / loading / error / initialized fields', () => {
+  it('holds no Notification server authority fields', () => {
     const store = useNotificationStore();
     expect(store).not.toHaveProperty('notifications');
     expect(store).not.toHaveProperty('unreadCount');

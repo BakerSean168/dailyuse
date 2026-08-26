@@ -8797,6 +8797,14 @@
       ]
     },
     {
+      "path": "packages/task/src/server/domain/performance/task-vnext.performance.bench.ts",
+      "primarySuite": "perf",
+      "collectors": [
+        "packages/task/vitest.performance.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/task/src/server/domain/services/TaskInstanceGenerationService.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10095,7 +10103,7 @@
       "type": "primary",
       "suite": "perf",
       "runner": "vitest",
-      "fileCount": 0
+      "fileCount": 1
     },
     {
       "id": "packages/task/vitest.performance-experiment.config.ts",
@@ -10800,7 +10808,7 @@
     "boundary-ipc": 9,
     "boundary-main": 5,
     "e2e": 63,
-    "perf": 0,
+    "perf": 1,
     "governance": 37
   }
 }

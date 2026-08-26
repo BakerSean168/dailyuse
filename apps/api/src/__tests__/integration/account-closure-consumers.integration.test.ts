@@ -83,13 +83,15 @@ describe('API host account-closed consumer chain', () => {
       data: {
         id: notificationId,
         identityId,
-        type: 'info',
-        category: 'system',
-        status: 'sent',
+        type: 'Info',
+        category: 'System',
+        workflowKey: 'account.closure.test',
+        topic: 'account.closure',
+        idempotencyKey: `seed:${notificationId}`,
         title: 'Test Notification',
         content: 'Content',
-        importance: 'normal',
-        urgency: 'normal',
+        importance: 'Moderate',
+        urgency: 'Medium',
       },
     });
     await prisma.notificationDispatchOutbox.create({
