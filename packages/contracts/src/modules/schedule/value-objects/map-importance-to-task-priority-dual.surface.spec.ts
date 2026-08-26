@@ -44,7 +44,7 @@ describe('mapImportanceToTaskPriority dual retired (residual 1168)', () => {
 
     expect(goal).not.toContain('mapImportanceToTaskPriority');
     expect(goal).not.toContain('goalDTO.importance');
-    expect(goal).toContain('priority: TaskPriority.Normal');
+    expect(goal).toContain("priority: 'normal'");
   });
 
   it('runtime: maps importance strings to TaskPriority', () => {

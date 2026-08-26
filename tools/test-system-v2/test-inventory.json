@@ -5772,6 +5772,16 @@
       ]
     },
     {
+      "path": "packages/goal/src/server/infrastructure/adapters/powersync/__tests__/goal-powersync-schedule-projection.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/goal/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/goal/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/goal/src/server/infrastructure/adapters/powersync/__tests__/powersync-goal-reliable-operation.adapter.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -9873,7 +9883,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 79
+      "fileCount": 80
     },
     {
       "id": "packages/goal/vitest.integration.config.ts",
@@ -9887,7 +9897,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 79
+      "fileCount": 80
     },
     {
       "id": "packages/goal/vitest.use-cases.config.ts",
@@ -10526,6 +10536,7 @@
       "packages/goal/src/server/infrastructure/__tests__/goal-repositories.surface.spec.ts",
       "packages/goal/src/server/infrastructure/__tests__/schedule-source-ownership.surface.spec.ts",
       "packages/goal/src/server/infrastructure/adapters/goal-write-buffered-event-bus.spec.ts",
+      "packages/goal/src/server/infrastructure/adapters/powersync/__tests__/goal-powersync-schedule-projection.spec.ts",
       "packages/goal/src/server/infrastructure/adapters/powersync/__tests__/powersync-goal-reliable-operation.adapter.test.ts",
       "packages/goal/src/server/infrastructure/adapters/prisma/__tests__/goal-ownership.surface.spec.ts",
       "packages/goal/src/server/infrastructure/adapters/prisma/__tests__/goal-schema-projection.surface.spec.ts",
@@ -10810,7 +10821,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 923,
+    "unit": 924,
     "integration": 26,
     "smoke": 3,
     "boundary-ipc": 9,

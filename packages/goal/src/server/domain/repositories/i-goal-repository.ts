@@ -85,7 +85,8 @@ export interface IGoalRepository {
 
   /**
    * Lists identity-scoped goal references for schedule projection ownership
-   * enumeration. Prisma 跨身份扫描，PowerSync 本地宿主不执行全量 reconcile（返回空）。
+   * enumeration. Prisma 扫描全部 identity；PowerSync 本地宿主枚举自身 goals 行，
+   * 保证 API 与 Desktop 的启动 reconcile 行为等价。
    */
   findAllGoalRefs(): Promise<Array<{ id: string; identityId: string }>>;
 

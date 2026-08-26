@@ -397,8 +397,13 @@ export class GoalPowerSyncRepository
   }
 
   async findAllGoalRefs(): Promise<Array<{ id: string; identityId: string }>> {
-    // 本地 PowerSync 宿主不执行全量 reconcile（跨用户扫描需要服务端源）。
-    return [];
+    // Local PowerSync host owns exactly one identity's rows; enumerate every row so
+    // startup reconcile projects the same authoritative set as the Prisma lane.
+    const rows = await this.db.getAll<{ id: string; identity_id: string }>(
+      `SELECT id, identity_id FROM goals ORDER BY id ASC`,
+      [],
+    );
+    return rows.map((row) => ({ id: String(row.id), identityId: String(row.identity_id) }));
   }
 
   async batchUpdateStatus(identityId: string, ids: string[], status: string): Promise<void> {
