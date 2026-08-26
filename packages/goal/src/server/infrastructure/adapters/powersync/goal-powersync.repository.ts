@@ -1,4 +1,8 @@
-import { GoalLabelOwnershipError, GoalVersionConflictError, type IGoalRepository } from '../../../domain';
+import {
+  GoalLabelOwnershipError,
+  GoalVersionConflictError,
+  type IGoalRepository,
+} from '../../../domain';
 import { Goal } from '../../../domain';
 import type { GoalSystemView, KeyResultWeightSnapshotDTO } from '@memoflow/contracts/goal';
 import type { LabelDto } from '@memoflow/contracts/label';
@@ -390,6 +394,16 @@ export class GoalPowerSyncRepository
 
   async exists(identityId: string, id: string): Promise<boolean> {
     return (await this.findByIdForIdentity(identityId, id)) !== null;
+  }
+
+  async findAllGoalRefs(): Promise<Array<{ id: string; identityId: string }>> {
+    // Local PowerSync host owns exactly one identity's rows; enumerate every row so
+    // startup reconcile projects the same authoritative set as the Prisma lane.
+    const rows = await this.db.getAll<{ id: string; identity_id: string }>(
+      `SELECT id, identity_id FROM goals ORDER BY id ASC`,
+      [],
+    );
+    return rows.map((row) => ({ id: String(row.id), identityId: String(row.identity_id) }));
   }
 
   async batchUpdateStatus(identityId: string, ids: string[], status: string): Promise<void> {

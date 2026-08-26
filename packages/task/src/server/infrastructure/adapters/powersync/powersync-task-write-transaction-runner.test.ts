@@ -6,10 +6,10 @@ import type {
   IElectronDatabaseTransaction,
 } from '@memoflow/contracts/electron';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
-import { TaskGoalBindingTrigger, TaskType } from '@memoflow/contracts/task';
+import { TaskGoalBindingTrigger, TaskPlanOutcome, TaskType } from '@memoflow/contracts/task';
 import { eventBus } from '@memoflow/utils/domain';
 import { TaskTemplate } from '../../../domain/aggregates/task-template';
-import { RecurrenceRule, TaskTimeConfig } from '../../../domain/value-objects';
+import { RecurrenceRule, TaskInstanceId, TaskTimeConfig } from '../../../domain/value-objects';
 import { anIdentityId } from '../../../../testing';
 import { createTaskPowerSyncModule } from '../../powersync';
 import { PowerSyncTaskInstanceRepository } from './task-instance-powersync.repository';
@@ -369,6 +369,38 @@ describe('PowerSyncTaskWriteTransactionRunner', () => {
     expect(db.instanceCount).toBe(0);
     expect(dispatchSpy).not.toHaveBeenCalled();
 
+    module.dispose();
+  });
+
+  it('persists PlanCompletion outcome settlement through the same PowerSync transaction boundary', async () => {
+    const db = new FakePowerSyncTaskDb();
+    const module = createTaskPowerSyncModule(db);
+    const identityId = anIdentityId();
+    const template = TaskTemplate.create({
+      identityId,
+      title: 'PowerSync finite plan',
+      taskType: TaskType.Recurring,
+      timeConfig: TaskTimeConfig.createAllDay(new Date()),
+      recurrenceRule: RecurrenceRule.createDaily(1).setOccurrences(15),
+      importance: ImportanceLevel.Moderate,
+      tags: [],
+      goalBinding: {
+        goalId: 'goal-1',
+        keyResultId: 'kr-1',
+        contribution: { value: 1, trigger: TaskGoalBindingTrigger.PlanCompletion },
+      },
+    });
+    await module.taskTemplateRepository.save(template);
+
+    const runner = new PowerSyncTaskWriteTransactionRunner(db);
+    await runner.run(async ({ templateRepository }) => {
+      template.applyPlanOutcome(TaskPlanOutcome.Succeeded, {
+        triggeringTaskInstanceId: TaskInstanceId.generate(),
+      });
+      await templateRepository.save(template);
+    });
+
+    expect(db.outboxCount).toBe(1);
     module.dispose();
   });
 

@@ -44,3 +44,4 @@ export type { ScheduleTaskExecutionResult, ScheduleTaskSourceExecutor } from './
 
 // HandlerRegistry is runtime infrastructure; public data contracts stay in @memoflow/contracts/schedule.
 export { ScheduledHandlerRegistry } from './scheduling';
+export { buildSchedulingKey, buildSchedulingOwnerKey } from './scheduling';

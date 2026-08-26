@@ -187,9 +187,9 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
   /**
    * Completes the task.
    *
-   * `goalContext` 由 Task 应用层在调用前算好（模板绑定、是否全部实例完成、标题），
-   * 用于把 task:instance-completed 事件的 payload 填成自包含（ADR-033 范式 A）。
-   * 跨聚合的判定属应用层职责，聚合只负责把结果嵌进自己的领域事件。
+   * `goalContext` 由 Task 应用层在调用前填充模板绑定与标题，使
+   * EachCompletion 事件自包含。PlanCompletion eligibility 不属于 occurrence
+   * event；它由 Task Plan outcome transition 单独发布。
    */
   public complete(
     actualDuration?: number,
@@ -198,7 +198,6 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     goalContext?: {
       taskTitle: string;
       goalBinding: TaskGoalBindingDTO | null;
-      planSucceeded: boolean;
     },
   ): void {
     if (!this.canComplete()) {
@@ -241,7 +240,6 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       completedAt: now,
       taskTitle: goalContext?.taskTitle ?? '',
       goalBinding: goalContext?.goalBinding ?? null,
-      planSucceeded: goalContext?.planSucceeded ?? false,
     });
   }
 

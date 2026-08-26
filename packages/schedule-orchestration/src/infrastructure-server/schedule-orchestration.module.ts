@@ -25,19 +25,16 @@ import { createTaskProjectionRuntime } from '../runtime/task-projection-runtime'
 export function createScheduleOrchestrationModule(
   options: CreateScheduleOrchestrationModuleOptions,
 ): ScheduleOrchestrationModule {
-  const scheduleEvents = createTypedEventPublisher<Pick<ScheduleEventMap, 'schedule:task-deleted'>>(
-    eventBus,
-  );
+  const scheduleEvents =
+    createTypedEventPublisher<Pick<ScheduleEventMap, 'schedule:task-deleted'>>(eventBus);
   const scheduleTaskRepository = options.taskProjection.scheduleTaskRepository;
-  if (
-    options.goalProjection.scheduleTaskRepository !== scheduleTaskRepository ||
-    options.reminderProjection.scheduleTaskRepository !== scheduleTaskRepository
-  ) {
+  if (options.reminderProjection.scheduleTaskRepository !== scheduleTaskRepository) {
     throw new Error(
       'Schedule orchestration requires one shared ScheduleTask repository for projections and SchedulingPort.',
     );
   }
 
+  const schedulingPort = createScheduleTaskSchedulingPort(scheduleTaskRepository);
   const handlerRegistry = new ScheduledHandlerRegistry();
   const legacySourceExecutor = createScheduleExecutionRouter(options.execution);
 
@@ -45,15 +42,13 @@ export function createScheduleOrchestrationModule(
     projectionRuntime: createCompositeRuntimeContribution([
       createTaskProjectionRuntime({
         source: options.taskProjection.source,
-        scheduleTaskRepository: options.taskProjection.scheduleTaskRepository,
+        schedulingPort,
         taskEvents: createTypedEventSubscriber<TaskScheduleProjectionEventMap>(eventBus),
-        scheduleEvents,
       }),
       createGoalProjectionRuntime({
         source: options.goalProjection.source,
-        scheduleTaskRepository: options.goalProjection.scheduleTaskRepository,
+        schedulingPort,
         goalEvents: createTypedEventSubscriber<GoalScheduleProjectionEventMap>(eventBus),
-        scheduleEvents,
       }),
       createReminderProjectionRuntime({
         source: options.reminderProjection.source,
@@ -62,7 +57,7 @@ export function createScheduleOrchestrationModule(
         scheduleEvents,
       }),
     ]),
-    schedulingPort: createScheduleTaskSchedulingPort(scheduleTaskRepository),
+    schedulingPort,
     handlerRegistry,
     sourceExecutor: createHandlerRegistryScheduleTaskSourceExecutor({
       registry: handlerRegistry,

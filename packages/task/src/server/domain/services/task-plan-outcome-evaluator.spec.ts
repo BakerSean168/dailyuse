@@ -46,7 +46,7 @@ describe('TaskPlanOutcomeEvaluator (TASK-2202)', () => {
     instances.forEach((instance) => instance.complete());
     const outcome = evaluator.evaluate(template, instances);
     expect(outcome).toBe(TaskPlanOutcome.Succeeded);
-    template.applyPlanOutcome(outcome);
+    template.applyPlanOutcome(outcome, { triggeringTaskInstanceId: instances[14].id });
     expect(template.status).toBe(TaskTemplateStatus.Closed);
     expect(template.outcome).toBe(TaskPlanOutcome.Succeeded);
   });
@@ -82,16 +82,16 @@ describe('TaskPlanOutcomeEvaluator (TASK-2202)', () => {
     instances.forEach((instance) => instance.complete());
     instances[14].uncomplete();
     instances[14].markMissed();
-    template.applyPlanOutcome(evaluator.evaluate(template, instances));
+    template.applyPlanOutcome(evaluator.evaluate(template, instances), { triggeringTaskInstanceId: instances[14].id });
     expect(template.outcome).toBe(TaskPlanOutcome.Failed);
 
     instances[14].complete();
-    template.applyPlanOutcome(evaluator.evaluate(template, instances));
+    template.applyPlanOutcome(evaluator.evaluate(template, instances), { triggeringTaskInstanceId: instances[14].id });
     expect(template.outcome).toBe(TaskPlanOutcome.Succeeded);
     expect(template.status).toBe(TaskTemplateStatus.Closed);
 
     instances[14].uncomplete();
-    template.applyPlanOutcome(evaluator.evaluate(template, instances));
+    template.applyPlanOutcome(evaluator.evaluate(template, instances), { triggeringTaskInstanceId: instances[14].id });
     expect(template.outcome).toBe(TaskPlanOutcome.Open);
     expect(template.status).toBe(TaskTemplateStatus.Active);
   });

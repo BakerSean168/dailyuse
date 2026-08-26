@@ -1,7 +1,4 @@
-import type {
-  ScheduledHandlerRegistration,
-  SchedulingPort,
-} from '@memoflow/contracts/schedule';
+import type { ScheduledHandlerRegistration, SchedulingPort } from '@memoflow/contracts/schedule';
 import type { GoalScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
 import type { ReminderScheduleProjectionSource } from '@memoflow/reminder/schedule-projection';
 import type { IScheduleTaskRepository, ScheduleTask } from '@memoflow/schedule';
@@ -11,6 +8,12 @@ import type { RuntimeContribution } from './runtime-contribution';
 
 export interface ScheduleOrchestrationProjectionDeps<TSource> {
   readonly source: TSource;
+}
+
+/** Legacy projections still diff their desired set against the ScheduleTask store. */
+export interface ScheduleOrchestrationScheduleTaskProjectionDeps<
+  TSource,
+> extends ScheduleOrchestrationProjectionDeps<TSource> {
   readonly scheduleTaskRepository: IScheduleTaskRepository;
 }
 
@@ -36,8 +39,8 @@ export interface ScheduleOrchestrationModule {
 }
 
 export interface CreateScheduleOrchestrationModuleOptions {
-  readonly taskProjection: ScheduleOrchestrationProjectionDeps<TaskScheduleProjectionSource>;
+  readonly taskProjection: ScheduleOrchestrationScheduleTaskProjectionDeps<TaskScheduleProjectionSource>;
   readonly goalProjection: ScheduleOrchestrationProjectionDeps<GoalScheduleProjectionSource>;
-  readonly reminderProjection: ScheduleOrchestrationProjectionDeps<ReminderScheduleProjectionSource>;
+  readonly reminderProjection: ScheduleOrchestrationScheduleTaskProjectionDeps<ReminderScheduleProjectionSource>;
   readonly execution: ScheduleOrchestrationExecutionDeps;
 }
