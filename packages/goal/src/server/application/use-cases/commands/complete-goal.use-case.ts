@@ -12,9 +12,7 @@ import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
 import { buildIdempotencyKeyString } from '@memoflow/contracts/reliable-messaging';
 import { createGoalMutationReceipt } from './goal-mutation-receipt';
-import {
-    type GoalWriteTransactionRunner,
-} from './goal-write-support';
+import { type GoalWriteTransactionRunner } from './goal-write-support';
 
 /**
  * Complete Goal Use Case
@@ -45,8 +43,8 @@ export class CompleteGoalUseCase {
       occurrenceKey,
     });
 
-    // 终态幂等：已被标记完成/归档，直接返回既有 receipt，不重复增加 version 或 event
-    if (goal.completedAt || goal.archivedAt || goal.status === GoalStatus.Archived) {
+    // Completion is a business outcome, independent from archive/display state.
+    if (goal.completedAt || goal.status === GoalStatus.Completed) {
       await this.goalWriteTransactionRunner.run((ctx) =>
         ctx.recordGoalCompletionReceipt({
           identityId,

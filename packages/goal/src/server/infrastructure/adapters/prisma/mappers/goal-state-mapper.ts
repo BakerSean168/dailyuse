@@ -5,11 +5,15 @@
  * Shared by Prisma and PowerSync mappers.
  */
 
-import type { ReviewType, KeyResultWeightSnapshotDTO, KeyResultValueType, KeyResultCalculationMethod, GoalReminderConfigDTO, KeyResultSnapshotDTO } from '@memoflow/contracts/goal';
-import { GoalStatus, GoalRollupPolicy } from '@memoflow/contracts/goal';
-import { ImportanceLevel } from '@memoflow/contracts/shared';
+import type {
+  KeyResultWeightSnapshotDTO,
+  KeyResultCalculationMethod,
+  GoalReminderConfigDTO,
+  GoalReviewSystemContext,
+} from '@memoflow/contracts/goal';
+import { GoalStatus } from '@memoflow/contracts/goal';
 import { IdentityId } from '@memoflow/domain-shared';
-import { GoalId, GoalFolderId, GoalReviewId, KeyResultId } from '../../../../domain';
+import { GoalId, GoalReviewId, KeyResultId } from '../../../../domain';
 import {
   KeyResult,
   GoalReview,
@@ -28,21 +32,13 @@ export interface RawGoalData {
   identityId: string;
   name: string;
   description: string | null;
-  color: string;
   feasibilityAnalysis: string | null;
   motivation: string | null;
   status: string;
-  importance: string;
-  priority: number;
-  category: string | null;
-  tags: string[];
   startDate: number | null;
-  targetDate: number | null;
+  dueDate: number | null;
   completedAt: number | null;
   archivedAt: number | null;
-  folderId: string | null;
-  parentGoalId: string | null;
-  rollupPolicy: string;
   sortOrder: number;
   reminderConfig: { enabled: boolean; triggers: unknown[] } | null;
   keyResults: RawKeyResultData[] | null;
@@ -60,10 +56,10 @@ export interface RawKeyResultData {
   title: string;
   description: string | null;
   progress: {
-    initialValue: number;
+    startingValue: number;
+    progressBaselineValue: number | null;
     currentValue: number;
     targetValue: number;
-    valueType: string;
     aggregationMethod: string;
     unit: string | null;
   };
@@ -76,14 +72,10 @@ export interface RawKeyResultData {
 export interface RawGoalReviewData {
   id: string;
   goalId: string;
-  type: string;
-  title: string | null;
-  rating: number;
-  summary: string;
-  achievements: string | null;
+  reflection: string;
   challenges: string | null;
-  improvements: string | null;
-  keyResultSnapshots: unknown[];
+  adjustments: string | null;
+  systemContext: GoalReviewSystemContext;
   reviewedAt: number;
   createdAt: number;
   updatedAt: number;
@@ -103,10 +95,10 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
       title: kr.title,
       description: kr.description ?? null,
       progress: {
-        initialValue: kr.progress.initialValue ?? 0,
+        startingValue: kr.progress.startingValue ?? 0,
+        progressBaselineValue: kr.progress.progressBaselineValue ?? null,
         currentValue: kr.progress.currentValue ?? 0,
         targetValue: kr.progress.targetValue ?? 100,
-        valueType: (kr.progress.valueType ?? 'Incremental') as KeyResultValueType,
         aggregationMethod: (kr.progress.aggregationMethod ?? 'Last') as KeyResultCalculationMethod,
         unit: kr.progress.unit ?? null,
       },
@@ -121,14 +113,10 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
     GoalReview.load({
       id: GoalReviewId.of(r.id),
       goalId: GoalId.of(r.goalId),
-      type: r.type as ReviewType,
-      title: r.title ?? null,
-      rating: r.rating,
-      summary: r.summary,
-      achievements: r.achievements ?? null,
+      reflection: r.reflection,
       challenges: r.challenges ?? null,
-      improvements: r.improvements ?? null,
-      keyResultSnapshots: r.keyResultSnapshots as KeyResultSnapshotDTO[],
+      adjustments: r.adjustments ?? null,
+      systemContext: r.systemContext,
       reviewedAt: Number(r.reviewedAt),
       createdAt: Number(r.createdAt),
       updatedAt: Number(r.updatedAt),
@@ -144,21 +132,13 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
     identityId: IdentityId.of(raw.identityId),
     name: raw.name,
     description: raw.description ?? null,
-    color: raw.color,
     feasibilityAnalysis: raw.feasibilityAnalysis ?? null,
     motivation: raw.motivation ?? null,
     status: raw.status as GoalStatus,
-    importance: raw.importance as ImportanceLevel,
-    priority: raw.priority ?? 0,
-    category: raw.category ?? null,
-    tags: Array.isArray(raw.tags) ? raw.tags : [],
     startDate: raw.startDate ? Number(raw.startDate) : null,
-    targetDate: raw.targetDate ? Number(raw.targetDate) : null,
+    dueDate: raw.dueDate ? Number(raw.dueDate) : null,
     completedAt: raw.completedAt ? Number(raw.completedAt) : null,
     archivedAt: raw.archivedAt ? Number(raw.archivedAt) : null,
-    folderId: raw.folderId ? GoalFolderId.of(raw.folderId) : null,
-    parentGoalId: raw.parentGoalId ? GoalId.of(raw.parentGoalId) : null,
-    rollupPolicy: (raw.rollupPolicy as GoalRollupPolicy) ?? GoalRollupPolicy.Kr,
     sortOrder: raw.sortOrder,
     reminderConfig,
     version: raw.version ?? 1,

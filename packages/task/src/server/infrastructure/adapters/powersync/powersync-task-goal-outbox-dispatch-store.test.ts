@@ -19,15 +19,16 @@ interface OutboxRow {
 
 const payload = {
   eventId: 'event-1',
-  schemaVersion: 1 as const,
+  schemaVersion: 2 as const,
   eventType: 'task.goal-progress-requested' as const,
   identityId: 'identity-1',
   taskInstanceId: 'instance-1',
   taskTemplateId: 'template-1',
   goalId: 'goal-1',
   keyResultId: 'kr-1',
-  goalRecordValue: 1,
-  progressTrigger: 'PER_INSTANCE' as const,
+  value: 1,
+  source: { type: 'TaskInstance' as const, id: 'instance-1' },
+  action: 'apply' as const,
   taskTitle: 'Ship it',
   occurredAt: Date.parse('2026-08-01T00:00:00.000Z'),
 };

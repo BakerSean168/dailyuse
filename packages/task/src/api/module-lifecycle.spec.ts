@@ -39,7 +39,7 @@ function createApiStub(): TaskApplicationPort {
     skipTaskInstance: noop,
     startTaskInstance: noop,
     deleteTaskInstance: noop,
-    checkExpiredInstances: noop,
+    markTaskInstanceMissed: noop,
     getTaskInstance: noop,
     listTaskInstancesByAccount: noop,
     listTaskInstancesByTemplate: noop,

@@ -60,6 +60,8 @@ const i18n = createI18n({
           progressPlaceholder: 'Value',
           points: 'points',
           progressText: 'Progress increases after completion.',
+          contributionEnable: 'Automatically contribute progress',
+          contributionHint: 'Leave this off for a link-only relationship.',
           weight: 'Weight {value}',
           configPreview: 'Preview',
           trigger: {
@@ -72,8 +74,8 @@ const i18n = createI18n({
             finitePlanOnly: 'Available only for plans with an end date or occurrence limit.',
           },
           previewText: {
-            PER_INSTANCE: 'Increase by {value}',
-            ALL_INSTANCES_COMPLETED: 'Increase once by {value}',
+            EachCompletion: 'Increase by {value}',
+            PlanCompletion: 'Increase once by {value}',
           },
         },
       },
@@ -213,6 +215,13 @@ async function enableLink(wrapper: ReturnType<typeof mountSection>) {
   await nextTick();
 }
 
+async function toggleContribution(wrapper: ReturnType<typeof mountSection>) {
+  const switches = wrapper.findAll('[role="switch"]');
+  if (switches.length < 2) throw new Error('Contribution switch not mounted');
+  await switches[1].trigger('click');
+  await nextTick();
+}
+
 describe('KeyResultLinksSection', () => {
   afterEach(() => {
     document.body.replaceChildren();
@@ -230,16 +239,54 @@ describe('KeyResultLinksSection', () => {
       occurrences: null,
     };
 
-    const wrapper = mountSection({ request: vi.fn(), template });
-    await enableLink(wrapper);
+    template.goalBinding = {
+      goalId: 'goal-a',
+      keyResultId: 'kr-a',
+      contribution: { value: 1, trigger: 'EachCompletion' },
+    };
+    const wrapper = mountSection({
+      request: vi.fn(),
+      template,
+      keyResultsByGoal: { 'goal-a': [makeKeyResult('kr-a', 'Result A')] },
+    });
+    await nextTick();
 
     const wholePlanOption = wrapper.get(
-      '[data-testid="kr-progress-trigger-ALL_INSTANCES_COMPLETED"]',
+      '[data-testid="kr-progress-trigger-PlanCompletion"]',
     );
     expect(wholePlanOption.attributes('disabled')).toBeDefined();
     expect(wrapper.text()).toContain(
       'Available only for plans with an end date or occurrence limit.',
     );
+  });
+
+  it('preserves a link-only Goal/KR relationship without synthesizing contribution', async () => {
+    const template = makeTemplate();
+    template.goalBinding = { goalId: 'goal-a', keyResultId: 'kr-a' };
+    const wrapper = mountSection({
+      request: vi.fn(),
+      template,
+      keyResultsByGoal: { 'goal-a': [makeKeyResult('kr-a', 'Result A')] },
+    });
+    await nextTick();
+
+    const switches = wrapper.findAll('[role="switch"]');
+    expect(switches).toHaveLength(2);
+    expect(switches[1].attributes('aria-checked')).toBe('false');
+
+    await toggleContribution(wrapper);
+    expect(wrapper.emitted('update:modelValue')?.at(-1)?.[0]).toMatchObject({
+      goalBinding: {
+        goalId: 'goal-a',
+        keyResultId: 'kr-a',
+        contribution: { value: 1, trigger: 'EachCompletion' },
+      },
+    });
+
+    await toggleContribution(wrapper);
+    const emitted = wrapper.emitted('update:modelValue')?.at(-1)?.[0];
+    expect(emitted).toMatchObject({ goalBinding: { goalId: 'goal-a', keyResultId: 'kr-a' } });
+    expect(emitted.goalBinding).not.toHaveProperty('contribution');
   });
 
   it('selects a key result added after its goal without a Select focus crash', async () => {

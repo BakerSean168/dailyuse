@@ -11,7 +11,6 @@
  */
 
 import type { GoalApplicationPort } from '../application';
-import type { GoalFolderUseCases } from './goal-folder.controller';
 import type { GoalUseCases } from './goal.controller';
 
 /**
@@ -29,8 +28,8 @@ export function createGoalTransportHandlers(api: GoalApplicationPort): GoalUseCa
     listGoals: api.listGoals,
     updateGoal: api.updateGoal,
     deleteGoal: api.deleteGoal,
-    archiveExpiredGoals: api.archiveExpiredGoals,
     archiveGoal: api.archiveGoal,
+    abandonGoal: api.abandonGoal,
     activateGoal: api.activateGoal,
     completeGoal: api.completeGoal,
     searchGoals: api.searchGoals,
@@ -40,32 +39,16 @@ export function createGoalTransportHandlers(api: GoalApplicationPort): GoalUseCa
     deleteKeyResult: api.deleteKeyResult,
     addReview: api.addReview,
     listReviews: api.listReviews,
+    getReviewContext: api.getReviewContext,
     updateReview: api.updateReview,
     deleteReview: api.deleteReview,
     createRecord: api.createRecord,
+    updateRecord: api.updateRecord,
     listRecords: api.listRecords,
     deleteRecord: api.deleteRecord,
-    getCurrentFocusMode: api.getCurrentFocusMode,
-    activateFocusMode: api.activateFocusMode,
-    deactivateFocusMode: api.deactivateFocusMode,
-    extendFocusMode: api.extendFocusMode,
     getGoalAggregate: api.getGoalAggregate,
     getGoalProgressBreakdown: api.getGoalProgressBreakdown,
     cloneGoal: api.cloneGoal,
     batchUpdateKeyResultWeights: api.batchUpdateKeyResultWeights,
-  };
-}
-
-/**
- * Map GoalApplicationPort to GoalFolderUseCases (controller port).
- * 将 GoalApplicationPort 映射为 GoalFolderUseCases（控制器端口）。
- */
-export function createGoalFolderTransportHandlers(api: GoalApplicationPort): GoalFolderUseCases {
-  return {
-    createGoalFolder: api.createGoalFolder,
-    getGoalFolder: api.getGoalFolder,
-    listGoalFolders: api.listGoalFolders,
-    updateGoalFolder: api.updateGoalFolder,
-    deleteGoalFolder: api.deleteGoalFolder,
   };
 }

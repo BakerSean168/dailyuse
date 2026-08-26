@@ -3,7 +3,7 @@ import '@memoflow/test-utils/helpers/result-matchers';
 import { anIdentityId } from '@memoflow/test-utils';
 import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IGoalRepository } from '../../../../domain/repositories/i-goal-repository';
-import { Goal, GoalId, GoalPolicy, KeyResultId } from '../../../../domain';
+import { Goal, GoalId, GoalLabelOwnershipError, GoalPolicy, KeyResultId } from '../../../../domain';
 import { CreateGoalUseCase } from '../create-goal.use-case';
 
 describe('CreateGoalUseCase', () => {
@@ -19,9 +19,6 @@ describe('CreateGoalUseCase', () => {
     return {
       name: 'Learn TypeScript',
       description: 'Master DDD patterns',
-      color: '#3B82F6',
-      importance: 'MEDIUM',
-      tags: [],
       ...overrides,
     };
   }
@@ -130,54 +127,36 @@ describe('CreateGoalUseCase', () => {
     expect(result).toBeErrorWithCode('UNAUTHORIZED');
   });
 
-  it('should return NOT_FOUND when parentGoalId references a non-existent goal', async () => {
-    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(null);
+  it('replaces Goal labels through the Goal-owned assignment seam and returns labels in the receipt', async () => {
+    const labels = [
+      {
+        id: 'label-work',
+        identityId: testIdentityId,
+        name: '#工作',
+        normalizedName: '#工作',
+        color: null,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    ];
+    vi.mocked(goalRepo.replaceLabels).mockResolvedValue(labels);
 
-    const result = await useCase.execute(
-      aCreateInput({ parentGoalId: 'non-existent-id' }),
-      aContext(),
-    );
-
-    expect(result).toBeErrorWithCode('NOT_FOUND');
-  });
-
-  it('should create a goal with parent when parent exists', async () => {
-    const parentGoal = Goal.create({
-      identityId: testIdentityId,
-      name: 'Parent Goal',
-      description: null,
-      color: '#3B82F6',
-      feasibilityAnalysis: null,
-      motivation: null,
-      importance: 'MEDIUM' as any,
-      category: null,
-      tags: [],
-      startDate: null,
-      targetDate: null,
-      folderId: null,
-      parentGoalId: null,
-      reminderConfig: null,
-    });
-    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(parentGoal);
-
-    const result = await useCase.execute(aCreateInput({ parentGoalId: parentGoal.id }), aContext());
+    const result = await useCase.execute(aCreateInput({ labelIds: ['label-work'] }), aContext());
 
     expect(result).toBeOk();
+    const savedGoal = vi.mocked(goalRepo.save).mock.calls[0]?.[0];
+    expect(goalRepo.replaceLabels).toHaveBeenCalledWith(testIdentityId, String(savedGoal?.id), [
+      'label-work',
+    ]);
+    expect(result.ok && result.data.readModel.labels).toEqual(labels);
   });
 
-  it('should use default color when none provided', async () => {
-    const result = await useCase.execute(aCreateInput({ color: undefined }), aContext());
+  it('maps typed foreign-label ownership failures to VALIDATION_ERROR', async () => {
+    vi.mocked(goalRepo.replaceLabels).mockRejectedValue(new GoalLabelOwnershipError());
 
-    expect(result).toBeOk();
-  });
+    const result = await useCase.execute(aCreateInput({ labelIds: ['foreign-label'] }), aContext());
 
-  it('should use provided tags', async () => {
-    const result = await useCase.execute(aCreateInput({ tags: ['fitness', 'health'] }), aContext());
-
-    expect(result).toBeOk();
-    if (result.ok) {
-      expect(result.data.readModel.tags).toEqual(['fitness', 'health']);
-    }
+    expect(result).toBeErrorWithCode('VALIDATION_ERROR');
   });
 
   it('replays the same durable goal when a concurrent save hits the unique constraint and the goal was committed', async () => {
@@ -188,16 +167,10 @@ describe('CreateGoalUseCase', () => {
       identityId: testIdentityId,
       name: 'Learn TypeScript',
       description: null,
-      color: '#3B82F6',
       feasibilityAnalysis: null,
       motivation: null,
-      importance: 'Important',
-      category: null,
-      tags: [],
       startDate: null,
-      targetDate: null,
-      folderId: null,
-      parentGoalId: null,
+      dueDate: null,
       reminderConfig: null,
     });
     committed.createAndAddKeyResult({
@@ -210,7 +183,9 @@ describe('CreateGoalUseCase', () => {
 
     // Both workers pass the pre-check (not found), then the slower worker's save
     // hits the unique constraint while the other worker already committed.
-    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValueOnce(null).mockResolvedValueOnce(committed);
+    vi.mocked(goalRepo.findByIdForIdentity)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(committed);
     vi.mocked(goalRepo.save).mockRejectedValueOnce(
       new Error('duplicate key value violates unique constraint "goals_pkey"'),
     );

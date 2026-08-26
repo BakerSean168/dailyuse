@@ -1,37 +1,7 @@
 // ==========================================
 // Task Module
-// 任务模板聚合根、实例、文件夹、依赖、历史、统计
+// 任务计划、实例、历史、统计
 // ==========================================
-
-/// TaskFolder 聚合根 - 任务文件夹
-/// 用于组织和分类任务模板
-model TaskFolder {
-  // ============ 主键与外键 ============
-  id         String @id
-  identityId String @map("identity_id")
-
-  // ============ 基础信息 ============
-  name  String /// 文件夹名称
-  color String? /// 显示颜色
-  icon  String? /// 图标标识
-
-  // ============ 排序 ============
-  order Int @default(0) /// 排序顺序
-
-  // ============ 版本与审计 ============
-  version   Int       @default(1)
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-
-  // ============ 关系映射 ============
-  account   Account        @relation(fields: [identityId], references: [id], onDelete: Cascade)
-  templates TaskTemplate[]
-
-  // ============ 索引优化 ============
-  @@index([identityId])
-  @@map("task_folders")
-}
 
 /// TaskTemplate 聚合根 - 任务模板
 /// 管理任务的完整定义，包括时间配置、重复规则、提醒、Goal绑定等
@@ -43,15 +13,16 @@ model TaskTemplate {
   // ============ 基础信息 ============
   name        String
   description String?
-  status      String /// TaskTemplateStatus
+  status      String /// Task lifecycle: Active | Paused | Closed
+  outcome     String   @default("Open") /// Open | Succeeded | Failed | Abandoned
+  completionPolicy String @default("AllowCorrection") @map("completion_policy")
+  closedAt    DateTime? @map("closed_at")
+  archivedAt  DateTime? @map("archived_at")
+  abandonedReason String? @map("abandoned_reason")
   importance  String  @default("moderate") /// ImportanceLevel
-  priority    Int? /// 动态计算的优先级分数
   color       String?
   tags        String /// JSON: string[]
 
-  // ============ 组织与层级 ============
-  folderId     String? @map("folder_id")
-  parentTaskId String? @map("parent_task_id")
 
   // ============ 时间配置（展开值对象） ============
   timeConfigType            String?   @map("time_config_type")
@@ -66,8 +37,6 @@ model TaskTemplate {
   recurrenceRuleType        String?   @map("recurrence_rule_type")
   recurrenceRuleInterval    Int?      @map("recurrence_rule_interval")
   recurrenceRuleDaysOfWeek  String?   @map("recurrence_rule_days_of_week")
-  recurrenceRuleDayOfMonth  Int?      @map("recurrence_rule_day_of_month")
-  recurrenceRuleMonthOfYear Int?      @map("recurrence_rule_month_of_year")
   recurrenceRuleEndDate     DateTime? @map("recurrence_rule_end_date")
   recurrenceRuleCount       Int?      @map("recurrence_rule_count")
 
@@ -90,10 +59,6 @@ model TaskTemplate {
   // ============ 检查列表（JSON值对象） ============
   checklist String? @map("checklist") /// JSON: ChecklistItemDefinition[]
 
-  // ============ 依赖关系状态 ============
-  blockingReason   String? @map("blocking_reason")
-  dependencyStatus String  @default("NONE") @map("dependency_status")
-  isBlocked        Boolean @default(false) @map("is_blocked")
 
   // ============ 版本与审计 ============
   version   Int       @default(1)
@@ -103,16 +68,9 @@ model TaskTemplate {
 
   // ============ 关系映射 ============
   account   Account     @relation(fields: [identityId], references: [id], onDelete: Cascade)
-  folder    TaskFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
   keyResult KeyResult?  @relation("KeyResultTaskTemplates", fields: [keyResultId, goalId, identityId], references: [id, goalId, identityId], onDelete: Restrict)
 
-  // 子任务关系
-  parentTask TaskTemplate?  @relation("TaskSubtasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
-  subtasks   TaskTemplate[] @relation("TaskSubtasks")
 
-  // 依赖关系
-  predecessorDependencies TaskDependency[] @relation("PredecessorTaskDeps")
-  successorDependencies   TaskDependency[] @relation("SuccessorTaskDeps")
 
   // 实例
   instances TaskInstance[]
@@ -124,8 +82,6 @@ model TaskTemplate {
   @@index([identityId])
   @@index([status])
   @@index([importance])
-  @@index([folderId])
-  @@index([parentTaskId])
   @@index([identityId, goalId, deletedAt])
   @@index([identityId, keyResultId, deletedAt])
   @@index([deletedAt])
@@ -145,7 +101,6 @@ model TaskInstance {
   occurrenceKey String?  @map("occurrence_key") /// R2-1 幂等键 templateId:localDate
   status        String /// TaskInstanceStatus
   importance   String   @default("moderate") /// ImportanceLevel
-  priority     Int? /// 动态计算的优先级分数
 
   // ============ 时间追踪 ============
   timeConfig      String    @map("time_config") /// JSON: TaskTimeConfigDTO
@@ -199,28 +154,6 @@ model TaskGoalOutbox {
   @@map("task_goal_outbox")
 }
 
-model TaskDependency {
-  id                String    @id
-  identityId        String    @map("identity_id")
-  predecessorTaskId String    @map("predecessor_task_id")
-  successorTaskId   String    @map("successor_task_id")
-  dependencyType    String    @default("FINISH_TO_START") @map("dependency_type")
-  lagDays           Int?      @map("lag_days")
-  version           Int       @default(1)
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
-  deletedAt         DateTime? @map("deleted_at")
-
-  identity        Account      @relation("AccountTaskDependencies", fields: [identityId], references: [id])
-  predecessorTask TaskTemplate @relation("PredecessorTaskDeps", fields: [predecessorTaskId], references: [id], onDelete: Cascade)
-  successorTask   TaskTemplate @relation("SuccessorTaskDeps", fields: [successorTaskId], references: [id], onDelete: Cascade)
-
-  @@unique([predecessorTaskId, successorTaskId])
-  @@index([identityId])
-  @@index([successorTaskId])
-  @@map("task_dependencies")
-}
-
 model TaskTemplateHistory {
   id         String   @id
   identityId String   @map("identity_id")
@@ -255,7 +188,7 @@ model TaskStatistic {
   instanceInProgress       Int      @map("instance_in_progress")
   instanceCompleted        Int      @map("instance_completed")
   instanceSkipped          Int      @map("instance_skipped")
-  instanceExpired          Int      @map("instance_expired")
+  instanceMissed           Int      @map("instance_missed")
   completionToday          Int      @map("completion_today")
   completionWeek           Int      @map("completion_week")
   completionMonth          Int      @map("completion_month")
@@ -269,7 +202,6 @@ model TaskStatistic {
   timeUpcoming             Int      @map("time_upcoming")
   distributionByImportance String   @map("distribution_by_importance")
   distributionByUrgency    String   @map("distribution_by_urgency")
-  distributionByFolder     String   @map("distribution_by_folder")
   distributionByTag        String   @map("distribution_by_tag")
 
   account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)

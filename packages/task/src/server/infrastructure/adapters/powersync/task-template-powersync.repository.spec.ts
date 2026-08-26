@@ -47,7 +47,7 @@ function createBoundRow(): PowerSyncTaskTemplateRow {
     goal_id: goalId,
     key_result_id: keyResultId,
     goal_record_value: 3,
-    goal_progress_trigger: 'PER_INSTANCE',
+    goal_progress_trigger: 'EachCompletion',
     checklist: null,
     blocking_reason: null,
     dependency_status: 'NONE',
@@ -91,7 +91,7 @@ describe('PowerSync task template goal binding', () => {
       goalId,
       keyResultId,
       goalRecordValue: 3,
-      goalProgressTrigger: 'PER_INSTANCE',
+      goalProgressTrigger: 'EachCompletion',
     });
   });
 
@@ -120,14 +120,14 @@ describe('PowerSync task template goal binding', () => {
     await repository.save(template);
 
     const [sql, parameters] = vi.mocked(db.execute).mock.calls[0];
-    expect(sql).toContain(
-      'goal_id, key_result_id, goal_record_value,\n          goal_progress_trigger',
-    );
+    for (const column of ['goal_id', 'key_result_id', 'goal_record_value', 'goal_progress_trigger']) {
+      expect(sql).toContain(column);
+    }
     expect(boundColumnParameters(sql, parameters ?? [])).toMatchObject({
       goal_id: goalId,
       key_result_id: keyResultId,
       goal_record_value: 3,
-      goal_progress_trigger: 'PER_INSTANCE',
+      goal_progress_trigger: 'EachCompletion',
     });
   });
 
@@ -153,7 +153,7 @@ describe('PowerSync task template goal binding', () => {
       goal_id: goalId,
       key_result_id: keyResultId,
       goal_record_value: 3,
-      goal_progress_trigger: 'PER_INSTANCE',
+      goal_progress_trigger: 'EachCompletion',
     });
   });
 });

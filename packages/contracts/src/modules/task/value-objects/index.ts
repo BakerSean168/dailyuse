@@ -20,10 +20,17 @@ export { TaskReminderConfigSchema } from './task-reminder-config';
 
 // TaskGoalBinding
 export type {
+  GoalContributionRule,
+  TaskGoalLink,
+  TaskGoalLinkDTO,
   TaskGoalBinding,
   TaskGoalBindingDTO,
 } from './task-goal-binding';
-export { TaskGoalBindingSchema } from './task-goal-binding';
+export {
+  GoalContributionRuleSchema,
+  TaskGoalLinkSchema,
+  TaskGoalBindingSchema,
+} from './task-goal-binding';
 export { TaskGoalBindingTrigger } from './task-goal-binding-trigger';
 export type { TaskGoalBindingTrigger as TaskGoalBindingTriggerValue } from './task-goal-binding-trigger';
 
@@ -46,12 +53,14 @@ export { RecurrenceFrequency } from './recurrence-frequency';
 export { DayOfWeek } from './day-of-week';
 export { TaskReminderType } from './task-reminder-type';
 export { ReminderTimeUnit } from './reminder-time-unit';
-export { DependencyType } from './dependency-type';
-export { DependencyStatus } from './dependency-status';
 export { RecurrenceEndConditionType } from './recurrence-end-condition-type';
 export { TaskScheduleMode } from './task-schedule-mode';
 
 export { TaskTemplateStatus } from './task-template-status';
+export { TaskPlanOutcome } from './task-plan-outcome';
+export type { TaskPlanOutcome as TaskPlanOutcomeValue } from './task-plan-outcome';
+export { TaskPlanCompletionPolicy } from './task-plan-completion-policy';
+export type { TaskPlanCompletionPolicy as TaskPlanCompletionPolicyValue } from './task-plan-completion-policy';
 export { TaskInstanceStatus } from './task-instance-status';
 export { TaskTimeType } from './task-time-type';
 export { TaskType } from './task-type';

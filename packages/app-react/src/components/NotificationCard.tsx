@@ -32,7 +32,7 @@ export function NotificationCard({
       <View style={styles.pillRow}>
         <StatusPill label={notification.type} tone="tint" />
         <StatusPill label={notification.category} tone="textSecondary" />
-        <StatusPill label={notification.status} tone={notification.isRead ? 'success' : 'warning'} />
+        <StatusPill label={notification.isRead ? 'Read' : 'Unread'} tone={notification.isRead ? 'success' : 'warning'} />
       </View>
       <ThemedText type="small" themeColor="textSecondary">
         Created at {formatDate(notification.createdAt)}

@@ -411,40 +411,15 @@ exports.Prisma.GoalScalarFieldEnum = {
   identityId: 'identityId',
   name: 'name',
   description: 'description',
-  color: 'color',
   feasibilityAnalysis: 'feasibilityAnalysis',
   motivation: 'motivation',
   status: 'status',
-  importance: 'importance',
-  priority: 'priority',
-  category: 'category',
-  tags: 'tags',
   startDate: 'startDate',
-  targetDate: 'targetDate',
+  dueDate: 'dueDate',
   completedAt: 'completedAt',
   archivedAt: 'archivedAt',
-  folderId: 'folderId',
-  parentGoalId: 'parentGoalId',
-  rollupPolicy: 'rollupPolicy',
   sortOrder: 'sortOrder',
   reminderConfig: 'reminderConfig',
-  version: 'version',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
-};
-
-exports.Prisma.GoalFolderScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  name: 'name',
-  description: 'description',
-  color: 'color',
-  icon: 'icon',
-  folderType: 'folderType',
-  isSystemFolder: 'isSystemFolder',
-  parentFolderId: 'parentFolderId',
-  sortOrder: 'sortOrder',
   version: 'version',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -457,9 +432,9 @@ exports.Prisma.KeyResultScalarFieldEnum = {
   goalId: 'goalId',
   title: 'title',
   description: 'description',
-  valueType: 'valueType',
   aggregationMethod: 'aggregationMethod',
-  initialValue: 'initialValue',
+  startingValue: 'startingValue',
+  progressBaselineValue: 'progressBaselineValue',
   targetValue: 'targetValue',
   currentValue: 'currentValue',
   unit: 'unit',
@@ -486,15 +461,11 @@ exports.Prisma.GoalReviewScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
   goalId: 'goalId',
-  reviewType: 'reviewType',
-  title: 'title',
-  content: 'content',
-  achievements: 'achievements',
+  reflection: 'reflection',
   challenges: 'challenges',
-  lessonsLearned: 'lessonsLearned',
-  nextSteps: 'nextSteps',
-  rating: 'rating',
-  keyResultSnapshots: 'keyResultSnapshots',
+  adjustments: 'adjustments',
+  systemContext: 'systemContext',
+  reviewedAt: 'reviewedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -512,42 +483,6 @@ exports.Prisma.KeyResultWeightSnapshotScalarFieldEnum = {
   reason: 'reason',
   operatorId: 'operatorId',
   createdAt: 'createdAt'
-};
-
-exports.Prisma.FocusSessionScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  goalId: 'goalId',
-  status: 'status',
-  durationMinutes: 'durationMinutes',
-  actualDurationMinutes: 'actualDurationMinutes',
-  description: 'description',
-  startedAt: 'startedAt',
-  pausedAt: 'pausedAt',
-  resumedAt: 'resumedAt',
-  completedAt: 'completedAt',
-  cancelledAt: 'cancelledAt',
-  pauseCount: 'pauseCount',
-  pausedDurationMinutes: 'pausedDurationMinutes',
-  version: 'version',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
-};
-
-exports.Prisma.FocusModeScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  focusedGoalIds: 'focusedGoalIds',
-  hiddenGoalsMode: 'hiddenGoalsMode',
-  startTime: 'startTime',
-  endTime: 'endTime',
-  actualEndTime: 'actualEndTime',
-  isActive: 'isActive',
-  version: 'version',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
 };
 
 exports.Prisma.RuleScalarFieldEnum = {
@@ -646,7 +581,9 @@ exports.Prisma.NotificationScalarFieldEnum = {
   identityId: 'identityId',
   type: 'type',
   category: 'category',
-  status: 'status',
+  workflowKey: 'workflowKey',
+  topic: 'topic',
+  idempotencyKey: 'idempotencyKey',
   title: 'title',
   content: 'content',
   importance: 'importance',
@@ -656,8 +593,9 @@ exports.Prisma.NotificationScalarFieldEnum = {
   metadata: 'metadata',
   actions: 'actions',
   navigationIntent: 'navigationIntent',
+  correlationId: 'correlationId',
+  causationId: 'causationId',
   readAt: 'readAt',
-  sentAt: 'sentAt',
   expiresAt: 'expiresAt',
   version: 'version',
   createdAt: 'createdAt',
@@ -692,12 +630,24 @@ exports.Prisma.NotificationHistoryScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.NotificationDeliveryDecisionRecordScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  notificationId: 'notificationId',
+  channel: 'channel',
+  outcome: 'outcome',
+  reason: 'reason',
+  preferenceSource: 'preferenceSource',
+  retryAt: 'retryAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.NotificationPreferenceScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
-  enabled: 'enabled',
-  channels: 'channels',
-  categories: 'categories',
+  globalChannels: 'globalChannels',
+  workflowOverrides: 'workflowOverrides',
   doNotDisturb: 'doNotDisturb',
   rateLimit: 'rateLimit',
   version: 'version',
@@ -976,6 +926,64 @@ exports.Prisma.ReminderOccurrenceScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   finishedAt: 'finishedAt'
+};
+
+exports.Prisma.RoutineDefinitionScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  name: 'name',
+  description: 'description',
+  enabled: 'enabled',
+  triggerJson: 'triggerJson',
+  version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RoutineProfileScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  name: 'name',
+  description: 'description',
+  enabled: 'enabled',
+  active: 'active',
+  version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RoutineProfileMembershipScalarFieldEnum = {
+  identityId: 'identityId',
+  profileId: 'profileId',
+  routineId: 'routineId',
+  enabled: 'enabled',
+  version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RoutineProtocolDefinitionScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  name: 'name',
+  definitionJson: 'definitionJson',
+  version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RoutineProtocolSessionScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  protocolId: 'protocolId',
+  protocolVersion: 'protocolVersion',
+  status: 'status',
+  snapshotJson: 'snapshotJson',
+  terminationReason: 'terminationReason',
+  endedAt: 'endedAt',
+  version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.RepositoryScalarFieldEnum = {
@@ -1404,31 +1412,20 @@ exports.Prisma.UserSettingScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.TaskFolderScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  name: 'name',
-  color: 'color',
-  icon: 'icon',
-  order: 'order',
-  version: 'version',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
-};
-
 exports.Prisma.TaskTemplateScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
   name: 'name',
   description: 'description',
   status: 'status',
+  outcome: 'outcome',
+  completionPolicy: 'completionPolicy',
+  closedAt: 'closedAt',
+  archivedAt: 'archivedAt',
+  abandonedReason: 'abandonedReason',
   importance: 'importance',
-  priority: 'priority',
   color: 'color',
   tags: 'tags',
-  folderId: 'folderId',
-  parentTaskId: 'parentTaskId',
   timeConfigType: 'timeConfigType',
   timeConfigStartTime: 'timeConfigStartTime',
   timeConfigEndTime: 'timeConfigEndTime',
@@ -1439,8 +1436,6 @@ exports.Prisma.TaskTemplateScalarFieldEnum = {
   recurrenceRuleType: 'recurrenceRuleType',
   recurrenceRuleInterval: 'recurrenceRuleInterval',
   recurrenceRuleDaysOfWeek: 'recurrenceRuleDaysOfWeek',
-  recurrenceRuleDayOfMonth: 'recurrenceRuleDayOfMonth',
-  recurrenceRuleMonthOfYear: 'recurrenceRuleMonthOfYear',
   recurrenceRuleEndDate: 'recurrenceRuleEndDate',
   recurrenceRuleCount: 'recurrenceRuleCount',
   reminderConfigEnabled: 'reminderConfigEnabled',
@@ -1454,9 +1449,6 @@ exports.Prisma.TaskTemplateScalarFieldEnum = {
   goalRecordValue: 'goalRecordValue',
   goalProgressTrigger: 'goalProgressTrigger',
   checklist: 'checklist',
-  blockingReason: 'blockingReason',
-  dependencyStatus: 'dependencyStatus',
-  isBlocked: 'isBlocked',
   version: 'version',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -1471,7 +1463,6 @@ exports.Prisma.TaskInstanceScalarFieldEnum = {
   occurrenceKey: 'occurrenceKey',
   status: 'status',
   importance: 'importance',
-  priority: 'priority',
   timeConfig: 'timeConfig',
   actualStartTime: 'actualStartTime',
   actualEndTime: 'actualEndTime',
@@ -1498,19 +1489,6 @@ exports.Prisma.TaskGoalOutboxScalarFieldEnum = {
   dispatchedAt: 'dispatchedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
-};
-
-exports.Prisma.TaskDependencyScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  predecessorTaskId: 'predecessorTaskId',
-  successorTaskId: 'successorTaskId',
-  dependencyType: 'dependencyType',
-  lagDays: 'lagDays',
-  version: 'version',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
 };
 
 exports.Prisma.TaskTemplateHistoryScalarFieldEnum = {
@@ -1540,7 +1518,7 @@ exports.Prisma.TaskStatisticScalarFieldEnum = {
   instanceInProgress: 'instanceInProgress',
   instanceCompleted: 'instanceCompleted',
   instanceSkipped: 'instanceSkipped',
-  instanceExpired: 'instanceExpired',
+  instanceMissed: 'instanceMissed',
   completionToday: 'completionToday',
   completionWeek: 'completionWeek',
   completionMonth: 'completionMonth',
@@ -1554,7 +1532,6 @@ exports.Prisma.TaskStatisticScalarFieldEnum = {
   timeUpcoming: 'timeUpcoming',
   distributionByImportance: 'distributionByImportance',
   distributionByUrgency: 'distributionByUrgency',
-  distributionByFolder: 'distributionByFolder',
   distributionByTag: 'distributionByTag'
 };
 
@@ -1633,13 +1610,10 @@ exports.Prisma.ModelName = {
   EditorWorkspaceSessionGroup: 'EditorWorkspaceSessionGroup',
   EditorWorkspaceSessionGroupTab: 'EditorWorkspaceSessionGroupTab',
   Goal: 'Goal',
-  GoalFolder: 'GoalFolder',
   KeyResult: 'KeyResult',
   GoalRecord: 'GoalRecord',
   GoalReview: 'GoalReview',
   KeyResultWeightSnapshot: 'KeyResultWeightSnapshot',
-  FocusSession: 'FocusSession',
-  FocusMode: 'FocusMode',
   Rule: 'Rule',
   RuleRevision: 'RuleRevision',
   Habit: 'Habit',
@@ -1652,6 +1626,7 @@ exports.Prisma.ModelName = {
   Notification: 'Notification',
   NotificationChannel: 'NotificationChannel',
   NotificationHistory: 'NotificationHistory',
+  NotificationDeliveryDecisionRecord: 'NotificationDeliveryDecisionRecord',
   NotificationPreference: 'NotificationPreference',
   NotificationTemplate: 'NotificationTemplate',
   NotificationDispatchOutbox: 'NotificationDispatchOutbox',
@@ -1669,6 +1644,11 @@ exports.Prisma.ModelName = {
   ReminderResponse: 'ReminderResponse',
   UserReminderPreference: 'UserReminderPreference',
   ReminderOccurrence: 'ReminderOccurrence',
+  RoutineDefinition: 'RoutineDefinition',
+  RoutineProfile: 'RoutineProfile',
+  RoutineProfileMembership: 'RoutineProfileMembership',
+  RoutineProtocolDefinition: 'RoutineProtocolDefinition',
+  RoutineProtocolSession: 'RoutineProtocolSession',
   Repository: 'Repository',
   Folder: 'Folder',
   Resource: 'Resource',
@@ -1695,11 +1675,9 @@ exports.Prisma.ModelName = {
   ScheduleEventConsumerReceipt: 'ScheduleEventConsumerReceipt',
   ScheduleEventDeliveryLog: 'ScheduleEventDeliveryLog',
   UserSetting: 'UserSetting',
-  TaskFolder: 'TaskFolder',
   TaskTemplate: 'TaskTemplate',
   TaskInstance: 'TaskInstance',
   TaskGoalOutbox: 'TaskGoalOutbox',
-  TaskDependency: 'TaskDependency',
   TaskTemplateHistory: 'TaskTemplateHistory',
   TaskStatistic: 'TaskStatistic',
   WalletAccount: 'WalletAccount',

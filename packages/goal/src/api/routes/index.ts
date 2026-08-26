@@ -14,14 +14,10 @@ import { Router, type RequestHandler } from 'express';
 import type { OpenApiRegistryLike } from '@memoflow/utils/result';
 import { GoalController } from '../../server/transport/goal.controller';
 import type { GoalUseCases } from '../../server/transport/goal.controller';
-import { GoalFolderController } from '../../server/transport/goal-folder.controller';
-import type { GoalFolderUseCases } from '../../server/transport/goal-folder.controller';
 import { registerGoalCrudRoutes } from './goal.routes';
-import { registerFocusModeRoutes } from './focus-mode.routes';
 import { registerKeyResultRoutes } from './key-result.routes';
 import { registerReviewRoutes } from './review.routes';
 import { registerRecordRoutes } from './goal-record.routes';
-import { registerGoalFolderRoutes as registerGoalFolderEntityRoutes } from './goal-folder.routes';
 
 // ============ Types ============
 
@@ -47,7 +43,6 @@ export function registerGoalRoutes(
 
   // Each sub-route file returns its own Router
   // Register static sub-routes before CRUD routes so they are not shadowed by '/:id'.
-  const focusModeRouter = registerFocusModeRoutes(controller, middleware, openApiRegistry);
   const crudRouter = registerGoalCrudRoutes(controller, middleware, openApiRegistry);
   const keyResultRouter = registerKeyResultRoutes(controller, middleware, openApiRegistry);
   const reviewRouter = registerReviewRoutes(controller, middleware, openApiRegistry);
@@ -55,25 +50,10 @@ export function registerGoalRoutes(
 
   // Merge all into a single parent router
   const router = Router();
-  router.use(focusModeRouter);
   router.use(crudRouter);
   router.use(keyResultRouter);
   router.use(reviewRouter);
   router.use(recordRouter);
 
   return router;
-}
-
-/**
- * Register all goal-folder routes.
- *
- * The caller mounts the returned Router on `/goal-folders`.
- */
-export function registerGoalFolderRoutes(
-  handlers: GoalFolderUseCases,
-  middleware: PlatformMiddleware,
-  openApiRegistry?: OpenApiRegistryLike | null,
-): Router {
-  const controller = new GoalFolderController(handlers);
-  return registerGoalFolderEntityRoutes(controller, middleware, openApiRegistry);
 }

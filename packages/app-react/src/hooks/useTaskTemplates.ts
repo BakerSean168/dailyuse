@@ -17,8 +17,9 @@ export type TaskTemplateSummary = {
   name: string;
   description: string | null;
   status: TaskTemplateStatus;
+  outcome: TaskTemplateClientDTO['outcome'];
+  archivedAt: number | null;
   importance: ImportanceLevel;
-  priority: number | null;
   instanceCount: number;
   completedInstanceCount: number;
   pendingInstanceCount: number;
@@ -28,14 +29,12 @@ export type TaskTemplateSummary = {
   completionWindowDays: 30;
   futurePendingInstanceCount: number;
   singleInstanceStatus: TaskTemplateClientDTO['singleInstanceStatus'];
-  isBlocked: boolean;
-  blockingReason: string | null;
   tags: string[];
   updatedAt: number;
 };
 
 export type TaskStatusFilter = 'all' | TaskTemplateStatus;
-export type TaskSortOption = 'updated' | 'priority' | 'pending' | 'completion';
+export type TaskSortOption = 'updated' | 'pending' | 'completion';
 
 export type TaskTemplateDetail = TaskTemplateSummary & {
   createdAt: number;
@@ -53,8 +52,9 @@ function mapTemplate(template: TaskTemplate): TaskTemplateSummary {
     name: template.name,
     description: template.description,
     status: template.status,
+    outcome: template.outcome,
+    archivedAt: template.archivedAt,
     importance: template.importance,
-    priority: template.priority ?? null,
     instanceCount: template.instanceCount,
     completedInstanceCount: template.completedInstanceCount,
     pendingInstanceCount: template.pendingInstanceCount,
@@ -64,8 +64,6 @@ function mapTemplate(template: TaskTemplate): TaskTemplateSummary {
     completionWindowDays: template.completionWindowDays,
     futurePendingInstanceCount: template.futurePendingInstanceCount,
     singleInstanceStatus: template.singleInstanceStatus,
-    isBlocked: template.isBlocked ?? false,
-    blockingReason: template.blockingReason,
     tags: template.tags,
     updatedAt: template.updatedAt,
   };
@@ -82,7 +80,7 @@ export function mapTaskTemplateDetail(template: TaskTemplate): TaskTemplateDetai
     comment: template.comment,
     timeConfig: {
       timeType: template.timeConfig.timeType,
-      startDate: template.timeConfig.startDate ? template.timeConfig.startDate : null,
+      startDate: template.timeConfig.startDate ?? null,
       timePoint: template.timeConfig.timePoint,
       timeRange: template.timeConfig.timeRange ?? null,
     },
@@ -91,23 +89,15 @@ export function mapTaskTemplateDetail(template: TaskTemplate): TaskTemplateDetai
 
 function sortTemplates(templates: TaskTemplateSummary[], sortBy: TaskSortOption) {
   const next = [...templates];
-
   next.sort((left, right) => {
-    if (sortBy === 'priority') {
-      return (right.priority ?? -1) - (left.priority ?? -1) || right.updatedAt - left.updatedAt;
-    }
-
     if (sortBy === 'pending') {
       return right.pendingInstanceCount - left.pendingInstanceCount || right.updatedAt - left.updatedAt;
     }
-
     if (sortBy === 'completion') {
       return right.completionRate - left.completionRate || right.updatedAt - left.updatedAt;
     }
-
     return right.updatedAt - left.updatedAt;
   });
-
   return next;
 }
 
@@ -121,7 +111,6 @@ export function useTaskTemplates() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<TaskStatusFilter>('all');
   const [sortBy, setSortBy] = useState<TaskSortOption>('updated');
-  const [blockedOnly, setBlockedOnly] = useState(false);
 
   async function fetchTemplates(filter: TaskStatusFilter) {
     const result = await service.listTemplates({
@@ -129,15 +118,13 @@ export function useTaskTemplates() {
       limit: 100,
       status: filter === 'all' ? undefined : [filter],
     });
-
     if (!result.ok) {
       setTemplates([]);
       setError(presentErrorMessage(result.error));
       setIsLoading(false);
       return;
     }
-
-    setTemplates(result.data.templates.map((template) => mapTemplate(template)));
+    setTemplates(result.data.templates.map(mapTemplate));
     setError(null);
     setIsLoading(false);
   }
@@ -151,44 +138,32 @@ export function useTaskTemplates() {
     }
 
     let cancelled = false;
-
     async function loadTemplates() {
       setIsLoading(true);
-      setError(null);
-
       const result = await service.listTemplates({
         page: 1,
         limit: 100,
         status: statusFilter === 'all' ? undefined : [statusFilter],
       });
-
-      if (cancelled) {
-        return;
-      }
-
+      if (cancelled) return;
       if (!result.ok) {
         setTemplates([]);
         setError(presentErrorMessage(result.error));
         setIsLoading(false);
         return;
       }
-
-      setTemplates(result.data.templates.map((template) => mapTemplate(template)));
+      setTemplates(result.data.templates.map(mapTemplate));
+      setError(null);
       setIsLoading(false);
     }
-
     void loadTemplates();
-
     return () => {
       cancelled = true;
     };
   }, [isRemoteAuthenticated, service, statusFilter]);
 
   async function refresh() {
-    if (!isRemoteAuthenticated) {
-      return;
-    }
-
+    if (!isRemoteAuthenticated) return;
     setIsLoading(true);
     await fetchTemplates(statusFilter);
   }
@@ -198,24 +173,22 @@ export function useTaskTemplates() {
     const byQuery =
       normalizedQuery.length === 0
         ? templates
-        : templates.filter((template) => {
-            const text = [template.name, template.description ?? '', template.tags.join(' ')].join(' ').toLowerCase();
-            return text.includes(normalizedQuery);
-          });
-
-    const byBlocked = blockedOnly ? byQuery.filter((template) => template.isBlocked) : byQuery;
-    return sortTemplates(byBlocked, sortBy);
-  }, [blockedOnly, normalizedQuery, sortBy, templates]);
+        : templates.filter((template) =>
+            [template.name, template.description ?? '', template.tags.join(' ')]
+              .join(' ')
+              .toLowerCase()
+              .includes(normalizedQuery),
+          );
+    return sortTemplates(byQuery, sortBy);
+  }, [normalizedQuery, sortBy, templates]);
 
   return {
-    blockedOnly,
     error,
     filteredTemplates,
     isLoading,
     isRemoteAuthenticated,
     refresh,
     searchQuery,
-    setBlockedOnly,
     setSearchQuery,
     setSortBy,
     setStatusFilter,

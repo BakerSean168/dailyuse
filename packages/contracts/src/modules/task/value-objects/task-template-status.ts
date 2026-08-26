@@ -1,11 +1,8 @@
-/**
- * 任务模板状态
- */
+/** Canonical Task plan lifecycle. Archive/delete are orthogonal metadata. */
 export const TaskTemplateStatus = {
-  Active: 'Active', // 激活
-  Paused: 'Paused', // 暂停
-  Archived: 'Archived', // 归档
-  Deleted: 'Deleted', // 删除
+  Active: 'Active',
+  Paused: 'Paused',
+  Closed: 'Closed',
 } as const;
 
 export type TaskTemplateStatus = (typeof TaskTemplateStatus)[keyof typeof TaskTemplateStatus];

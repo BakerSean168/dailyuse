@@ -55,9 +55,11 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
         content: 'Content',
         type: 'Info',
         category: 'System',
-        importance: 'Normal',
-        urgency: 'Normal',
-        status: 'Pending',
+        workflowKey: 'system.general',
+        topic: 'system.general',
+        idempotencyKey: 'seed:' + id,
+        importance: 'Moderate',
+        urgency: 'Medium',
         version: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -299,7 +301,6 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
   it('6. CreateNotificationUseCase writes aggregate, channels, and outbox in same transaction', async () => {
     const useCase = new CreateNotificationUseCase(
       notificationRepo,
-      templateRepo,
       preferenceRepo,
       async () => false,
     );
@@ -342,6 +343,16 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
     });
     expect(outboxes).toHaveLength(2);
     expect(outboxes.map((o) => o.channel).sort()).toEqual(['InApp', 'Push']);
+
+    const planDecisions = await prisma.notificationDeliveryDecisionRecord.findMany({
+      where: { identityId, notificationId: clientDTO.id },
+      orderBy: { channel: 'asc' },
+    });
+    expect(planDecisions).toHaveLength(2);
+    expect(planDecisions.map((decision) => [decision.channel, decision.outcome])).toEqual([
+      ['InApp', 'enqueued'],
+      ['Push', 'enqueued'],
+    ]);
 
     // Worker tick claims outbox dispatches and delivers them
     await runtime.tick();
@@ -1581,9 +1592,11 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
           content: 'Content',
           type: 'Info',
           category: 'System',
-          importance: 'Normal',
-          urgency: 'Normal',
-          status: 'Pending',
+          workflowKey: 'system.general',
+          topic: 'system.general',
+          idempotencyKey: 'seed:' + notifId,
+          importance: 'Moderate',
+          urgency: 'Medium',
           version: 1,
           createdAt: sharedTime,
           updatedAt: sharedTime,

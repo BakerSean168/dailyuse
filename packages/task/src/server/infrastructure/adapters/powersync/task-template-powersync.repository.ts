@@ -36,158 +36,64 @@ export class PowerSyncTaskTemplateRepository
       'SELECT id FROM task_templates WHERE id = ? LIMIT 1',
       [data.id],
     );
+    const mutableColumns: readonly (readonly [string, unknown])[] = [
+      ['identity_id', data.identityId],
+      ['name', data.name],
+      ['description', data.description],
+      ['status', data.status],
+      ['outcome', data.outcome],
+      ['completion_policy', data.completionPolicy],
+      ['closed_at', data.closedAt],
+      ['archived_at', data.archivedAt],
+      ['abandoned_reason', data.abandonedReason],
+      ['importance', data.importance],
+      ['color', data.color],
+      ['tags', data.tags],
+      ['time_config_type', data.timeConfigType],
+      ['time_config_start_time', data.timeConfigStartTime],
+      ['time_config_end_time', data.timeConfigEndTime],
+      ['time_config_duration_minutes', data.timeConfigDurationMinutes],
+      ['time_config_time_point', data.timeConfigTimePoint],
+      ['time_config_time_range_start', data.timeConfigTimeRangeStart],
+      ['time_config_time_range_end', data.timeConfigTimeRangeEnd],
+      ['recurrence_rule_type', data.recurrenceRuleType],
+      ['recurrence_rule_interval', data.recurrenceRuleInterval],
+      ['recurrence_rule_days_of_week', data.recurrenceRuleDaysOfWeek],
+      ['recurrence_rule_end_date', data.recurrenceRuleEndDate],
+      ['recurrence_rule_count', data.recurrenceRuleCount],
+      ['reminder_config_enabled', data.reminderConfigEnabled],
+      ['reminder_config_time_offset_minutes', data.reminderConfigTimeOffsetMinutes],
+      ['reminder_config_unit', data.reminderConfigUnit],
+      ['reminder_config_channel', data.reminderConfigChannel],
+      ['last_generated_date', data.lastGeneratedDate],
+      ['generate_ahead_days', data.generateAheadDays],
+      ['goal_id', data.goalId],
+      ['key_result_id', data.keyResultId],
+      ['goal_record_value', data.goalRecordValue],
+      ['goal_progress_trigger', data.goalProgressTrigger],
+      ['checklist', data.checklist],
+      ['version', data.version],
+      ['updated_at', data.updatedAt],
+      ['deleted_at', data.deletedAt],
+    ];
 
     if (existing) {
       await this.db.execute(
-        `UPDATE task_templates
-         SET identity_id = ?,
-             name = ?,
-             description = ?,
-             status = ?,
-             importance = ?,
-             priority = ?,
-             color = ?,
-             tags = ?,
-             folder_id = ?,
-             parent_task_id = ?,
-             time_config_type = ?,
-             time_config_start_time = ?,
-             time_config_end_time = ?,
-             time_config_duration_minutes = ?,
-             time_config_time_point = ?,
-             time_config_time_range_start = ?,
-             time_config_time_range_end = ?,
-             recurrence_rule_type = ?,
-             recurrence_rule_interval = ?,
-             recurrence_rule_days_of_week = ?,
-             recurrence_rule_day_of_month = ?,
-             recurrence_rule_month_of_year = ?,
-             recurrence_rule_end_date = ?,
-             recurrence_rule_count = ?,
-             reminder_config_enabled = ?,
-             reminder_config_time_offset_minutes = ?,
-             reminder_config_unit = ?,
-             reminder_config_channel = ?,
-             last_generated_date = ?,
-             generate_ahead_days = ?,
-             goal_id = ?,
-             key_result_id = ?,
-             goal_record_value = ?,
-             goal_progress_trigger = ?,
-             checklist = ?,
-             blocking_reason = ?,
-             dependency_status = ?,
-             is_blocked = ?,
-             version = ?,
-             updated_at = ?,
-             deleted_at = ?
-         WHERE id = ?`,
-        [
-          data.identityId,
-          data.name,
-          data.description,
-          data.status,
-          data.importance,
-          data.priority,
-          data.color,
-          data.tags,
-          data.folderId,
-          data.parentTaskId,
-          data.timeConfigType,
-          data.timeConfigStartTime,
-          data.timeConfigEndTime,
-          data.timeConfigDurationMinutes,
-          data.timeConfigTimePoint,
-          data.timeConfigTimeRangeStart,
-          data.timeConfigTimeRangeEnd,
-          data.recurrenceRuleType,
-          data.recurrenceRuleInterval,
-          data.recurrenceRuleDaysOfWeek,
-          data.recurrenceRuleDayOfMonth,
-          data.recurrenceRuleMonthOfYear,
-          data.recurrenceRuleEndDate,
-          data.recurrenceRuleCount,
-          data.reminderConfigEnabled,
-          data.reminderConfigTimeOffsetMinutes,
-          data.reminderConfigUnit,
-          data.reminderConfigChannel,
-          data.lastGeneratedDate,
-          data.generateAheadDays,
-          data.goalId,
-          data.keyResultId,
-          data.goalRecordValue,
-          data.goalProgressTrigger,
-          data.checklist,
-          data.blockingReason,
-          data.dependencyStatus,
-          data.isBlocked,
-          data.version,
-          data.updatedAt,
-          data.deletedAt,
-          data.id,
-        ],
+        `UPDATE task_templates SET ${mutableColumns.map(([column]) => `${column} = ?`).join(', ')} WHERE id = ?`,
+        [...mutableColumns.map(([, value]) => value), data.id],
       );
-    } else {
-      await this.db.execute(
-        `INSERT INTO task_templates (
-          id, identity_id, name, description, status, importance, priority, color, tags, folder_id,
-          parent_task_id, time_config_type, time_config_start_time, time_config_end_time,
-          time_config_duration_minutes, time_config_time_point, time_config_time_range_start,
-          time_config_time_range_end, recurrence_rule_type, recurrence_rule_interval,
-          recurrence_rule_days_of_week, recurrence_rule_day_of_month, recurrence_rule_month_of_year,
-          recurrence_rule_end_date, recurrence_rule_count, reminder_config_enabled,
-          reminder_config_time_offset_minutes, reminder_config_unit, reminder_config_channel,
-          last_generated_date, generate_ahead_days, goal_id, key_result_id, goal_record_value,
-          goal_progress_trigger, checklist, blocking_reason,
-          dependency_status, is_blocked, version, created_at, updated_at, deleted_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          data.id,
-          data.identityId,
-          data.name,
-          data.description,
-          data.status,
-          data.importance,
-          data.priority,
-          data.color,
-          data.tags,
-          data.folderId,
-          data.parentTaskId,
-          data.timeConfigType,
-          data.timeConfigStartTime,
-          data.timeConfigEndTime,
-          data.timeConfigDurationMinutes,
-          data.timeConfigTimePoint,
-          data.timeConfigTimeRangeStart,
-          data.timeConfigTimeRangeEnd,
-          data.recurrenceRuleType,
-          data.recurrenceRuleInterval,
-          data.recurrenceRuleDaysOfWeek,
-          data.recurrenceRuleDayOfMonth,
-          data.recurrenceRuleMonthOfYear,
-          data.recurrenceRuleEndDate,
-          data.recurrenceRuleCount,
-          data.reminderConfigEnabled,
-          data.reminderConfigTimeOffsetMinutes,
-          data.reminderConfigUnit,
-          data.reminderConfigChannel,
-          data.lastGeneratedDate,
-          data.generateAheadDays,
-          data.goalId,
-          data.keyResultId,
-          data.goalRecordValue,
-          data.goalProgressTrigger,
-          data.checklist,
-          data.blockingReason,
-          data.dependencyStatus,
-          data.isBlocked,
-          data.version,
-          data.createdAt,
-          data.updatedAt,
-          data.deletedAt,
-        ],
-      );
+      return;
     }
+
+    const insertColumns: readonly (readonly [string, unknown])[] = [
+      ['id', data.id],
+      ...mutableColumns,
+      ['created_at', data.createdAt],
+    ];
+    await this.db.execute(
+      `INSERT INTO task_templates (${insertColumns.map(([column]) => column).join(', ')}) VALUES (${insertColumns.map(() => '?').join(', ')})`,
+      insertColumns.map(([, value]) => value),
+    );
   }
 
   async findByIdForIdentity(identityId: string, id: string): Promise<TaskTemplate | null> {
@@ -230,12 +136,6 @@ export class PowerSyncTaskTemplateRepository
     return this.findByStatus(identityId, 'Active' as TaskTemplateStatus);
   }
 
-  async findByFolderId(identityId: string, folderId: string): Promise<TaskTemplate[]> {
-    return this.queryTemplates(
-      'SELECT * FROM task_templates WHERE identity_id = ? AND folder_id = ? AND deleted_at IS NULL ORDER BY created_at DESC',
-      [identityId, folderId],
-    );
-  }
 
   async findByGoalId(identityId: string, goalId: string): Promise<TaskTemplate[]> {
     return this.queryTemplates(
@@ -285,8 +185,8 @@ export class PowerSyncTaskTemplateRepository
     }
     const now = new Date().toISOString();
     await this.db.execute(
-      'UPDATE task_templates SET status = ?, deleted_at = ?, updated_at = ? WHERE id = ? AND identity_id = ?',
-      ['Deleted', now, now, id, identityId],
+      'UPDATE task_templates SET deleted_at = ?, updated_at = ? WHERE id = ? AND identity_id = ?',
+      [now, now, id, identityId],
     );
   }
 
@@ -296,8 +196,8 @@ export class PowerSyncTaskTemplateRepository
       throw new Error('Task template not found for the current identity.');
     }
     await this.db.execute(
-      'UPDATE task_templates SET status = ?, deleted_at = NULL, updated_at = ? WHERE id = ? AND identity_id = ?',
-      ['Active', new Date().toISOString(), id, identityId],
+      'UPDATE task_templates SET deleted_at = NULL, archived_at = NULL, updated_at = ? WHERE id = ? AND identity_id = ?',
+      [new Date().toISOString(), id, identityId],
     );
   }
 
@@ -321,24 +221,8 @@ export class PowerSyncTaskTemplateRepository
     );
   }
 
-  async findSubtasks(identityId: string, parentTaskId: string): Promise<TaskTemplate[]> {
-    return this.queryTemplates(
-      'SELECT * FROM task_templates WHERE identity_id = ? AND parent_task_id = ? AND deleted_at IS NULL ORDER BY created_at ASC',
-      [identityId, parentTaskId],
-    );
-  }
 
-  async findBlockedTasks(identityId: string): Promise<TaskTemplate[]> {
-    return this.queryTemplates(
-      'SELECT * FROM task_templates WHERE identity_id = ? AND is_blocked = 1 AND deleted_at IS NULL ORDER BY created_at DESC',
-      [identityId],
-    );
-  }
 
-  async findSortedByPriority(identityId: string, limit?: number): Promise<TaskTemplate[]> {
-    const sql = `SELECT * FROM task_templates WHERE identity_id = ? AND deleted_at IS NULL ORDER BY importance ASC, created_at DESC${limit ? ' LIMIT ?' : ''}`;
-    return this.queryTemplates(sql, limit ? [identityId, limit] : [identityId]);
-  }
 
   async findUpcomingTasks(identityId: string, daysAhead: number): Promise<TaskTemplate[]> {
     const rows = await this.findOneTimeTasks(identityId, { status: 'Active' });
@@ -409,18 +293,6 @@ export class PowerSyncTaskTemplateRepository
     if (filters?.status) {
       clauses.push('status = ?');
       params.push(filters.status);
-    }
-    if (filters?.folderId) {
-      clauses.push('folder_id = ?');
-      params.push(filters.folderId);
-    }
-    if (filters?.parentTaskId) {
-      clauses.push('parent_task_id = ?');
-      params.push(filters.parentTaskId);
-    }
-    if (filters?.isBlocked !== undefined) {
-      clauses.push('is_blocked = ?');
-      params.push(filters.isBlocked ? 1 : 0);
     }
     return { clauses, params };
   }

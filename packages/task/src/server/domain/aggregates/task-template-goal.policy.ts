@@ -5,17 +5,12 @@
  * Extracted from TaskTemplate aggregate to reduce aggregate size.
  */
 
-import type {
-  TaskGoalBindingTrigger as TaskGoalBindingTriggerValue,
-} from '@memoflow/contracts/task';
+import type { GoalContributionRule } from '@memoflow/contracts/task';
 import { TaskGoalBindingTrigger } from '@memoflow/contracts/task';
 import { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
 import { TaskType } from '../value-objects';
 import { TaskGoalBinding, type RecurrenceRule } from '../value-objects';
-import {
-  TaskTemplateArchivedError,
-  InvalidGoalBindingError,
-} from '../value-objects/task-errors';
+import { InvalidGoalBindingError } from '../value-objects/task-errors';
 import type { TaskTemplateProps } from './task-template.state';
 
 /** Mutable context for goal operations. */
@@ -38,20 +33,19 @@ export function bindToGoal(
   ctx: GoalOperationContext,
   goalId: string,
   keyResultId: string,
-  goalRecordValue?: number,
-  progressTrigger: TaskGoalBindingTriggerValue = TaskGoalBindingTrigger.PerInstance,
+  contribution: GoalContributionRule | null = null,
 ): void {
   if (!goalId || !keyResultId) {
     throw new InvalidGoalBindingError('Goal ID and Key Result ID are required');
   }
-  if (ctx.props.status === TaskTemplateStatus.Archived) {
-    throw new TaskTemplateArchivedError(ctx.id);
+  if (ctx.props.status === TaskTemplateStatus.Closed || ctx.props.deletedAt !== null) {
+    throw new InvalidGoalBindingError('Cannot change goal binding on a closed or deleted task plan');
   }
   if (ctx.props.goalBinding) {
     throw new InvalidGoalBindingError('Template is already bound to a goal');
   }
   if (
-    progressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted &&
+    contribution?.trigger === TaskGoalBindingTrigger.PlanCompletion &&
     !isFiniteTaskPlan(ctx.props.taskType, ctx.props.recurrenceRule)
   ) {
     throw new InvalidGoalBindingError(
@@ -62,11 +56,10 @@ export function bindToGoal(
   ctx.props.goalBinding = TaskGoalBinding.create({
     goalId: goalId as TaskGoalBinding['goalId'],
     keyResultId: keyResultId as TaskGoalBinding['keyResultId'],
-    goalRecordValue: goalRecordValue ?? 1,
-    progressTrigger,
+    contribution,
   });
   ctx.props.updatedAt = Date.now();
-  ctx.addHistory('goal_bound', { goalId, keyResultId, goalRecordValue, progressTrigger });
+  ctx.addHistory('goal_bound', { goalId, keyResultId, contribution });
 }
 
 /** Unbinds from the current goal. */
@@ -74,8 +67,8 @@ export function unbindFromGoal(ctx: GoalOperationContext): void {
   if (!ctx.props.goalBinding) {
     throw new InvalidGoalBindingError('Template is not bound to any goal');
   }
-  if (ctx.props.status === TaskTemplateStatus.Archived) {
-    throw new TaskTemplateArchivedError(ctx.id);
+  if (ctx.props.status === TaskTemplateStatus.Closed || ctx.props.deletedAt !== null) {
+    throw new InvalidGoalBindingError('Cannot change goal binding on a closed or deleted task plan');
   }
 
   const { goalId: oldGoalId, keyResultId: oldKeyResultId } = ctx.props.goalBinding;

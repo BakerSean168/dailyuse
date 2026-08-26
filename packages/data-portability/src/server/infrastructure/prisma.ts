@@ -3,8 +3,6 @@ import { PrismaDataPortabilityImportStore } from './import-store/prisma-data-por
 import type { DataPortabilityImportStore } from '../application/import-store/data-portability-import-store';
 import type { DataPortabilityDependencies } from '../application/data-portability.dependencies';
 import {
-  PrismaFocusSessionAdapter,
-  PrismaFocusModeAdapter,
   PrismaRepositoryAdapter,
   PrismaFolderAdapter,
   PrismaResourceAdapter,
@@ -78,14 +76,9 @@ export function createPrismaDataPortabilityDependencies(
 
   return {
     goalRepository: goalRepos.goalRepository,
-    goalFolderRepository: goalRepos.goalFolderRepository,
     goalRecordRepository: goalRepos.goalRecordRepository,
-    focusSessionRepository: new PrismaFocusSessionAdapter(db),
-    focusModeRepository: new PrismaFocusModeAdapter(db),
     taskTemplateRepository: taskRepos.taskTemplateRepository,
     taskInstanceRepository: taskRepos.taskInstanceRepository,
-    taskFolderRepository: taskRepos.taskFolderRepository,
-    taskDependencyRepository: taskRepos.taskDependencyRepository,
     reminderTemplateRepository: reminderRepos.reminderTemplateRepository,
     reminderGroupRepository: reminderRepos.reminderGroupRepository,
     reminderResponseRepository: reminderRepos.reminderResponseRepository,

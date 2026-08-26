@@ -10,6 +10,7 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { IElectronDatabase, IElectronModuleContext } from '@memoflow/contracts/electron';
+import { UserDataExportEnvelopeV2Schema } from '@memoflow/contracts/data-portability';
 import { DataPortabilityChannels } from '@memoflow/contracts/electron';
 import type { DataPortabilityElectronModuleDef } from '@memoflow/data-portability/electron';
 import { composeDataPortability } from '../../runtime/compose-data-portability';
@@ -114,9 +115,9 @@ describe('DataPortabilityElectronModule IPC handler integration', () => {
       },
     });
 
-    const envelope = JSON.parse(result.data.content);
+    const envelope = UserDataExportEnvelopeV2Schema.parse(JSON.parse(result.data.content));
     expect(envelope.kind).toBe('memoflow.user-data-export');
-    expect(envelope.schemaVersion).toBe(1);
+    expect(envelope.schemaVersion).toBe(2);
     expect(envelope).toHaveProperty('data');
   });
 

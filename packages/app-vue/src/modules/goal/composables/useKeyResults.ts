@@ -30,7 +30,7 @@ export function useKeyResults() {
     return version;
   }
 
-  async function addKeyResult(goalId: string, req: Omit<AddKeyResultReq, 'expectedVersion'>) {
+  async function addKeyResult(goalId: string, req: Omit<AddKeyResultReq, 'goalId' | 'expectedVersion'>) {
     const expectedVersion = getExpectedVersion(goalId);
     if (expectedVersion === null) return null;
     const data = await executeGoalOperation(

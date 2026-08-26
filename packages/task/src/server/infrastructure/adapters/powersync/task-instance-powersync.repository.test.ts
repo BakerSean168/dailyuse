@@ -68,3 +68,47 @@ describe('PowerSyncTaskInstanceRepository template statistics', () => {
     ]);
   });
 });
+
+describe('PowerSyncTaskInstanceRepository occurrence identity (TASK-2204)', () => {
+  it('skips insert when the same identity/template occurrence key already exists', async () => {
+    const getOptional = vi
+      .fn()
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: 'existing-instance' });
+    const execute = vi.fn();
+    const repository = new PowerSyncTaskInstanceRepository({
+      getOptional,
+      execute,
+    } as unknown as IElectronDatabaseTransaction);
+    const instance = {
+      occurrenceKey: 'tpl-1:2026-03-08',
+      toServerDTO: () => ({
+        id: 'new-instance',
+        templateId: 'tpl-1',
+        identityId: 'identity-a',
+        instanceDate: Date.UTC(2026, 2, 8),
+        status: 'Pending',
+        importance: 'Moderate',
+        timeConfig: { timeType: 'AllDay', startDate: Date.UTC(2026, 2, 8), timePoint: null, timeRange: null },
+        actualStartTime: null,
+        actualEndTime: null,
+        comment: null,
+        version: 1,
+        createdAt: Date.UTC(2026, 2, 8),
+        updatedAt: Date.UTC(2026, 2, 8),
+        deletedAt: null,
+      }),
+      domainEvents: [],
+      pullDomainEvents: () => [],
+    } as any;
+
+    await repository.save(instance);
+
+    expect(getOptional).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining('template_id = ? AND identity_id = ? AND occurrence_key = ?'),
+      ['tpl-1', 'identity-a', 'tpl-1:2026-03-08'],
+    );
+    expect(execute).not.toHaveBeenCalled();
+  });
+});

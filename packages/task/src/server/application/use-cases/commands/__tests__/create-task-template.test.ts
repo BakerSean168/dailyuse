@@ -146,8 +146,7 @@ describe('CreateTaskTemplateUseCase', () => {
       goalBinding: {
         goalId: 'goal-1',
         keyResultId: 'kr-1',
-        goalRecordValue: 2,
-        progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
+        contribution: { value: 2, trigger: TaskGoalBindingTrigger.PlanCompletion },
       },
     });
 
@@ -158,8 +157,7 @@ describe('CreateTaskTemplateUseCase', () => {
         goalBinding: expect.objectContaining({
           goalId: 'goal-1',
           keyResultId: 'kr-1',
-          goalRecordValue: 2,
-          progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
+          contribution: { value: 2, trigger: TaskGoalBindingTrigger.PlanCompletion },
         }),
       }),
     );
@@ -196,8 +194,7 @@ describe('CreateTaskTemplateUseCase', () => {
       goalBinding: {
         goalId: 'goal-1',
         keyResultId: 'kr-1',
-        goalRecordValue: 2,
-        progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
+        contribution: { value: 2, trigger: TaskGoalBindingTrigger.PlanCompletion },
       },
     });
 

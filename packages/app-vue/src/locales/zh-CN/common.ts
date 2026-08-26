@@ -9,6 +9,7 @@ export default {
   "reset": "重置",
   "search": "搜索",
   "loading": "加载中...",
+  "empty": "暂无内容",
   "noData": "暂无数据",
   "success": "操作成功",
   "error": "操作失败",

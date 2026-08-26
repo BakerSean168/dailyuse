@@ -23,7 +23,9 @@ export class UpdateGoalKeyResultUseCase {
       title?: string;
       description?: string;
       weight?: number;
-      startValue?: number;
+      startingValue?: number;
+      progressBaselineValue?: number | null;
+      aggregationMethod?: import('@memoflow/contracts/goal').KeyResultCalculationMethod;
       currentValue?: number;
       targetValue?: number;
       unit?: string;
@@ -50,7 +52,9 @@ export class UpdateGoalKeyResultUseCase {
       title: updates.title,
       description: updates.description,
       weight: updates.weight,
-      startValue: updates.startValue,
+      startingValue: updates.startingValue,
+      progressBaselineValue: updates.progressBaselineValue,
+      aggregationMethod: updates.aggregationMethod,
       currentValue: updates.currentValue,
       targetValue: updates.targetValue,
       unit: updates.unit,

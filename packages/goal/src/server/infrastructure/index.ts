@@ -26,8 +26,6 @@ export type { GoalApplicationPort } from '../application';
 
 // ============ Repository Ports referenced by GoalRepositorySet ============
 export type {
-  IFocusModeRepository,
-  IGoalFolderRepository,
   IGoalRecordRepository,
   IGoalRepository,
   IRelationRepository,

@@ -42,7 +42,7 @@ const todayInstances = computed<TaskInstanceClientDTO[]>(() => {
 
 const pending = computed(() =>
   todayInstances.value
-    .filter((i) => i.status !== 'Completed' && i.status !== 'Skipped' && i.status !== 'Expired')
+    .filter((i) => i.status !== 'Completed' && i.status !== 'Skipped' && i.status !== 'Missed')
     .slice(0, RECENT_LIMIT),
 );
 

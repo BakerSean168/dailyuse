@@ -131,12 +131,10 @@ describe('createGoalApiModule lifecycle', () => {
 
     expect(() => moduleDef.register(contextWithoutDb)).not.toThrow();
 
-    // Both goal route groups mounted once, at their exact prefixes.
-    // 两组路由各挂载一次，且使用精确前缀。
+    // vNext exposes one canonical Goal route group; Folder is retired.
     const routerUse = context.router.use as ReturnType<typeof vi.fn>;
-    expect(routerUse).toHaveBeenCalledTimes(2);
+    expect(routerUse).toHaveBeenCalledTimes(1);
     expect(routerUse).toHaveBeenCalledWith('/goals', expect.anything());
-    expect(routerUse).toHaveBeenCalledWith('/goal-folders', expect.anything());
 
     // The fake api was consumed by route building.
     // 路由构建消费了 fake api。
@@ -218,31 +216,18 @@ describe('createGoalApiModule lifecycle', () => {
     expect(fake.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it('rolls back both mounts on the host router when the second router.use() throws', () => {
-    const preExisting = { name: '<pre-existing>' };
-    const routerStub = {
-      stack: [preExisting],
-      use: vi
-        .fn()
-        .mockImplementationOnce(() => {
-          routerStub.stack.push({ name: '/goals layer' });
-        })
-        .mockImplementationOnce(() => {
-          throw new Error('mount failed');
-        }),
-    } as unknown as Router;
-
-    const mountContext = { ...context, router: routerStub } as GoalApiModuleContext;
+  it('disposes and rethrows when the canonical /goals mount fails', () => {
+    const mountContext = createFakeContext();
+    const routerUse = mountContext.router.use as ReturnType<typeof vi.fn>;
+    routerUse.mockImplementationOnce(() => {
+      throw new Error('mount failed');
+    });
     const moduleDef = createGoalApiModule({ instance: fake.instance });
 
     expect(() => moduleDef.register(mountContext)).toThrow('mount failed');
     expect(fake.start).toHaveBeenCalledTimes(1);
     expect(fake.dispose).toHaveBeenCalledTimes(1);
-    expect((routerStub as unknown as { stack: unknown[] }).stack).toEqual([preExisting]);
-
-    // The handle is now 'failed': destroy() must no-op (dispose already ran once).
-    moduleDef.destroy?.();
-    expect(fake.dispose).toHaveBeenCalledTimes(1);
+    expect(routerUse).toHaveBeenCalledTimes(1);
   });
 
   it('rethrows the original registration error even if dispose also throws', () => {

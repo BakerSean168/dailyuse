@@ -118,23 +118,29 @@ describe('NotificationSettings residual 199', () => {
       ok({
         id: 'INotificationPreferenceId_550e8400-e29b-41d4-a716-446655440000',
         identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-        settings: { task: ['InApp'] },
+        globalChannels: { InApp: false, Push: false },
+        workflowOverrides: { 'task.general': { InApp: true } },
+        doNotDisturb: null,
+        rateLimit: null,
         version: 1,
         createdAt: 1,
         updatedAt: 1,
         deletedAt: null,
-      }),
+      } as never),
     );
     service.updatePreferences.mockResolvedValue(
       ok({
         id: 'INotificationPreferenceId_550e8400-e29b-41d4-a716-446655440000',
         identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-        settings: { task: ['InApp', 'Push'] },
+        globalChannels: { InApp: false, Push: false },
+        workflowOverrides: { 'task.general': { InApp: true, Push: true } },
+        doNotDisturb: null,
+        rateLimit: null,
         version: 2,
         createdAt: 1,
         updatedAt: 2,
         deletedAt: null,
-      }),
+      } as never),
     );
   });
 
@@ -153,7 +159,7 @@ describe('NotificationSettings residual 199', () => {
     ).toBe('false');
   });
 
-  it('toggles a module push channel via updatePreferences categories only', async () => {
+  it('toggles a module push channel via workflow override', async () => {
     const wrapper = mountSettings();
     await flushPromises();
 
@@ -161,8 +167,8 @@ describe('NotificationSettings residual 199', () => {
     await flushPromises();
 
     expect(service.updatePreferences).toHaveBeenCalledWith({
-      categories: {
-        task: { inApp: true, push: true, email: false, sms: false },
+      workflowOverrides: {
+        'task.general': { InApp: true, Push: true },
       },
     });
     expect(service.updatePreferences.mock.calls[0][0]).not.toHaveProperty('identityId');

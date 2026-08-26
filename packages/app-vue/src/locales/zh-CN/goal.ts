@@ -497,6 +497,8 @@ export default {
     "nameMaxLength": "名称不能超过50个字符"
   },
   "dialog": {
+    "editGoal": "编辑目标",
+    "feasibility": "可行性",
     "titleCreate": "创建目标",
     "titleEdit": "编辑目标",
     "descCreate": "用清晰结果与时间定义目标。",
@@ -587,6 +589,8 @@ export default {
     "krTargetInvalid": "关键结果目标值必须大于 0。"
   },
   "krDialog": {
+    "editTitle": "编辑关键结果",
+    "unit": "单位",
     "updateTitle": "更新关键结果",
     "createTitle": "创建关键结果",
     "descriptionText": "创建或编辑关键结果的完整信息。",

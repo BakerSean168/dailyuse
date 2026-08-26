@@ -87,7 +87,6 @@
 
           <MetadataSection
             :model-value="taskTemplateBeingEdited!"
-            :available-parent-tasks="props.availableParentTasks"
             @update:validation="updateMetadataValidation"
             @update:model-value="handleTemplateUpdate"
           />

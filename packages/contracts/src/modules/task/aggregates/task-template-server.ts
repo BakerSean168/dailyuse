@@ -5,10 +5,11 @@
 import type {
   TaskTemplateId,
   IdentityId,
-  TaskFolderId,
   TransferDate,
 } from '../../../primitives';
 import type { TaskTemplateStatus } from '../value-objects/task-template-status';
+import type { TaskPlanOutcome } from '../value-objects/task-plan-outcome';
+import type { TaskPlanCompletionPolicy } from '../value-objects/task-plan-completion-policy';
 import type { TaskInstanceServerDTO } from './task-instance-server';
 import type {
   TaskTimeConfigDTO,
@@ -40,22 +41,21 @@ export interface TaskTemplateServerDTO {
   generateAheadDays: number | null;
 
   importance: ImportanceLevel;
-  priority?: number;
   tags: string[];
   color: string | null;
   status: TaskTemplateStatus;
+  outcome: TaskPlanOutcome;
+  completionPolicy: TaskPlanCompletionPolicy;
+  closedAt: TransferDate | null;
+  archivedAt: TransferDate | null;
+  abandonedReason: string | null;
 
   goalBinding: TaskGoalBindingDTO | null;
 
-  parentTaskId: TaskTemplateId | null;
   checklist: ChecklistItemDefinitionDTO[]; // To be defined later
 
-  dependencyStatus?: string; // 'NONE' | 'WAITING' | 'READY' | 'BLOCKED'
-  isBlocked?: boolean;
-  blockingReason: string | null;
 
   // === Other ===
-  folderId: TaskFolderId | null;
   version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;

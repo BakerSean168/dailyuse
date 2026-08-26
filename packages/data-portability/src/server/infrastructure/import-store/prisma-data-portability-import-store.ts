@@ -19,17 +19,12 @@ import type {
   CreateRepositoryInput,
   CreateResourceFolderInput,
   CreateResourceInput,
-  CreateGoalFolderInput,
   CreateGoalInput,
   CreateKeyResultInput,
   CreateGoalReviewInput,
   CreateGoalRecordInput,
-  CreateFocusSessionInput,
-  CreateFocusModeInput,
-  CreateTaskFolderInput,
   CreateTaskTemplateInput,
   CreateTaskInstanceInput,
-  CreateTaskDependencyInput,
   CreateScheduleInput,
   CreateScheduleTaskInput,
   CreateReminderGroupInput,
@@ -62,18 +57,16 @@ class PrismaDataPortabilityImportTx implements DataPortabilityImportTx {
       create: {
         id: input.id,
         identityId: input.identityId,
-        channels: input.channels,
-        categories: input.categories,
+        globalChannels: input.globalChannels,
+        workflowOverrides: input.workflowOverrides,
         doNotDisturb: input.doNotDisturb,
         rateLimit: input.rateLimit,
-        enabled: input.enabled,
       },
       update: {
-        channels: input.channels,
-        categories: input.categories,
+        globalChannels: input.globalChannels,
+        workflowOverrides: input.workflowOverrides,
         doNotDisturb: input.doNotDisturb,
         rateLimit: input.rateLimit,
-        enabled: input.enabled,
       },
     });
   }
@@ -114,50 +107,30 @@ class PrismaDataPortabilityImportTx implements DataPortabilityImportTx {
 
   // --- Goal ---
 
-  async createGoalFolder(input: CreateGoalFolderInput): Promise<void> {
-    await this.tx.goalFolder.create({ data: input });
-  }
-
   async createGoal(input: CreateGoalInput): Promise<void> {
-    await this.tx.goal.create({ data: input });
+    await this.tx.goal.create({ data: input as unknown as Prisma.GoalUncheckedCreateInput });
   }
 
   async createKeyResult(input: CreateKeyResultInput): Promise<void> {
-    await this.tx.keyResult.create({ data: input });
+    await this.tx.keyResult.create({ data: input as unknown as Prisma.KeyResultUncheckedCreateInput });
   }
 
   async createGoalReview(input: CreateGoalReviewInput): Promise<void> {
-    await this.tx.goalReview.create({ data: input });
+    await this.tx.goalReview.create({ data: input as unknown as Prisma.GoalReviewUncheckedCreateInput });
   }
 
   async createGoalRecord(input: CreateGoalRecordInput): Promise<void> {
-    await this.tx.goalRecord.create({ data: input });
-  }
-
-  async createFocusSession(input: CreateFocusSessionInput): Promise<void> {
-    await this.tx.focusSession.create({ data: input });
-  }
-
-  async createFocusMode(input: CreateFocusModeInput): Promise<void> {
-    await this.tx.focusMode.create({ data: input });
+    await this.tx.goalRecord.create({ data: input as unknown as Prisma.GoalRecordUncheckedCreateInput });
   }
 
   // --- Task ---
 
-  async createTaskFolder(input: CreateTaskFolderInput): Promise<void> {
-    await this.tx.taskFolder.create({ data: input });
-  }
-
   async createTaskTemplate(input: CreateTaskTemplateInput): Promise<void> {
-    await this.tx.taskTemplate.create({ data: input });
+    await this.tx.taskTemplate.create({ data: input as unknown as Prisma.TaskTemplateUncheckedCreateInput });
   }
 
   async createTaskInstance(input: CreateTaskInstanceInput): Promise<void> {
-    await this.tx.taskInstance.create({ data: input });
-  }
-
-  async createTaskDependency(input: CreateTaskDependencyInput): Promise<void> {
-    await this.tx.taskDependency.create({ data: input });
+    await this.tx.taskInstance.create({ data: input as unknown as Prisma.TaskInstanceUncheckedCreateInput });
   }
 
   // --- Schedule ---

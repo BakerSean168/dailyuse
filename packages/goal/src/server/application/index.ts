@@ -18,20 +18,11 @@ export {
   UpdateGoalUseCase,
   DeleteGoalUseCase,
   ArchiveGoalUseCase,
-  ArchiveExpiredGoalsUseCase,
   ActivateGoalUseCase,
+  AbandonGoalUseCase,
   CompleteGoalUseCase,
   PermanentlyDeleteGoalUseCase,
   SearchGoalsUseCase,
-  ActivateFocusModeUseCase,
-  DeactivateFocusModeUseCase,
-  ExtendFocusModeUseCase,
-  // GoalFolder Services
-  ListGoalFoldersUseCase,
-  CreateGoalFolderUseCase,
-  GetGoalFolderUseCase,
-  UpdateGoalFolderUseCase,
-  DeleteGoalFolderUseCase,
   // Key Result Services
   AddGoalKeyResultUseCase,
   UpdateGoalKeyResultUseCase,
@@ -40,14 +31,14 @@ export {
   // Review Services
   AddGoalReviewUseCase,
   ListGoalReviewsUseCase,
+  GetGoalReviewContextUseCase,
   UpdateGoalReviewUseCase,
   DeleteGoalReviewUseCase,
   // Record Services
   CreateGoalRecordUseCase,
+  UpdateGoalRecordUseCase,
   ListGoalRecordsUseCase,
   DeleteGoalRecordUseCase,
-  // Focus Mode Services
-  GetCurrentFocusModeUseCase,
   // Workflow Services
   GetGoalAggregateUseCase,
   GetGoalProgressBreakdownUseCase,
@@ -77,3 +68,4 @@ export * from './errors/weight-snapshot-errors';
 
 export type { GoalApplicationPort } from './goal.application.port';
 
+export { GoalReviewContextBuilder } from './services/goal-review-context-builder';

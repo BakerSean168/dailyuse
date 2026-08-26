@@ -134,7 +134,6 @@ describe('composeNotification assembly order', () => {
 
     expect(createNotificationScheduleNotificationPort).toHaveBeenCalledWith({
       notificationRepository: repoSet.notificationRepository,
-      notificationTemplateRepository: repoSet.notificationTemplateRepository,
       notificationPreferenceRepository: repoSet.notificationPreferenceRepository,
       closureChecker,
     });

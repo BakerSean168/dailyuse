@@ -133,27 +133,26 @@ class FakePowerSyncTaskDb implements IElectronDatabase {
       const templateId = String(parameters?.[1]);
       const identityId = String(parameters?.[2]);
       const instanceDate = String(parameters?.[3]);
-      const status = String(parameters?.[4]);
-      const importance = parameters?.[5] == null ? null : String(parameters[5]);
-      const priority = parameters?.[6] == null ? null : Number(parameters[6]);
+      const occurrenceKey = parameters?.[4] == null ? null : String(parameters[4]);
+      const status = String(parameters?.[5]);
+      const importance = parameters?.[6] == null ? null : String(parameters[6]);
       const timeConfig = String(parameters?.[7]);
       state.instances.set(id, {
         id,
         template_id: templateId,
         identity_id: identityId,
         instance_date: instanceDate,
-        occurrence_key: null,
+        occurrence_key: occurrenceKey,
         status,
         importance,
-        priority,
         time_config: timeConfig,
-        actual_start_time: null,
-        actual_end_time: null,
-        comment: null,
-        version: 0,
-        created_at: instanceDate,
-        updated_at: instanceDate,
-        deleted_at: null,
+        actual_start_time: parameters?.[8] ?? null,
+        actual_end_time: parameters?.[9] ?? null,
+        comment: parameters?.[10] ?? null,
+        version: Number(parameters?.[11] ?? 1),
+        created_at: String(parameters?.[12] ?? instanceDate),
+        updated_at: String(parameters?.[13] ?? instanceDate),
+        deleted_at: parameters?.[14] ?? null,
       });
       return { rowsAffected: 1 };
     }
@@ -162,9 +161,9 @@ class FakePowerSyncTaskDb implements IElectronDatabase {
       const id = String(parameters?.[(parameters?.length ?? 1) - 1]);
       const existing = state.instances.get(id);
       if (existing) {
-        // Apply the status update (status is the 4th SET column) so the
+        // Apply the status update (status follows occurrence_key in TASK-2204) so the
         // rollback assertion is a REAL proof, not a vacuous one.
-        const status = parameters?.[3] == null ? (existing as { status?: string }).status : String(parameters[3]);
+        const status = parameters?.[4] == null ? (existing as { status?: string }).status : String(parameters[4]);
         state.instances.set(id, { ...existing, status });
       } else {
         state.instances.set(id, { id, template_id: String(parameters?.[0]), status: 'Pending' });
@@ -217,20 +216,58 @@ class FakePowerSyncTaskDb implements IElectronDatabase {
           id,
           identity_id: String(prm[1] ?? ''),
           name: String(prm[2] ?? ''),
-          task_type: String(prm[3] ?? ''),
-          status: String(prm[4] ?? ''),
-          time_config: String(prm[5] ?? '{}'),
-          recurrence_rule: String(prm[6] ?? '{}'),
-          importance: prm[7] == null ? null : String(prm[7]),
-          priority: prm[8] == null ? null : Number(prm[8]),
-          tags: String(prm[9] ?? '[]'),
-          goal_id: prm[10] == null ? null : String(prm[10]),
-          key_result_id: prm[11] == null ? null : String(prm[11]),
-          goal_record_value: prm[12] == null ? null : Number(prm[12]),
+          description: prm[3] ?? null,
+          status: String(prm[4] ?? 'Active'),
+          outcome: String(prm[5] ?? 'Open'),
+          completion_policy: String(prm[6] ?? 'AllowCorrection'),
+          closed_at: prm[7] ?? null,
+          archived_at: prm[8] ?? null,
+          abandoned_reason: prm[9] ?? null,
+          importance: prm[10] == null ? null : String(prm[10]),
+          color: prm[11] ?? null,
+          tags: String(prm[12] ?? '[]'),
+          time_config_type: prm[13] ?? null,
+          time_config_start_time: prm[14] ?? null,
+          time_config_end_time: prm[15] ?? null,
+          time_config_duration_minutes: prm[16] ?? null,
+          time_config_time_point: prm[17] ?? null,
+          time_config_time_range_start: prm[18] ?? null,
+          time_config_time_range_end: prm[19] ?? null,
+          recurrence_rule_type: prm[20] ?? null,
+          recurrence_rule_interval: prm[21] ?? null,
+          recurrence_rule_days_of_week: prm[22] ?? null,
+          recurrence_rule_end_date: prm[23] ?? null,
+          recurrence_rule_count: prm[24] ?? null,
+          reminder_config_enabled: prm[25] ?? null,
+          reminder_config_time_offset_minutes: prm[26] ?? null,
+          reminder_config_unit: prm[27] ?? null,
+          reminder_config_channel: prm[28] ?? null,
+          last_generated_date: prm[29] ?? null,
+          generate_ahead_days: prm[30] ?? null,
+          goal_id: prm[31] ?? null,
+          key_result_id: prm[32] ?? null,
+          goal_record_value: prm[33] ?? null,
+          goal_progress_trigger: prm[34] ?? null,
+          checklist: prm[35] ?? null,
+          version: Number(prm[36] ?? 1),
+          updated_at: prm[37] ?? new Date().toISOString(),
+          deleted_at: prm[38] ?? null,
+          created_at: prm[39] ?? new Date().toISOString(),
         };
         return rowShape as unknown as T;
       }
       return null;
+    }
+
+    if (sql.includes('SELECT id FROM task_instances WHERE template_id = ? AND identity_id = ? AND occurrence_key = ?')) {
+      const [templateId, identityId, occurrenceKey] = (parameters ?? []).map(String);
+      const match = Array.from(state.instances.values()).find((row) =>
+        String((row as any).template_id) === templateId &&
+        String((row as any).identity_id) === identityId &&
+        String((row as any).occurrence_key) === occurrenceKey &&
+        (row as any).deleted_at == null,
+      ) as { id?: string } | undefined;
+      return (match?.id ? { id: match.id } : null) as T | null;
     }
 
     if (sql.includes('SELECT id FROM task_instances WHERE id = ?')) {
@@ -363,8 +400,7 @@ describe('PowerSyncTaskWriteTransactionRunner', () => {
       goalBinding: {
         goalId: 'goal-1',
         keyResultId: 'kr-1',
-        goalRecordValue: 1,
-        progressTrigger: TaskGoalBindingTrigger.PerInstance,
+        contribution: { value: 1, trigger: TaskGoalBindingTrigger.EachCompletion },
       },
     });
     expect(createRes.ok).toBe(true);

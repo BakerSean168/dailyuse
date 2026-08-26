@@ -10,7 +10,6 @@ import {
   NotificationCategory,
   NotificationChannelType,
   NotificationMetadata,
-  NotificationStatus,
   NotificationType,
   RateLimit,
   RelatedEntityType,
@@ -152,7 +151,7 @@ describe('notification shared value objects', () => {
     ).toThrow('Action label is required');
   });
 
-  it('covers enum helpers for status, content, and routing families', () => {
+  it('covers delivery-channel status, content, and routing enum helpers', () => {
     expect(ChannelStatus.getAll()).toEqual([
       ChannelStatus.Pending,
       ChannelStatus.Sent,
@@ -171,13 +170,6 @@ describe('notification shared value objects', () => {
     expect(ContentType.isMedia(ContentType.Video)).toBe(true);
     expect(ContentType.isDocumentation(ContentType.Article)).toBe(true);
     expect(() => ContentType.of('Bad')).toThrow('Invalid ContentType');
-
-    expect(NotificationStatus.getAll()).toContain(NotificationStatus.Cancelled);
-    expect(NotificationStatus.of('Pending')).toBe(NotificationStatus.Pending);
-    expect(NotificationStatus.isDelivered(NotificationStatus.Read)).toBe(true);
-    expect(NotificationStatus.isTerminated(NotificationStatus.Failed)).toBe(true);
-    expect(NotificationStatus.isPending(NotificationStatus.Pending)).toBe(true);
-    expect(() => NotificationStatus.of('Bad')).toThrow('Invalid NotificationStatus');
 
     expect(NotificationActionType.getAll()).toContain(NotificationActionType.Custom);
     expect(NotificationActionType.of('ApiCall')).toBe(NotificationActionType.ApiCall);

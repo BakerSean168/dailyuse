@@ -3,8 +3,6 @@
  *
  * Paths match the actual HTTP adapters:
  *   - GoalHttpAdapter:       /goals
- *   - GoalFolderHttpAdapter: /goal-folders
- *   - GoalFocusHttpAdapter:  /goals/focus
  */
 
 import { http, HttpResponse } from 'msw';
@@ -12,7 +10,6 @@ import {
   createMockGoal,
   createMockGoalMutationReceipt,
   createMockQueryGoalsRes,
-  createMockGoalFolder,
   createMockKeyResult,
   createMockGoalRecord,
   createMockGoalRecordList,
@@ -21,7 +18,6 @@ import {
 } from '@memoflow/contracts/mocks';
 import type {
   GoalClientDTO,
-  GoalFolderClientDTO,
   GoalRecordClientDTO,
   GoalReviewClientDTO,
   KeyResultClientDTO,
@@ -29,18 +25,13 @@ import type {
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const GOALS = `${API_BASE}/goals`;
-const FOLDERS = `${API_BASE}/goal-folders`;
 
 export const goalMockRoutes = {
   goals: GOALS,
-  folders: FOLDERS,
 };
 
 const toGoalId = (p: string | readonly string[] | undefined) =>
   (Array.isArray(p) ? p[0] : (p ?? '')) as GoalClientDTO['id'];
-
-const toFolderId = (p: string | readonly string[] | undefined) =>
-  (Array.isArray(p) ? p[0] : (p ?? '')) as GoalFolderClientDTO['id'];
 
 const toKeyResultId = (p: string | readonly string[] | undefined) =>
   (Array.isArray(p) ? p[0] : (p ?? '')) as GoalRecordClientDTO['keyResultId'];
@@ -162,7 +153,11 @@ export const goalHandlers = [
       ok: true,
       code: 200,
       message: 'Archived',
-      data: createMockGoalMutationReceipt({ id: toGoalId(params['id']), status: 'Archived' }),
+      data: createMockGoalMutationReceipt({
+        id: toGoalId(params['id']),
+        status: 'Active',
+        archivedAt: Date.now(),
+      }),
       timestamp: Date.now(),
     });
   }),
@@ -462,86 +457,6 @@ export const goalHandlers = [
       code: 200,
       message: 'Deleted',
       data: createMockGoalMutationReceipt({ id: toGoalId(params['id']) }),
-      timestamp: Date.now(),
-    });
-  }),
-
-  // ============ Goal Folders ============
-
-  http.get(FOLDERS, () => {
-    const folders = Array.from({ length: 3 }, () => createMockGoalFolder());
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
-      data: { data: folders, total: folders.length },
-      timestamp: Date.now(),
-    });
-  }),
-
-  http.post(FOLDERS, async ({ request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
-    return HttpResponse.json(
-      {
-        ok: true,
-        code: 200,
-        message: 'Created',
-        data: createMockGoalFolder({ name: body['name'] as string | undefined }),
-        timestamp: Date.now(),
-      },
-      { status: 201 },
-    );
-  }),
-
-  http.get(`${FOLDERS}/:id`, ({ params }) => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
-      data: createMockGoalFolder({ id: toFolderId(params['id']) }),
-      timestamp: Date.now(),
-    });
-  }),
-
-  http.put(`${FOLDERS}/:id`, async ({ params, request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Updated',
-      data: createMockGoalFolder({ id: toFolderId(params['id']), ...(body as object) }),
-      timestamp: Date.now(),
-    });
-  }),
-
-  http.delete(`${FOLDERS}/:id`, ({ params }) => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Deleted',
-      data: { id: params.id },
-      timestamp: Date.now(),
-    });
-  }),
-
-  // ============ Focus ============
-
-  http.post(`${GOALS}/focus/start`, () => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Started',
-      data: { id: 'focus-1', status: 'active', startedAt: Date.now() },
-      timestamp: Date.now(),
-    });
-  }),
-
-  http.post(`${GOALS}/focus/stop`, () => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Stopped',
-      data: { id: 'focus-1', status: 'completed', stoppedAt: Date.now() },
       timestamp: Date.now(),
     });
   }),

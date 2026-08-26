@@ -5,14 +5,13 @@
  * 遵循 governance 模块 Result<T> 规范
  */
 
-import { Goal, GoalVersionConflictError, type IGoalRepository } from '../../../domain';
+import { GoalLabelOwnershipError, GoalVersionConflictError, type IGoalRepository } from '../../../domain';
 import { GoalPolicy } from '../../../domain';
 import type { UpdateGoalReq, UpdateGoalRes } from '@memoflow/contracts/goal';
-import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
-import type { GoalId } from '../../../domain';
 import { createGoalMutationReceipt } from './goal-mutation-receipt';
+import type { GoalWriteTransactionRunner } from './goal-write-support';
 
 /**
  * Update Goal Use Case
@@ -21,6 +20,7 @@ export class UpdateGoalUseCase {
   constructor(
     private readonly goalRepository: IGoalRepository,
     private readonly goalPolicy: GoalPolicy,
+    private readonly goalWriteTransactionRunner?: GoalWriteTransactionRunner,
   ) {}
 
   async execute(
@@ -57,59 +57,24 @@ export class UpdateGoalUseCase {
       }
     }
 
-    let parentGoalId: GoalId | null | undefined;
-    if (input.parentGoalId !== undefined) {
-      parentGoalId = input.parentGoalId ?? null;
-      if (parentGoalId === goal.id) {
-        return error('VALIDATION_ERROR', 'A goal cannot be its own parent');
-      }
-      if (parentGoalId) {
-        const parent = await this.goalRepository.findByIdForIdentity(
-          identityId,
-          String(parentGoalId),
-        );
-        if (!parent) return error('NOT_FOUND', `Parent goal not found: ${parentGoalId}`);
-        if (
-          await this.goalRepository.isAncestor(identityId, String(goal.id), String(parentGoalId))
-        ) {
-          return error('VALIDATION_ERROR', 'A descendant goal cannot become its parent');
-        }
-        Goal.validateParentGoal(parent);
-      }
-    }
-
     // 2. 领域策略校验
     this.goalPolicy.ensureGoalCanBeModified(goal);
 
-    // 3. 使用聚合根方法更新基本信息
+    // 3. Update canonical Direction fields.
     goal.updateBasicInfo({
       name: input.name,
       description: input.description,
-      importance: input.importance as ImportanceLevel | undefined,
-      category: input.category,
-      color: input.color ?? undefined,
       feasibilityAnalysis: input.feasibilityAnalysis,
       motivation: input.motivation,
     });
 
-    // 4. 更新标签
-    if (input.tags !== undefined) {
-      goal.updateTags(input.tags ?? []);
-    }
-
-    // 5. 更新时间范围
-    if (input.startDate !== undefined || input.targetDate !== undefined) {
+    // 4. Update the product time window using canonical dueDate naming.
+    if (input.startDate !== undefined || input.dueDate !== undefined) {
       goal.updateTimeRange({
         startDate: input.startDate !== undefined ? (input.startDate ?? null) : undefined,
-        targetDate: input.targetDate !== undefined ? (input.targetDate ?? null) : undefined,
+        dueDate: input.dueDate !== undefined ? (input.dueDate ?? null) : undefined,
       });
     }
-
-    // 6. 更新文件夹
-    if (input.folderId !== undefined) {
-      goal.moveToFolder(input.folderId ?? null);
-    }
-    if (parentGoalId !== undefined) goal.moveToParent(parentGoalId);
 
     // 7. 更新提醒配置
     if (input.reminderConfig !== undefined) {
@@ -125,11 +90,11 @@ export class UpdateGoalUseCase {
           goal.updateKeyResult(id, {
             title: keyResult.title,
             description: keyResult.description,
-            valueType: keyResult.valueType,
             aggregationMethod: keyResult.calculationMethod,
-            startValue: keyResult.startValue ?? 0,
-            currentValue: keyResult.currentValue ?? 0,
+            startingValue: keyResult.startingValue,
+            currentValue: keyResult.currentValue,
             targetValue: keyResult.targetValue,
+            progressBaselineValue: keyResult.progressBaselineValue,
             unit: keyResult.unit ?? null,
             weight: keyResult.weight,
           });
@@ -139,11 +104,11 @@ export class UpdateGoalUseCase {
         goal.createAndAddKeyResult({
           title: keyResult.title,
           description: keyResult.description,
-          valueType: keyResult.valueType,
           aggregationMethod: keyResult.calculationMethod,
-          startValue: keyResult.startValue,
+          startingValue: keyResult.startingValue,
           currentValue: keyResult.currentValue,
           targetValue: keyResult.targetValue,
+          progressBaselineValue: keyResult.progressBaselineValue,
           unit: keyResult.unit,
           weight: keyResult.weight,
         });
@@ -159,11 +124,27 @@ export class UpdateGoalUseCase {
     // 9. 持久化
     goal.advanceVersion();
     try {
-      await this.goalRepository.saveRootWithExpectedVersion(goal, input.expectedVersion);
+      const persist = async (repository: IGoalRepository): Promise<void> => {
+        await repository.saveRootWithExpectedVersion(goal, input.expectedVersion);
+        if (input.labelIds !== undefined) {
+          const labels = await repository.replaceLabels(
+            identityId,
+            String(goal.id),
+            input.labelIds,
+          );
+          goal.hydrateLabels(labels);
+        }
+      };
+      if (this.goalWriteTransactionRunner) {
+        await this.goalWriteTransactionRunner.run((ctx) => persist(ctx.goalRepository));
+      } else {
+        await persist(this.goalRepository);
+      }
     } catch (cause) {
       if (cause instanceof GoalVersionConflictError) {
         return error('CONFLICT', cause.message);
       }
+      if (cause instanceof GoalLabelOwnershipError) return error(cause.code, cause.message);
       throw cause;
     }
 

@@ -53,7 +53,6 @@
         :model-value="localTemplate"
         :is-edit-mode="mode === 'edit'"
         :readonly="saving"
-        :available-parent-tasks="availableParentTasks"
         :goals="goalOptions"
         :key-results-by-goal="keyResultsByGoal"
         :loading-goals="loadingGoals"
@@ -65,15 +64,7 @@
         @close="handleCancel"
       />
 
-      <DependencyManager
-        v-if="showDependencyManager"
-        class="mt-5 border-t pt-5"
-        :current-task-id="localTemplate?.id"
-        :all-tasks="graphTasks"
-        :dependencies="dependencies"
-        @dependency-added="handleDependencyAdded"
-        @dependency-deleted="handleDependencyDeleted"
-      />
+
 
       <template #footer>
         <Button variant="ghost" :disabled="saving" @click="handleCancel">{{
@@ -100,14 +91,8 @@ import { useI18n } from 'vue-i18n';
 import { Dialog, Button } from '@memoflow/ui-vue-shadcn';
 import { Copy, Pencil, PlusCircle } from '@lucide/vue';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
-import DependencyManager from '../dependency/DependencyManager.vue';
 import type { TaskTemplateViewModel } from '../types';
-import type { TaskForDAG } from '../../types/task-dag.types';
-import {
-  TaskType,
-  type DependencyType,
-  type TaskGraphDependencyDTO,
-} from '@memoflow/contracts/task';
+import { TaskType } from '@memoflow/contracts/task';
 import { defaultNamedColor } from '../../../../shared/constants/color-palette';
 import { useTaskGoalBindingOptions } from '../../composables/useTaskGoalBindingOptions';
 import { ProductDialogShell } from '../../../../shared/components';
@@ -136,7 +121,6 @@ function createBlankTemplate(): TaskTemplateViewModel {
     isPaused: false,
     isArchived: false,
     importance: 'Moderate',
-    priority: 0,
     tags: [],
     goalBinding: null,
     timeConfig: {
@@ -150,7 +134,6 @@ function createBlankTemplate(): TaskTemplateViewModel {
     instanceCount: 0,
     completionRate: 0,
     taskType: TaskType.Recurring,
-    parentTaskId: null,
     color: defaultNamedColor,
   };
 }
@@ -204,23 +187,11 @@ const props = withDefaults(
     template?: TaskTemplateViewModel | null;
     mode?: 'create' | 'edit' | 'copy';
     saving?: boolean;
-    availableTemplates?: TaskTemplateViewModel[];
-    graphTasks?: TaskForDAG[];
-    dependencies?: TaskGraphDependencyDTO[];
-    onCreateDependency?: (dependency: {
-      predecessorTaskId: string;
-      successorTaskId: string;
-      dependencyType: DependencyType;
-    }) => Promise<boolean> | boolean;
-    onDeleteDependency?: (dependencyId: string) => Promise<boolean> | boolean;
   }>(),
   {
     template: null,
     mode: 'create',
     saving: false,
-    availableTemplates: () => [],
-    graphTasks: () => [],
-    dependencies: () => [],
   },
 );
 
@@ -240,58 +211,6 @@ const visible = computed(() => props.modelValue);
 const mode = computed(() => props.mode);
 const saving = computed(() => props.saving);
 const canSave = computed(() => !!localTemplate.value && isValid.value && !saving.value);
-const graphTasks = computed(() => props.graphTasks ?? []);
-const dependencies = computed(() => props.dependencies ?? []);
-const showDependencyManager = computed(
-  () =>
-    mode.value === 'edit' &&
-    !!localTemplate.value?.id &&
-    graphTasks.value.length > 0 &&
-    !!props.onCreateDependency &&
-    !!props.onDeleteDependency,
-);
-
-const availableParentTasks = computed(() => {
-  const currentId = localTemplate.value?.id;
-  if (!currentId) {
-    return (props.availableTemplates ?? []).map((template) => ({
-      id: template.id,
-      title: template.title,
-    }));
-  }
-
-  const childrenByParent = new Map<string, string[]>();
-  graphTasks.value.forEach((task) => {
-    if (!task.parentTaskId) {
-      return;
-    }
-
-    const children = childrenByParent.get(task.parentTaskId) ?? [];
-    children.push(task.id);
-    childrenByParent.set(task.parentTaskId, children);
-  });
-
-  const blockedIds = new Set<string>([currentId]);
-  const stack = [...(childrenByParent.get(currentId) ?? [])];
-
-  while (stack.length > 0) {
-    const taskId = stack.pop()!;
-    if (blockedIds.has(taskId)) {
-      continue;
-    }
-
-    blockedIds.add(taskId);
-    stack.push(...(childrenByParent.get(taskId) ?? []));
-  }
-
-  return (props.availableTemplates ?? [])
-    .filter((template) => !blockedIds.has(template.id))
-    .map((template) => ({
-      id: template.id,
-      title: template.title,
-    }));
-});
-
 async function loadGoals() {
   await loadGoalOptions();
 }
@@ -410,15 +329,4 @@ const handleSave = () => {
   emit('save', localTemplate.value);
 };
 
-const handleDependencyAdded = async (dependency: {
-  predecessorTaskId: string;
-  successorTaskId: string;
-  dependencyType: DependencyType;
-}) => {
-  await props.onCreateDependency?.(dependency);
-};
-
-const handleDependencyDeleted = async (dependencyId: string) => {
-  await props.onDeleteDependency?.(dependencyId);
-};
 </script>

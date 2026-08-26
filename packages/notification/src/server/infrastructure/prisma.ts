@@ -155,7 +155,6 @@ export function createNotificationPrismaScheduleNotificationPort(
 
   return createNotificationScheduleNotificationPort({
     notificationRepository: repositories.notificationRepository,
-    notificationTemplateRepository: repositories.notificationTemplateRepository,
     notificationPreferenceRepository: repositories.notificationPreferenceRepository,
     closureChecker,
   });

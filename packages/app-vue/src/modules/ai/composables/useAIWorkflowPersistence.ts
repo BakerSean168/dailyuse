@@ -80,7 +80,7 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
       knowledgeCaptureRun: options.knowledgeCaptureRun.value,
       knowledgeAnswer: options.knowledgeAnswer.value,
       clarificationAnswers: [...options.clarificationAnswers.value],
-      editableGoal: { ...options.editableGoal.value, tags: [...options.editableGoal.value.tags] },
+      editableGoal: { ...options.editableGoal.value },
       editableKeyResults: options.editableKeyResults.value.map((item) => ({ ...item })),
       editableTaskTemplates: options.editableTaskTemplates.value.map((item) => ({ ...item })),
       editableReminders: options.editableReminders.value.map((item) => ({ ...item })),
@@ -124,7 +124,6 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
     options.editableGoal.value = {
       ...createEmptyGoalDraft(),
       ...entry.editableGoal,
-      tags: [...(entry.editableGoal?.tags ?? [])],
     };
     options.editableKeyResults.value = (entry.editableKeyResults ?? []).map((item) => ({ ...item }));
     options.editableTaskTemplates.value = (entry.editableTaskTemplates ?? []).map((item) => ({ ...item }));

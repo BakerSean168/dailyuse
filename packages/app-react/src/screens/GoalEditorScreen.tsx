@@ -1,63 +1,29 @@
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { presentErrorMessage } from '@memoflow/http-client';
-
 import type { CreateGoalReq, UpdateGoalReq } from '@memoflow/contracts/goal';
-import {
-  ImportanceLevel,
-  type ImportanceLevel as ImportanceLevelType,
-} from '@memoflow/contracts/shared';
 
 import { useGoalDetail } from '../hooks/useGoalDetail';
 import { useGoalService } from '../hooks/useGoalService';
-
+import { getProductTime } from '../utils/product-time';
 import {
   PageShell,
   PrimaryButton,
   PrimaryTextField,
   SectionCard,
   Spacing,
-  StatusPill,
   ThemedText,
 } from '@memoflow/ui-react-native';
 
-const IMPORTANCE_OPTIONS: ImportanceLevelType[] = [
-  ImportanceLevel.Vital,
-  ImportanceLevel.Important,
-  ImportanceLevel.Moderate,
-  ImportanceLevel.Minor,
-  ImportanceLevel.Trivial,
-];
-
-/**
- * Residual 1228 keep-boundary: app-react goal toDateInput — epoch → UTC ISO YMD.
- * Goal editor targetDate helper; falsy → ''; toISOString().slice(0, 10) (UTC calendar day).
- * Soft residual 1228: vue AIGoalDraftEditor offset-normalized local day + TaskEditor today-default differ (no force-merge).
- */
-function toDateInput(timestamp: number | null) {
-  if (!timestamp) {
-    return '';
-  }
-
-  return new Date(timestamp).toISOString().slice(0, 10);
+function toDateInput(timestamp: number | null): string {
+  return getProductTime().input.dateValue(timestamp);
 }
 
-/**
- * Residual 1225 keep-boundary: app-react goal parseDateInput — trim + Date.parse + isNaN→null.
- * Goal editor targetDate helper; empty after trim → null; invalid parse → null.
- * Soft residual 1225: app-vue task time-config falsy-only + getTime (no force-merge).
- */
-function parseDateInput(value: string) {
-  const normalized = value.trim();
-  if (normalized.length === 0) {
-    return null;
-  }
-
-  const timestamp = Date.parse(`${normalized}T00:00:00`);
-  return Number.isNaN(timestamp) ? null : timestamp;
+function parseDateInput(value: string): number | null {
+  const ymd = getProductTime().input.parseDateValue(value.trim());
+  return ymd ? getProductTime().codec.startOfYmd(ymd) : null;
 }
 
 export function GoalEditorScreen() {
@@ -71,23 +37,16 @@ export function GoalEditorScreen() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [motivation, setMotivation] = useState('');
-  const [category, setCategory] = useState('');
-  const [targetDate, setTargetDate] = useState('');
-  const [importance, setImportance] = useState<ImportanceLevelType>(ImportanceLevel.Important);
+  const [dueDate, setDueDate] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!goal) {
-      return;
-    }
-
+    if (!goal) return;
     setName(goal.name);
     setDescription(goal.description ?? '');
     setMotivation(goal.motivation ?? '');
-    setCategory(goal.category ?? '');
-    setTargetDate(toDateInput(goal.targetDate));
-    setImportance(goal.importance);
+    setDueDate(toDateInput(goal.dueDate));
   }, [goal?.id]);
 
   async function handleSubmit() {
@@ -96,10 +55,14 @@ export function GoalEditorScreen() {
       return;
     }
 
+    const parsedDueDate = dueDate.trim().length === 0 ? null : parseDateInput(dueDate);
+    if (dueDate.trim().length > 0 && parsedDueDate === null) {
+      setError('Due date must use YYYY-MM-DD.');
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
-
-    const parsedTargetDate = parseDateInput(targetDate);
 
     const result = goalId
       ? await service.updateGoal(goalId, {
@@ -107,37 +70,31 @@ export function GoalEditorScreen() {
           expectedVersion: goal?.version ?? 1,
           description: description.trim().length > 0 ? description.trim() : null,
           motivation: motivation.trim().length > 0 ? motivation.trim() : null,
-          category: category.trim().length > 0 ? category.trim() : null,
-          targetDate: parsedTargetDate,
-          importance,
+          dueDate: parsedDueDate,
         } satisfies UpdateGoalReq)
       : await service.createGoal({
           name: name.trim(),
           description: description.trim().length > 0 ? description.trim() : undefined,
           motivation: motivation.trim().length > 0 ? motivation.trim() : undefined,
-          category: category.trim().length > 0 ? category.trim() : undefined,
-          targetDate: parsedTargetDate ?? undefined,
-          importance,
+          dueDate: parsedDueDate ?? undefined,
         } satisfies CreateGoalReq);
 
     setIsSubmitting(false);
-
     if (!result.ok) {
       setError(presentErrorMessage(result.error));
       return;
     }
 
-    const savedGoal = 'readModel' in result.data ? result.data.readModel : result.data;
-    router.replace(`../${String(savedGoal.id)}`);
+    router.replace(`../${String(result.data.readModel.id)}`);
   }
 
   return (
     <PageShell
       eyebrow="Goals"
       title={goalId ? 'Edit goal' : 'Create goal'}
-      subtitle="先把目标创建和基础编辑打通，复杂字段和 key result 编辑后续再继续补。"
+      subtitle="Goal = direction + measurement. Labels and key results are managed separately."
     >
-      <SectionCard title="Navigation" description="目标编辑页先独立成单页表单。">
+      <SectionCard title="Navigation" description="Goal editor">
         <View style={styles.actionRow}>
           <PrimaryButton label="Back" onPress={() => router.back()} variant="secondary" />
           <PrimaryButton
@@ -149,21 +106,14 @@ export function GoalEditorScreen() {
       </SectionCard>
 
       {error ? (
-        <SectionCard title="Goal save failed" description="当前先直接展示错误。">
-          <ThemedText type="small" themeColor="warning">
-            {error}
-          </ThemedText>
+        <SectionCard title="Goal save failed" description="Fix the form and try again.">
+          <ThemedText type="small" themeColor="warning">{error}</ThemedText>
         </SectionCard>
       ) : null}
 
       <ScrollView contentContainerStyle={styles.formColumn}>
-        <SectionCard title="Basics" description="目标的基础字段先集中在一页。">
-          <PrimaryTextField
-            label="Name"
-            value={name}
-            onChangeText={setName}
-            placeholder="Ship mobile migration"
-          />
+        <SectionCard title="Direction" description="Describe what the goal is and why it matters.">
+          <PrimaryTextField label="Name" value={name} onChangeText={setName} placeholder="Ship mobile migration" />
           <PrimaryTextField
             label="Description"
             value={description}
@@ -181,32 +131,12 @@ export function GoalEditorScreen() {
             placeholder="Why this goal matters"
           />
           <PrimaryTextField
-            label="Category"
-            value={category}
-            onChangeText={setCategory}
-            placeholder="Work / Health / Learning"
-          />
-          <PrimaryTextField
-            label="Target date"
-            value={targetDate}
-            onChangeText={setTargetDate}
-            placeholder="2026-04-30"
+            label="Due date"
+            value={dueDate}
+            onChangeText={setDueDate}
+            placeholder="2026-12-31"
             hint="Use YYYY-MM-DD."
           />
-        </SectionCard>
-
-        <SectionCard title="Importance" description="移动端先用轻量级优先级切换。">
-          <View style={styles.optionRow}>
-            {IMPORTANCE_OPTIONS.map((item) => (
-              <PrimaryButton
-                key={item}
-                label={item}
-                onPress={() => setImportance(item)}
-                variant={importance === item ? 'solid' : 'ghost'}
-              />
-            ))}
-          </View>
-          <StatusPill label={`Selected: ${importance}`} tone="tint" />
         </SectionCard>
       </ScrollView>
     </PageShell>
@@ -214,21 +144,7 @@ export function GoalEditorScreen() {
 }
 
 const styles = StyleSheet.create({
-  actionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.two,
-  },
-  formColumn: {
-    gap: Spacing.three,
-    paddingBottom: Spacing.six,
-  },
-  multilineField: {
-    minHeight: 110,
-  },
-  optionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.two,
-  },
+  actionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  formColumn: { gap: Spacing.three, paddingBottom: Spacing.six },
+  multilineField: { minHeight: 110 },
 });

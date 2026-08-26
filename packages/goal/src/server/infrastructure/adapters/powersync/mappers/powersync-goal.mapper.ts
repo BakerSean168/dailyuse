@@ -1,10 +1,17 @@
-import { GoalRollupPolicy } from '@memoflow/contracts/goal';
-import type { ReviewType, KeyResultWeightSnapshotDTO } from '@memoflow/contracts/goal';
+import type { KeyResultWeightSnapshotDTO, GoalReviewSystemContext } from '@memoflow/contracts/goal';
 import { Goal } from '../../../../domain';
 import { rawDataToGoalState } from '../../prisma/mappers/goal-state-mapper';
-import type { RawGoalData, RawKeyResultData, RawGoalReviewData } from '../../prisma/mappers/goal-state-mapper';
-export type { RawGoalData, RawKeyResultData, RawGoalReviewData } from '../../prisma/mappers/goal-state-mapper';
-import { fromDbDateTime, parseJsonArray } from '../shared';
+import type {
+  RawGoalData,
+  RawKeyResultData,
+  RawGoalReviewData,
+} from '../../prisma/mappers/goal-state-mapper';
+export type {
+  RawGoalData,
+  RawKeyResultData,
+  RawGoalReviewData,
+} from '../../prisma/mappers/goal-state-mapper';
+import { fromDbDateTime } from '../shared';
 
 function requiredMs(value: string | null | undefined): number {
   return (fromDbDateTime(value) ?? new Date()).getTime();
@@ -29,25 +36,15 @@ export class PowerSyncGoalMapper {
       identityId: String(row.identity_id),
       name: String(row.name),
       description: row.description ? String(row.description) : null,
-      color: row.color ? String(row.color) : '#3B82F6',
       feasibilityAnalysis: row.feasibility_analysis ? String(row.feasibility_analysis) : null,
       motivation: row.motivation ? String(row.motivation) : null,
       status: String(row.status),
-      importance: String(row.importance),
-      priority: Number(row.priority ?? 0),
-      category: row.category ? String(row.category) : null,
-      tags: parseJsonArray(row.tags),
       startDate: optionalMs(row.start_date ? String(row.start_date) : null),
-      targetDate: optionalMs(row.target_date ? String(row.target_date) : null),
+      dueDate: optionalMs(row.due_date ? String(row.due_date) : null),
       completedAt: optionalMs(row.completed_at ? String(row.completed_at) : null),
       archivedAt: optionalMs(row.archived_at ? String(row.archived_at) : null),
-      folderId: row.folder_id ? String(row.folder_id) : null,
-      parentGoalId: row.parent_goal_id ? String(row.parent_goal_id) : null,
-      rollupPolicy: (row.rollup_policy as GoalRollupPolicy) ?? "kr",
       sortOrder: Number(row.sort_order ?? 0),
-      reminderConfig: row.reminder_config
-        ? JSON.parse(String(row.reminder_config))
-        : null,
+      reminderConfig: row.reminder_config ? JSON.parse(String(row.reminder_config)) : null,
       version: Number(row.version ?? 1),
       createdAt: requiredMs(row.created_at ? String(row.created_at) : null),
       updatedAt: requiredMs(row.updated_at ? String(row.updated_at) : null),
@@ -67,10 +64,10 @@ export class PowerSyncGoalMapper {
       title: String(row.title),
       description: row.description ? String(row.description) : null,
       progress: {
-        initialValue: Number(row.initial_value ?? 0),
+        startingValue: Number(row.starting_value ?? 0),
+        progressBaselineValue: row.progress_baseline_value == null ? null : Number(row.progress_baseline_value),
         currentValue: Number(row.current_value ?? 0),
         targetValue: Number(row.target_value ?? 100),
-        valueType: row.value_type ? String(row.value_type) : 'Incremental',
         aggregationMethod: row.aggregation_method ? String(row.aggregation_method) : 'Last',
         unit: row.unit ? String(row.unit) : null,
       },
@@ -85,21 +82,11 @@ export class PowerSyncGoalMapper {
     return {
       id: String(row.id),
       goalId: String(row.goal_id),
-      type: String(row.review_type) as ReviewType,
-      title: row.title ? String(row.title) : null,
-      rating: Number(row.rating ?? 3),
-      summary: row.content ? String(row.content) : '',
-      achievements: row.achievements ? String(row.achievements) : null,
+      reflection: String(row.reflection),
       challenges: row.challenges ? String(row.challenges) : null,
-      improvements: row.lessons_learned ? String(row.lessons_learned) : null,
-      keyResultSnapshots: [],
-      reviewedAt: requiredMs(
-        row.updated_at
-          ? String(row.updated_at)
-          : row.created_at
-            ? String(row.created_at)
-            : null,
-      ),
+      adjustments: row.adjustments ? String(row.adjustments) : null,
+      systemContext: JSON.parse(String(row.system_context)) as GoalReviewSystemContext,
+      reviewedAt: requiredMs(row.reviewed_at ? String(row.reviewed_at) : null),
       createdAt: requiredMs(row.created_at ? String(row.created_at) : null),
       updatedAt: requiredMs(row.updated_at ? String(row.updated_at) : null),
     };

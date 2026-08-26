@@ -5,7 +5,7 @@ tags:
   - goal
 description: 目标模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-08-22T00:00:00
+updated: 2026-08-26T00:00:00
 ---
 
 # 目标模块文件索引
@@ -16,15 +16,13 @@ updated: 2026-08-22T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/app-vue/src/modules/goal/router/index.ts`](../../../packages/app-vue/src/modules/goal/router/index.ts) | Vue 目标模块路由，定义列表、详情、复盘、KR、专注和对比入口 |
+| [`packages/app-vue/src/modules/goal/router/index.ts`](../../../packages/app-vue/src/modules/goal/router/index.ts) | Vue 目标模块路由，定义列表、详情、复盘和 KR 入口 |
 | [`packages/app-vue/src/modules/goal/views/GoalModuleLayout.vue`](../../../packages/app-vue/src/modules/goal/views/GoalModuleLayout.vue) | 目标模块布局 |
 | [`packages/app-vue/src/modules/goal/views/GoalListView.vue`](../../../packages/app-vue/src/modules/goal/views/GoalListView.vue) | 目标列表页 |
 | [`packages/app-vue/src/modules/goal/views/GoalDetailView.vue`](../../../packages/app-vue/src/modules/goal/views/GoalDetailView.vue) | 目标详情页 |
 | [`packages/app-vue/src/modules/goal/views/GoalReviewCreationView.vue`](../../../packages/app-vue/src/modules/goal/views/GoalReviewCreationView.vue) | 目标复盘创建页 |
 | [`packages/app-vue/src/modules/goal/views/GoalReviewDetailView.vue`](../../../packages/app-vue/src/modules/goal/views/GoalReviewDetailView.vue) | 目标复盘详情页 |
 | [`packages/app-vue/src/modules/goal/views/KeyResultDetailView.vue`](../../../packages/app-vue/src/modules/goal/views/KeyResultDetailView.vue) | 关键结果详情页 |
-| [`packages/app-vue/src/modules/goal/views/GoalFocusView.vue`](../../../packages/app-vue/src/modules/goal/views/GoalFocusView.vue) | 目标专注入口 |
-| [`packages/app-vue/src/modules/goal/views/MultiGoalComparisonView.vue`](../../../packages/app-vue/src/modules/goal/views/MultiGoalComparisonView.vue) | 多目标对比页 |
 
 ## 前端状态、组合函数与组件
 
@@ -35,12 +33,9 @@ updated: 2026-08-22T00:00:00
 | [`packages/app-vue/src/modules/goal/composables/useKeyResults.ts`](../../../packages/app-vue/src/modules/goal/composables/useKeyResults.ts) | 关键结果相关组合函数 |
 | [`packages/app-vue/src/modules/goal/composables/useGoalRecords.ts`](../../../packages/app-vue/src/modules/goal/composables/useGoalRecords.ts) | 目标记录相关组合函数 |
 | [`packages/app-vue/src/modules/goal/composables/useGoalTimeline.ts`](../../../packages/app-vue/src/modules/goal/composables/useGoalTimeline.ts) | 目标时间线数据组织 |
-| [`packages/app-vue/src/modules/goal/composables/useFocusMode.ts`](../../../packages/app-vue/src/modules/goal/composables/useFocusMode.ts) | 专注模式前端入口 |
 | [`packages/app-vue/src/modules/goal/components/dialogs/GoalDialog.vue`](../../../packages/app-vue/src/modules/goal/components/dialogs/GoalDialog.vue) | 目标创建或编辑弹窗 |
 | [`packages/app-vue/src/modules/goal/components/dialogs/KeyResultDialog.vue`](../../../packages/app-vue/src/modules/goal/components/dialogs/KeyResultDialog.vue) | 关键结果创建或编辑弹窗 |
 | [`packages/app-vue/src/modules/goal/components/cards/GoalCard.vue`](../../../packages/app-vue/src/modules/goal/components/cards/GoalCard.vue) | 目标卡片 |
-| [`packages/app-vue/src/modules/goal/components/cards/GoalReviewListCard.vue`](../../../packages/app-vue/src/modules/goal/components/cards/GoalReviewListCard.vue) | 目标复盘列表卡片 |
-| [`packages/app-vue/src/modules/goal/components/echarts/GoalProgressChart.vue`](../../../packages/app-vue/src/modules/goal/components/echarts/GoalProgressChart.vue) | 目标进度图表 |
 
 ## 移动端入口
 
@@ -52,7 +47,6 @@ updated: 2026-08-22T00:00:00
 | [`apps/mobile/src/app/goals/key-result.tsx`](../../../apps/mobile/src/app/goals/key-result.tsx) | 移动端关键结果入口 |
 | [`apps/mobile/src/app/goals/review.tsx`](../../../apps/mobile/src/app/goals/review.tsx) | 移动端复盘入口 |
 | [`apps/mobile/src/app/goals/review-detail.tsx`](../../../apps/mobile/src/app/goals/review-detail.tsx) | 移动端复盘详情入口 |
-| [`apps/mobile/src/app/goals/compare.tsx`](../../../apps/mobile/src/app/goals/compare.tsx) | 移动端目标对比入口 |
 
 ## API、控制器与适配器
 
@@ -62,10 +56,7 @@ updated: 2026-08-22T00:00:00
 | [`packages/goal/src/api/routes/key-result.routes.ts`](../../../packages/goal/src/api/routes/key-result.routes.ts) | 关键结果相关 HTTP routes |
 | [`packages/goal/src/api/routes/review.routes.ts`](../../../packages/goal/src/api/routes/review.routes.ts) | 目标复盘相关 HTTP routes |
 | [`packages/goal/src/api/routes/goal-record.routes.ts`](../../../packages/goal/src/api/routes/goal-record.routes.ts) | 目标记录相关 HTTP routes |
-| [`packages/goal/src/api/routes/goal-folder.routes.ts`](../../../packages/goal/src/api/routes/goal-folder.routes.ts) | 目标文件夹相关 HTTP routes |
-| [`packages/goal/src/api/routes/focus-mode.routes.ts`](../../../packages/goal/src/api/routes/focus-mode.routes.ts) | 专注模式相关 HTTP routes |
 | [`packages/goal/src/server/transport/goal.controller.ts`](../../../packages/goal/src/server/transport/goal.controller.ts) | 目标控制器 |
-| [`packages/goal/src/server/transport/goal-folder.controller.ts`](../../../packages/goal/src/server/transport/goal-folder.controller.ts) | 目标文件夹控制器 |
 | [`packages/goal/src/infrastructure-client/adapters/http/goal-http.adapter.ts`](../../../packages/goal/src/infrastructure-client/adapters/http/goal-http.adapter.ts) | 客户端 HTTP 目标适配器 |
 | [`packages/goal/src/infrastructure-client/adapters/ipc/goal-ipc.adapter.ts`](../../../packages/goal/src/infrastructure-client/adapters/ipc/goal-ipc.adapter.ts) | 客户端 IPC 目标适配器 |
 
@@ -76,9 +67,7 @@ updated: 2026-08-22T00:00:00
 | [`packages/goal/src/index.ts`](../../../packages/goal/src/index.ts) | `@memoflow/goal` public surface 和模块分层说明 |
 | [`packages/goal/src/server/infrastructure/goal.module.ts`](../../../packages/goal/src/server/infrastructure/goal.module.ts) | 服务端目标模块组合根 |
 | [`packages/goal/src/server/domain/aggregates/goal.ts`](../../../packages/goal/src/server/domain/aggregates/goal.ts) | Goal 聚合 |
-| [`packages/goal/src/server/domain/aggregates/goal-folder.ts`](../../../packages/goal/src/server/domain/aggregates/goal-folder.ts) | Goal Folder 聚合 |
 | [`packages/goal/src/server/domain/aggregates/goal-record.ts`](../../../packages/goal/src/server/domain/aggregates/goal-record.ts) | Goal Record 聚合 |
-| [`packages/goal/src/server/domain/aggregates/focus-session.ts`](../../../packages/goal/src/server/domain/aggregates/focus-session.ts) | Focus Session 聚合 |
 | [`packages/goal/src/server/domain/entities/key-result.ts`](../../../packages/goal/src/server/domain/entities/key-result.ts) | Key Result 领域实体 |
 | [`packages/goal/src/server/domain/entities/goal-review.ts`](../../../packages/goal/src/server/domain/entities/goal-review.ts) | Goal Review 领域实体 |
 | [`packages/goal/src/server/application/use-cases/commands/create-goal.use-case.ts`](../../../packages/goal/src/server/application/use-cases/commands/create-goal.use-case.ts) | 创建目标用例 |
@@ -134,7 +123,7 @@ updated: 2026-08-22T00:00:00
 
 ## 需要重点关注的改动风险
 
-- 目标状态流转和状态规则。
+- 目标状态流转与 Direction + Measurement 边界。
 - KR 权重、进度和目标总进度计算。
 - 目标复盘与目标完成、归档、历史记录之间的关系。
 - HTTP、IPC、Prisma、PowerSync 多运行时适配器的一致性。

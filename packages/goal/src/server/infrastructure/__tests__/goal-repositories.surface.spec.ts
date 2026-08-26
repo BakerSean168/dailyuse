@@ -10,8 +10,6 @@ import {
   createGoalEventListenersRuntime,
   type GoalRepositorySet,
   type GoalWriteTransactionRunner,
-  type IFocusModeRepository,
-  type IGoalFolderRepository,
   type IGoalRecordRepository,
   type IGoalRepository,
   type IHabitRepository,
@@ -43,9 +41,7 @@ describe('goal repository factories surface', () => {
   it('createGoalPrismaRepositories returns the full repository Port set', () => {
     const set = createGoalPrismaRepositories(fakePrisma);
     expect(set).toHaveProperty('goalRepository');
-    expect(set).toHaveProperty('goalFolderRepository');
     expect(set).toHaveProperty('goalRecordRepository');
-    expect(set).toHaveProperty('focusModeRepository');
     expect(set).toHaveProperty('goalWriteTransactionRunner');
     expect(set).toHaveProperty('habitRepository');
     expect(set).toHaveProperty('relationRepository');
@@ -59,13 +55,7 @@ describe('goal repository factories surface', () => {
 
   it('createGoalPowerSyncRepositories returns the same Port shape without Prisma-only repositories', () => {
     const set = createGoalPowerSyncRepositories(fakeElectronDb);
-    const requiredNames = [
-      'goalRepository',
-      'goalFolderRepository',
-      'goalRecordRepository',
-      'focusModeRepository',
-      'goalWriteTransactionRunner',
-    ];
+    const requiredNames = ['goalRepository', 'goalRecordRepository', 'goalWriteTransactionRunner'];
     for (const name of requiredNames) {
       expect(set).toHaveProperty(name);
     }
@@ -108,7 +98,8 @@ describe('goal repository factories surface', () => {
     const runtime = createGoalEventListenersRuntime({
       goalRepository: createGoalPrismaRepositories(fakePrisma).goalRepository,
       goalRecordRepository: createGoalPrismaRepositories(fakePrisma).goalRecordRepository,
-      goalWriteTransactionRunner: createGoalPrismaRepositories(fakePrisma).goalWriteTransactionRunner,
+      goalWriteTransactionRunner:
+        createGoalPrismaRepositories(fakePrisma).goalWriteTransactionRunner,
     });
     expect(typeof runtime.start).toBe('function');
     expect(typeof runtime.stop).toBe('function');

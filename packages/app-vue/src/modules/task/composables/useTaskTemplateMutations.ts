@@ -291,7 +291,7 @@ export function useTaskTemplateMutations() {
     (id) => service.archiveTemplate(id),
     'task.error.archiveFailed',
     'task.error.archiveSuccess',
-    'Archived',
+    'Closed',
   );
 
   // 视图兼容的 safe wrappers：失败返回 null/false（错误已由 onError/toast 报告），成功返回结果。

@@ -6,7 +6,7 @@ import { ListGoalReviewsUseCase } from '../list-goal-reviews.use-case';
 function createGoalReviewFixture(overrides?: Record<string, any>) {
   const dto = {
     id: overrides?.id ?? 'review-1',
-    rating: overrides?.rating ?? 4,
+    reflection: overrides?.reflection ?? 'reflection',
   };
   return {
     ...dto,
@@ -42,8 +42,8 @@ describe('ListGoalReviewsUseCase', () => {
     if (!result.ok) return;
     expect(result.data.total).toBe(2);
     expect(result.data.data).toEqual([
-      { id: 'review-1', rating: 4 },
-      { id: 'review-2', rating: 4 },
+      { id: 'review-1', reflection: 'reflection' },
+      { id: 'review-2', reflection: 'reflection' },
     ]);
     expect(review1.toClientDTO).toHaveBeenCalled();
     expect(review2.toClientDTO).toHaveBeenCalled();

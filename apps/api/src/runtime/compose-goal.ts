@@ -113,9 +113,7 @@ export function composeGoal(
 ): ComposedGoal {
   const {
     goalRepository,
-    goalFolderRepository,
     goalRecordRepository,
-    focusModeRepository,
     goalWriteTransactionRunner,
     habitRepository,
     relationRepository,
@@ -136,9 +134,7 @@ export function composeGoal(
 
   const instance = createGoalModule({
     goalRepository,
-    goalFolderRepository,
     goalRecordRepository,
-    focusModeRepository,
     goalWriteTransactionRunner,
     habitRepository,
     relationRepository,

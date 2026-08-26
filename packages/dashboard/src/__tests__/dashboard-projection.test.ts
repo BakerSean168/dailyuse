@@ -18,10 +18,9 @@ function makeGoal(overrides: Partial<DashboardGoalRecord> = {}): DashboardGoalRe
     name: 'Goal',
     status: GoalStatus.Active,
     deletedAt: null,
-    priority: 1,
     updatedAt: Date.now(),
     overallProgress: 50,
-    targetDate: null,
+    dueDate: null,
     totalKeyResults: 0,
     ...overrides,
   };
@@ -129,24 +128,22 @@ describe('getDashboardData', () => {
     expect(data.stats.unreadNotifications).toBe(5);
   });
 
-  it('sorts goalProgress by priority then updatedAt', async () => {
+  it('sorts goalProgress by recency after Goal priority retirement', async () => {
     const now = Date.now();
     const source = makeSource({
       listGoals: async () => [
-        makeGoal({ id: 'g1', priority: 1, updatedAt: now - 1000 }),
-        makeGoal({ id: 'g2', priority: 3, updatedAt: now - 2000 }),
-        makeGoal({ id: 'g3', priority: 3, updatedAt: now }),
+        makeGoal({ id: 'g1', updatedAt: now - 1000 }),
+        makeGoal({ id: 'g2', updatedAt: now - 2000 }),
+        makeGoal({ id: 'g3', updatedAt: now }),
       ],
     });
 
     const data = await getDashboardData('user1', source);
-    expect(data.goalProgress[0].id).toBe('g3'); // priority 3, most recent
-    expect(data.goalProgress[1].id).toBe('g2'); // priority 3, older
-    expect(data.goalProgress[2].id).toBe('g1'); // priority 1
+    expect(data.goalProgress.map((item) => item.id)).toEqual(['g3', 'g1', 'g2']);
   });
 
   it('limits goalProgress to 5 items', async () => {
-    const goals = Array.from({ length: 8 }, (_, i) => makeGoal({ id: `g${i}`, priority: i }));
+    const goals = Array.from({ length: 8 }, (_, i) => makeGoal({ id: `g${i}`, updatedAt: i }));
     const source = makeSource({
       listGoals: async () => goals,
     });
@@ -174,20 +171,18 @@ describe('getDashboardData', () => {
     expect(progressById.g3).toBe(0);
   });
 
-  it('filters out deleted and archived task templates', async () => {
+  it('filters out closed and deleted task plans', async () => {
     const source = makeSource({
       listTaskTemplates: async () => [
         makeTemplate({ id: 't1', status: TaskTemplateStatus.Active }),
-        makeTemplate({ id: 't2', status: TaskTemplateStatus.Deleted }),
+        makeTemplate({ id: 't2', status: TaskTemplateStatus.Paused }),
         makeTemplate({ id: 't3', deletedAt: Date.now() }),
-        makeTemplate({ id: 't4', status: TaskTemplateStatus.Archived }),
+        makeTemplate({ id: 't4', status: TaskTemplateStatus.Closed }),
       ],
     });
 
     const data = await getDashboardData('user1', source);
-    // Only t1 should appear in activity timeline (created today)
-    // t2/t3/t4 filtered out
-    expect(data.taskBoard.todo).toBe(0); // no instances
+    expect(data.taskBoard.todo).toBe(0);
   });
 
   it('builds taskBoard from today instances', async () => {
@@ -230,14 +225,14 @@ describe('getDashboardData', () => {
   it('counts overdue tasks', async () => {
     const source = makeSource({
       listTaskInstances: async () => [
-        makeInstance({ id: 'i1', status: TaskInstanceStatus.Expired, isOverdue: () => false }),
+        makeInstance({ id: 'i1', status: TaskInstanceStatus.Missed, isOverdue: () => false }),
         makeInstance({ id: 'i2', status: TaskInstanceStatus.Pending, isOverdue: () => true }),
         makeInstance({ id: 'i3', status: TaskInstanceStatus.Pending, isOverdue: () => false }),
       ],
     });
 
     const data = await getDashboardData('user1', source);
-    expect(data.taskBoard.overdue).toBe(2);
+    expect(data.taskBoard.overdue).toBe(1);
   });
 
   it('filters upcoming schedules', async () => {

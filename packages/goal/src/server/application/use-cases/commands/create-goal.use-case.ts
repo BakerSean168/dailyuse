@@ -6,15 +6,15 @@
  */
 
 import type { IGoalRepository } from '../../../domain';
-import { Goal, GoalId, GoalPolicy, GoalReminderConfig, KeyResultId } from '../../../domain';
+import { Goal, GoalId, GoalLabelOwnershipError, GoalPolicy, GoalReminderConfig, KeyResultId } from '../../../domain';
 import { IdentityId } from '@memoflow/domain-shared';
 import type { CreateGoalReq, GoalMutationReceipt } from '@memoflow/contracts/goal';
-import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { createGoalMutationReceipt } from './goal-mutation-receipt';
 import { createLogger } from '@memoflow/utils/logger';
+import type { GoalWriteTransactionRunner } from './goal-write-support';
 /**
  * Create Goal Use Case
  */
@@ -24,6 +24,7 @@ export class CreateGoalUseCase {
   constructor(
     private readonly goalRepository: IGoalRepository,
     private readonly goalPolicy: GoalPolicy,
+    private readonly goalWriteTransactionRunner?: GoalWriteTransactionRunner,
   ) {}
 
   async execute(input: CreateGoalReq, cx: ExecutionContext): Promise<Result<GoalMutationReceipt>> {
@@ -53,45 +54,19 @@ export class CreateGoalUseCase {
     }
 
     try {
-      // 3. 如果有父目标，先查询
-      let parentGoal: Goal | undefined;
-      if (input.parentGoalId) {
-        const found = await this.goalRepository.findByIdForIdentity(
-          cx.identityId,
-          input.parentGoalId,
-        );
-        if (!found) {
-          return error('NOT_FOUND', `Parent goal not found: ${input.parentGoalId}`);
-        }
-        parentGoal = found;
-      }
-
-      // 4. 领域策略校验
-      this.goalPolicy.ensureParentGoalValid(parentGoal ?? null);
-
-      // 5. 创建目标聚合根（直接使用工厂方法）
-      const goal = Goal.create(
-        {
-          id: input.id ? GoalId.of(input.id) : undefined,
-          identityId: IdentityId.of(cx.identityId),
-          name: input.name,
-          description: input.description ?? null,
-          color: input.color ?? '#3B82F6',
-          feasibilityAnalysis: input.feasibilityAnalysis ?? null,
-          motivation: input.motivation ?? null,
-          importance: (input.importance ?? 'medium') as ImportanceLevel,
-          category: input.category ?? null,
-          tags: input.tags ?? [],
-          startDate: input.startDate ?? null,
-          targetDate: input.targetDate ?? null,
-          folderId: input.folderId ?? null,
-          parentGoalId: input.parentGoalId ?? null,
-          reminderConfig: input.reminderConfig
-            ? GoalReminderConfig.fromDTO(input.reminderConfig)
-            : null,
-        },
-        parentGoal,
-      );
+      const goal = Goal.create({
+        id: input.id ? GoalId.of(input.id) : undefined,
+        identityId: IdentityId.of(cx.identityId),
+        name: input.name,
+        description: input.description ?? null,
+        feasibilityAnalysis: input.feasibilityAnalysis ?? null,
+        motivation: input.motivation ?? null,
+        startDate: input.startDate ?? null,
+        dueDate: input.dueDate ?? null,
+        reminderConfig: input.reminderConfig
+          ? GoalReminderConfig.fromDTO(input.reminderConfig)
+          : null,
+      });
 
       for (const keyResult of input.initialKeyResults ?? []) {
         goal.createAndAddKeyResult({
@@ -101,10 +76,22 @@ export class CreateGoalUseCase {
         });
       }
 
-      // 6. 持久化
-      await this.goalRepository.save(goal);
-
-      // 7. 返回 Result
+      const persist = async (repository: IGoalRepository): Promise<void> => {
+        await repository.save(goal);
+        if (input.labelIds !== undefined) {
+          const labels = await repository.replaceLabels(
+            cx.identityId,
+            String(goal.id),
+            input.labelIds,
+          );
+          goal.hydrateLabels(labels);
+        }
+      };
+      if (this.goalWriteTransactionRunner) {
+        await this.goalWriteTransactionRunner.run((ctx) => persist(ctx.goalRepository));
+      } else {
+        await persist(this.goalRepository);
+      }
       return ok(
         createGoalMutationReceipt(goal, {
           keyResultIds: goal.keyResults.map((keyResult) => keyResult.id),
@@ -120,11 +107,9 @@ export class CreateGoalUseCase {
       // surface that durable fact as an idempotent replay.
       if (input.id) {
         try {
-          const existing = await this.goalRepository.findByIdForIdentity(
-            cx.identityId,
-            input.id,
-            { includeChildren: true },
-          );
+          const existing = await this.goalRepository.findByIdForIdentity(cx.identityId, input.id, {
+            includeChildren: true,
+          });
           if (existing) {
             return ok(
               createGoalMutationReceipt(existing, {
@@ -140,6 +125,7 @@ export class CreateGoalUseCase {
 
       this.logger.error('Failed to create goal', { error: caughtError });
       const message = caughtError instanceof Error ? caughtError.message : String(caughtError);
+      if (caughtError instanceof GoalLabelOwnershipError) return error(caughtError.code, message);
       return error('INTERNAL_ERROR', message);
     }
   }

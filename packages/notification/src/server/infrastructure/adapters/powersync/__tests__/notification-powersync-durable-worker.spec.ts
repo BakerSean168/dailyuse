@@ -63,24 +63,30 @@ function createTestSqliteDatabase(): IElectronDatabase {
     CREATE TABLE IF NOT EXISTS notifications (
       id TEXT PRIMARY KEY,
       identity_id TEXT NOT NULL,
+      workflow_key TEXT NOT NULL,
+      topic TEXT NOT NULL,
+      idempotency_key TEXT NOT NULL,
       title TEXT NOT NULL,
       content TEXT NOT NULL,
       type TEXT NOT NULL,
       category TEXT NOT NULL,
       importance TEXT,
       urgency TEXT,
-      status TEXT NOT NULL,
       is_read INTEGER DEFAULT 0,
       read_at TEXT,
       related_entity_type TEXT,
       related_entity_id TEXT,
+      navigation_intent TEXT,
+      correlation_id TEXT,
+      causation_id TEXT,
       metadata TEXT,
       actions TEXT,
       expires_at TEXT,
       version INTEGER DEFAULT 1,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      deleted_at TEXT
+      deleted_at TEXT,
+      UNIQUE(identity_id, idempotency_key)
     );
 
     CREATE TABLE IF NOT EXISTS notification_channels (
@@ -103,14 +109,11 @@ function createTestSqliteDatabase(): IElectronDatabase {
 
     CREATE TABLE IF NOT EXISTS notification_preferences (
       id TEXT PRIMARY KEY,
-      identity_id TEXT NOT NULL,
-      enabled INTEGER DEFAULT 1,
+      identity_id TEXT NOT NULL UNIQUE,
+      global_channels TEXT NOT NULL DEFAULT '{}',
+      workflow_overrides TEXT NOT NULL DEFAULT '{}',
       do_not_disturb TEXT,
       rate_limit TEXT,
-      global_do_not_disturb INTEGER DEFAULT 0,
-      quiet_hours TEXT,
-      channels TEXT,
-      categories TEXT,
       version INTEGER DEFAULT 1,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
@@ -240,24 +243,30 @@ function createFileSqliteDatabase(dbPath: string): { db: IElectronDatabase; clos
     CREATE TABLE IF NOT EXISTS notifications (
       id TEXT PRIMARY KEY,
       identity_id TEXT NOT NULL,
+      workflow_key TEXT NOT NULL,
+      topic TEXT NOT NULL,
+      idempotency_key TEXT NOT NULL,
       title TEXT NOT NULL,
       content TEXT NOT NULL,
       type TEXT NOT NULL,
       category TEXT NOT NULL,
       importance TEXT,
       urgency TEXT,
-      status TEXT NOT NULL,
       is_read INTEGER DEFAULT 0,
       read_at TEXT,
       related_entity_type TEXT,
       related_entity_id TEXT,
+      navigation_intent TEXT,
+      correlation_id TEXT,
+      causation_id TEXT,
       metadata TEXT,
       actions TEXT,
       expires_at TEXT,
       version INTEGER DEFAULT 1,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      deleted_at TEXT
+      deleted_at TEXT,
+      UNIQUE(identity_id, idempotency_key)
     );
 
     CREATE TABLE IF NOT EXISTS notification_channels (
@@ -280,14 +289,11 @@ function createFileSqliteDatabase(dbPath: string): { db: IElectronDatabase; clos
 
     CREATE TABLE IF NOT EXISTS notification_preferences (
       id TEXT PRIMARY KEY,
-      identity_id TEXT NOT NULL,
-      enabled INTEGER DEFAULT 1,
+      identity_id TEXT NOT NULL UNIQUE,
+      global_channels TEXT NOT NULL DEFAULT '{}',
+      workflow_overrides TEXT NOT NULL DEFAULT '{}',
       do_not_disturb TEXT,
       rate_limit TEXT,
-      global_do_not_disturb INTEGER DEFAULT 0,
-      quiet_hours TEXT,
-      channels TEXT,
-      categories TEXT,
       version INTEGER DEFAULT 1,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
@@ -466,7 +472,6 @@ describe('PowerSync Notification Durable Worker & Composition Root', () => {
     // Create notification using UseCase
     const useCase = new CreateNotificationUseCase(
       moduleInstance.notificationRepository,
-      moduleInstance.templateRepository,
       moduleInstance.preferenceRepository,
       async () => false,
     );
@@ -606,6 +611,9 @@ describe('PowerSync Notification Durable Worker & Composition Root', () => {
 
     const failingNotification = Notification.create({
       identityId: 'user-rb' as any,
+      workflowKey: 'system.general',
+      topic: 'system.general',
+      idempotencyKey: 'rollback-test',
       title: 'Rollback Test',
       content: 'Should not persist',
       type: 'Info' as any,
@@ -683,7 +691,6 @@ describe('PowerSync Notification Durable Worker & Composition Root', () => {
 
       const useCase1 = new CreateNotificationUseCase(
         moduleInstance1.notificationRepository,
-        moduleInstance1.templateRepository,
         moduleInstance1.preferenceRepository,
         async () => false,
       );
@@ -819,7 +826,6 @@ describe('PowerSync Notification Durable Worker & Composition Root', () => {
 
       const useCase1 = new CreateNotificationUseCase(
         moduleInstance1.notificationRepository,
-        moduleInstance1.templateRepository,
         moduleInstance1.preferenceRepository,
         async () => false,
       );
@@ -912,9 +918,9 @@ describe('PowerSync Notification Durable Worker & Composition Root', () => {
     const db = createTestSqliteDatabase();
     const repository = new PowerSyncNotificationPreferenceRepository(db);
     const preference = NotificationPreference.create({
-      identityId: 'user-policy-pref',
-      defaultChannels: [NotificationChannelType.InApp],
+      identityId: 'user-policy-pref' as never,
     });
+    preference.setGlobalChannel(NotificationChannelType.InApp, true);
     preference.setDoNotDisturb(
       DoNotDisturbConfig.create({
         enabled: true,
@@ -937,6 +943,9 @@ describe('PowerSync Notification Durable Worker & Composition Root', () => {
     const repository = new PowerSyncNotificationRepository(db);
     const notification = Notification.create({
       identityId: 'user-deferred' as never,
+      workflowKey: 'system.general',
+      topic: 'system.general',
+      idempotencyKey: 'deferred-test',
       title: 'Deferred delivery',
       content: 'Quiet hours',
       type: 'Info',
@@ -948,7 +957,6 @@ describe('PowerSync Notification Durable Worker & Composition Root', () => {
       recipient: 'user-deferred',
     });
     notification.addChannel(channel);
-    notification.send();
 
     const occurrenceKey = `${notification.id}:${NotificationChannelType.InApp}`;
     const idempotencyKey = buildIdempotencyKeyString({
@@ -989,16 +997,22 @@ describe('PowerSync Notification Durable Worker & Composition Root', () => {
     expect(outbox.status).toBe('retryable');
     expect(outbox.next_retry_at).toBe(retryAt.toISOString());
 
-    const history = await db.get<{ action: string; details: string }>(
-      'SELECT action, details FROM notification_history WHERE notification_id = ?',
-      [notification.id],
+    const decision = await db.get<{
+      channel: string;
+      outcome: string;
+      reason: string;
+      retry_at: string | null;
+    }>(
+      `SELECT channel, outcome, reason, retry_at
+         FROM notification_delivery_decisions
+        WHERE notification_id = ? AND channel = ?`,
+      [String(notification.id), NotificationChannelType.InApp],
     );
-    expect(history.action).toBe('delivery_policy');
-    expect(JSON.parse(history.details)).toMatchObject({
+    expect(decision).toEqual({
       channel: NotificationChannelType.InApp,
       outcome: 'deferred',
       reason: 'dnd_active',
-      retryAt: retryAt.toISOString(),
+      retry_at: retryAt.toISOString(),
     });
 
     const adapter = new PowerSyncNotificationReliableAdapter(db);

@@ -14,11 +14,10 @@ import {
   errorResponse,
 } from '@memoflow/utils/result';
 import {
-  CheckExpiredTaskInstancesInvocationSchema,
-  CheckExpiredTaskInstancesResponseSchema,
   TaskInstanceResponseSchema,
   GetTaskInstancesByRangeSchema,
   CompleteTaskInstanceInvocationSchema,
+  MarkTaskInstanceMissedInvocationSchema,
   SkipTaskInstanceInvocationSchema,
   TaskInstanceIdCommandInvocationSchema,
 } from '@memoflow/contracts/task';
@@ -81,23 +80,6 @@ export function registerTaskInstanceRoutes(
         startDate: parseTimestampQuery(req.query?.startDate, Date.now()),
         endDate: parseTimestampQuery(req.query?.endDate, Date.now() + 86400000 * 7),
       }),
-  );
-
-  // POST /check-expired — Check and mark expired instances
-  r.routeWithValidation(
-    {
-      method: 'post',
-      path: '/check-expired',
-      summary: '检查并标记过期任务实例',
-      responses: {
-        200: successResponse(CheckExpiredTaskInstancesResponseSchema, '检查完成'),
-      },
-      validation: {
-        schema: CheckExpiredTaskInstancesInvocationSchema,
-      },
-    },
-    [auth],
-    (_data, ctx) => controller.checkExpired(ctx.identityId),
   );
 
   // GET / — List instances
@@ -210,6 +192,33 @@ export function registerTaskInstanceRoutes(
     },
     [auth],
     (data, ctx) => controller.skipInstance(data.params.id, data.body, ctx),
+  );
+
+  // POST /:id/missed — Explicitly record a Missed occurrence fact
+  r.routeWithValidation(
+    {
+      method: 'post',
+      path: '/:id/missed',
+      summary: '明确记录任务实例为 Missed',
+      request: {
+        params: MarkTaskInstanceMissedInvocationSchema.shape.params,
+        body: {
+          content: {
+            'application/json': { schema: MarkTaskInstanceMissedInvocationSchema.shape.body },
+          },
+        },
+      },
+      responses: {
+        200: successResponse(TaskInstanceResponseSchema, '记录成功'),
+        404: errorResponse('实例不存在'),
+      },
+      validation: {
+        schema: MarkTaskInstanceMissedInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
+    },
+    [auth],
+    (data, ctx) => controller.markMissedInstance(data.params.id, data.body, ctx),
   );
 
   // POST /:id/start — Start instance

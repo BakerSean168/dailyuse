@@ -8,9 +8,11 @@
 
 import { TaskTemplate, TaskInstance } from '../aggregates';
 import { TASK_INSTANCE_GENERATION_CONFIG } from '@memoflow/contracts/task';
+import { createTimeFacade } from '@memoflow/time';
 
 const { TARGET_GENERATE_AHEAD_DAYS, REFILL_THRESHOLD_DAYS } =
   TASK_INSTANCE_GENERATION_CONFIG;
+const taskTime = createTimeFacade();
 
 export class TaskInstanceGenerationService {
   constructor() {}
@@ -39,11 +41,13 @@ export class TaskInstanceGenerationService {
     const lastGeneratedTime = template.lastGeneratedDate;
     const fromDate =
       options.fromDate ??
-      (!forceGenerate && lastGeneratedTime ? lastGeneratedTime + 86400000 : now);
+      (!forceGenerate && lastGeneratedTime
+        ? taskTime.calendar.addDays(lastGeneratedTime, 1)
+        : now);
 
     // 2. 计算目标结束日期：默认未来 100 天
     const targetDays = TARGET_GENERATE_AHEAD_DAYS;
-    const toDate = options.targetDate || now + targetDays * 86400000;
+    const toDate = options.targetDate || taskTime.calendar.addDays(now, targetDays);
 
     // 3. 如果起始日期已经超过目标日期，说明已经生成够了
     if (fromDate > toDate) {
@@ -70,7 +74,7 @@ export class TaskInstanceGenerationService {
 
     // 检查最远实例的日期
     const lastGenerated = template.lastGeneratedDate || 0;
-    const daysRemaining = Math.floor((lastGenerated - now) / 86400000);
+    const daysRemaining = taskTime.calendar.diffCalendarDays(lastGenerated, now);
 
     // 如果剩余天数少于阈值，需要补充
     return daysRemaining < REFILL_THRESHOLD_DAYS;
@@ -80,6 +84,6 @@ export class TaskInstanceGenerationService {
    * 计算补充实例的目标日期
    */
   calculateRefillTargetDate(): number {
-    return Date.now() + TARGET_GENERATE_AHEAD_DAYS * 86400000;
+    return taskTime.calendar.addDays(Date.now(), TARGET_GENERATE_AHEAD_DAYS);
   }
 }

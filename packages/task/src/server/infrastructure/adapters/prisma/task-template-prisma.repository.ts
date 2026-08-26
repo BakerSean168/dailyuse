@@ -101,7 +101,7 @@ export class TaskTemplatePrismaRepository
   async findByIdWithChildren(identityId: string, id: string): Promise<TaskTemplate | null> {
     const data = await this.db.taskTemplate.findFirst({
       where: { id, identityId },
-      include: { subtasks: true, instances: true },
+      include: { instances: true },
     });
     return data ? this.mapToEntity(data) : null;
   }
@@ -137,13 +137,6 @@ export class TaskTemplatePrismaRepository
     return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
-  async findByFolderId(identityId: string, folderId: string): Promise<TaskTemplate[]> {
-    const data = await this.db.taskTemplate.findMany({
-      where: { identityId, folderId, deletedAt: null },
-      orderBy: { createdAt: 'desc' },
-    });
-    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
-  }
 
   async findByGoalId(identityId: string, goalId: string): Promise<TaskTemplate[]> {
     const data = await this.db.taskTemplate.findMany({
@@ -229,7 +222,6 @@ export class TaskTemplatePrismaRepository
         recurrenceRuleType: null,
         deletedAt: null,
         ...(filters?.status ? { status: filters.status } : {}),
-        ...(filters?.folderId ? { folderId: filters.folderId } : {}),
       },
       take: filters?.limit,
       skip: filters?.offset,
@@ -245,7 +237,6 @@ export class TaskTemplatePrismaRepository
         recurrenceRuleType: { not: null },
         deletedAt: null,
         ...(filters?.status ? { status: filters.status } : {}),
-        ...(filters?.folderId ? { folderId: filters.folderId } : {}),
       },
       take: filters?.limit,
       skip: filters?.offset,
@@ -278,37 +269,8 @@ export class TaskTemplatePrismaRepository
     return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
-  async findSubtasks(identityId: string, parentTaskId: string): Promise<TaskTemplate[]> {
-    const data = await this.db.taskTemplate.findMany({
-      where: { identityId, parentTaskId, deletedAt: null },
-      orderBy: { createdAt: 'asc' },
-    });
-    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
-  }
 
-  async findBlockedTasks(identityId: string): Promise<TaskTemplate[]> {
-    const data = await this.db.taskTemplate.findMany({
-      where: {
-        identityId,
-        isBlocked: true,
-        deletedAt: null,
-      },
-    });
-    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
-  }
 
-  async findSortedByPriority(identityId: string, limit?: number): Promise<TaskTemplate[]> {
-    const data = await this.db.taskTemplate.findMany({
-      where: {
-        identityId,
-        status: 'Active',
-        deletedAt: null,
-      },
-      orderBy: { importance: 'asc' },
-      take: limit,
-    });
-    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
-  }
 
   async findUpcomingTasks(identityId: string, _daysAhead: number): Promise<TaskTemplate[]> {
     const data = await this.db.taskTemplate.findMany({
@@ -332,7 +294,6 @@ export class TaskTemplatePrismaRepository
         identityId,
         deletedAt: null,
         ...(filters?.status ? { status: filters.status } : {}),
-        ...(filters?.folderId ? { folderId: filters.folderId } : {}),
       },
     });
   }

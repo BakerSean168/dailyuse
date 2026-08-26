@@ -5,18 +5,19 @@
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
 import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
 import type { CompleteTaskInstanceReq, TaskInstanceOperationRes } from '@memoflow/contracts/task';
-import { TaskGoalBindingTrigger, TaskInstanceStatus } from '@memoflow/contracts/task';
+import { TaskGoalBindingTrigger, TaskInstanceStatus, TaskPlanOutcome } from '@memoflow/contracts/task';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error, fail } from '@memoflow/contracts/result';
 import type { TaskInstance } from '../../../domain/aggregates/task-instance';
 import type { TaskTemplate } from '../../../domain/aggregates/task-template';
-import { isFiniteTaskPlan } from '../../../domain/aggregates/task-template-goal.policy';
 import { createLogger } from '@memoflow/utils/logger';
 import {
   mapTaskWriteErrorToResultError,
   type TaskWriteRepositories,
   type TaskWriteTransactionRunner,
 } from './task-write-support';
+import { reevaluateTaskPlanOutcome } from './task-plan-outcome-reevaluation';
+import { TaskPlanOutcomeEvaluator } from '../../../domain/services/task-plan-outcome-evaluator';
 
 /**
  * Complete Task Instance Service
@@ -91,6 +92,7 @@ export class CompleteTaskInstanceUseCase {
     // Mark as completed（goalContext 会被嵌入领域事件的 payload）
     instance.complete(request?.duration, request?.note, request?.rating, goalContext);
     await repositories.instanceRepository.save(instance);
+    await reevaluateTaskPlanOutcome(repositories, identityId, String(instance.templateId));
 
     return ok({
       instance: instance.toClientDTO(),
@@ -98,9 +100,9 @@ export class CompleteTaskInstanceUseCase {
   }
 
   /**
-   * 组装事件所需的目标绑定上下文。
-   * 未绑定目标时 goalBinding = null，订阅方据此忽略。
-   * AllInstancesCompleted 触发条件下，把「本实例完成后是否全部相关实例完成」算好。
+   * Build the self-contained Task-owned settlement context for the completion event.
+   * PlanCompletion eligibility is derived from TaskPlanOutcomeEvaluator with this
+   * occurrence projected as Completed, so Goal never decides Task success policy.
    */
   private async buildGoalContext(
     instance: TaskInstance,
@@ -109,75 +111,41 @@ export class CompleteTaskInstanceUseCase {
   ): Promise<{
     taskTitle: string;
     goalBinding: ReturnType<TaskTemplate['toServerDTO']>['goalBinding'];
-    allInstancesCompleted: boolean;
+    planSucceeded: boolean;
   }> {
     const goalBinding = template?.goalBinding?.toDTO() ?? null;
     const taskTitle = template?.title ?? '';
 
     if (
       !template ||
-      !goalBinding ||
-      goalBinding.progressTrigger !== TaskGoalBindingTrigger.AllInstancesCompleted
+      !goalBinding?.contribution ||
+      goalBinding.contribution.trigger !== TaskGoalBindingTrigger.PlanCompletion
     ) {
-      return { taskTitle, goalBinding, allInstancesCompleted: false };
+      return { taskTitle, goalBinding, planSucceeded: false };
+    }
+
+    const siblings = await instanceRepository.findByTemplateId(
+      String(instance.templateId),
+      String(instance.identityId),
+    );
+    let currentFound = false;
+    const projected = siblings.map((sibling) => {
+      if (String(sibling.id) !== String(instance.id)) {
+        return { status: sibling.status, deletedAt: sibling.deletedAt };
+      }
+      currentFound = true;
+      return { status: TaskInstanceStatus.Completed, deletedAt: sibling.deletedAt };
+    });
+    if (!currentFound) {
+      projected.push({ status: TaskInstanceStatus.Completed, deletedAt: instance.deletedAt });
     }
 
     return {
       taskTitle,
       goalBinding,
-      allInstancesCompleted: await this.areAllInstancesCompleted(
-        instance,
-        template,
-        String(instance.identityId),
-        instanceRepository,
-      ),
+      planSucceeded:
+        new TaskPlanOutcomeEvaluator().evaluate(template, projected) === TaskPlanOutcome.Succeeded,
     };
   }
 
-  /**
-   * 「本实例完成后」模板下所有相关实例（截至本实例日期）是否都已完成。
-   * 兄弟实例读自持久化状态；本实例即将被标记完成，故只需其余相关实例均已完成。
-   */
-  private async areAllInstancesCompleted(
-    instance: TaskInstance,
-    template: TaskTemplate,
-    identityId: string,
-    instanceRepository: ITaskInstanceRepository,
-  ): Promise<boolean> {
-    if (!isFiniteTaskPlan(template.taskType, template.recurrenceRule)) {
-      return false;
-    }
-
-    const siblings = await instanceRepository.findByTemplateId(
-      String(instance.templateId),
-      identityId,
-    );
-    const relevant = siblings.filter((sibling) => !sibling.deletedAt);
-
-    if (relevant.length === 0 || !this.isFiniteScopeFullyGenerated(template, relevant.length)) {
-      return false;
-    }
-
-    return relevant.every(
-      (sibling) =>
-        String(sibling.id) === String(instance.id) ||
-        sibling.status === TaskInstanceStatus.Completed,
-    );
-  }
-
-  private isFiniteScopeFullyGenerated(template: TaskTemplate, instanceCount: number): boolean {
-    if (!template.recurrenceRule) {
-      return instanceCount > 0;
-    }
-
-    if (template.recurrenceRule.occurrences !== null) {
-      return instanceCount >= template.recurrenceRule.occurrences;
-    }
-
-    return (
-      template.recurrenceRule.endDate !== null &&
-      template.lastGeneratedDate !== null &&
-      template.lastGeneratedDate >= template.recurrenceRule.endDate
-    );
-  }
 }

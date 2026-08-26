@@ -19,15 +19,15 @@ import type {
   CreateTaskTemplateInput,
   ListTaskTemplateFilters,
   TaskTemplateInstancesQuery,
-  QueryTaskTemplateGraphRes,
   QueryTaskTemplatesInternal,
   CreateTaskTemplateReq,
   UpdateTaskTemplateReq,
   GenerateInstancesReq,
   BindToGoalReq,
+  AbandonTaskPlanReq,
 } from '@memoflow/contracts/task';
 import type { Context } from '@memoflow/contracts/shared';
-import type { TaskFolderId, GoalId } from '@memoflow/contracts/primitives';
+import type { GoalId } from '@memoflow/contracts/primitives';
 import { IdentityId } from '@memoflow/domain-shared';
 import type { CreateTaskTemplateUseCase } from '../application/use-cases/commands/create-task-template.use-case';
 import type { GetTaskTemplateUseCase } from '../application/use-cases/queries/get-task-template.use-case';
@@ -37,12 +37,11 @@ import type { DeleteTaskTemplateUseCase } from '../application/use-cases/command
 import type { ActivateTaskTemplateUseCase } from '../application/use-cases/commands/activate-task-template.use-case';
 import type { PauseTaskTemplateUseCase } from '../application/use-cases/commands/pause-task-template.use-case';
 import type { ArchiveTaskTemplateUseCase } from '../application/use-cases/commands/archive-task-template.use-case';
-import type { ListTaskTemplatesByPriorityUseCase } from '../application/use-cases/queries/list-task-templates-by-priority.use-case';
+import type { AbandonTaskPlanUseCase } from '../application/use-cases/commands/abandon-task-plan.use-case';
 import type { GenerateTaskInstancesUseCase } from '../application/use-cases/commands/generate-task-instances.use-case';
 import type { BindTaskToGoalUseCase } from '../application/use-cases/commands/bind-task-to-goal.use-case';
 import type { UnbindTaskFromGoalUseCase } from '../application/use-cases/commands/unbind-task-from-goal.use-case';
 import type { ListTaskInstancesByTemplateUseCase } from '../application/use-cases/queries/list-task-instances-by-template.use-case';
-import type { GetTaskTemplateGraphUseCase } from '../application/use-cases/queries/get-task-template-graph.use-case';
 
 type TaskControllerFn<T extends (...args: never[]) => unknown> = (
   ...args: Parameters<T>
@@ -52,13 +51,12 @@ export interface TaskTemplateUseCases {
   createTemplate: TaskControllerFn<CreateTaskTemplateUseCase['execute']>;
   getTemplate: TaskControllerFn<GetTaskTemplateUseCase['execute']>;
   listTemplates: TaskControllerFn<ListTaskTemplatesUseCase['execute']>;
-  getTaskGraph: TaskControllerFn<GetTaskTemplateGraphUseCase['execute']>;
   updateTemplate: TaskControllerFn<UpdateTaskTemplateUseCase['execute']>;
   deleteTemplate: TaskControllerFn<DeleteTaskTemplateUseCase['execute']>;
   activateTemplate: TaskControllerFn<ActivateTaskTemplateUseCase['execute']>;
   pauseTemplate: TaskControllerFn<PauseTaskTemplateUseCase['execute']>;
   archiveTemplate: TaskControllerFn<ArchiveTaskTemplateUseCase['execute']>;
-  listByPriority: TaskControllerFn<ListTaskTemplatesByPriorityUseCase['execute']>;
+  abandonPlan: TaskControllerFn<AbandonTaskPlanUseCase['execute']>;
   generateInstances: TaskControllerFn<GenerateTaskInstancesUseCase['execute']>;
   bindToGoal: TaskControllerFn<BindTaskToGoalUseCase['execute']>;
   unbindFromGoal: TaskControllerFn<UnbindTaskFromGoalUseCase['execute']>;
@@ -81,7 +79,6 @@ export class TaskTemplateController {
     return {
       identityId: IdentityId.of(ctx.identityId),
       status: filters?.status,
-      folderId: filters?.folderId as TaskFolderId | undefined,
       goalId: filters?.goalId as GoalId | undefined,
       tags: filters?.tags,
     };
@@ -105,8 +102,6 @@ export class TaskTemplateController {
       recurrenceRule: input.recurrenceRule,
       reminderConfig: input.reminderConfig,
       importance: input.importance,
-      parentTaskId: input.parentTaskId,
-      folderId: input.folderId,
       tags: input.tags,
       color: input.color,
       goalBinding: input.goalBinding,
@@ -158,18 +153,6 @@ export class TaskTemplateController {
   /**
    * List templates together with the dependency edges between them.
    */
-  async getTaskGraph(
-    filters: ListTaskTemplateFilters | undefined,
-    ctx: Context,
-  ): Promise<Result<QueryTaskTemplateGraphRes>> {
-    const result = await this.useCases.getTaskGraph(this.toTemplateQuery(filters, ctx));
-
-    if (!isOk(result)) {
-      return result as Result<QueryTaskTemplateGraphRes>;
-    }
-
-    return ok(result.data);
-  }
 
   /**
    * Update template (with Zod validation)
@@ -186,8 +169,6 @@ export class TaskTemplateController {
       recurrenceRule: input.recurrenceRule,
       reminderConfig: input.reminderConfig,
       importance: input.importance,
-      parentTaskId: input.parentTaskId,
-      folderId: input.folderId,
       tags: input.tags,
       color: input.color,
       goalBinding: input.goalBinding,
@@ -239,13 +220,14 @@ export class TaskTemplateController {
     return await this.useCases.archiveTemplate(id, ctx.identityId);
   }
 
-  /**
-   * List templates sorted by priority
-   * Identity is injected from Context, not from request payload
-   */
-  async listByPriority(ctx: Context, limit?: number): Promise<Result<TaskTemplateClientDTO[]>> {
-    return await this.useCases.listByPriority(ctx.identityId, limit);
+  async abandonPlan(
+    id: string,
+    request: AbandonTaskPlanReq,
+    ctx: Context,
+  ): Promise<Result<TaskTemplateClientDTO>> {
+    return await this.useCases.abandonPlan(id, ctx.identityId, request);
   }
+
 
   /**
    * Generate instances for a template

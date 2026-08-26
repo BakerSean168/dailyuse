@@ -96,7 +96,7 @@ import { describe, expect, it } from 'vitest';
 {
   /**
    * Residual 853: exact-match VO/DTO duals retired (Instant/TransferDate duals left as separate interfaces).
-   * GoalMetadataDTO / AccountSettingsDTO / ChecklistItemDefinitionDTO = sole interface + type alias.
+   * AccountSettingsDTO / ChecklistItemDefinitionDTO = sole interface + type alias.
    * Residual 857 (soft): FrequencyAdjustmentDTO / ResponseMetricsDTO exact duals also retired.
    * Residual 859 (soft): Instant/TransferDate dual keep-boundary owned above (this block keeps Residual 853 only).
    */
@@ -105,16 +105,8 @@ import { describe, expect, it } from 'vitest';
     const accountVo = resolve(goalVo, '../../account/value-objects');
     const taskVo = resolve(goalVo, '../../task/value-objects');
 
-    const goalMeta = readFileSync(resolve(goalVo, 'goal-metadata.ts'), 'utf8');
     const accountSettings = readFileSync(resolve(accountVo, 'account-settings.ts'), 'utf8');
     const checklist = readFileSync(resolve(taskVo, 'checklist-item-definition.ts'), 'utf8');
-
-    it('owns GoalMetadataDTO as type alias of GoalMetadata', () => {
-      expect(goalMeta).toContain('Residual 853');
-      expect(goalMeta).toMatch(/export interface GoalMetadata\b/);
-      expect(goalMeta).toContain('export type GoalMetadataDTO = GoalMetadata');
-      expect(goalMeta).not.toMatch(/export interface GoalMetadataDTO\b/);
-    });
 
     it('owns AccountSettingsDTO as type alias of AccountSettings', () => {
       expect(accountSettings).toContain('Residual 853');
@@ -126,7 +118,9 @@ import { describe, expect, it } from 'vitest';
     it('owns ChecklistItemDefinitionDTO as type alias; keeps Instant duals as interfaces', () => {
       expect(checklist).toContain('Residual 853');
       expect(checklist).toMatch(/export interface ChecklistItemDefinition\b/);
-      expect(checklist).toContain('export type ChecklistItemDefinitionDTO = ChecklistItemDefinition');
+      expect(checklist).toContain(
+        'export type ChecklistItemDefinitionDTO = ChecklistItemDefinition',
+      );
       expect(checklist).not.toMatch(/export interface ChecklistItemDefinitionDTO\b/);
       // Instant/TransferDate duals remain separate interface bodies (residual 859).
       const goalTime = readFileSync(resolve(goalVo, 'goal-time-range.ts'), 'utf8');

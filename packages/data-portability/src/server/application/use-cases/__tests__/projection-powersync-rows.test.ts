@@ -29,17 +29,14 @@ describe('projection from PowerSync-shaped rows', () => {
         {
           id: 'goal-db-id',
           name: 'Ship portability',
-          status: 'active',
-          importance: 'high',
-          priority: 10,
-          tags: '["desktop"]',
+          status: 'Active',
           keyResults: [
             {
               id: 'kr-db-id',
               title: 'Round trip passes',
-              valueType: 'numeric',
-              aggregationMethod: 'sum',
-              initialValue: 0,
+              aggregationMethod: 'Sum',
+              startingValue: 0,
+              progressBaselineValue: null,
               targetValue: 1,
               currentValue: 1,
               weight: 2,
@@ -65,17 +62,15 @@ describe('projection from PowerSync-shaped rows', () => {
 
     expect(goals[0]).toMatchObject({
       _ref: 'goal:1',
-      tags: ['desktop'],
+      status: 'Active',
       keyResults: [
         {
           _ref: 'keyResult:1',
-          progress: {
-            valueType: 'numeric',
-            aggregationMethod: 'sum',
-            initialValue: 0,
-            targetValue: 1,
-            currentValue: 1,
-          },
+          calculationMethod: 'Sum',
+          startingValue: 0,
+          progressBaselineValue: null,
+          targetValue: 1,
+          currentValue: 1,
           sortOrder: 3,
         },
       ],
@@ -103,7 +98,7 @@ describe('projection from PowerSync-shaped rows', () => {
           goalId: 'goal-db-id',
           keyResultId: 'kr-db-id',
           goalRecordValue: 2.5,
-          goalProgressTrigger: 'PER_INSTANCE',
+          goalProgressTrigger: 'EachCompletion',
           checklist: '[{"title":"cover IPC","order":0}]',
           reminderConfigEnabled: 1,
           reminderConfigTimeOffsetMinutes: 15,
@@ -119,15 +114,46 @@ describe('projection from PowerSync-shaped rows', () => {
       tags: ['qa'],
       goalRef: 'goal:1',
       keyResultRef: 'keyResult:1',
-      goalRecordValue: 2.5,
-      goalProgressTrigger: 'PER_INSTANCE',
+      contribution: { value: 2.5, trigger: 'EachCompletion' },
       checklist: [{ title: 'cover IPC', order: 0 }],
       reminderConfig: {
-        enabled: 1,
+        enabled: true,
         triggers: [{ relativeValue: 15, relativeUnit: 'Minute' }],
       },
     });
     expect(templates[0]).not.toHaveProperty('goalBinding');
+    expect(templates[0]).not.toHaveProperty('goalRecordValue');
+    expect(templates[0]).not.toHaveProperty('goalProgressTrigger');
+  });
+
+
+  it('exports a Task Goal link without inventing a zero contribution', () => {
+    const ctx = createExportContext({
+      'goal-db-id': 'goal:1',
+      'kr-db-id': 'keyResult:1',
+    });
+    const [template] = projectTaskTemplates([
+      {
+        id: 'task-link-only',
+        name: 'Read linked context',
+        status: 'Active',
+        outcome: 'Open',
+        completionPolicy: 'AllowCorrection',
+        importance: 'moderate',
+        tags: '[]',
+        goalId: 'goal-db-id',
+        keyResultId: 'kr-db-id',
+        goalRecordValue: null,
+        goalProgressTrigger: null,
+        checklist: '[]',
+      },
+    ], ctx);
+
+    expect(template).toMatchObject({
+      goalRef: 'goal:1',
+      keyResultRef: 'keyResult:1',
+      contribution: null,
+    });
   });
 
   it('exports reminders from PowerSync names, refs, JSON strings, and integer booleans', () => {
@@ -185,7 +211,7 @@ describe('projection from PowerSync-shaped rows', () => {
           sourceModule: 'task',
           sourceEntityId: 'missing-source-id',
           status: 'active',
-          enabled: 1,
+          enabled: true,
           cronExpression: '0 9 * * *',
           timezone: 'Asia/Shanghai',
           maxRetries: 5,

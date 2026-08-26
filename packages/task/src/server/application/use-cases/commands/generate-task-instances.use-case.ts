@@ -45,6 +45,9 @@ export class GenerateTaskInstancesUseCase {
           return error('NOT_FOUND', `TaskTemplate ${templateId} not found`);
         }
 
+        const existingInstances = await instanceRepository.findByTemplateId(templateId, identityId);
+        existingInstances.forEach((instance) => template.addInstance(instance));
+
         const instances = this.generationService.generateInstances(template, {
           forceGenerate: true,
           targetDate: request.toDate,

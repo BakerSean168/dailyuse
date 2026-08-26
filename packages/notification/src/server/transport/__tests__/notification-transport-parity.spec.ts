@@ -81,7 +81,7 @@ function createPortStub(): NotificationApplicationPort {
     batchMarkAsRead: fn(3),
     batchDelete: fn({ deletedCount: 2 }),
     cleanupOldNotifications: fn({ deletedCount: 4 }),
-    updatePreferences: fn({ enabled: true }),
+    updatePreferences: fn({ globalChannels: { InApp: true } }),
     listNotifications: vi.fn(),
     getNotification: vi.fn(),
     getUnreadCount: vi.fn(),
@@ -153,7 +153,10 @@ const malformedBatch = { notificationIds: [] };
 const validCleanup = { beforeDays: 30, category: 'Task' };
 const malformedCleanup = { beforeDays: 0, category: 'Task' };
 
-const validPreferences = { enabled: true, channels: { inApp: true } };
+const validPreferences = {
+  globalChannels: { InApp: true },
+  workflowOverrides: { 'task.deadline': { Desktop: true } },
+};
 const malformedPreferences = {
   doNotDisturb: { enabled: true, startTime: '', endTime: '', daysOfWeek: [9] },
 };

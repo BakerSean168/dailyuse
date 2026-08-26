@@ -46,6 +46,7 @@
     "@memoflow/ipc-client": "workspace:*",
     "@memoflow/patterns": "workspace:*",
     "@memoflow/schedule": "workspace:*",
+    "@memoflow/time": "workspace:*",
     "@memoflow/utils": "workspace:*",
     "express": "^5.2.1",
     "node-cron": "^4.2.1",

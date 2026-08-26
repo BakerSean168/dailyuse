@@ -13,23 +13,15 @@ function createGoalWithProgress() {
     identityId: 'identity-1' as never,
     name: 'Delivery goal',
     description: null,
-    color: '#0f766e',
     feasibilityAnalysis: null,
     motivation: null,
-    importance: 'Important' as never,
-    category: null,
-    tags: [],
     startDate: null,
-    targetDate: null,
-    folderId: null,
-    parentGoalId: null,
     reminderConfig: null,
   });
   const keyResult = goal.createAndAddKeyResult({
     title: 'Completed tasks',
-    valueType: 'Incremental',
     aggregationMethod: 'Sum',
-    startValue: 0,
+    startingValue: 0,
     currentValue: 3,
     targetValue: 10,
     weight: 1,
@@ -63,7 +55,7 @@ describe('RemoveTaskGoalContributionUseCase', () => {
     );
   });
 
-  it('deletes the exact source record and reverses its Sum contribution', async () => {
+  it('deletes the exact source record and recalculates canonical Sum history', async () => {
     const { goal, keyResult } = createGoalWithProgress();
     const record = GoalRecord.create({
       keyResultId: keyResult.id as never,
@@ -72,13 +64,10 @@ describe('RemoveTaskGoalContributionUseCase', () => {
       source: { type: 'TASK_INSTANCE', id: 'task-instance-1' },
     });
     vi.mocked(goalRecordRepository.findBySource).mockResolvedValue(record);
+    vi.mocked(goalRecordRepository.findByKeyResultId).mockResolvedValue([record]);
     vi.mocked(goalRepository.findByKeyResultIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(
-      'identity-1',
-      'TASK_INSTANCE',
-      'task-instance-1',
-    );
+    const result = await useCase.execute('identity-1', 'TASK_INSTANCE', 'task-instance-1');
 
     expect(result).toBeOk();
     expect(goalRecordRepository.delete).toHaveBeenCalledWith('identity-1', String(record.id));
@@ -88,11 +77,7 @@ describe('RemoveTaskGoalContributionUseCase', () => {
   });
 
   it('is idempotent when the source contribution is already absent', async () => {
-    const result = await useCase.execute(
-      'identity-1',
-      'TASK_INSTANCE',
-      'task-instance-1',
-    );
+    const result = await useCase.execute('identity-1', 'TASK_INSTANCE', 'task-instance-1');
 
     expect(result).toBeOk();
     expect(goalRecordRepository.delete).not.toHaveBeenCalled();
@@ -108,6 +93,7 @@ describe('RemoveTaskGoalContributionUseCase', () => {
       source: { type: 'TASK_INSTANCE', id: 'task-instance-1' },
     });
     vi.mocked(goalRecordRepository.findBySource).mockResolvedValue(record);
+    vi.mocked(goalRecordRepository.findByKeyResultId).mockResolvedValue([record]);
     vi.mocked(goalRepository.findByKeyResultIdForIdentity).mockResolvedValue(goal);
     vi.mocked(goalRepository.saveRootWithExpectedVersion).mockRejectedValue(
       new GoalVersionConflictError(),

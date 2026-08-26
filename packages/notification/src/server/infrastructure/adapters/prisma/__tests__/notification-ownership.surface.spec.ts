@@ -42,24 +42,10 @@ describe('notification ownership surface', () => {
   const routes = readFileSync(resolve(__dirname, '../../../../../api/routes.ts'), 'utf8');
   const electron = readFileSync(resolve(__dirname, '../../../../../electron/index.ts'), 'utf8');
   const module = readFileSync(resolve(__dirname, '../../../notification.module.ts'), 'utf8');
-  const domainService = readFileSync(
-    resolve(__dirname, '../../../../domain/services/notification-domain-service.ts'),
-    'utf8',
-  );
-
-  it('domain service loads via findByIdForIdentity (residual 138)', () => {
-    expect(domainService).toContain('findByIdForIdentity(identityId, id)');
-    expect(domainService).toContain('public async markAsRead(identityId: string, id: string)');
-    expect(domainService).toContain(
-      'public async deleteNotification(identityId: string, id: string, soft = true)',
-    );
-    expect(domainService).toContain(
-      'public async getNotification(\n    identityId: string,\n    id: string,',
-    );
-    expect(domainService).toContain(
-      'public async executeNotificationAction(\n    identityId: string,\n    notificationId: string,',
-    );
-    expect(domainService).not.toMatch(/markAsRead\(id: string\): Promise<void>/);
+  it('uses the application use case/repository fence after retiring the legacy domain-service authority', () => {
+    expect(port).toContain('findByIdempotencyKey(identityId: string, idempotencyKey: string)');
+    expect(prisma).toContain('identityId_idempotencyKey');
+    expect(powersync).toContain('identity_id = ? AND idempotency_key = ?');
   });
 
   it('port drops bare findById dual method (residual 178)', () => {
@@ -151,12 +137,10 @@ describe('notification ownership surface', () => {
     expect(powersync).toContain('related_entity_id = ?');
   });
 
-  it('query/maintenance/domain pass identity into related/delete (residual 150)', () => {
+  it('query and maintenance paths pass identity into related/delete after domain-service retirement', () => {
     expect(queryService).toContain(
       'findByRelatedEntity(\n          query.identityId,\n          query.relatedEntityType,',
     );
     expect(maintenance).toContain('deleteMany(data.identityId, expiredIds)');
-    expect(domainService).toContain('delete(identityId, id)');
-    expect(domainService).toContain('getNotificationsByRelatedEntity(\n    identityId: string,');
   });
 });

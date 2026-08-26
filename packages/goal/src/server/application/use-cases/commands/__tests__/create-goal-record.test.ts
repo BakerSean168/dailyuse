@@ -14,16 +14,9 @@ function createTestGoal() {
     identityId: 'identity-1' as any,
     name: 'Graduation Goal',
     description: null,
-    color: '#3B82F6',
     feasibilityAnalysis: null,
     motivation: null,
-    importance: 'Moderate' as any,
-    category: null,
-    tags: [],
     startDate: null,
-    targetDate: null,
-    folderId: null,
-    parentGoalId: null,
     reminderConfig: null,
   });
 }
@@ -64,9 +57,8 @@ describe('CreateGoalRecordUseCase', () => {
     const goal = createTestGoal();
     const keyResult = goal.createAndAddKeyResult({
       title: 'Concurrent progress',
-      valueType: 'Incremental',
       aggregationMethod: 'Sum',
-      startValue: 0,
+      startingValue: 4,
       currentValue: 4,
       targetValue: 10,
       weight: 1,
@@ -86,13 +78,12 @@ describe('CreateGoalRecordUseCase', () => {
     expect(goalRepository.saveRootWithExpectedVersion).not.toHaveBeenCalled();
   });
 
-  it('preserves manual current progress as the base when creating a Sum record', async () => {
+  it('uses startingValue as the authoritative Sum seed when creating a record', async () => {
     const goal = createTestGoal();
     const keyResult = goal.createAndAddKeyResult({
       title: 'Second-class points',
-      valueType: 'Incremental',
       aggregationMethod: 'Sum',
-      startValue: 0,
+      startingValue: 41,
       currentValue: 41,
       targetValue: 50,
       weight: 1,
@@ -124,13 +115,12 @@ describe('CreateGoalRecordUseCase', () => {
     }
   });
 
-  it('keeps standard history recalculation for non-Sum records', async () => {
+  it('recalculates Last from authoritative record history', async () => {
     const goal = createTestGoal();
     const keyResult = goal.createAndAddKeyResult({
       title: 'Latest score',
-      valueType: 'Absolute',
       aggregationMethod: 'Last',
-      startValue: 0,
+      startingValue: 41,
       currentValue: 41,
       targetValue: 50,
       weight: 1,
@@ -160,13 +150,41 @@ describe('CreateGoalRecordUseCase', () => {
     }
   });
 
+
+  it('rejects automatic Task contributions to non-Sum key results', async () => {
+    const goal = createTestGoal();
+    const keyResult = goal.createAndAddKeyResult({
+      title: 'Latest score',
+      aggregationMethod: 'Last',
+      startingValue: 41,
+      currentValue: 41,
+      targetValue: 50,
+      weight: 1,
+      unit: 'points',
+    });
+    vi.mocked(goalRepository.findByIdForIdentity).mockResolvedValue(goal);
+
+    const result = await useCase.execute(
+      goal.id,
+      keyResult.id,
+      {
+        value: 1,
+        source: { type: 'TASK_INSTANCE' as const, id: 'task-instance-1' },
+      },
+      'identity-1',
+    );
+
+    expect(result).toMatchObject({ ok: false, error: { code: 'VALIDATION_ERROR' } });
+    expect(goalRecordRepository.save).not.toHaveBeenCalled();
+    expect(goalRepository.saveRootWithExpectedVersion).not.toHaveBeenCalled();
+  });
+
   it('applies the same task-instance contribution only once', async () => {
     const goal = createTestGoal();
     const keyResult = goal.createAndAddKeyResult({
       title: 'Completed tasks',
-      valueType: 'Incremental',
       aggregationMethod: 'Sum',
-      startValue: 0,
+      startingValue: 0,
       currentValue: 0,
       targetValue: 10,
       weight: 1,
@@ -198,9 +216,8 @@ describe('CreateGoalRecordUseCase', () => {
     const goal = createTestGoal();
     const keyResult = goal.createAndAddKeyResult({
       title: 'Atomic progress',
-      valueType: 'Incremental',
       aggregationMethod: 'Sum',
-      startValue: 0,
+      startingValue: 4,
       currentValue: 4,
       targetValue: 10,
       weight: 1,

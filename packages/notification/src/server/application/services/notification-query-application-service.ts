@@ -60,7 +60,8 @@ export class NotificationQueryApplicationService {
       .filter((notification) => query.isRead === undefined || notification.isRead === query.isRead)
       .filter((notification) => !query.type || notification.type === query.type)
       .filter((notification) => !query.category || notification.category === query.category)
-      .filter((notification) => !query.status || notification.status === query.status)
+      .filter((notification) => !query.workflowKey || notification.workflowKey === query.workflowKey)
+      .filter((notification) => !query.topic || notification.topic === query.topic)
       .filter((notification) => this.matchesKeyword(notification, query.keyword))
       .filter((notification) => query.startDate === undefined || notification.createdAt >= query.startDate)
       .filter((notification) => query.endDate === undefined || notification.createdAt <= query.endDate)
@@ -124,13 +125,6 @@ export class NotificationQueryApplicationService {
     switch (sortBy) {
       case 'updatedAt':
         return notification.updatedAt;
-      case 'sentAt': {
-        const sentAt = notification.notificationChannels?.reduce(
-          (maxValue, channel) => Math.max(maxValue, channel.sentAt ?? 0),
-          0,
-        ) ?? 0;
-        return sentAt || notification.updatedAt;
-      }
       case 'importance':
         return IMPORTANCE_ORDER[notification.importance] ?? 0;
       case 'urgency':

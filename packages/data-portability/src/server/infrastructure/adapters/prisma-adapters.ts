@@ -11,8 +11,6 @@
 
 import type { PrismaClient } from '@memoflow/database';
 import type {
-  FocusSessionRepoPort,
-  FocusModeRepoPort,
   RepositoryRepoPort,
   ResourceFolderRepoPort,
   ResourceRepoPort,
@@ -24,20 +22,6 @@ import type {
   EditorTabRepoPort,
   AIConversationRepoPort,
 } from '../../application/data-portability.dependencies';
-
-export class PrismaFocusSessionAdapter implements FocusSessionRepoPort {
-  constructor(private readonly prisma: PrismaClient) {}
-  async findByIdentityId(identityId: string): Promise<unknown[]> {
-    return this.prisma.focusSession.findMany({ where: { identityId, deletedAt: null } });
-  }
-}
-
-export class PrismaFocusModeAdapter implements FocusModeRepoPort {
-  constructor(private readonly prisma: PrismaClient) {}
-  async findByIdentityId(identityId: string): Promise<unknown[]> {
-    return this.prisma.focusMode.findMany({ where: { identityId, deletedAt: null } });
-  }
-}
 
 export class PrismaRepositoryAdapter implements RepositoryRepoPort {
   constructor(private readonly prisma: PrismaClient) {}

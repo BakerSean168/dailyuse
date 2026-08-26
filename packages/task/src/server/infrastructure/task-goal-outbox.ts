@@ -1,11 +1,11 @@
 import type { IDomainEvent } from '@memoflow/contracts/shared';
 import {
   TaskGoalBindingTrigger,
-  type TaskGoalProgressOutboxEventV1,
+  TaskGoalSettlementSourceType,
+  type TaskGoalProgressOutboxEventV2,
   type TaskInstanceCompletedEvent,
   type TaskUncompletedEvent,
 } from '@memoflow/contracts/task';
-import type { GoalId, KeyResultId } from '@memoflow/contracts/primitives';
 
 export interface TaskGoalOutboxRecord {
   eventId: string;
@@ -23,26 +23,25 @@ export interface TaskGoalOutboxWriter {
 }
 
 /**
- * Converts eligible Task completion / uncompletion events into durable Goal
- * deliveries (R2-5b：outbox 是唯一跨模块贡献通道，撤销也走 outbox)。
+ * Converts eligible Task completion / correction events into the durable V2
+ * settlement contract. Link-only Tasks deliberately return null on completion.
  */
 export function toTaskGoalOutboxRecord(event: IDomainEvent): TaskGoalOutboxRecord | null {
   if (event.eventType === 'task:instance-uncompleted') {
     const payload = event.payload as TaskUncompletedEvent;
-    const eventId = `task-goal-remove:${String(payload.taskInstanceId)}:${payload.uncompletedAt}`;
-    const durableEvent: TaskGoalProgressOutboxEventV1 = {
+    const eventId = `task-goal-revert:${String(payload.taskInstanceId)}:${payload.uncompletedAt}`;
+    const durableEvent: TaskGoalProgressOutboxEventV2 = {
       eventId,
-      schemaVersion: 1,
+      schemaVersion: 2,
       eventType: 'task.goal-progress-requested',
-      action: 'uncomplete',
+      action: 'revert',
       identityId: payload.identityId,
       taskInstanceId: payload.taskInstanceId,
       taskTemplateId: payload.taskTemplateId,
-      goalId: '' as GoalId,
-      keyResultId: '' as KeyResultId,
-      goalRecordValue: 0,
-      progressTrigger: TaskGoalBindingTrigger.PerInstance,
-      taskTitle: '',
+      sources: [
+        { type: TaskGoalSettlementSourceType.TaskInstance, id: String(payload.taskInstanceId) },
+        { type: TaskGoalSettlementSourceType.TaskPlan, id: String(payload.taskTemplateId) },
+      ],
       occurredAt: payload.uncompletedAt,
     };
 
@@ -51,6 +50,8 @@ export function toTaskGoalOutboxRecord(event: IDomainEvent): TaskGoalOutboxRecor
       identityId: String(payload.identityId),
       taskInstanceId: String(payload.taskInstanceId),
       taskTemplateId: String(payload.taskTemplateId),
+      // Physical V1-era columns remain adapter-local metadata; the V2 payload
+      // is authoritative and contains explicit revert sources.
       goalId: '',
       keyResultId: '',
       payload: JSON.stringify(durableEvent),
@@ -62,27 +63,33 @@ export function toTaskGoalOutboxRecord(event: IDomainEvent): TaskGoalOutboxRecor
 
   const payload = event.payload as TaskInstanceCompletedEvent;
   const binding = payload.goalBinding;
-  if (!binding) return null;
+  const contribution = binding?.contribution;
+  if (!binding || !contribution) return null;
+
   if (
-    binding.progressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted &&
-    !payload.allInstancesCompleted
+    contribution.trigger === TaskGoalBindingTrigger.PlanCompletion &&
+    !payload.planSucceeded
   ) {
     return null;
   }
 
-  const eventId = `task-goal-progress:${String(payload.taskInstanceId)}:${payload.completedAt}`;
-  const durableEvent: TaskGoalProgressOutboxEventV1 = {
+  const source =
+    contribution.trigger === TaskGoalBindingTrigger.PlanCompletion
+      ? { type: TaskGoalSettlementSourceType.TaskPlan, id: String(payload.taskTemplateId) }
+      : { type: TaskGoalSettlementSourceType.TaskInstance, id: String(payload.taskInstanceId) };
+  const eventId = `task-goal-apply:${source.type}:${source.id}:${payload.completedAt}`;
+  const durableEvent: TaskGoalProgressOutboxEventV2 = {
     eventId,
-    schemaVersion: 1,
+    schemaVersion: 2,
     eventType: 'task.goal-progress-requested',
-    action: 'complete',
+    action: 'apply',
     identityId: payload.identityId,
     taskInstanceId: payload.taskInstanceId,
     taskTemplateId: payload.taskTemplateId,
     goalId: binding.goalId,
     keyResultId: binding.keyResultId,
-    goalRecordValue: binding.goalRecordValue,
-    progressTrigger: binding.progressTrigger,
+    value: contribution.value,
+    source,
     taskTitle: payload.taskTitle,
     occurredAt: payload.completedAt,
   };

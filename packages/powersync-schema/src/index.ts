@@ -101,45 +101,22 @@ const user_settings = new Table({
 });
 
 // ──────────────────────────────────────────────
-// Goal
+// Goal — Core vNext Direction + Measurement
 // ──────────────────────────────────────────────
 
 const goals = new Table({
   identity_id: column.text,
   name: column.text,
   description: column.text,
-  color: column.text,
   feasibility_analysis: column.text,
   motivation: column.text,
   status: column.text,
-  importance: column.text,
-  priority: column.integer,
-  category: column.text,
-  tags: column.text, // JSON array
-  start_date: column.text, // DateTime
-  target_date: column.text, // DateTime
-  completed_at: column.text, // DateTime
-  archived_at: column.text, // DateTime
-  folder_id: column.text, // FK
-  parent_goal_id: column.text, // FK (self)
+  start_date: column.text,
+  due_date: column.text,
+  completed_at: column.text,
+  archived_at: column.text,
   sort_order: column.integer,
-  reminder_config: column.text, // JSON
-  version: column.integer,
-  created_at: column.text,
-  updated_at: column.text,
-  deleted_at: column.text,
-});
-
-const goal_folders = new Table({
-  identity_id: column.text,
-  name: column.text,
-  description: column.text,
-  color: column.text,
-  icon: column.text,
-  folder_type: column.text,
-  is_system_folder: column.integer, // boolean
-  parent_folder_id: column.text, // FK (self)
-  sort_order: column.integer,
+  reminder_config: column.text,
   version: column.integer,
   created_at: column.text,
   updated_at: column.text,
@@ -148,12 +125,12 @@ const goal_folders = new Table({
 
 const key_results = new Table({
   identity_id: column.text,
-  goal_id: column.text, // FK
+  goal_id: column.text,
   title: column.text,
   description: column.text,
-  value_type: column.text,
   aggregation_method: column.text,
-  initial_value: column.real,
+  starting_value: column.real,
+  progress_baseline_value: column.real,
   target_value: column.real,
   current_value: column.real,
   unit: column.text,
@@ -165,105 +142,60 @@ const key_results = new Table({
 
 const goal_records = new Table({
   identity_id: column.text,
-  key_result_id: column.text, // FK
+  key_result_id: column.text,
   value: column.real,
   note: column.text,
   source_type: column.text,
   source_id: column.text,
-  recorded_at: column.text, // DateTime
+  recorded_at: column.text,
   created_at: column.text,
   updated_at: column.text,
 });
 
 const goal_reviews = new Table({
   identity_id: column.text,
-  goal_id: column.text, // FK
-  review_type: column.text,
-  content: column.text,
-  achievements: column.text,
+  goal_id: column.text,
+  reflection: column.text,
   challenges: column.text,
-  lessons_learned: column.text,
-  next_steps: column.text,
-  rating: column.integer,
+  adjustments: column.text,
+  system_context: column.text,
+  reviewed_at: column.text,
   created_at: column.text,
   updated_at: column.text,
 });
 
 const key_result_weight_snapshots = new Table({
   identity_id: column.text,
-  goal_id: column.text, // FK
-  key_result_id: column.text, // FK
+  goal_id: column.text,
+  key_result_id: column.text,
   old_weight: column.real,
   new_weight: column.real,
   weight_delta: column.real,
-  snapshot_time: column.text, // DateTime
+  snapshot_time: column.text,
   trigger: column.text,
   reason: column.text,
   operator_id: column.text,
   created_at: column.text,
 });
 
-const focus_sessions = new Table({
-  identity_id: column.text,
-  goal_id: column.text, // FK (optional)
-  status: column.text,
-  duration_minutes: column.integer,
-  actual_duration_minutes: column.integer,
-  description: column.text,
-  started_at: column.text, // DateTime
-  paused_at: column.text, // DateTime
-  resumed_at: column.text, // DateTime
-  completed_at: column.text, // DateTime
-  cancelled_at: column.text, // DateTime
-  pause_count: column.integer,
-  paused_duration_minutes: column.integer,
-  version: column.integer,
-  created_at: column.text,
-  updated_at: column.text,
-  deleted_at: column.text,
-});
-
-const focus_modes = new Table({
-  identity_id: column.text,
-  focused_goal_ids: column.text, // JSON array
-  hidden_goals_mode: column.text,
-  start_time: column.text, // DateTime
-  end_time: column.text, // DateTime
-  actual_end_time: column.text, // DateTime
-  is_active: column.integer, // boolean
-  version: column.integer,
-  created_at: column.text,
-  updated_at: column.text,
-  deleted_at: column.text,
-});
-
 // ──────────────────────────────────────────────
 // Task
 // ──────────────────────────────────────────────
 
-const task_folders = new Table({
-  identity_id: column.text,
-  name: column.text,
-  color: column.text,
-  icon: column.text,
-  order: column.integer,
-  version: column.integer,
-  created_at: column.text,
-  updated_at: column.text,
-  deleted_at: column.text,
-});
 
 const task_templates = new Table({
   identity_id: column.text,
   name: column.text,
   description: column.text,
   status: column.text,
+  outcome: column.text,
+  completion_policy: column.text,
+  closed_at: column.text,
+  archived_at: column.text,
+  abandoned_reason: column.text,
   importance: column.text,
-  priority: column.integer,
   color: column.text,
   tags: column.text, // JSON array
-  folder_id: column.text, // FK
-  parent_task_id: column.text, // FK (self)
   time_config_type: column.text,
   time_config_start_time: column.text,
   time_config_end_time: column.text,
@@ -274,8 +206,6 @@ const task_templates = new Table({
   recurrence_rule_type: column.text,
   recurrence_rule_interval: column.integer,
   recurrence_rule_days_of_week: column.text,
-  recurrence_rule_day_of_month: column.integer,
-  recurrence_rule_month_of_year: column.integer,
   recurrence_rule_end_date: column.text,
   recurrence_rule_count: column.integer,
   reminder_config_enabled: column.integer, // boolean
@@ -289,9 +219,6 @@ const task_templates = new Table({
   goal_record_value: column.real,
   goal_progress_trigger: column.text,
   checklist: column.text, // JSON
-  blocking_reason: column.text,
-  dependency_status: column.text,
-  is_blocked: column.integer, // boolean
   version: column.integer,
   created_at: column.text,
   updated_at: column.text,
@@ -302,9 +229,9 @@ const task_instances = new Table({
   template_id: column.text, // FK
   identity_id: column.text,
   instance_date: column.text, // DateTime
+  occurrence_key: column.text, // Task vNext deterministic templateId:localDate identity
   status: column.text,
   importance: column.text,
-  priority: column.integer,
   time_config: column.text, // JSON
   actual_start_time: column.text,
   actual_end_time: column.text,
@@ -315,17 +242,6 @@ const task_instances = new Table({
   deleted_at: column.text,
 });
 
-const task_dependencies = new Table({
-  identity_id: column.text,
-  predecessor_task_id: column.text, // FK
-  successor_task_id: column.text, // FK
-  dependency_type: column.text,
-  lag_days: column.integer,
-  version: column.integer,
-  created_at: column.text,
-  updated_at: column.text,
-  deleted_at: column.text,
-});
 
 const task_template_history = new Table({
   identity_id: column.text,
@@ -352,7 +268,7 @@ const task_statistics = new Table({
   instance_in_progress: column.integer,
   instance_completed: column.integer,
   instance_skipped: column.integer,
-  instance_expired: column.integer,
+  instance_missed: column.integer,
   completion_today: column.integer,
   completion_week: column.integer,
   completion_month: column.integer,
@@ -366,7 +282,6 @@ const task_statistics = new Table({
   time_upcoming: column.integer,
   distribution_by_importance: column.text, // JSON
   distribution_by_urgency: column.text, // JSON
-  distribution_by_folder: column.text, // JSON
   distribution_by_tag: column.text, // JSON
 });
 
@@ -639,6 +554,64 @@ const user_reminder_preferences = new Table({
 });
 
 // ──────────────────────────────────────────────
+// Routine Coach vNext
+// ──────────────────────────────────────────────
+
+const routine_definitions = new Table({
+  identity_id: column.text,
+  name: column.text,
+  description: column.text,
+  enabled: column.integer,
+  trigger_json: column.text,
+  version: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+});
+
+const routine_profiles = new Table({
+  identity_id: column.text,
+  name: column.text,
+  description: column.text,
+  enabled: column.integer,
+  active: column.integer,
+  version: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+});
+
+const routine_profile_memberships = new Table({
+  identity_id: column.text,
+  profile_id: column.text,
+  routine_id: column.text,
+  enabled: column.integer,
+  version: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+});
+
+const routine_protocol_definitions = new Table({
+  identity_id: column.text,
+  name: column.text,
+  definition_json: column.text,
+  version: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+});
+
+const routine_protocol_sessions = new Table({
+  identity_id: column.text,
+  protocol_id: column.text,
+  protocol_version: column.integer,
+  status: column.text,
+  snapshot_json: column.text,
+  termination_reason: column.text,
+  ended_at: column.text,
+  version: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+});
+
+// ──────────────────────────────────────────────
 // Notification
 // ──────────────────────────────────────────────
 
@@ -646,7 +619,9 @@ const notifications = new Table({
   identity_id: column.text,
   type: column.text,
   category: column.text,
-  status: column.text,
+  workflow_key: column.text,
+  topic: column.text,
+  idempotency_key: column.text,
   title: column.text,
   content: column.text,
   importance: column.text,
@@ -655,8 +630,10 @@ const notifications = new Table({
   related_entity_id: column.text,
   metadata: column.text, // JSON
   actions: column.text, // JSON
+  navigation_intent: column.text, // JSON
+  correlation_id: column.text,
+  causation_id: column.text,
   read_at: column.text,
-  sent_at: column.text,
   expires_at: column.text,
   version: column.integer,
   created_at: column.text,
@@ -678,6 +655,18 @@ const notification_channels = new Table({
   attempts: column.integer,
   sent_at: column.text,
   failed_at: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+});
+
+const notification_delivery_decisions = new Table({
+  identity_id: column.text,
+  notification_id: column.text,
+  channel: column.text,
+  outcome: column.text,
+  reason: column.text,
+  preference_source: column.text,
+  retry_at: column.text,
   created_at: column.text,
   updated_at: column.text,
 });
@@ -753,9 +742,8 @@ const notification_history = new Table({
 
 const notification_preferences = new Table({
   identity_id: column.text,
-  enabled: column.integer, // boolean
-  channels: column.text, // JSON
-  categories: column.text, // JSON
+  global_channels: column.text, // JSON Partial<Record<channel, boolean>>
+  workflow_overrides: column.text, // JSON workflowKey -> channel overrides
   do_not_disturb: column.text, // JSON
   rate_limit: column.text, // JSON
   version: column.integer,
@@ -1100,22 +1088,17 @@ export const PowerSyncAppSchema = new Schema({
   user_settings,
   // Goal
   goals,
-  goal_folders,
   key_results,
   goal_records,
   goal_reviews,
   key_result_weight_snapshots,
-  focus_sessions,
-  focus_modes,
   goal_operation_receipts,
   labels,
   goal_labels,
   task_labels,
   // Task
-  task_folders,
   task_templates,
   task_instances,
-  task_dependencies,
   task_template_history,
   task_statistics,
   // Schedule
@@ -1133,9 +1116,15 @@ export const PowerSyncAppSchema = new Schema({
   reminder_statistics,
   reminder_responses,
   user_reminder_preferences,
+  routine_definitions,
+  routine_profiles,
+  routine_profile_memberships,
+  routine_protocol_definitions,
+  routine_protocol_sessions,
   // Notification
   notifications,
   notification_channels,
+  notification_delivery_decisions,
   notification_dispatch_outbox,
   desktop_delivery_acks,
   notification_history,

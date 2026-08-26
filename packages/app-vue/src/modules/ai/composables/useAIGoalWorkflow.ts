@@ -60,20 +60,17 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     editableGoal.value = {
       name: draft.goal.name,
       description: draft.goal.description,
-      category: draft.goal.category ?? '',
-      importance: draft.goal.importance,
       motivation: draft.goal.motivation ?? '',
       feasibilityAnalysis: draft.goal.feasibilityAnalysis ?? '',
-      tags: [...draft.goal.tags],
       startDate: draft.goal.startDate,
-      targetDate: draft.goal.targetDate,
+      dueDate: draft.goal.dueDate,
     };
     editableKeyResults.value = draft.keyResults.map((item) => ({
       title: item.title,
       description: item.description ?? '',
-      valueType: item.valueType,
       calculationMethod: item.calculationMethod,
-      startValue: item.startValue,
+      startingValue: item.startingValue,
+      progressBaselineValue: item.progressBaselineValue,
       currentValue: item.currentValue,
       targetValue: item.targetValue,
       unit: item.unit,
@@ -155,22 +152,19 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       ...draft.goal,
       name: editableGoal.value.name,
       description: editableGoal.value.description,
-      category: editableGoal.value.category || undefined,
-      importance: editableGoal.value.importance,
       motivation: editableGoal.value.motivation || undefined,
       feasibilityAnalysis: editableGoal.value.feasibilityAnalysis || undefined,
-      tags: [...editableGoal.value.tags],
       startDate: editableGoal.value.startDate,
-      targetDate: editableGoal.value.targetDate,
+      dueDate: editableGoal.value.dueDate,
     };
 
     const keyResults = editableKeyResults.value.map((item, index) => ({
       ...(draft.keyResults[index] ?? {}),
       title: item.title,
       description: item.description || undefined,
-      valueType: item.valueType,
       calculationMethod: item.calculationMethod,
-      startValue: item.startValue,
+      startingValue: item.startingValue,
+      progressBaselineValue: item.progressBaselineValue,
       currentValue: item.currentValue,
       targetValue: item.targetValue,
       unit: item.unit,
@@ -497,9 +491,9 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     editableKeyResults.value.push({
       title: '',
       description: '',
-      valueType: 'Incremental',
       calculationMethod: 'Sum',
-      startValue: 0,
+      startingValue: 0,
+      progressBaselineValue: null,
       currentValue: 0,
       targetValue: 1,
       unit: '',
@@ -513,7 +507,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     editableKeyResults.value[payload.index] = { ...payload.value };
   }
   function handleUpdateGoalDraft(payload: EditableGoal): void {
-    editableGoal.value = { ...payload, tags: [...payload.tags] };
+    editableGoal.value = { ...payload };
   }
   function addTaskTemplateDraft(): void {
     editableTaskTemplates.value.push(createEmptyGoalTaskTemplateDraft());

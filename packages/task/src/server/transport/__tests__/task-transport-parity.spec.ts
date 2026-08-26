@@ -3,7 +3,7 @@
  *
  * Every Task mutation ledger row is fed the SAME canonical fixture through the
  * PRODUCTION route registrations (registerTaskTemplateRoutes /
- * registerTaskInstanceRoutes / registerTaskDependencyRoutes) and the
+ * registerTaskInstanceRoutes) and the
  * PRODUCTION IPC registrations (createTaskElectronModule). Both hosts consume
  * the same `TaskApplicationPort` stub, so parity is proven by construction:
  * production projectors + production controllers call the same port method
@@ -12,8 +12,8 @@
  * before the controller on both transports.
  *
  * 每个 Task mutation ledger 行都用同一 canonical fixture 走生产 route 注册
- * （registerTaskTemplateRoutes / registerTaskInstanceRoutes /
- * registerTaskDependencyRoutes）与生产 IPC 注册（createTaskElectronModule）。
+ * （registerTaskTemplateRoutes / registerTaskInstanceRoutes）与生产 IPC 注册
+ * （createTaskElectronModule）。
  * 两条宿主消费同一个 `TaskApplicationPort` stub，因此 parity 由构造保证：生产
  * projector + 生产 controller 以等价输入调用同一 port 方法，HTTP/IPC envelope
  * 携带相同的响应 data 与 error details。malformed fixture 在两条 transport 上
@@ -22,15 +22,14 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import type { RequestHandler } from 'express';
 import { TaskChannels, type IElectronModuleContext } from '@memoflow/contracts/electron';
+import { TaskGoalBindingTrigger } from '@memoflow/contracts/task';
 import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
 import type { TaskApplicationPort } from '../../application';
 import { createTaskTransportHandlers } from '..';
 import { TaskTemplateController } from '../task-template.controller';
 import { TaskInstanceController } from '../task-instance.controller';
-import { TaskDependencyController } from '../task-dependency.controller';
 import { registerTaskTemplateRoutes } from '../../../api/routes/task-template.routes';
 import { registerTaskInstanceRoutes } from '../../../api/routes/task-instance.routes';
-import { registerTaskDependencyRoutes } from '../../../api/routes/task-dependency.routes';
 import { createTaskElectronModule } from '../../../electron';
 
 const mocks = vi.hoisted(() => {
@@ -69,13 +68,11 @@ const fixtureContext: ExecutionContext = {
 
 const TEMPLATE_ID = 'ITaskTemplateId_550e8400-e29b-41d4-a716-446655440000';
 const INSTANCE_ID = 'ITaskInstanceId_550e8400-e29b-41d4-a716-446655440001';
-const DEPENDENCY_ID = 'ITaskDependencyId_550e8400-e29b-41d4-a716-446655440002';
 const GOAL_ID = 'IGoalId_550e8400-e29b-41d4-a716-446655440003';
 const KR_ID = 'IKeyResultId_550e8400-e29b-41d4-a716-446655440004';
 
 const FAKE_TEMPLATE = { id: TEMPLATE_ID, name: 'Template', status: 'Active' };
 const FAKE_INSTANCE = { id: INSTANCE_ID, status: 'Scheduled' };
-const FAKE_DEPENDENCY = { id: DEPENDENCY_ID, dependencyType: 'FS' };
 
 function createPortStub(): TaskApplicationPort {
   const fn = (value: unknown) => vi.fn(async () => ({ ok: true as const, data: value }));
@@ -86,31 +83,23 @@ function createPortStub(): TaskApplicationPort {
     activateTaskTemplate: fn({ template: FAKE_TEMPLATE }),
     pauseTaskTemplate: fn({ template: FAKE_TEMPLATE }),
     archiveTaskTemplate: fn(FAKE_TEMPLATE),
+    abandonTaskPlan: fn(FAKE_TEMPLATE),
     generateTaskInstances: fn([FAKE_INSTANCE]),
     bindTaskToGoal: fn(FAKE_TEMPLATE),
     unbindTaskFromGoal: fn(FAKE_TEMPLATE),
     completeTaskInstance: fn({ instance: FAKE_INSTANCE }),
     uncompleteTaskInstance: fn({ instance: FAKE_INSTANCE }),
     skipTaskInstance: fn({ instance: FAKE_INSTANCE }),
+    markTaskInstanceMissed: fn({ instance: FAKE_INSTANCE }),
     startTaskInstance: fn(FAKE_INSTANCE),
     deleteTaskInstance: fn(null),
-    checkExpiredInstances: fn([FAKE_INSTANCE]),
-    createTaskDependency: fn(FAKE_DEPENDENCY),
-    updateTaskDependency: fn(FAKE_DEPENDENCY),
-    deleteTaskDependency: fn(null),
-    validateTaskDependency: fn({ isValid: true }),
     getTaskTemplate: vi.fn(),
     listTaskTemplates: vi.fn(),
-    getTaskTemplateGraph: vi.fn(),
-    listTaskTemplatesByPriority: vi.fn(),
     listTaskInstancesByTemplate: vi.fn(),
     getTaskInstance: vi.fn(),
     listTaskInstancesByAccount: vi.fn(),
     listTaskInstancesByStatus: vi.fn(),
     getTaskInstancesByDateRange: vi.fn(),
-    listTaskDependencies: vi.fn(),
-    listTaskDependents: vi.fn(),
-    getTaskDependencyChain: vi.fn(),
   } as unknown as TaskApplicationPort;
 }
 
@@ -178,8 +167,16 @@ const malformedUpdateTemplate = { name: '' };
 const validGenerate = { fromDate: 1_700_000_000_000, toDate: 1_700_000_086_400 };
 const malformedGenerate = { fromDate: 'not-a-number', toDate: 1_700_000_086_400 };
 
-const validBindGoal = { goalId: GOAL_ID, keyResultId: KR_ID, goalRecordValue: 1 };
-const malformedBindGoal = { goalId: GOAL_ID, keyResultId: KR_ID, goalRecordValue: -1 };
+const validBindGoal = {
+  goalId: GOAL_ID,
+  keyResultId: KR_ID,
+  contribution: { value: 1, trigger: TaskGoalBindingTrigger.EachCompletion },
+};
+const malformedBindGoal = {
+  goalId: GOAL_ID,
+  keyResultId: KR_ID,
+  contribution: { value: -1, trigger: TaskGoalBindingTrigger.EachCompletion },
+};
 
 const validComplete = { duration: 30, rating: 5 };
 const malformedComplete = { rating: 99 };
@@ -187,14 +184,6 @@ const malformedComplete = { rating: 99 };
 const validSkip = { reason: 'Too tired' };
 const malformedSkip = { reason: 42 };
 
-const validCreateDep = { predecessorTaskId: TEMPLATE_ID };
-const malformedCreateDep = { predecessorTaskId: 'bad' };
-
-const validUpdateDep = { lagDays: 2 };
-const malformedUpdateDep = { lagDays: 'not-a-number' };
-
-const validValidateDep = { predecessorTaskId: TEMPLATE_ID, successorTaskId: TEMPLATE_ID };
-const malformedValidateDep = { predecessorTaskId: 'bad', successorTaskId: TEMPLATE_ID };
 
 describe('task transport parity (Phase 4) — production registrations', () => {
   beforeEach(() => {
@@ -210,11 +199,9 @@ describe('task transport parity (Phase 4) — production registrations', () => {
     const handlers = createTaskTransportHandlers(port);
     const templateController = new TaskTemplateController(handlers.template);
     const instanceController = new TaskInstanceController(handlers.instance);
-    const dependencyController = new TaskDependencyController(handlers.dependency);
     const routers = [
       ['template', registerTaskTemplateRoutes(templateController, middleware, null)],
       ['instance', registerTaskInstanceRoutes(instanceController, middleware, null)],
-      ['dependency', registerTaskDependencyRoutes(dependencyController, middleware, null)],
     ] as const;
     const map = new Map<string, (req: unknown, res: unknown) => Promise<unknown>>();
     for (const [ns, router] of routers) {
@@ -360,7 +347,7 @@ describe('task transport parity (Phase 4) — production registrations', () => {
         'template activate',
         {
           httpKey: 'template POST /:id/activate',
-          ipcChannel: TaskChannels.TEMPLATE_RESTORE,
+          ipcChannel: TaskChannels.TEMPLATE_ACTIVATE,
           httpReq: { params: { id: TEMPLATE_ID } },
           ipcArgs: { id: TEMPLATE_ID },
           validInvocation: { params: { id: TEMPLATE_ID } },
@@ -409,6 +396,27 @@ describe('task transport parity (Phase 4) — production registrations', () => {
             expect(mock).toHaveBeenCalledTimes(2);
             for (const call of mock.mock.calls) {
               expect(call[0]).toBe(TEMPLATE_ID);
+            }
+          },
+        },
+      ],
+      [
+        'template abandon',
+        {
+          httpKey: 'template POST /:id/abandon',
+          ipcChannel: TaskChannels.TEMPLATE_ABANDON,
+          httpReq: { params: { id: TEMPLATE_ID }, body: { reason: 'User stopped' } },
+          ipcArgs: { id: TEMPLATE_ID, request: { reason: 'User stopped' } },
+          validInvocation: { params: { id: TEMPLATE_ID }, body: { reason: 'User stopped' } },
+          malformedHttpReq: { params: { id: 'bad' }, body: {} },
+          malformedIpcArgs: { id: 'bad', request: {} },
+          assertPort: (port) => {
+            const mock = port.abandonTaskPlan as ReturnType<typeof vi.fn>;
+            expect(mock).toHaveBeenCalledTimes(2);
+            for (const call of mock.mock.calls) {
+              expect(call[0]).toBe(TEMPLATE_ID);
+              expect(call[1]).toBe('identity-1');
+              expect(call[2]).toEqual({ reason: 'User stopped' });
             }
           },
         },
@@ -581,20 +589,25 @@ describe('task transport parity (Phase 4) — production registrations', () => {
         },
       ],
       [
-        'instance check-expired',
+        'instance mark-missed',
         {
-          httpKey: 'instance POST /check-expired',
-          ipcChannel: TaskChannels.INSTANCE_CHECK_EXPIRED,
-          httpReq: {},
-          ipcArgs: undefined,
-          validInvocation: undefined,
-          malformedHttpReq: { body: { unexpected: true } },
-          malformedIpcArgs: { unexpected: true },
+          httpKey: 'instance POST /:id/missed',
+          ipcChannel: TaskChannels.INSTANCE_MARK_MISSED,
+          httpReq: { params: { id: INSTANCE_ID }, body: { reason: 'No completion evidence' } },
+          ipcArgs: { id: INSTANCE_ID, request: { reason: 'No completion evidence' } },
+          validInvocation: {
+            params: { id: INSTANCE_ID },
+            body: { reason: 'No completion evidence' },
+          },
+          malformedHttpReq: { params: { id: 'bad' }, body: {} },
+          malformedIpcArgs: { id: 'bad', request: {} },
           assertPort: (port) => {
-            const mock = port.checkExpiredInstances as ReturnType<typeof vi.fn>;
+            const mock = port.markTaskInstanceMissed as ReturnType<typeof vi.fn>;
             expect(mock).toHaveBeenCalledTimes(2);
             for (const call of mock.mock.calls) {
-              expect(call[0]).toBe('identity-1');
+              expect(call[0]).toBe(INSTANCE_ID);
+              expect(call[1]).toBe('identity-1');
+              expect(call[2]).toEqual({ reason: 'No completion evidence' });
             }
           },
         },
@@ -608,93 +621,4 @@ describe('task transport parity (Phase 4) — production registrations', () => {
     );
   });
 
-  describe('task dependency mutations', () => {
-    it.each<[string, RowSpec]>([
-      [
-        'dependency create',
-        {
-          httpKey: 'dependency POST /:taskId/dependencies',
-          ipcChannel: TaskChannels.DEPENDENCY_CREATE,
-          successStatus: 201,
-          httpReq: { params: { taskId: TEMPLATE_ID }, body: validCreateDep },
-          ipcArgs: { taskId: TEMPLATE_ID, request: validCreateDep },
-          validInvocation: { params: { taskId: TEMPLATE_ID }, body: validCreateDep },
-          malformedHttpReq: { params: { taskId: TEMPLATE_ID }, body: malformedCreateDep },
-          malformedIpcArgs: { taskId: TEMPLATE_ID, request: malformedCreateDep },
-          assertPort: (port) => {
-            const mock = port.createTaskDependency as ReturnType<typeof vi.fn>;
-            expect(mock).toHaveBeenCalledTimes(2);
-            for (const call of mock.mock.calls) {
-              expect(call[0]).toMatchObject({ ...validCreateDep, successorTaskId: TEMPLATE_ID });
-            }
-          },
-        },
-      ],
-      [
-        'dependency update',
-        {
-          httpKey: 'dependency PUT /dependencies/:id',
-          ipcChannel: TaskChannels.DEPENDENCY_UPDATE,
-          httpReq: { params: { id: DEPENDENCY_ID }, body: validUpdateDep },
-          ipcArgs: { id: DEPENDENCY_ID, request: validUpdateDep },
-          validInvocation: { params: { id: DEPENDENCY_ID }, body: validUpdateDep },
-          malformedHttpReq: { params: { id: DEPENDENCY_ID }, body: malformedUpdateDep },
-          malformedIpcArgs: { id: DEPENDENCY_ID, request: malformedUpdateDep },
-          assertPort: (port) => {
-            const mock = port.updateTaskDependency as ReturnType<typeof vi.fn>;
-            expect(mock).toHaveBeenCalledTimes(2);
-            for (const call of mock.mock.calls) {
-              expect(call[0]).toBe(DEPENDENCY_ID);
-              expect(call[2]).toMatchObject(validUpdateDep);
-            }
-          },
-        },
-      ],
-      [
-        'dependency delete',
-        {
-          httpKey: 'dependency DELETE /dependencies/:id',
-          ipcChannel: TaskChannels.DEPENDENCY_DELETE,
-          httpReq: { params: { id: DEPENDENCY_ID } },
-          ipcArgs: { id: DEPENDENCY_ID },
-          validInvocation: { params: { id: DEPENDENCY_ID } },
-          malformedHttpReq: { params: { id: 'bad' } },
-          malformedIpcArgs: { id: 'bad' },
-          assertPort: (port) => {
-            const mock = port.deleteTaskDependency as ReturnType<typeof vi.fn>;
-            expect(mock).toHaveBeenCalledTimes(2);
-            for (const call of mock.mock.calls) {
-              expect(call[0]).toBe(DEPENDENCY_ID);
-            }
-          },
-        },
-      ],
-      [
-        'dependency validate',
-        {
-          httpKey: 'dependency POST /dependencies/validate',
-          ipcChannel: TaskChannels.DEPENDENCY_VALIDATE,
-          httpReq: { body: validValidateDep },
-          ipcArgs: validValidateDep,
-          validInvocation: validValidateDep,
-          malformedHttpReq: { body: malformedValidateDep },
-          malformedIpcArgs: malformedValidateDep,
-          assertPort: (port) => {
-            const mock = port.validateTaskDependency as ReturnType<typeof vi.fn>;
-            expect(mock).toHaveBeenCalledTimes(2);
-            for (const call of mock.mock.calls) {
-              expect(call[0]).toBe(TEMPLATE_ID);
-              expect(call[1]).toBe(TEMPLATE_ID);
-            }
-          },
-        },
-      ],
-    ])(
-      'task %s: HTTP and IPC reach the same port method with equivalent input',
-      async (name, row) => {
-        const port = createPortStub();
-        await runRow(port, row);
-      },
-    );
-  });
 });

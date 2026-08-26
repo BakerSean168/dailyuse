@@ -22,10 +22,12 @@ import type {
   DeleteKeyResultReq,
   GetKeyResultsRes,
   CreateGoalReviewReq,
+  GoalReviewSystemContext,
   UpdateGoalReviewReq,
   DeleteGoalReviewReq,
   GetGoalReviewsRes,
   CreateGoalRecordReq,
+  UpdateGoalRecordReq,
   DeleteGoalRecordReq,
   GetGoalRecordsRes,
   GetGoalAggregateRes,
@@ -48,7 +50,7 @@ export class GoalHttpAdapter implements IGoalApiClient {
     query?: string;
     status?: string[];
     systemView?: GoalSystemView;
-    folderId?: string;
+    labelIdsAll?: string[];
     startDate?: number;
     endDate?: number;
     includeChildren?: boolean;
@@ -72,10 +74,6 @@ export class GoalHttpAdapter implements IGoalApiClient {
     return this.httpClient.delete(`${this.baseUrl}/${id}`, { params: request });
   }
 
-  async archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>> {
-    return this.httpClient.post(`${this.baseUrl}/archive-expired`);
-  }
-
   // ===== Goal Status =====
 
   async activateGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
@@ -90,6 +88,10 @@ export class GoalHttpAdapter implements IGoalApiClient {
     return this.httpClient.post(`${this.baseUrl}/${id}/archive`, { expectedVersion });
   }
 
+  async abandonGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/abandon`, { expectedVersion });
+  }
+
   // ===== Search =====
 
   async searchGoals(params: {
@@ -98,7 +100,6 @@ export class GoalHttpAdapter implements IGoalApiClient {
     pageSize?: number;
     status?: string[];
     systemView?: GoalSystemView;
-    folderId?: string;
   }): Promise<Result<QueryGoalsRes>> {
     return this.httpClient.get(`${this.baseUrl}/search`, { params });
   }
@@ -162,6 +163,15 @@ export class GoalHttpAdapter implements IGoalApiClient {
     return this.httpClient.get(`${this.baseUrl}/${goalId}/reviews`);
   }
 
+  async getGoalReviewContext(
+    goalId: string,
+    windowDays: number = 7,
+  ): Promise<Result<GoalReviewSystemContext>> {
+    return this.httpClient.get(`${this.baseUrl}/${goalId}/reviews/context`, {
+      params: { windowDays },
+    });
+  }
+
   async updateGoalReview(
     goalId: string,
     reviewId: string,
@@ -189,6 +199,18 @@ export class GoalHttpAdapter implements IGoalApiClient {
   ): Promise<Result<GoalMutationReceipt>> {
     return this.httpClient.post(
       `${this.baseUrl}/${goalId}/key-results/${keyResultId}/records`,
+      request,
+    );
+  }
+
+  async updateGoalRecord(
+    goalId: string,
+    keyResultId: string,
+    recordId: string,
+    request: UpdateGoalRecordReq,
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.httpClient.put(
+      `${this.baseUrl}/${goalId}/key-results/${keyResultId}/records/${recordId}`,
       request,
     );
   }

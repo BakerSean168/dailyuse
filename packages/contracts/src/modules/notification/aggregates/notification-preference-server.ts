@@ -1,26 +1,19 @@
-/**
- * NotificationPreference Aggregate Root - Server Interface
- * 通知偏好聚合根 - 服务端接口
- *
- * 【同步支持】
- * - deletedAt: 软删除时间戳
- * - version: 乐观锁版本号
- * - updatedAt: 最后更新时间（增量同步）
- */
-
-import type { NotificationChannelType } from '../value-objects/notification-channel-type';
-
+import type {
+  NotificationGlobalChannelPreferencesDTO,
+  NotificationWorkflowOverridesDTO,
+} from '../value-objects/notification-workflow';
+import type { DoNotDisturbConfigDTO } from '../value-objects/do-not-disturb-config';
+import type { RateLimitDTO } from '../value-objects/rate-limit';
 import type { IdentityId, NotificationPreferenceId, TransferDate } from '../../../primitives';
 
-// ============ DTO 定义 ============
-
-/**
- * NotificationPreference Server DTO
- */
+/** User preference document; workflow capability/default remains workflow-owned. */
 export interface NotificationPreferenceServerDTO {
   id: NotificationPreferenceId;
   identityId: IdentityId;
-  settings: Record<string, NotificationChannelType[]>; // 模块名 => 渠道列表
+  globalChannels: NotificationGlobalChannelPreferencesDTO;
+  workflowOverrides: NotificationWorkflowOverridesDTO;
+  doNotDisturb?: DoNotDisturbConfigDTO | null;
+  rateLimit?: RateLimitDTO | null;
   version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;

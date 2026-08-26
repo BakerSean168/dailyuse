@@ -19,15 +19,5 @@ export type { KeyResultDeletedEvent } from './key-result-deleted.event';
 
 export type { ReviewAddedEvent } from './review-added.event';
 
-export type { GoalFolderCreatedEvent } from './goal-folder-created.event';
-export type { GoalFolderUpdatedEvent } from './goal-folder-updated.event';
-export type { GoalFolderDeletedEvent } from './goal-folder-deleted.event';
-
-export type { FocusSessionStartedEvent } from './focus-session-started.event';
-export type { FocusSessionPausedEvent } from './focus-session-paused.event';
-export type { FocusSessionResumedEvent } from './focus-session-resumed.event';
-export type { FocusSessionCompletedEvent } from './focus-session-completed.event';
-export type { FocusSessionCancelledEvent } from './focus-session-cancelled.event';
-
 // Re-export union type
 export type { GoalCreatedEvent as GoalDomainEvent } from './goal-created.event';

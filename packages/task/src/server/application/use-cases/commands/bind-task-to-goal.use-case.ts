@@ -22,7 +22,7 @@ export class BindTaskToGoalUseCase {
       return error('NOT_FOUND', `TaskTemplate ${templateId} not found`);
     }
 
-    template.bindToGoal(request.goalId, request.keyResultId, request.goalRecordValue);
+    template.bindToGoal(request.goalId, request.keyResultId, request.contribution ?? null);
     await this.templateRepository.save(template);
 
     return ok(template.toClientDTO());

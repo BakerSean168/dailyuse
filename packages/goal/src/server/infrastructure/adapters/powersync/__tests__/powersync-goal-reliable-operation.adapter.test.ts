@@ -32,7 +32,9 @@ function createTestSqliteDatabase(filePath?: string): IElectronDatabase {
       if (!row) throw new Error(`Query returned no rows: ${sql}`);
       return row as T;
     },
-    async writeTransaction<T>(callback: (tx: IElectronDatabaseTransaction) => Promise<T>): Promise<T> {
+    async writeTransaction<T>(
+      callback: (tx: IElectronDatabaseTransaction) => Promise<T>,
+    ): Promise<T> {
       sqlite.exec('BEGIN');
       try {
         const result = await callback(wrapper as IElectronDatabaseTransaction);
@@ -84,7 +86,9 @@ describe('PowerSyncGoalReliableOperationAdapter (real SQLite)', () => {
     await db1.execute(TABLE_SQL);
     const key = 'v1:8:user-123:4:goal:18:completed:goal-456';
     const input = createReceiptInput(key);
-    const adapter1 = new PowerSyncGoalReliableOperationAdapter(db1 as unknown as IElectronDatabaseTransaction);
+    const adapter1 = new PowerSyncGoalReliableOperationAdapter(
+      db1 as unknown as IElectronDatabaseTransaction,
+    );
     const receipt1 = await adapter1.recordGoalCompletionReceipt(input);
     expect(receipt1.operationId).toBeDefined();
     (db1 as unknown as { close(): void }).close();
@@ -92,13 +96,18 @@ describe('PowerSyncGoalReliableOperationAdapter (real SQLite)', () => {
     // Second process: reopen the SAME file and rebuild the adapter
     const db2 = createTestSqliteDatabase(filePath);
     await db2.execute(TABLE_SQL);
-    const adapter2 = new PowerSyncGoalReliableOperationAdapter(db2 as unknown as IElectronDatabaseTransaction);
+    const adapter2 = new PowerSyncGoalReliableOperationAdapter(
+      db2 as unknown as IElectronDatabaseTransaction,
+    );
     const receipt2 = await adapter2.recordGoalCompletionReceipt(input);
 
     expect(receipt2.operationId).toBe(receipt1.operationId);
     expect(receipt2.createdAt).toBe(receipt1.createdAt);
 
-    const rows = await db2.getAll('SELECT * FROM goal_operation_receipts WHERE idempotency_key = ?', [key]);
+    const rows = await db2.getAll(
+      'SELECT * FROM goal_operation_receipts WHERE idempotency_key = ?',
+      [key],
+    );
     expect(rows).toHaveLength(1);
     (db2 as unknown as { close(): void }).close();
   });
@@ -109,7 +118,9 @@ describe('PowerSyncGoalReliableOperationAdapter (real SQLite)', () => {
 
     const key = 'v1:8:user-123:4:goal:25:archived:goal-archive-999';
     const input = createReceiptInput(key);
-    const adapter = new PowerSyncGoalReliableOperationAdapter(db as unknown as IElectronDatabaseTransaction);
+    const adapter = new PowerSyncGoalReliableOperationAdapter(
+      db as unknown as IElectronDatabaseTransaction,
+    );
 
     const receipt1 = await adapter.recordGoalCompletionReceipt(input);
     const receipt2 = await adapter.recordGoalCompletionReceipt(input);
@@ -119,7 +130,9 @@ describe('PowerSyncGoalReliableOperationAdapter (real SQLite)', () => {
 
   it('fails closed when the receipt row cannot be persisted (no un-persisted success receipt)', async () => {
     const db = createTestSqliteDatabase();
-    const adapter = new PowerSyncGoalReliableOperationAdapter(db as unknown as IElectronDatabaseTransaction);
+    const adapter = new PowerSyncGoalReliableOperationAdapter(
+      db as unknown as IElectronDatabaseTransaction,
+    );
     const input = createReceiptInput('v1:8:user-123:4:goal:18:completed:goal-456');
 
     await expect(adapter.recordGoalCompletionReceipt(input)).rejects.toThrow();
@@ -127,25 +140,34 @@ describe('PowerSyncGoalReliableOperationAdapter (real SQLite)', () => {
 });
 
 describe('PowerSyncGoalWriteTransactionRunner receipt rollback (W4 P1-1)', () => {
+  const LABELS_SQL = `CREATE TABLE IF NOT EXISTS labels (
+    id TEXT PRIMARY KEY,
+    identity_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    normalized_name TEXT NOT NULL,
+    color TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`;
+  const GOAL_LABELS_SQL = `CREATE TABLE IF NOT EXISTS goal_labels (
+    id TEXT PRIMARY KEY,
+    identity_id TEXT NOT NULL,
+    goal_id TEXT NOT NULL,
+    label_id TEXT NOT NULL
+  )`;
+
   const GOALS_SQL = `CREATE TABLE IF NOT EXISTS goals (
     id TEXT PRIMARY KEY,
     identity_id TEXT NOT NULL,
     name TEXT NOT NULL,
     description TEXT,
-    color TEXT,
     feasibility_analysis TEXT,
     motivation TEXT,
     status TEXT NOT NULL,
-    importance TEXT,
-    priority INTEGER,
-    category TEXT,
-    tags TEXT,
     start_date TEXT,
-    target_date TEXT,
+    due_date TEXT,
     completed_at TEXT,
     archived_at TEXT,
-    folder_id TEXT,
-    parent_goal_id TEXT,
     sort_order INTEGER,
     reminder_config TEXT,
     version INTEGER NOT NULL DEFAULT 1,
@@ -157,10 +179,13 @@ describe('PowerSyncGoalWriteTransactionRunner receipt rollback (W4 P1-1)', () =>
   it('rolls back the Goal CAS save when the receipt write fails', async () => {
     const { tmpdir } = await import('node:os');
     const { join } = await import('node:path');
-    const { PowerSyncGoalWriteTransactionRunner } = await import('../powersync-goal-write-transaction-runner');
+    const { PowerSyncGoalWriteTransactionRunner } =
+      await import('../powersync-goal-write-transaction-runner');
     const filePath = join(tmpdir(), `goal-runner-${Date.now()}.sqlite`);
     const db = createTestSqliteDatabase(filePath);
     await db.execute(GOALS_SQL);
+    await db.execute(LABELS_SQL);
+    await db.execute(GOAL_LABELS_SQL);
     await db.execute(TABLE_SQL);
 
     const runner = new PowerSyncGoalWriteTransactionRunner(db as never);
@@ -171,9 +196,9 @@ describe('PowerSyncGoalWriteTransactionRunner receipt rollback (W4 P1-1)', () =>
     const now = new Date().toISOString();
     await db.execute(
       `INSERT INTO goals (
-         id, identity_id, name, status, importance, priority, version, created_at, updated_at
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [goalId, identityId, 'Runner Rollback Goal', 'active', 'moderate', 0, 1, now, now],
+         id, identity_id, name, status, version, created_at, updated_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [goalId, identityId, 'Runner Rollback Goal', 'Active', 1, now, now],
     );
 
     // Now make the receipt write fail (RAISE trigger keeps the table but aborts inserts)
@@ -183,10 +208,15 @@ describe('PowerSyncGoalWriteTransactionRunner receipt rollback (W4 P1-1)', () =>
        BEGIN SELECT RAISE(ABORT, 'receipt write failure simulation'); END`,
     );
 
-    const { CompleteGoalUseCase } = await import('../../../../application/use-cases/commands/complete-goal.use-case');
+    const { CompleteGoalUseCase } =
+      await import('../../../../application/use-cases/commands/complete-goal.use-case');
     const { GoalPowerSyncRepository } = await import('../goal-powersync.repository');
     const repo = new GoalPowerSyncRepository(db as never);
-    const useCase = new CompleteGoalUseCase(repo, new (await import('../../../../domain')).GoalPolicy(), runner);
+    const useCase = new CompleteGoalUseCase(
+      repo,
+      new (await import('../../../../domain')).GoalPolicy(),
+      runner,
+    );
 
     // The complete flow must fail: the receipt write aborts the transaction
     await expect(useCase.execute(goalId, identityId, 1)).rejects.toThrow();
@@ -194,6 +224,6 @@ describe('PowerSyncGoalWriteTransactionRunner receipt rollback (W4 P1-1)', () =>
     // Goal CAS write rolled back: still version 1, still Active
     const saved = await repo.findByIdForIdentity(identityId, goalId);
     expect(saved?.version).toBe(1);
-    expect(saved?.status).toBe('active');
+    expect(saved?.status).toBe('Active');
   });
 });

@@ -9,7 +9,6 @@ import { getProductTime, formatProductDateTime, emptyKind } from '../utils/produ
 
 import { useTaskInstances } from '../hooks/useTaskInstances';
 import { useTaskTemplateDetail } from '../hooks/useTaskTemplateDetail';
-import { useTaskDependencies } from '../hooks/useTaskDependencies';
 import { useAppSession } from '../hooks/useAppSession';
 import { useTaskService } from '../hooks/useTaskService';
 
@@ -62,22 +61,12 @@ export function TaskDetailScreen() {
     skipInstance,
     startInstance,
   } = useTaskInstances(taskId);
-  const {
-    dependencies,
-    dependents,
-    depth,
-    error: dependenciesError,
-    hasDependencies,
-    hasDependents,
-    isOnCriticalPath,
-    refresh: refreshDependencies,
-  } = useTaskDependencies(taskId);
   const [isMutating, setIsMutating] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
 
   async function refreshAll() {
-    await Promise.all([refresh(), refreshInstances(), refreshDependencies()]);
+    await Promise.all([refresh(), refreshInstances()]);
   }
 
   async function handlePause() {
@@ -236,13 +225,9 @@ export function TaskDetailScreen() {
                 tone={template.status === 'Active' ? 'success' : 'warning'}
               />
               <StatusPill label={template.importance} tone="tint" />
-              {template.isBlocked ? <StatusPill label="Blocked" tone="warning" /> : null}
+              <StatusPill label={template.outcome} tone="textSecondary" />
+              {template.archivedAt !== null ? <StatusPill label="Archived" tone="textSecondary" /> : null}
             </View>
-            {template.blockingReason ? (
-              <ThemedText type="small" themeColor="warning">
-                {template.blockingReason}
-              </ThemedText>
-            ) : null}
             <View style={styles.actionRow}>
               {template.status === 'Active' ? (
                 <PrimaryButton
@@ -258,7 +243,7 @@ export function TaskDetailScreen() {
                   disabled={isMutating}
                 />
               ) : null}
-              {template.status !== 'Archived' ? (
+              {template.archivedAt === null ? (
                 <PrimaryButton
                   label={isMutating ? 'Archiving…' : 'Archive'}
                   onPress={handleArchive}
@@ -295,89 +280,6 @@ export function TaskDetailScreen() {
               <MetricBox label="Completed" value={String(template.completedInstanceCount)} />
               <MetricBox label="Completion" value={`${Math.round(template.completionRate)}%`} />
             </View>
-          </SectionCard>
-
-          <SectionCard
-            title="Dependencies"
-            description="任务依赖关系展示前置和后续任务，支持跳转到相关任务详情。"
-          >
-            {dependenciesError ? (
-              <ThemedText type="small" themeColor="warning">
-                {dependenciesError}
-              </ThemedText>
-            ) : null}
-            <View style={styles.pillRow}>
-              <StatusPill label={`${dependencies.length} predecessors`} tone="tint" />
-              <StatusPill label={`${dependents.length} successors`} tone="textSecondary" />
-              {isOnCriticalPath ? <StatusPill label="Critical path" tone="warning" /> : null}
-              {depth > 0 ? <StatusPill label={`Depth: ${depth}`} tone="textSecondary" /> : null}
-            </View>
-            {hasDependencies ? (
-              <View style={styles.dependencySection}>
-                <ThemedText type="smallBold">Blocked by (predecessors)</ThemedText>
-                <View style={styles.listColumn}>
-                  {dependencies.map((dep) => (
-                    <ThemedView
-                      key={dep.id}
-                      type="backgroundSelected"
-                      style={styles.dependencyCard}
-                    >
-                      <View style={styles.dependencyHeader}>
-                        <ThemedText type="smallBold">
-                          {dep.predecessorTaskTitle ?? `Task ${dep.predecessorTaskId.slice(0, 8)}…`}
-                        </ThemedText>
-                        <StatusPill label={dep.dependencyType} tone="tint" />
-                      </View>
-                      {dep.lagDays !== undefined && dep.lagDays > 0 ? (
-                        <ThemedText type="small" themeColor="textSecondary">
-                          +{dep.lagDays} day{dep.lagDays > 1 ? 's' : ''} lag
-                        </ThemedText>
-                      ) : null}
-                      <PrimaryButton
-                        label="View task"
-                        onPress={() => router.push(`./${dep.predecessorTaskId}`)}
-                        variant="ghost"
-                      />
-                    </ThemedView>
-                  ))}
-                </View>
-              </View>
-            ) : (
-              <ThemedText type="small" themeColor="textSecondary">
-                No predecessor tasks. This task can start immediately.
-              </ThemedText>
-            )}
-            {hasDependents ? (
-              <View style={styles.dependencySection}>
-                <ThemedText type="smallBold">Blocking (successors)</ThemedText>
-                <View style={styles.listColumn}>
-                  {dependents.map((dep) => (
-                    <ThemedView
-                      key={dep.id}
-                      type="backgroundSelected"
-                      style={styles.dependencyCard}
-                    >
-                      <View style={styles.dependencyHeader}>
-                        <ThemedText type="smallBold">
-                          {dep.successorTaskTitle ?? `Task ${dep.successorTaskId.slice(0, 8)}…`}
-                        </ThemedText>
-                        <StatusPill label={dep.dependencyType} tone="tint" />
-                      </View>
-                      {dep.lagDays !== undefined && dep.lagDays > 0 ? (
-                        <ThemedText type="small" themeColor="textSecondary">
-                          +{dep.lagDays} day{dep.lagDays > 1 ? 's' : ''} lag
-                        </ThemedText>
-                      ) : null}
-                      <PrimaryButton
-                        label="View task"
-                        onPress={() => router.push(`./${dep.successorTaskId}`)}
-                        variant="ghost"
-                      />
-                    </ThemedView>
-                  ))}
-                </View>
-              </View>
-            ) : null}
           </SectionCard>
 
           <SectionCard
@@ -547,21 +449,6 @@ const styles = StyleSheet.create({
   instanceHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: Spacing.two,
-  },
-  dependencySection: {
-    gap: Spacing.two,
-    marginTop: Spacing.two,
-  },
-  dependencyCard: {
-    borderRadius: Spacing.three,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  dependencyHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     gap: Spacing.two,
   },
 });

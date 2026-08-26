@@ -71,43 +71,39 @@ describe('task domain value objects', () => {
     const binding = TaskGoalBinding.bindToGoal(
       'GoalId_1',
       'KeyResultId_1',
-      2,
-      TaskGoalBindingTrigger.PerInstance,
-    )
-      .updateGoalRecordValue(5)
-      .updateProgressTrigger(TaskGoalBindingTrigger.AllInstancesCompleted);
+      { value: 5, trigger: TaskGoalBindingTrigger.PlanCompletion },
+    );
 
     expect(binding.hasContribution).toBe(true);
-    expect(binding.getDisplayText()).toContain('ALL_INSTANCES_COMPLETED');
+    expect(binding.getDisplayText()).toContain('PlanCompletion');
 
     expect(TaskInstanceStatus.getAll()).toEqual([
       TaskInstanceStatus.Pending,
       TaskInstanceStatus.InProgress,
       TaskInstanceStatus.Completed,
+      TaskInstanceStatus.Missed,
       TaskInstanceStatus.Skipped,
-      TaskInstanceStatus.Expired,
     ]);
     expect(TaskInstanceStatus.isValid('Pending')).toBe(true);
     expect(TaskInstanceStatus.isPending(TaskInstanceStatus.Pending)).toBe(true);
     expect(TaskInstanceStatus.isInProgress(TaskInstanceStatus.InProgress)).toBe(true);
     expect(TaskInstanceStatus.isCompleted(TaskInstanceStatus.Completed)).toBe(true);
     expect(TaskInstanceStatus.isSkipped(TaskInstanceStatus.Skipped)).toBe(true);
-    expect(TaskInstanceStatus.isExpired(TaskInstanceStatus.Expired)).toBe(true);
+    expect(TaskInstanceStatus.isMissed(TaskInstanceStatus.Missed)).toBe(true);
     expect(TaskInstanceStatus.isTerminated(TaskInstanceStatus.Completed)).toBe(true);
     expect(TaskInstanceStatus.needsAction(TaskInstanceStatus.Pending)).toBe(true);
     expect(TaskTemplateStatus.getAll()).toEqual([
       TaskTemplateStatus.Active,
       TaskTemplateStatus.Paused,
-      TaskTemplateStatus.Archived,
-      TaskTemplateStatus.Deleted,
+      TaskTemplateStatus.Closed,
     ]);
     expect(TaskTemplateStatus.of('Active')).toBe(TaskTemplateStatus.Active);
     expect(TaskTemplateStatus.isValid('Paused')).toBe(true);
     expect(TaskTemplateStatus.isActive(TaskTemplateStatus.Active)).toBe(true);
     expect(TaskTemplateStatus.isPaused(TaskTemplateStatus.Paused)).toBe(true);
-    expect(TaskTemplateStatus.isArchived(TaskTemplateStatus.Archived)).toBe(true);
-    expect(TaskTemplateStatus.isDeleted(TaskTemplateStatus.Deleted)).toBe(true);
-    expect(TaskTemplateStatus.isAvailable(TaskTemplateStatus.Archived)).toBe(true);
+    expect(TaskTemplateStatus.isClosed(TaskTemplateStatus.Closed)).toBe(true);
+    expect(TaskTemplateStatus.isAvailable(TaskTemplateStatus.Paused)).toBe(true);
+    expect(TaskTemplateStatus.isAvailable(TaskTemplateStatus.Closed)).toBe(false);
     expect(TaskTemplateStatus.isExecutable(TaskTemplateStatus.Active)).toBe(true);
     expect(TaskTimeType.getAll()).toEqual([
       TaskTimeType.AllDay,

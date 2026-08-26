@@ -121,22 +121,25 @@ describe('W7 cross-module operation gate (real DB)', () => {
 
     // Notification dead letter
     const notificationOp = `notification-dead-${randomUUID()}`;
+    const notificationId = `notif-${randomUUID()}`;
     await prisma.notification.create({
       data: {
-        id: `notif-${randomUUID()}`,
+        id: notificationId,
         identityId,
-        type: 'reminder',
-        category: 'reminder',
-        status: 'sent',
+        type: 'Reminder',
+        category: 'Reminder',
+        workflowKey: 'reliability.w7-gate',
+        topic: 'reliability',
+        idempotencyKey: `seed:${notificationId}`,
         title: 'W7 Gate Notif',
         content: 'gate',
-        importance: 'normal',
-        urgency: 'normal',
+        importance: 'Moderate',
+        urgency: 'Medium',
         createdAt: now,
         updatedAt: now,
       },
     });
-    const notificationRow = await prisma.notification.findFirstOrThrow({ where: { identityId } });
+    const notificationRow = await prisma.notification.findUniqueOrThrow({ where: { id: notificationId } });
     const notifOccurrenceKey = `${notificationRow.id}:in-app`;
     const notifIdempotencyKey = buildIdempotencyKeyString({
       identityId,

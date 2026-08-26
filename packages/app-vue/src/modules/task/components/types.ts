@@ -24,27 +24,20 @@ export interface TaskTimeConfigViewModel {
   startDate?: string | Date | number;
 }
 
+export interface TaskGoalContributionViewModel {
+  value: number;
+  trigger: TaskGoalBindingTriggerValue;
+}
+
 export interface TaskGoalBindingViewModel {
   goalId?: string;
   keyResultId?: string;
-  incrementValue?: number;
-  progressTrigger?: TaskGoalBindingTriggerValue;
+  contribution?: TaskGoalContributionViewModel;
 }
 
 export interface TaskGoalBindingDisplay {
   goalName: string;
   keyResultName: string;
-}
-
-export interface TaskDependencyValidationError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
-
-export interface TaskDependencyValidationWarning {
-  code: string;
-  message: string;
 }
 
 export interface GoalBindingProgress {
@@ -78,17 +71,8 @@ export interface TaskTemplateViewModel {
   isArchived?: boolean;
   importance?: string;
   importanceText?: string;
-  priority?: number;
   estimatedMinutes?: number | null;
   dueDate?: string | number | null;
-  parentTaskId?: string | null;
-  parentTaskTitle?: string | null;
-  predecessorCount?: number;
-  successorCount?: number;
-  childCount?: number;
-  dependencyStatus?: string;
-  isBlocked?: boolean;
-  blockingReason?: string | null;
   recurrenceText?: string;
   tags?: string[];
   tagSummaryText?: string;
@@ -103,7 +87,7 @@ export interface TaskTemplateViewModel {
   completedDueInstanceCount?: number;
   completionWindowDays?: 30;
   futurePendingInstanceCount?: number;
-  singleInstanceStatus?: 'Pending' | 'InProgress' | 'Completed' | 'Skipped' | 'Expired' | null;
+  singleInstanceStatus?: 'Pending' | 'InProgress' | 'Completed' | 'Missed' | 'Skipped' | null;
   completionRate?: number;
   formattedCreatedAt?: string;
   /** TaskType enum value mapped for CreateTaskTemplateReq.taskType */
@@ -117,7 +101,6 @@ export interface TaskTemplateFormProps {
   modelValue?: TaskTemplateViewModel | null;
   isEditMode?: boolean;
   readonly?: boolean;
-  availableParentTasks?: Array<Pick<TaskTemplateViewModel, 'id' | 'title'>>;
   goals?: GoalBindingOption[];
   keyResultsByGoal?: Record<string, KeyResultBindingOption[]>;
   loadingGoals?: boolean;
@@ -155,8 +138,6 @@ export interface TaskInstanceViewModel {
 
 // ── 任务库列表过滤 / 视图模式（UI_PAGE_REDESIGN_PLAN §6）──
 
-export type TaskStatusFilter = 'ALL' | 'ACTIVE' | 'PAUSED' | 'ARCHIVED';
+export type TaskStatusFilter = 'ALL' | 'ACTIVE' | 'PAUSED' | 'CLOSED' | 'ARCHIVED';
 
-export type TaskRelationFilter = 'all' | 'blocked' | 'parented' | 'dependencies' | 'children';
-
-export type TaskViewMode = 'card' | 'graph';
+export type TaskViewMode = 'card';

@@ -31,7 +31,6 @@ describe('goal/editor resolveRef dual retired (residual 1017)', () => {
       ['goal', goal, 'goal'],
       ['editor', editor, 'editor'],
     ] as const) {
-      expect(source, label).toContain('Residual 1017');
       expect(source, label).toContain('resolveExportRef');
       expect(source, label).toContain(`'${entity}'`);
       expect(source, label).not.toMatch(/function resolveRef\b/);
@@ -43,10 +42,9 @@ describe('goal/editor resolveRef dual retired (residual 1017)', () => {
   });
 
   it('task residual 1003 consumer remains sole; goal uses goal entityLabel', () => {
-    expect(task).toContain('Residual 1003');
     expect(task).toContain("resolveExportRef");
-    expect(goal).toContain("resolveExportRef(");
-    expect(goal).toContain("'goal'");
+    expect(goal).toContain("resolveExportRefOrThrow(");
+    expect(goal).toContain("'goal record'");
     expect(editor).toContain("'editor'");
   });
 

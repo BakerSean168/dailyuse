@@ -38,7 +38,10 @@ function createTemplate(overrides: {
   return template;
 }
 
-function createGroup(identityId: string, overrides: { controlMode?: ControlMode; status?: ReminderStatus } = {}) {
+function createGroup(identityId: string, overrides: {
+  controlMode?: ControlMode;
+  status?: ReminderStatus;
+} = {}) {
   const group = ReminderGroup.create({
     identityId,
     name: 'Group',
@@ -52,7 +55,7 @@ function createGroup(identityId: string, overrides: { controlMode?: ControlMode;
   return group;
 }
 
-describe('ReminderTemplateControlService', () => {
+describe('ReminderTemplateControlService -> Routine effectiveEnabled seam', () => {
   const templateRepository = {
     findByGroupId: vi.fn(),
     findByIdentityId: vi.fn(),
@@ -79,7 +82,7 @@ describe('ReminderTemplateControlService', () => {
     );
   });
 
-  it('returns a global paused status when the identity disables all reminders', async () => {
+  it('folds the legacy identity-wide switch into the Routine gate', async () => {
     const template = createTemplate();
     preferenceRepository.findByIdentityId.mockResolvedValue({ globalReminderEnabled: false });
 
@@ -90,28 +93,28 @@ describe('ReminderTemplateControlService', () => {
     expect(result.lifecycleSource).toBe('global');
   });
 
-  it('uses template status for ungrouped templates', async () => {
+  it('uses Routine state for an unprofiled legacy template', async () => {
     const active = await service.calculateEffectiveStatus(createTemplate());
     const paused = await service.calculateEffectiveStatus(
       createTemplate({ status: ReminderStatus.Paused }),
     );
 
     expect(active.effectiveStatus).toBe(ReminderStatus.Active);
-    expect(active.statusReason).toBe('未分组，使用模板自身状态');
+    expect(active.statusReason).toContain('Routine 自身 enabled');
     expect(paused.effectiveStatus).toBe(ReminderStatus.Paused);
   });
 
-  it('falls back to template status when the referenced group is missing', async () => {
+  it('falls back to unprofiled Routine truth when the referenced legacy group is missing', async () => {
     const template = createTemplate({ groupId: 'missing-group' });
 
     const result = await service.calculateEffectiveStatus(template);
 
     expect(groupRepository.findByIdForIdentity).toHaveBeenCalled();
     expect(result.lifecycleSource).toBe('template');
-    expect(result.statusReason).toBe('分组不存在，使用模板自身状态');
+    expect(result.statusReason).toContain('分组不存在');
   });
 
-  it('uses template status in individual control mode even when the group is paused', async () => {
+  it('profile off disables execution without changing the Routine member state', async () => {
     const identityId = IdentityId.generate();
     const group = createGroup(String(identityId), {
       controlMode: ControlMode.Individual,
@@ -121,45 +124,43 @@ describe('ReminderTemplateControlService', () => {
 
     const result = await service.calculateEffectiveStatus(template, group);
 
-    expect(result.effectiveStatus).toBe(ReminderStatus.Active);
-    expect(result.lifecycleSource).toBe('template');
+    expect(template.status).toBe(ReminderStatus.Active);
+    expect(result.effectiveStatus).toBe(ReminderStatus.Paused);
+    expect(result.lifecycleSource).toBe('group');
     expect(result.groupEnabled).toBe(false);
   });
 
-  it('uses group status in group control mode', async () => {
+  it('profile on never revives an individually-disabled Routine, regardless of legacy ControlMode', async () => {
     const identityId = IdentityId.generate();
-    const pausedGroup = createGroup(String(identityId), {
-      controlMode: ControlMode.Group,
-      status: ReminderStatus.Paused,
-    });
-    const activeGroup = createGroup(String(identityId), {
+    const groupMode = createGroup(String(identityId), {
       controlMode: ControlMode.Group,
       status: ReminderStatus.Active,
     });
+    const individualMode = createGroup(String(identityId), {
+      controlMode: ControlMode.Individual,
+      status: ReminderStatus.Active,
+    });
 
-    const pausedResult = await service.calculateEffectiveStatus(
-      createTemplate({ identityId, groupId: pausedGroup.id }),
-      pausedGroup,
+    const groupModeResult = await service.calculateEffectiveStatus(
+      createTemplate({ identityId, groupId: groupMode.id, status: ReminderStatus.Paused }),
+      groupMode,
     );
-    const activeResult = await service.calculateEffectiveStatus(
-      createTemplate({
-        identityId,
-        groupId: activeGroup.id,
-        status: ReminderStatus.Paused,
-      }),
-      activeGroup,
+    const individualModeResult = await service.calculateEffectiveStatus(
+      createTemplate({ identityId, groupId: individualMode.id, status: ReminderStatus.Paused }),
+      individualMode,
     );
 
-    expect(pausedResult.effectiveStatus).toBe(ReminderStatus.Paused);
-    expect(pausedResult.lifecycleSource).toBe('group');
-    expect(activeResult.effectiveStatus).toBe(ReminderStatus.Active);
-    expect(activeResult.statusReason).toContain('模板自身已暂停，但当前由分组接管');
+    expect(groupModeResult.isEffectivelyEnabled).toBe(false);
+    expect(individualModeResult.isEffectivelyEnabled).toBe(false);
+    expect(groupModeResult.statusReason).toContain('Profile 开启不能重新启用');
+    expect(groupModeResult.controlMode).toBe(ControlMode.Group);
+    expect(individualModeResult.controlMode).toBe(ControlMode.Individual);
   });
 
-  it('calculates batch status and filters enabled templates for group and identity queries', async () => {
+  it('calculates batch state with the same formula and filters enabled templates', async () => {
     const identityId = IdentityId.generate();
     const group = createGroup(String(identityId), {
-      controlMode: ControlMode.Individual,
+      controlMode: ControlMode.Group,
       status: ReminderStatus.Active,
     });
     const enabled = createTemplate({ identityId, groupId: group.id });

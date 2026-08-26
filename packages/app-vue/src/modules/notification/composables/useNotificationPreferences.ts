@@ -56,11 +56,14 @@ export function useNotificationPreferences() {
   const isSaving = ref(false);
   const error = ref<string | null>(null);
 
-  const settings = computed(() => preference.value?.settings ?? {});
+  const settings = computed(() => preference.value?.workflowOverrides ?? {});
 
   function hasChannel(moduleName: string, flag: PreferenceChannelFlag): boolean {
     const type = CHANNEL_FLAG_TO_TYPE[flag];
-    return (settings.value[moduleName] ?? []).includes(type);
+    const workflowKey = `${moduleName}.general`;
+    const workflowValue = preference.value?.workflowOverrides?.[workflowKey]?.[type];
+    if (workflowValue !== undefined) return workflowValue;
+    return preference.value?.globalChannels?.[type] ?? true;
   }
 
   async function loadPreferences(): Promise<void> {
@@ -109,16 +112,14 @@ export function useNotificationPreferences() {
     flag: PreferenceChannelFlag,
     enabled: boolean,
   ): Promise<boolean> {
-    const current = {
-      inApp: hasChannel(moduleName, 'inApp'),
-      push: hasChannel(moduleName, 'push'),
-      email: false,
-      sms: false,
-    };
-    current[flag] = enabled;
+    const workflowKey = `${moduleName}.general`;
+    const type = CHANNEL_FLAG_TO_TYPE[flag];
     return updatePreferences({
-      categories: {
-        [moduleName]: current,
+      workflowOverrides: {
+        [workflowKey]: {
+          ...(preference.value?.workflowOverrides?.[workflowKey] ?? {}),
+          [type]: enabled,
+        },
       },
     });
   }

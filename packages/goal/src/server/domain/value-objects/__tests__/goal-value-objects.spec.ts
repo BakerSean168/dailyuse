@@ -1,20 +1,13 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import {
-  FocusSessionStatus,
-  FolderType,
-  GoalMetadata,
   GoalReminderConfig,
   GoalStatus,
   GoalTimeRange,
-  HiddenGoalsMode,
   KeyResultCalculationMethod,
   KeyResultProgress,
   KeyResultSnapshot,
-  KeyResultValueType,
   KeyResultWeightSnapshot,
-  ReminderTriggerType,
-  ReviewType,
-} from '..';
+  ReminderTriggerType,} from '..';
 import { InvalidWeightError } from '../weight-errors';
 
 describe('goal shared value objects', () => {
@@ -31,31 +24,12 @@ describe('goal shared value objects', () => {
     expect(GoalStatus.getAll()).toEqual([
       GoalStatus.Active,
       GoalStatus.Completed,
-      GoalStatus.Archived,
+      GoalStatus.Abandoned,
     ]);
     expect(GoalStatus.of('Active')).toBe(GoalStatus.Active);
     expect(GoalStatus.isTerminal(GoalStatus.Completed)).toBe(true);
+    expect(GoalStatus.isTerminal(GoalStatus.Abandoned)).toBe(true);
     expect(() => GoalStatus.of('Bad')).toThrow('Invalid GoalStatus');
-
-    expect(FolderType.getAll()).toEqual([FolderType.System, FolderType.User]);
-    expect(FolderType.of('User')).toBe(FolderType.User);
-    expect(FolderType.isSystem(FolderType.System)).toBe(true);
-    expect(FolderType.isUser(FolderType.User)).toBe(true);
-
-    expect(FocusSessionStatus.getAll()).toContain(FocusSessionStatus.Cancelled);
-    expect(FocusSessionStatus.of('Completed')).toBe(FocusSessionStatus.Completed);
-    expect(FocusSessionStatus.isTerminal(FocusSessionStatus.Cancelled)).toBe(true);
-
-    expect(HiddenGoalsMode.getAll()).toContain(HiddenGoalsMode.Collapse);
-    expect(HiddenGoalsMode.of('Dim')).toBe(HiddenGoalsMode.Dim);
-    expect(HiddenGoalsMode.isHide(HiddenGoalsMode.Hide)).toBe(true);
-    expect(HiddenGoalsMode.isDim(HiddenGoalsMode.Dim)).toBe(true);
-    expect(HiddenGoalsMode.isCollapse(HiddenGoalsMode.Collapse)).toBe(true);
-
-    expect(ReviewType.getAll()).toContain(ReviewType.Final);
-    expect(ReviewType.of('Weekly')).toBe(ReviewType.Weekly);
-    expect(ReviewType.isPeriodic(ReviewType.Monthly)).toBe(true);
-    expect(ReviewType.isFinal(ReviewType.Final)).toBe(true);
 
     expect(ReminderTriggerType.getAll()).toEqual([
       ReminderTriggerType.TimeProgressPercentage,
@@ -67,20 +41,9 @@ describe('goal shared value objects', () => {
     );
     expect(ReminderTriggerType.isRemainingDays(ReminderTriggerType.RemainingDays)).toBe(true);
 
-    expect(KeyResultValueType.getAll()).toContain(KeyResultValueType.Binary);
-    expect(KeyResultValueType.of('Percentage')).toBe(KeyResultValueType.Percentage);
-    expect(KeyResultValueType.isIncremental(KeyResultValueType.Incremental)).toBe(true);
-    expect(KeyResultValueType.isAbsolute(KeyResultValueType.Absolute)).toBe(true);
-    expect(KeyResultValueType.isPercentage(KeyResultValueType.Percentage)).toBe(true);
-    expect(KeyResultValueType.isBinary(KeyResultValueType.Binary)).toBe(true);
-    expect(KeyResultValueType.requiresMetric(KeyResultValueType.Absolute)).toBe(true);
-    expect(KeyResultValueType.requiresMetric(KeyResultValueType.Binary)).toBe(false);
-
     expect(KeyResultCalculationMethod.getAll()).toContain(KeyResultCalculationMethod.Last);
     expect(KeyResultCalculationMethod.of('Sum')).toBe(KeyResultCalculationMethod.Sum);
-    expect(KeyResultCalculationMethod.isAggregation(KeyResultCalculationMethod.Average)).toBe(
-      true,
-    );
+    expect(KeyResultCalculationMethod.isAggregation(KeyResultCalculationMethod.Average)).toBe(true);
     expect(KeyResultCalculationMethod.isAggregation(KeyResultCalculationMethod.Last)).toBe(false);
 
     const invalidWeight = new InvalidWeightError('progress', 120);
@@ -89,42 +52,7 @@ describe('goal shared value objects', () => {
     expect(invalidWeight.message).toContain('120');
   });
 
-  it('covers goal metadata and reminder config mutations', () => {
-    const metadata = GoalMetadata.createDefault()
-      .updateImportance('Important')
-      .updateCategory('Work')
-      .updateTags(['launch'])
-      .addTag('q2');
-
-    expect(metadata.importance).toBe('Important');
-    expect(metadata.category).toBe('Work');
-    expect(metadata.tags).toEqual(['launch', 'q2']);
-    expect(metadata.hasCategory).toBe(true);
-    expect(metadata.hasTags).toBe(true);
-    expect(metadata.removeTag('launch').tags).toEqual(['q2']);
-    expect(GoalMetadata.fromDTO(metadata.toDTO()).toDTO()).toEqual(metadata.toDTO());
-    expect(() =>
-      GoalMetadata.create({
-        importance: 'Moderate',
-        category: 'x'.repeat(51),
-        tags: [],
-      }),
-    ).toThrow('Category too long');
-    expect(() =>
-      GoalMetadata.create({
-        importance: 'Moderate',
-        category: null,
-        tags: Array.from({ length: 11 }, (_, i) => `t${i}`),
-      }),
-    ).toThrow('Too many tags');
-    expect(() =>
-      GoalMetadata.create({
-        importance: 'Moderate',
-        category: null,
-        tags: ['x'.repeat(21)],
-      }),
-    ).toThrow('Tag too long');
-
+  it('covers reminder config mutations', () => {
     const reminder = GoalReminderConfig.createDefault()
       .setEnabled(true)
       .addTrigger({ type: 'RemainingDays', value: 3, enabled: true })
@@ -175,13 +103,13 @@ describe('goal shared value objects', () => {
     const completed = new Date('2026-05-02T00:00:00.000Z').getTime();
     const archived = new Date('2026-04-22T00:00:00.000Z').getTime();
 
-    const range = GoalTimeRange.createDefault(start).setTargetDate(target);
+    const range = GoalTimeRange.createDefault(start).setDueDate(target);
     expect(range.startDate).toBe(start);
-    expect(range.targetDate).toBe(target);
+    expect(range.dueDate).toBe(target);
     expect(range.getPlannedDays()).toBe(30);
     // elapsed/days-to-target depend on clock.now — assert finite numbers
     expect(typeof range.getElapsedDays()).toBe('number');
-    expect(typeof range.getDaysToTargetDate()).toBe('number');
+    expect(typeof range.getDaysToDueDate()).toBe('number');
     expect(range.isCompleted).toBe(false);
     expect(range.isArchived).toBe(false);
     expect(range.isTerminal).toBe(false);
@@ -200,25 +128,37 @@ describe('goal shared value objects', () => {
     expect(() =>
       GoalTimeRange.create({
         startDate: target,
-        targetDate: start,
+        dueDate: start,
         completedAt: null,
         archivedAt: null,
       }),
-    ).toThrow('Start date must be before or equal to target date');
-    expect(() =>
-      GoalTimeRange.create({
-        startDate: start,
-        targetDate: target,
-        completedAt: completed,
-        archivedAt: archived,
-      }),
-    ).toThrow('Goal cannot be both completed and archived');
+    ).toThrow('Start date must be before or equal to due date');
+    const completedAndArchived = GoalTimeRange.create({
+      startDate: start,
+      dueDate: target,
+      completedAt: completed,
+      archivedAt: archived,
+    });
+    expect(completedAndArchived.isCompleted).toBe(true);
+    expect(completedAndArchived.isArchived).toBe(true);
+    expect(completedAndArchived.isTerminal).toBe(true);
+
+    const archivedOnly = GoalTimeRange.create({
+      startDate: start,
+      dueDate: target,
+      completedAt: null,
+      archivedAt: archived,
+    });
+    expect(archivedOnly.isTerminal).toBe(false);
 
     const snapshot = KeyResultSnapshot.create({
       keyResultId: 'KeyResultId_1' as never,
       title: 'Launch',
-      targetValue: 100,
       currentValue: 60,
+      targetValue: 100,
+      progressBaselineValue: null,
+      aggregationMethod: 'Sum',
+      weight: 3,
       progressPercentage: 60,
     });
     expect(snapshot.isCompleted).toBe(false);
@@ -228,58 +168,36 @@ describe('goal shared value objects', () => {
     expect(KeyResultSnapshot.fromDTO(snapshot.toDTO()).toDTO()).toEqual(snapshot.toDTO());
     expect(
       KeyResultSnapshot.create({
-        keyResultId: 'KeyResultId_1' as never,
-        title: 'Done',
-        targetValue: 100,
+        ...snapshot.toDTO(),
         currentValue: 100,
         progressPercentage: 100,
       }).getProgressLevel(),
     ).toBe('completed');
     expect(
       KeyResultSnapshot.create({
-        keyResultId: 'KeyResultId_1' as never,
-        title: 'Idle',
-        targetValue: 100,
+        ...snapshot.toDTO(),
         currentValue: 0,
         progressPercentage: 0,
       }).getProgressLevel(),
     ).toBe('not-started');
+    expect(() => KeyResultSnapshot.create({ ...snapshot.toDTO(), title: '' })).toThrow(
+      'Title cannot be empty',
+    );
+    expect(() => KeyResultSnapshot.create({ ...snapshot.toDTO(), title: 'x'.repeat(201) })).toThrow(
+      'Title too long',
+    );
     expect(() =>
-      KeyResultSnapshot.create({
-        keyResultId: 'KeyResultId_1' as never,
-        title: '',
-        targetValue: 100,
-        currentValue: 1,
-        progressPercentage: 1,
-      }),
-    ).toThrow('Title cannot be empty');
-    expect(() =>
-      KeyResultSnapshot.create({
-        keyResultId: 'KeyResultId_1' as never,
-        title: 'x'.repeat(201),
-        targetValue: 100,
-        currentValue: 1,
-        progressPercentage: 1,
-      }),
-    ).toThrow('Title too long');
-    expect(() =>
-      KeyResultSnapshot.create({
-        keyResultId: 'KeyResultId_1' as never,
-        title: 'Bad',
-        targetValue: 0,
-        currentValue: 1,
-        progressPercentage: 1,
-      }),
-    ).toThrow('Target value must be positive');
+      KeyResultSnapshot.create({ ...snapshot.toDTO(), currentValue: Number.NaN }),
+    ).toThrow('must be finite');
   });
 
-  it('covers progress calculation and weight snapshots', () => {
+  it('covers Measurement V2 progress calculation and weight snapshots', () => {
     const progress = KeyResultProgress.create({
-      valueType: 'Incremental',
       aggregationMethod: 'Sum',
-      initialValue: 10,
-      targetValue: 100,
+      startingValue: 10,
       currentValue: 40,
+      targetValue: 100,
+      progressBaselineValue: null,
       unit: 'points',
     });
 
@@ -290,133 +208,67 @@ describe('goal shared value objects', () => {
     expect(progress.calculateAggregatedValue([])).toBe(10);
     expect(progress.calculateAggregatedValue([5, 15])).toBe(30);
     expect(progress.recalculateFromHistory([5, 15]).currentValue).toBe(30);
-    expect(progress.getAggregationMethodDescription()).toContain('求和');
-    expect(progress.getProgressPercentage()).toBeCloseTo(33.3333333333);
+    expect(progress.getAggregationMethodDescription()).toContain('累计');
+    expect(progress.getProgressPercentage()).toBe(40);
     expect(progress.isCompleted).toBe(false);
     expect(progress.getRemainingValue()).toBe(60);
-    expect(progress.getCompletedValue()).toBe(30);
+    expect(progress.getCompletedValue()).toBe(40);
     expect(progress.getDirection()).toBe('up');
-    expect(
-      KeyResultProgress.create({
-        valueType: 'Incremental',
-        aggregationMethod: 'Average',
-        initialValue: 0,
-        targetValue: 100,
-        currentValue: 0,
-        unit: null,
-      }).calculateAggregatedValue([10, 20, 30]),
-    ).toBe(20);
-    expect(
-      KeyResultProgress.create({
-        valueType: 'Incremental',
-        aggregationMethod: 'Max',
-        initialValue: 0,
-        targetValue: 100,
-        currentValue: 0,
-        unit: null,
-      }).calculateAggregatedValue([10, 20, 30]),
-    ).toBe(30);
-    expect(
-      KeyResultProgress.create({
-        valueType: 'Incremental',
-        aggregationMethod: 'Min',
-        initialValue: 0,
-        targetValue: 100,
-        currentValue: 0,
-        unit: null,
-      }).calculateAggregatedValue([10, 20, 30]),
-    ).toBe(10);
-    expect(
-      KeyResultProgress.create({
-        valueType: 'Incremental',
-        aggregationMethod: 'Last',
-        initialValue: 0,
-        targetValue: 100,
-        currentValue: 0,
-        unit: null,
-      }).calculateAggregatedValue([10, 20, 30]),
-    ).toBe(30);
-    expect(
-      KeyResultProgress.create({
-        valueType: 'Percentage',
-        aggregationMethod: 'Sum',
-        initialValue: 0,
-        targetValue: 100,
-        currentValue: 80,
-        unit: '%',
-      }).isCompleted,
-    ).toBe(false);
-    expect(
-      KeyResultProgress.create({
-        valueType: 'Absolute',
-        aggregationMethod: 'Sum',
-        initialValue: 100,
-        targetValue: 0,
-        currentValue: 20,
-        unit: null,
-      }).getDirection(),
-    ).toBe('down');
-    expect(
-      KeyResultProgress.create({
-        valueType: 'Absolute',
-        aggregationMethod: 'Sum',
-        initialValue: 100,
-        targetValue: 0,
-        currentValue: 0,
-        unit: null,
-      }).isCompleted,
-    ).toBe(true);
+
+    for (const [aggregationMethod, expected] of [
+      ['Average', 20],
+      ['Max', 30],
+      ['Min', 10],
+      ['Last', 30],
+    ] as const) {
+      expect(
+        KeyResultProgress.create({
+          aggregationMethod,
+          startingValue: 0,
+          currentValue: 0,
+          targetValue: 100,
+          progressBaselineValue: null,
+          unit: null,
+        }).calculateAggregatedValue([10, 20, 30]),
+      ).toBe(expected);
+    }
+
+    const decreasing = KeyResultProgress.create({
+      aggregationMethod: 'Last',
+      startingValue: 80,
+      currentValue: 73,
+      targetValue: 70,
+      progressBaselineValue: 75,
+      unit: 'kg',
+    });
+    expect(decreasing.getDirection()).toBe('down');
+    expect(decreasing.getProgressPercentage()).toBe(40);
+    expect(decreasing.isCompleted).toBe(false);
+    expect(decreasing.updateCurrentValue(70).isCompleted).toBe(true);
     expect(KeyResultProgress.fromDTO(progress.toDTO()).toDTO()).toEqual(progress.toDTO());
     expect(() =>
       KeyResultProgress.create({
-        valueType: 'Incremental',
+        aggregationMethod: 'Last',
+        startingValue: 80,
+        currentValue: 73,
+        targetValue: 70,
+        progressBaselineValue: null,
+        unit: 'kg',
+      }),
+    ).toThrow('progressBaselineValue is required for a decreasing target');
+    expect(() =>
+      KeyResultProgress.create({
         aggregationMethod: 'Sum',
-        initialValue: 1,
-        targetValue: 1,
-        currentValue: 1,
+        startingValue: 0,
+        currentValue: 0,
+        targetValue: 0,
+        progressBaselineValue: null,
         unit: null,
       }),
-    ).toThrow('Target value must be different from initial value');
-    expect(() =>
-      KeyResultProgress.create({
-        valueType: 'Percentage',
-        aggregationMethod: 'Sum',
-        initialValue: -1,
-        targetValue: 50,
-        currentValue: 10,
-        unit: '%',
-      }),
-    ).toThrow('Percentage initial value must be between 0-100');
-    expect(() =>
-      KeyResultProgress.create({
-        valueType: 'Percentage',
-        aggregationMethod: 'Sum',
-        initialValue: 0,
-        targetValue: 101,
-        currentValue: 10,
-        unit: '%',
-      }),
-    ).toThrow('Percentage target value must be between 0-100');
-    expect(() =>
-      KeyResultProgress.create({
-        valueType: 'Percentage',
-        aggregationMethod: 'Sum',
-        initialValue: 0,
-        targetValue: 100,
-        currentValue: 101,
-        unit: '%',
-      }),
-    ).toThrow('Percentage current value must be between 0-100');
-    expect(() =>
-      KeyResultProgress.create({
-        valueType: 'Incremental',
-        aggregationMethod: 'Sum',
-        initialValue: 0,
-        targetValue: 100,
-        currentValue: 0,
-        unit: 'x'.repeat(21),
-      }),
-    ).toThrow('Unit too long');
+    ).toThrow('progressBaselineValue is required when targetValue is zero');
+    expect(() => KeyResultProgress.create({ ...progress.toDTO(), unit: 'x'.repeat(21) })).toThrow(
+      'Unit too long',
+    );
 
     const snapshot = KeyResultWeightSnapshot.create({
       id: 'KeyResultWeightSnapshotId_1' as never,

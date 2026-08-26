@@ -25,13 +25,13 @@ describe('normalizeCrudData', () => {
         goal_id: 'goal-1',
         key_result_id: 'kr-1',
         goal_record_value: 2.5,
-        goal_progress_trigger: 'PER_INSTANCE',
+        goal_progress_trigger: 'EachCompletion',
       }),
     ).toEqual({
       goalId: 'goal-1',
       keyResultId: 'kr-1',
       goalRecordValue: 2.5,
-      goalProgressTrigger: 'PER_INSTANCE',
+      goalProgressTrigger: 'EachCompletion',
     });
   });
 

@@ -12,13 +12,13 @@ export const taskPerformanceAliases = {
   '@memoflow/test-utils/helpers/result-matchers': '../test-utils/src/helpers/result-matchers.ts',
   '@memoflow/task/testing': './src/testing/index.ts',
   '@memoflow/task': './src/index.ts',
+  '@memoflow/time': '../time/src/index.ts',
   '@memoflow/domain-shared': '../../packages/domain-shared/src',
   '@memoflow/database': '../../packages/database/src',
 };
 
 const benchmarkIncludes = [
-  'src/server/application/__tests__/benchmarks/sort-algorithm.bench.ts',
-  'src/server/application/__tests__/benchmarks/service-sorting.bench.ts',
+  'src/server/domain/performance/task-vnext.performance.bench.ts',
 ];
 
 const sharedConfig = createSharedConfig({

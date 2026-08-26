@@ -1,12 +1,9 @@
 /**
  * Task client seam.
  *
- * Public task contracts stay centralized in
- * `@memoflow/contracts/task`.
- * Callers depend on this seam instead of the old application-client /
- * infrastructure-client layered exports.
+ * Task vNext exposes Action + Execution only. Project-management graph/folder
+ * helpers are intentionally absent from this public surface.
  */
-
 import type { IResultHttpClient } from '@memoflow/http-client';
 import {
   TaskClientService,
@@ -14,33 +11,18 @@ import {
   createTaskServiceFromHttpClient,
   type TaskClientPort,
 } from '../application-client';
-import {
-  buildTaskGraphData,
-  TaskGraphEdgeKind,
-  taskInstanceToDAG,
-  taskInstanceToWidget,
-  taskTemplateToDAG,
-  type TaskForDAG,
-  type TaskForWidget,
-  type TaskGraphData,
-  type TaskGraphEdge,
-} from '../application-client/types/task-dag.types';
 import { TaskInstance, TaskTemplate } from '../domain-client';
 import {
-  TaskDependencyHttpAdapter,
   TaskInstanceHttpAdapter,
   TaskTemplateHttpAdapter,
-  createTaskDependencyHttpAdapter,
   createTaskHttpAdapters,
   createTaskInstanceHttpAdapter,
   createTaskTemplateHttpAdapter,
   type TaskHttpAdapters,
 } from '../infrastructure-client/adapters/http';
 import {
-  TaskDependencyIpcAdapter,
   TaskInstanceIpcAdapter,
   TaskTemplateIpcAdapter,
-  createTaskDependencyIpcAdapter,
   createTaskIpcAdapters,
   createTaskInstanceIpcAdapter,
   createTaskTemplateIpcAdapter,
@@ -48,7 +30,6 @@ import {
 } from '../infrastructure-client/adapters/ipc';
 import type {
   IResultIpcClient,
-  ITaskDependencyApiClient,
   ITaskInstanceApiClient,
   ITaskTemplateApiClient,
   TaskTemplateListParams,
@@ -57,14 +38,9 @@ import type {
 export type {
   IResultHttpClient,
   IResultIpcClient,
-  ITaskDependencyApiClient,
   ITaskInstanceApiClient,
   ITaskTemplateApiClient,
   TaskClientPort,
-  TaskForDAG,
-  TaskForWidget,
-  TaskGraphData,
-  TaskGraphEdge,
   TaskHttpAdapters,
   TaskIpcAdapters,
   TaskTemplateListParams,
@@ -76,31 +52,22 @@ export function createTaskHttpClient(httpClient: IResultHttpClient): TaskClientP
 
 export function createTaskIpcClient(ipcClient: IResultIpcClient): TaskClientPort {
   const adapters = createTaskIpcAdapters(ipcClient);
-  return createTaskClientService(adapters.template, adapters.instance, adapters.dependency);
+  return createTaskClientService(adapters.template, adapters.instance);
 }
 
 export {
   TaskClientService,
-  TaskDependencyHttpAdapter,
-  TaskDependencyIpcAdapter,
-  TaskGraphEdgeKind,
   TaskInstance,
   TaskInstanceHttpAdapter,
   TaskInstanceIpcAdapter,
   TaskTemplate,
   TaskTemplateHttpAdapter,
   TaskTemplateIpcAdapter,
-  buildTaskGraphData,
   createTaskClientService,
-  createTaskDependencyHttpAdapter,
-  createTaskDependencyIpcAdapter,
   createTaskHttpAdapters,
   createTaskInstanceHttpAdapter,
   createTaskInstanceIpcAdapter,
   createTaskIpcAdapters,
   createTaskTemplateHttpAdapter,
   createTaskTemplateIpcAdapter,
-  taskInstanceToDAG,
-  taskInstanceToWidget,
-  taskTemplateToDAG,
 };

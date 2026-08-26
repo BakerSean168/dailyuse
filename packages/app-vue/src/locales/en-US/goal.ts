@@ -497,6 +497,8 @@ export default {
     "nameMaxLength": "Name cannot exceed 50 characters"
   },
   "dialog": {
+    "editGoal": "Edit Goal",
+    "feasibility": "Feasibility",
     "titleCreate": "Create goal",
     "titleEdit": "Edit goal",
     "descCreate": "Define a goal with clear outcomes and timing.",
@@ -587,6 +589,8 @@ export default {
     "krTargetInvalid": "Key result target value must be greater than 0."
   },
   "krDialog": {
+    "editTitle": "Edit Key Result",
+    "unit": "Unit",
     "updateTitle": "Update Key Result",
     "createTitle": "Create Key Result",
     "descriptionText": "Create or edit complete key result details.",

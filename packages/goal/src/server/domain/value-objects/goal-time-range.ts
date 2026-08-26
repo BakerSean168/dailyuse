@@ -6,10 +6,7 @@
  */
 
 import { ValueObject } from '@memoflow/utils/domain';
-import type {
-  GoalTimeRange as IGoalTimeRange,
-  GoalTimeRangeDTO,
-} from '@memoflow/contracts/goal';
+import type { GoalTimeRange as IGoalTimeRange, GoalTimeRangeDTO } from '@memoflow/contracts/goal';
 import type { Instant } from '@memoflow/contracts/primitives';
 import { createTimeFacade } from '@memoflow/time';
 
@@ -28,7 +25,7 @@ export class GoalTimeRange extends ValueObject<GoalTimeRangeDTO> implements IGoa
   public static createDefault(startDate?: Instant | null): GoalTimeRange {
     return new GoalTimeRange({
       startDate: startDate ?? null,
-      targetDate: null,
+      dueDate: null,
       completedAt: null,
       archivedAt: null,
     });
@@ -39,18 +36,10 @@ export class GoalTimeRange extends ValueObject<GoalTimeRangeDTO> implements IGoa
   }
 
   private static validate(props: GoalTimeRangeDTO): void {
-    const { startDate, targetDate, completedAt, archivedAt } = props;
+    const { startDate, dueDate } = props;
 
-    if (startDate !== null && targetDate !== null && startDate > targetDate) {
-      throw new Error('Start date must be before or equal to target date');
-    }
-
-    if (targetDate !== null && completedAt !== null && targetDate > completedAt) {
-      throw new Error('Target date must be before or equal to completed date');
-    }
-
-    if (completedAt !== null && archivedAt !== null) {
-      throw new Error('Goal cannot be both completed and archived');
+    if (startDate !== null && dueDate !== null && startDate > dueDate) {
+      throw new Error('Start date must be before or equal to due date');
     }
   }
 
@@ -58,8 +47,8 @@ export class GoalTimeRange extends ValueObject<GoalTimeRangeDTO> implements IGoa
     return this.props.startDate;
   }
 
-  public get targetDate(): Instant | null {
-    return this.props.targetDate;
+  public get dueDate(): Instant | null {
+    return this.props.dueDate;
   }
 
   public get completedAt(): Instant | null {
@@ -76,28 +65,20 @@ export class GoalTimeRange extends ValueObject<GoalTimeRangeDTO> implements IGoa
     return new GoalTimeRange(newProps);
   }
 
-  public setTargetDate(targetDate: Instant | null): GoalTimeRange {
-    const newProps = { ...this.props, targetDate };
+  public setDueDate(dueDate: Instant | null): GoalTimeRange {
+    const newProps = { ...this.props, dueDate };
     GoalTimeRange.validate(newProps);
     return new GoalTimeRange(newProps);
   }
 
   public markAsCompleted(completedAt: Instant = time.now()): GoalTimeRange {
-    const newProps = {
-      ...this.props,
-      completedAt,
-      archivedAt: null,
-    };
+    const newProps = { ...this.props, completedAt };
     GoalTimeRange.validate(newProps);
     return new GoalTimeRange(newProps);
   }
 
   public markAsArchived(archivedAt: Instant = time.now()): GoalTimeRange {
-    const newProps = {
-      ...this.props,
-      archivedAt,
-      completedAt: null,
-    };
+    const newProps = { ...this.props, archivedAt };
     GoalTimeRange.validate(newProps);
     return new GoalTimeRange(newProps);
   }
@@ -118,20 +99,21 @@ export class GoalTimeRange extends ValueObject<GoalTimeRangeDTO> implements IGoa
     return this.props.archivedAt !== null;
   }
 
+  /** Archive is a display/persistence attribute, not a business terminal state. */
   public get isTerminal(): boolean {
-    return this.isCompleted || this.isArchived;
+    return this.isCompleted;
   }
 
   public get isOverdue(): boolean {
-    if (this.props.targetDate === null || this.isCompleted || this.isArchived) {
+    if (this.props.dueDate === null || this.isCompleted || this.isArchived) {
       return false;
     }
-    return time.now() > this.props.targetDate;
+    return time.now() > this.props.dueDate;
   }
 
-  public getDaysToTargetDate(): number | null {
-    if (this.props.targetDate === null) return null;
-    return time.calendar.diffCalendarDays(time.now(), this.props.targetDate as Instant);
+  public getDaysToDueDate(): number | null {
+    if (this.props.dueDate === null) return null;
+    return time.calendar.diffCalendarDays(time.now(), this.props.dueDate as Instant);
   }
 
   public getElapsedDays(): number | null {
@@ -141,9 +123,9 @@ export class GoalTimeRange extends ValueObject<GoalTimeRangeDTO> implements IGoa
   }
 
   public getPlannedDays(): number | null {
-    if (this.props.startDate === null || this.props.targetDate === null) return null;
+    if (this.props.startDate === null || this.props.dueDate === null) return null;
     return time.calendar.diffCalendarDays(
-      this.props.targetDate as Instant,
+      this.props.dueDate as Instant,
       this.props.startDate as Instant,
     );
   }
@@ -151,7 +133,7 @@ export class GoalTimeRange extends ValueObject<GoalTimeRangeDTO> implements IGoa
   public toDTO(): GoalTimeRangeDTO {
     return {
       startDate: this.props.startDate,
-      targetDate: this.props.targetDate,
+      dueDate: this.props.dueDate,
       completedAt: this.props.completedAt,
       archivedAt: this.props.archivedAt,
     };

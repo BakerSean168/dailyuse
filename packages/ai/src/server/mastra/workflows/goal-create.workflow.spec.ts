@@ -37,17 +37,14 @@ const draftContent = GoalPlanDraftContentSchema.parse({
   goal: {
     name: 'Pass JLPT N1',
     description: 'Build a durable study plan.',
-    importance: 'Important',
-    tags: ['japanese'],
     startDate: Date.UTC(2026, 8, 1),
-    targetDate: Date.UTC(2026, 11, 1),
+    dueDate: Date.UTC(2026, 11, 1),
   },
   keyResults: [
     {
       title: 'Complete mock exams',
-      valueType: 'Incremental',
       calculationMethod: 'Sum',
-      startValue: 0,
+      startingValue: 0,
       currentValue: 0,
       targetValue: 8,
       unit: 'exams',
@@ -57,8 +54,7 @@ const draftContent = GoalPlanDraftContentSchema.parse({
   taskTemplates: [
     {
       name: 'Daily study',
-      importance: 'Important',
-      cadence: 'daily',
+        cadence: 'daily',
       keyResultIndex: 0,
       contributionValue: 1,
     },

@@ -68,7 +68,7 @@
                 class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 :class="completeBtnClass(inst.status)"
                 :disabled="
-                  inst.status === 'Skipped' || inst.status === 'Expired' || completing === inst.id
+                  inst.status === 'Skipped' || inst.status === 'Missed' || completing === inst.id
                 "
                 :title="inst.status === 'Completed' ? '撤销完成' : '标记完成'"
                 :aria-label="inst.status === 'Completed' ? '撤销完成' : '标记完成'"
@@ -95,18 +95,18 @@
                 {{ timeLabel(inst) }}
               </span>
 
-              <!-- Status badge (Skipped / Expired) -->
+              <!-- Status badge (Skipped / Missed) -->
               <span
-                v-if="inst.status === 'Skipped' || inst.status === 'Expired'"
+                v-if="inst.status === 'Skipped' || inst.status === 'Missed'"
                 class="shrink-0 rounded px-1 py-0.5 text-[9px] font-medium"
                 :class="{
                   'bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground':
                     inst.status === 'Skipped',
                   'bg-destructive/15 text-destructive dark:bg-destructive/30 dark:text-destructive':
-                    inst.status === 'Expired',
+                    inst.status === 'Missed',
                 }"
               >
-                {{ inst.status === 'Skipped' ? '已跳过' : '已过期' }}
+                {{ inst.status === 'Skipped' ? '已跳过' : '已错过' }}
               </span>
             </div>
           </div>
@@ -188,13 +188,13 @@ const todayInstances = computed<TaskInstanceClientDTO[]>(() => {
   });
 });
 
-// Sort: Pending/InProgress first (by time), then Completed/Skipped/Expired
+// Sort: Pending/InProgress first (by time), then Completed/Skipped/Missed
 const sortedInstances = computed(() => {
   const active = todayInstances.value.filter(
-    (i) => i.status !== 'Completed' && i.status !== 'Skipped' && i.status !== 'Expired',
+    (i) => i.status !== 'Completed' && i.status !== 'Skipped' && i.status !== 'Missed',
   );
   const done = todayInstances.value.filter(
-    (i) => i.status === 'Completed' || i.status === 'Skipped' || i.status === 'Expired',
+    (i) => i.status === 'Completed' || i.status === 'Skipped' || i.status === 'Missed',
   );
   const byTime = (a: TaskInstanceClientDTO, b: TaskInstanceClientDTO) => {
     const ta = a.timeConfig?.timeRange?.start ?? a.timeConfig?.timePoint ?? 0;
@@ -247,7 +247,7 @@ function completeBtnClass(status: string): string {
   if (status === 'Completed') {
     return 'border-emerald-500 bg-emerald-500 cursor-default';
   }
-  if (status === 'Skipped' || status === 'Expired') {
+  if (status === 'Skipped' || status === 'Missed') {
     return 'border-muted-foreground/30 bg-muted cursor-default';
   }
   return 'border-muted-foreground/50 bg-transparent hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 cursor-pointer';
@@ -255,7 +255,7 @@ function completeBtnClass(status: string): string {
 
 // ── Complete handler ──
 async function handleComplete(inst: TaskInstanceClientDTO) {
-  if (completing.value || inst.status === 'Skipped' || inst.status === 'Expired') return;
+  if (completing.value || inst.status === 'Skipped' || inst.status === 'Missed') return;
   completing.value = inst.id;
   try {
     if (inst.status === 'Completed') {

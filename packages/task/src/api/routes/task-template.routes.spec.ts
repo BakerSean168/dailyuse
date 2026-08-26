@@ -29,13 +29,11 @@ function createControllerStub(): TaskTemplateController {
     createTemplate: vi.fn(async () => okResult),
     getTemplate: vi.fn(async () => okResult),
     listTemplates: vi.fn(async () => okResult),
-    getTaskGraph: vi.fn(async () => okResult),
     updateTemplate: vi.fn(async () => okResult),
     deleteTemplate: vi.fn(async () => okResult),
     activateTemplate: vi.fn(async () => okResult),
     pauseTemplate: vi.fn(async () => okResult),
     archiveTemplate: vi.fn(async () => okResult),
-    listByPriority: vi.fn(async () => okResult),
     generateInstances: vi.fn(async () => okResult),
     getInstancesByTemplate: vi.fn(async () => okResult),
     bindToGoal: vi.fn(async () => okResult),
@@ -168,14 +166,6 @@ describe('task-template route contracts', () => {
     expect(querySchema.safeParse({ status: ['active'] }).success).toBe(true);
   });
 
-  it('GET /graph uses TaskTemplateGraphResponseSchema', () => {
-    const registry = new TestOpenApiRegistry();
-    registerAll(registry);
-
-    const route = getRegisteredRoute(registry, 'get', `${BASE}/graph`);
-    const responseSchema = getResponseSchema(route, 200);
-    expect(responseSchema).toBeDefined();
-  });
 
   it('GET /{id} detail uses TaskTemplateResponseSchema', () => {
     const registry = new TestOpenApiRegistry();

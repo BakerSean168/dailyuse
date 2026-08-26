@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RefAllocator, type ExportContext } from '../../portable-runtime';
-import { projectFocusModes, projectGoalRecords } from '../projections/goal.projection';
+import { projectGoalRecords } from '../projections/goal.projection';
 import { projectReminderResponses } from '../projections/reminder.projection';
 import { projectResources } from '../projections/repository.projection';
 import { projectTaskInstances } from '../projections/task.projection';
@@ -16,25 +16,7 @@ function createExportContext(refs: Record<string, string> = {}): ExportContext {
 }
 
 describe('projection ref safety', () => {
-  it('drops unresolved focus mode goal refs instead of leaking database ids', () => {
-    const ctx = createExportContext();
 
-    const projected = projectFocusModes(
-      [
-        {
-          id: 'focus-mode-db-id',
-          focusedGoalIds: ['goal-db-id'],
-          startTime: '2026-06-03T00:00:00.000Z',
-          endTime: '2026-06-03T01:00:00.000Z',
-        },
-      ],
-      ctx,
-    );
-
-    expect(projected[0]?.focusedGoalRefs).toEqual([]);
-    expect(JSON.stringify(projected)).not.toContain('goal-db-id');
-    expect(ctx.warnings).toContain('Unresolved goal reference to goal-db-id');
-  });
 
   it('fails export when a goal record requires an unresolved key result ref', () => {
     const ctx = createExportContext();
@@ -44,7 +26,7 @@ describe('projection ref safety', () => {
         [{ id: 'record-db-id', keyResultId: 'missing-key-result', value: 1 }],
         ctx,
       ),
-    ).toThrow('EXPORT_VALIDATION_ERROR: Unresolved goal reference to missing-key-result');
+    ).toThrow('EXPORT_VALIDATION_ERROR: Unresolved goal record reference to missing-key-result');
   });
 
   it('fails export when a task instance requires an unresolved template ref', () => {

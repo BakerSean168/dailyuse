@@ -16,12 +16,10 @@ import type { ScheduleNotificationPort } from '../../schedule-execution';
 import type {
   INotificationRepository,
   INotificationPreferenceRepository,
-  INotificationTemplateRepository,
 } from '../domain/repositories';
 
 export interface CreateNotificationScheduleNotificationPortDeps {
   readonly notificationRepository: INotificationRepository;
-  readonly notificationTemplateRepository: INotificationTemplateRepository;
   readonly notificationPreferenceRepository: INotificationPreferenceRepository;
   readonly closureChecker: (identityId: string) => Promise<boolean>;
 }
@@ -43,7 +41,6 @@ export function createNotificationScheduleNotificationPort(
   }
   const createNotification = new CreateNotificationUseCase(
     deps.notificationRepository,
-    deps.notificationTemplateRepository,
     deps.notificationPreferenceRepository,
     deps.closureChecker,
   );

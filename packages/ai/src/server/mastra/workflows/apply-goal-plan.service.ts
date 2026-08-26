@@ -198,8 +198,10 @@ function taskRequest(
           goalId: input.goalId as NonNullable<NonNullable<CreateTaskTemplateReq['goalBinding']>['goalId']>,
           keyResultId:
             keyResultId as NonNullable<NonNullable<CreateTaskTemplateReq['goalBinding']>['keyResultId']>,
-          goalRecordValue: task.contributionValue,
-          progressTrigger: TaskGoalBindingTrigger.PerInstance,
+          contribution: {
+            value: task.contributionValue,
+            trigger: TaskGoalBindingTrigger.EachCompletion,
+          },
         }
       : null,
   };
@@ -325,20 +327,17 @@ export class ApplyGoalPlanService {
         description: draft.goal.description,
         motivation: draft.goal.motivation,
         feasibilityAnalysis: draft.goal.feasibilityAnalysis,
-        category: draft.goal.category,
-        importance: draft.goal.importance,
-        tags: draft.goal.tags,
         startDate: draft.goal.startDate ?? undefined,
-        targetDate: draft.goal.targetDate ?? undefined,
+        dueDate: draft.goal.dueDate ?? undefined,
         initialKeyResults: draft.keyResults.map((keyResult, index) => ({
           id: expectedKeyResultIds[index] as NonNullable<
             NonNullable<CreateGoalReq['initialKeyResults']>[number]['id']
           >,
           title: keyResult.title,
           description: keyResult.description,
-          valueType: keyResult.valueType,
           calculationMethod: keyResult.calculationMethod,
-          startValue: keyResult.startValue,
+          startingValue: keyResult.startingValue,
+          progressBaselineValue: keyResult.progressBaselineValue,
           currentValue: keyResult.currentValue,
           targetValue: keyResult.targetValue,
           unit: keyResult.unit,

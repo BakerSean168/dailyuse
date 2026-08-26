@@ -21,8 +21,8 @@ export class ListGoalsUseCase {
     const goals = await this.goalRepository.findByIdentityId(input.identityId, {
       includeChildren: input.includeKeyResults,
       status: input.status?.[0],
-      folderId: input.folderId,
       systemView: input.systemView,
+      labelIdsAll: input.labelIdsAll,
     });
 
     const normalizedQuery = input.query?.trim().toLowerCase();

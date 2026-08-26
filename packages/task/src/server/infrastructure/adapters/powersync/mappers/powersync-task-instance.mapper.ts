@@ -14,7 +14,6 @@ export type PowerSyncTaskInstanceRow = {
   occurrence_key: string | null; // R2-1 幂等键
   status: string;
   importance: string | null;
-  priority: number | null;
   time_config: string;
   actual_start_time: string | null;
   actual_end_time: string | null;
@@ -35,7 +34,6 @@ export class PowerSyncTaskInstanceMapper {
       occurrenceKey: data.occurrence_key ?? null,
       timeConfig: TaskTimeConfig.fromDTO(JSON.parse(data.time_config || '{}')),
       importance: toImportanceLevel(data.importance),
-      priority: data.priority ?? undefined,
       status: data.status as TaskInstanceStatus,
       completionRecord: null,
       skipRecord: null,
@@ -59,7 +57,6 @@ export class PowerSyncTaskInstanceMapper {
       occurrenceKey: instance.occurrenceKey,
       status: dto.status,
       importance: dto.importance,
-      priority: dto.priority ?? null,
       timeConfig: JSON.stringify(dto.timeConfig),
       actualStartTime:
         dto.actualStartTime != null ? new Date(dto.actualStartTime).toISOString() : null,

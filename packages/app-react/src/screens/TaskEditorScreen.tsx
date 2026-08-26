@@ -174,8 +174,6 @@ export function TaskEditorScreen() {
       reminderConfig: null,
       color: null,
       goalBinding: null,
-      folderId: null,
-      parentTaskId: null,
     };
 
     const result = await service.createTemplate(request);

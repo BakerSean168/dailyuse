@@ -6,17 +6,13 @@ import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-
 import { aLoadedTaskTemplate } from '../../../../../testing';
 import { TaskTemplateStatus } from '@memoflow/contracts/task';
 import { InvalidTaskTemplateStateError } from '../../../../domain/value-objects/task-errors';
-import { CheckExpiredInstancesUseCase } from '../check-expired-instances.use-case';
 import { GenerateTaskInstancesUseCase } from '../generate-task-instances.use-case';
+import { MarkTaskInstanceMissedUseCase } from '../mark-task-instance-missed.use-case';
 import { createInlineTaskWriteTransactionRunner } from '../task-write-support';
 
-const mockMarkExpiredInstances = vi.fn();
 const mockGenerateInstances = vi.fn();
 vi.mock('../../../../domain/services', () => {
   return {
-    TaskExpirationService: class {
-      markExpiredInstances = mockMarkExpiredInstances;
-    },
     TaskInstanceGenerationService: class {
       generateInstances = mockGenerateInstances;
     },
@@ -48,36 +44,33 @@ describe('Instance maintenance use-cases', () => {
 
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
       findByIdentityId: vi.fn().mockResolvedValue([]),
+      findByTemplateId: vi.fn().mockResolvedValue([]),
       saveMany: vi.fn().mockResolvedValue(undefined),
     });
   });
 
-  describe('CheckExpiredInstancesUseCase', () => {
-    it('returns expired DTO list and saves when there are expired instances', async () => {
-      const sourceInstances = [{ id: 'i-source' } as any];
-      const expired = [{ toClientDTO: vi.fn().mockReturnValue({ id: 'i-expired' }) } as any];
-      vi.mocked(instanceRepo.findByIdentityId).mockResolvedValue(sourceInstances as any);
-      mockMarkExpiredInstances.mockReturnValue(expired);
+  describe('MarkTaskInstanceMissedUseCase', () => {
+    it('persists Missed only after an explicit command', async () => {
+      const instance = {
+        canMarkMissed: vi.fn().mockReturnValue(true),
+        markMissed: vi.fn(),
+        toClientDTO: vi.fn().mockReturnValue({ id: 'i-1', status: 'Missed' }),
+      } as any;
+      vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
+      vi.mocked(instanceRepo.save).mockResolvedValue(undefined);
 
-      const useCase = new CheckExpiredInstancesUseCase(instanceRepo);
-      const result = await useCase.execute('identity-1');
+      const result = await new MarkTaskInstanceMissedUseCase(
+        instanceRepo,
+        createInlineTaskWriteTransactionRunner({ instanceRepository: instanceRepo }),
+      ).execute(
+        'i-1',
+        'identity-1',
+        { reason: 'No completion evidence' },
+      );
 
-      expect(result).toBeOk();
-      expect(instanceRepo.findByIdentityId).toHaveBeenCalledWith('identity-1');
-      expect(mockMarkExpiredInstances).toHaveBeenCalledWith(sourceInstances);
-      expect(instanceRepo.saveMany).toHaveBeenCalledWith(expired);
-      expect(result).toBeOkWith([{ id: 'i-expired' }] as any);
-    });
-
-    it('does not persist when no expired instances are found', async () => {
-      vi.mocked(instanceRepo.findByIdentityId).mockResolvedValue([{ id: 'i1' } as any]);
-      mockMarkExpiredInstances.mockReturnValue([]);
-
-      const useCase = new CheckExpiredInstancesUseCase(instanceRepo);
-      const result = await useCase.execute('identity-1');
-
-      expect(result).toBeOkWith([] as any);
-      expect(instanceRepo.saveMany).not.toHaveBeenCalled();
+      expect(instance.markMissed).toHaveBeenCalledWith('No completion evidence');
+      expect(instanceRepo.save).toHaveBeenCalledWith(instance);
+      expect(result).toBeOkWith({ instance: { id: 'i-1', status: 'Missed' } } as any);
     });
   });
 

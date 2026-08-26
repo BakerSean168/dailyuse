@@ -114,25 +114,17 @@ export class ListGoalRecordsUseCase {
 
       const progressTemplate = KeyResultProgress.fromDTO({
         ...keyResult.progress,
-        currentValue: keyResult.progress.initialValue,
+        currentValue: keyResult.progress.startingValue,
       });
       const history: number[] = [];
       const sorted = [...group].sort(
         (a, b) =>
-          Number(a.createdAt) - Number(b.createdAt) ||
-          String(a.id).localeCompare(String(b.id)),
+          Number(a.createdAt) - Number(b.createdAt) || String(a.id).localeCompare(String(b.id)),
       );
-      const fullHistory = sorted.map((record) => record.value);
-      const finalHistoryValue = progressTemplate.recalculateFromHistory(fullHistory).currentValue;
-      const historyOffset =
-        keyResult.progress.aggregationMethod === 'Sum'
-          ? keyResult.progress.currentValue - finalHistoryValue
-          : 0;
-
       for (const record of sorted) {
         history.push(record.value);
         const calculated = progressTemplate.recalculateFromHistory(history).currentValue;
-        result.set(String(record.id), calculated + historyOffset);
+        result.set(String(record.id), calculated);
       }
     }
 

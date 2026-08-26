@@ -27,11 +27,10 @@ export interface UpsertUserSettingInput {
 export interface UpsertNotificationPreferenceInput {
   id: string;
   identityId: string;
-  channels: string;
-  categories: string;
+  globalChannels: string;
+  workflowOverrides: string;
   doNotDisturb: string | null;
   rateLimit: string | null;
-  enabled: boolean;
 }
 
 export interface UpsertUserReminderPreferenceInput {
@@ -84,37 +83,18 @@ export interface CreateResourceInput extends TimestampedImportInput {
 
 // --- Goal ---
 
-export interface CreateGoalFolderInput extends TimestampedImportInput {
-  id: string;
-  identityId: string;
-  name: string;
-  description: string | null;
-  icon: string | null;
-  color: string | null;
-  parentFolderId: string | null;
-  sortOrder: number;
-  isSystemFolder: boolean;
-  folderType: string | null;
-}
-
 export interface CreateGoalInput extends TimestampedImportInput {
   id: string;
   identityId: string;
   name: string;
   description: string | null;
-  color: string;
   feasibilityAnalysis: string | null;
   motivation: string | null;
   status: string;
-  importance: string;
-  priority: number;
-  category: string | null;
-  tags: string[];
   startDate: string | null;
-  targetDate: string | null;
+  dueDate: string | null;
   completedAt: string | null;
-  folderId: string | null;
-  parentGoalId: string | null;
+  archivedAt: string | null;
   sortOrder: number;
   reminderConfig: string | null;
 }
@@ -125,9 +105,9 @@ export interface CreateKeyResultInput extends TimestampedImportInput {
   goalId: string;
   title: string;
   description: string | null;
-  valueType: string;
   aggregationMethod: string;
-  initialValue: number;
+  startingValue: number;
+  progressBaselineValue: number | null;
   targetValue: number;
   currentValue: number;
   unit: string | null;
@@ -139,13 +119,11 @@ export interface CreateGoalReviewInput extends TimestampedImportInput {
   id: string;
   identityId: string;
   goalId: string;
-  reviewType: string;
-  rating: number | null;
-  content: string;
-  achievements: string | null;
+  reflection: string;
   challenges: string | null;
-  lessonsLearned: string | null;
-  nextSteps: string | null;
+  adjustments: string | null;
+  systemContext: string;
+  reviewedAt: string;
 }
 
 export interface CreateGoalRecordInput extends TimestampedImportInput {
@@ -154,44 +132,12 @@ export interface CreateGoalRecordInput extends TimestampedImportInput {
   keyResultId: string;
   value: number;
   note: string | null;
+  sourceType: string | null;
+  sourceId: string | null;
   recordedAt: string;
 }
 
-export interface CreateFocusSessionInput extends TimestampedImportInput {
-  id: string;
-  identityId: string;
-  goalId: string | null;
-  status: string;
-  durationMinutes: number;
-  actualDurationMinutes: number;
-  description: string | null;
-  startedAt: string | null;
-  completedAt: string | null;
-  pauseCount: number;
-  pausedDurationMinutes: number;
-}
-
-export interface CreateFocusModeInput extends TimestampedImportInput {
-  id: string;
-  identityId: string;
-  focusedGoalIds: string[];
-  hiddenGoalsMode: string;
-  startTime: string;
-  endTime: string;
-  actualEndTime: string | null;
-  isActive: boolean;
-}
-
 // --- Task ---
-
-export interface CreateTaskFolderInput extends TimestampedImportInput {
-  id: string;
-  identityId: string;
-  name: string;
-  color: string | null;
-  icon: string | null;
-  order: number;
-}
 
 export interface CreateTaskTemplateInput extends TimestampedImportInput {
   id: string;
@@ -199,11 +145,14 @@ export interface CreateTaskTemplateInput extends TimestampedImportInput {
   name: string;
   description: string | null;
   status: string;
+  outcome: string;
+  completionPolicy: string;
+  closedAt: string | null;
+  archivedAt: string | null;
+  abandonedReason: string | null;
   importance: string;
   color: string | null;
   tags: string;
-  folderId: string | null;
-  parentTaskId: string | null;
   timeConfigType: string | null;
   timeConfigStartTime: string | null;
   timeConfigEndTime: string | null;
@@ -214,21 +163,19 @@ export interface CreateTaskTemplateInput extends TimestampedImportInput {
   recurrenceRuleType: string | null;
   recurrenceRuleInterval: number | null;
   recurrenceRuleDaysOfWeek: string | null;
-  recurrenceRuleDayOfMonth: number | null;
-  recurrenceRuleMonthOfYear: number | null;
   recurrenceRuleEndDate: string | null;
   recurrenceRuleCount: number | null;
   reminderConfigEnabled: boolean | null;
   reminderConfigTimeOffsetMinutes: number | null;
   reminderConfigUnit: string | null;
   reminderConfigChannel: string | null;
+  lastGeneratedDate: string | null;
+  generateAheadDays: number | null;
   goalId: string | null;
   keyResultId: string | null;
   goalRecordValue: number | null;
   goalProgressTrigger: string | null;
   checklist: string | null;
-  dependencyStatus: string;
-  isBlocked: boolean;
 }
 
 export interface CreateTaskInstanceInput extends TimestampedImportInput {
@@ -236,21 +183,13 @@ export interface CreateTaskInstanceInput extends TimestampedImportInput {
   templateId: string;
   identityId: string;
   instanceDate: string;
+  occurrenceKey: string | null;
   status: string;
   importance: string;
   timeConfig: string;
   actualStartTime: string | null;
   actualEndTime: string | null;
   comment: string | null;
-}
-
-export interface CreateTaskDependencyInput extends TimestampedImportInput {
-  id: string;
-  identityId: string;
-  predecessorTaskId: string;
-  successorTaskId: string;
-  dependencyType: string;
-  lagDays: number | null;
 }
 
 // --- Schedule ---
@@ -425,19 +364,14 @@ export interface DataPortabilityImportTx {
   createResource(input: CreateResourceInput): Promise<void>;
 
   // Goal
-  createGoalFolder(input: CreateGoalFolderInput): Promise<void>;
   createGoal(input: CreateGoalInput): Promise<void>;
   createKeyResult(input: CreateKeyResultInput): Promise<void>;
   createGoalReview(input: CreateGoalReviewInput): Promise<void>;
   createGoalRecord(input: CreateGoalRecordInput): Promise<void>;
-  createFocusSession(input: CreateFocusSessionInput): Promise<void>;
-  createFocusMode(input: CreateFocusModeInput): Promise<void>;
 
   // Task
-  createTaskFolder(input: CreateTaskFolderInput): Promise<void>;
   createTaskTemplate(input: CreateTaskTemplateInput): Promise<void>;
   createTaskInstance(input: CreateTaskInstanceInput): Promise<void>;
-  createTaskDependency(input: CreateTaskDependencyInput): Promise<void>;
 
   // Schedule
   createSchedule(input: CreateScheduleInput): Promise<void>;

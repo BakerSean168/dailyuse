@@ -3,14 +3,11 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 1225: parseDateInput keep-boundary (vue task product-time vs react goal trim+Date.parse).
- * - app-vue TimeConfigSection: falsy empty → null; product-time parseDateValue + startOfYmd (no trim/NaN)
- * - app-react GoalEditorScreen: trim; empty → null; Date.parse; isNaN → null
- * Soft residual 1210: formatDateToInput dual-retired onto product-time remains separate.
- * Soft residual 1222: getStatusLabel keep-boundary remains separate.
- * Does not flip §13.2 checkboxes.
+ * Residual 1225 closed: Goal/Task date inputs converge on Product Time.
+ * UI strings are parsed as Ymd and converted to Instant through startOfYmd;
+ * direct Date.parse/new Date calendar conversion must not return.
  */
-describe('parseDateInput keep-boundary (residual 1225)', () => {
+describe('date input Product Time boundary (residual 1225)', () => {
   const dir = __dirname;
   const vue = readFileSync(
     resolve(
@@ -24,78 +21,42 @@ describe('parseDateInput keep-boundary (residual 1225)', () => {
     'utf8',
   );
 
-  it('owns Residual 1225 keep-boundary markers on app-vue task parseDateInput', () => {
-    expect(vue).toContain('Residual 1225 keep-boundary');
+  it('keeps app-vue Task date parsing on Product Time', () => {
     expect(vue).toMatch(/const parseDateInput\b/);
-    // ADR-037: YMD → Instant via product-time (no local Date/getTime dual)
     expect(vue).toContain('getProductTime');
     expect(vue).toContain('parseDateValue');
     expect(vue).toContain('startOfYmd');
     const body = vue.match(/const parseDateInput = \([\s\S]*?\n\};/)?.[0] ?? '';
-    expect(body).toContain('if (!dateStr)');
-    expect(body).toContain('getProductTime()');
-    expect(body).toContain('parseDateValue');
-    expect(body).not.toContain('.trim()');
     expect(body).not.toContain('Date.parse');
-    expect(body).not.toContain('Number.isNaN');
+    expect(body).not.toContain('new Date(');
+    expect(body).not.toContain('.getTime()');
   });
 
-  it('differs from app-react goal parseDateInput trim+Date.parse (no force-merge)', () => {
-    expect(react).toContain('Residual 1225 keep-boundary');
+  it('keeps app-react Goal date parsing on the same Product Time boundary', () => {
     expect(react).toMatch(/function parseDateInput\b/);
-    expect(react).toContain('Soft residual 1225');
-    expect(react).toContain('.trim()');
-    expect(react).toContain('Date.parse');
-    expect(react).toContain('Number.isNaN');
+    expect(react).toContain('getProductTime');
+    expect(react).toContain('parseDateValue');
+    expect(react).toContain('startOfYmd');
     const body = react.match(/function parseDateInput\([\s\S]*?\n\}/)?.[0] ?? '';
-    expect(body).toContain('normalized');
-    expect(body).toContain('Date.parse');
-    expect(body).not.toContain('getTime()');
-    expect(body).not.toContain("dateStr + 'T00:00:00'");
+    expect(body).not.toContain('Date.parse');
+    expect(body).not.toContain('new Date(');
+    expect(body).not.toContain('.getTime()');
   });
 
-  it('runtime: documents falsy getTime vs trim Date.parse contracts via body shape', () => {
-    function vueParseDateInput(dateStr: string): number | null {
-      if (!dateStr) return null;
-      return new Date(dateStr + 'T00:00:00').getTime();
-    }
-    function reactParseDateInput(value: string): number | null {
-      const normalized = value.trim();
-      if (normalized.length === 0) {
-        return null;
-      }
-      const timestamp = Date.parse(`${normalized}T00:00:00`);
-      return Number.isNaN(timestamp) ? null : timestamp;
-    }
-    expect(vueParseDateInput('')).toBeNull();
-    expect(reactParseDateInput('')).toBeNull();
-    expect(reactParseDateInput('   ')).toBeNull();
-    // whitespace-only is truthy in vue path → Date parse of '   T00:00:00' → NaN number
-    expect(Number.isNaN(vueParseDateInput('   ') as number)).toBe(true);
-    const ymd = '2026-07-24';
-    const vueTs = vueParseDateInput(ymd);
-    const reactTs = reactParseDateInput(ymd);
-    expect(typeof vueTs).toBe('number');
-    expect(typeof reactTs).toBe('number');
-    expect(vueTs).toBe(reactTs);
-    expect(reactParseDateInput('not-a-date')).toBeNull();
-    expect(Number.isNaN(vueParseDateInput('not-a-date') as number)).toBe(true);
-  });
-
-  it('soft residual 1210 formatDateToInput dual-retired onto product-time on same vue surface', () => {
-    expect(vue).toContain('Residual 1210');
+  it('keeps date formatting on Product Time too', () => {
     expect(vue).toMatch(/const formatDateToInput\b/);
-    expect(vue).toContain('getProductTime');
     expect(vue).toContain('dateValue');
+    expect(react).toMatch(/function toDateInput\b/);
+    expect(react).toContain('input.dateValue');
   });
 
-  it('documents residual 1225 lock intent without claiming §13.2 complete', () => {
+  it('documents the anti-resurrection boundary', () => {
     const self = readFileSync(
       resolve(dir, 'parse-date-input-keep-boundary.surface.spec.ts'),
       'utf8',
     );
-    expect(self).toContain('Residual 1225');
-    expect(self).toContain('Does not flip §13.2 checkboxes');
-    expect(self).toContain('keep-boundary');
+    expect(self).toContain('Residual 1225 closed');
+    expect(self).toContain('Product Time');
+    expect(self).toContain('direct Date.parse/new Date calendar conversion must not return');
   });
 });

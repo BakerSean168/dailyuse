@@ -8,15 +8,12 @@
 import type { IResultHttpClient } from '@memoflow/http-client';
 import { TaskTemplateHttpAdapter } from './task-template-http.adapter';
 import { TaskInstanceHttpAdapter } from './task-instance-http.adapter';
-import { TaskDependencyHttpAdapter } from './task-dependency-http.adapter';
 
 // Re-export adapters
 export { TaskTemplateHttpAdapter } from './task-template-http.adapter';
 export { TaskInstanceHttpAdapter } from './task-instance-http.adapter';
-export { TaskDependencyHttpAdapter } from './task-dependency-http.adapter';
 export { createTaskTemplateHttpAdapter } from './task-template-http.adapter';
 export { createTaskInstanceHttpAdapter } from './task-instance-http.adapter';
-export { createTaskDependencyHttpAdapter } from './task-dependency-http.adapter';
 
 /**
  * All HTTP adapters for the Task module
@@ -24,7 +21,6 @@ export { createTaskDependencyHttpAdapter } from './task-dependency-http.adapter'
 export interface TaskHttpAdapters {
   template: TaskTemplateHttpAdapter;
   instance: TaskInstanceHttpAdapter;
-  dependency: TaskDependencyHttpAdapter;
 }
 
 /**
@@ -43,6 +39,5 @@ export function createTaskHttpAdapters(httpClient: IResultHttpClient): TaskHttpA
   return {
     template: new TaskTemplateHttpAdapter(httpClient),
     instance: new TaskInstanceHttpAdapter(httpClient),
-    dependency: new TaskDependencyHttpAdapter(httpClient),
   };
 }

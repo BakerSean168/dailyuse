@@ -34,18 +34,15 @@ describe('mapImportanceToTaskPriority dual retired (residual 1168)', () => {
     expect(voIndex).toContain('mapImportanceToTaskPriority');
   });
 
-  it('retires Goal/Task dual mapPriority bodies onto sole import', () => {
-    for (const [label, source] of [
-      ['goal', goal],
-      ['task', task],
-    ] as const) {
-      expect(source, label).toContain('mapImportanceToTaskPriority');
-      expect(source, label).toContain("from '@memoflow/contracts/schedule'");
-      expect(source, label).not.toMatch(/function mapPriority\b/);
-      expect(source, label).toContain('Soft residual 1168');
-    }
-    expect(goal).toContain('mapImportanceToTaskPriority(goalDTO.importance)');
+  it('keeps Task importance mapping while Goal no longer owns a business priority field', () => {
+    expect(task).toContain('mapImportanceToTaskPriority');
+    expect(task).toContain("from '@memoflow/contracts/schedule'");
+    expect(task).not.toMatch(/function mapPriority\b/);
     expect(task).toContain('mapImportanceToTaskPriority(templateDTO.importance)');
+
+    expect(goal).not.toContain('mapImportanceToTaskPriority');
+    expect(goal).not.toContain('goalDTO.importance');
+    expect(goal).toContain('priority: TaskPriority.Normal');
   });
 
   it('runtime: maps importance strings to TaskPriority', () => {

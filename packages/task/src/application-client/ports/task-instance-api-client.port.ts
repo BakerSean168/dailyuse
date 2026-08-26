@@ -7,10 +7,10 @@
 
 import type { Result } from '@memoflow/contracts/result';
 import type {
-  CheckExpiredTaskInstancesRes,
   GetTaskInstancesByRangeReq,
   TaskInstanceClientDTO,
   CompleteTaskInstanceReq,
+  MarkTaskInstanceMissedReq,
   SkipTaskInstanceReq,
 } from '@memoflow/contracts/task';
 
@@ -36,5 +36,8 @@ export interface ITaskInstanceApiClient {
     id: string,
     request?: SkipTaskInstanceReq,
   ): Promise<Result<TaskInstanceClientDTO>>;
-  checkExpiredInstances(): Promise<Result<CheckExpiredTaskInstancesRes>>;
+  markTaskInstanceMissed(
+    id: string,
+    request?: MarkTaskInstanceMissedReq,
+  ): Promise<Result<TaskInstanceClientDTO>>;
 }

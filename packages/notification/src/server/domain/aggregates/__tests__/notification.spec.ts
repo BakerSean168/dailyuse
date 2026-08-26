@@ -1,443 +1,165 @@
-import { describe, it, expect } from 'vitest';
-import { Notification } from '../notification';
-import { NotificationChannel } from '../../entities/notification-channel';
+import { describe, expect, it } from 'vitest';
 import {
-  NotificationStatus,
-  NotificationType,
   NotificationCategory,
   NotificationChannelType,
+  NotificationType,
 } from '@memoflow/contracts/notification';
-import { ImportanceLevel } from '@memoflow/contracts/shared';
+import { Notification } from '../notification';
+import { NotificationChannel } from '../../entities/notification-channel';
 
-describe('Notification Aggregate Root', () => {
-  const testIdentityId = 'test-identity-123';
+function createFact() {
+  return Notification.create({
+    identityId: 'identity-1' as never,
+    workflowKey: 'task.deadline',
+    topic: 'task.deadline',
+    idempotencyKey: 'task:1:deadline',
+    title: 'Deadline',
+    content: 'Task is due soon',
+    type: NotificationType.Reminder,
+    category: NotificationCategory.Task,
+    relatedEntityId: 'task-1',
+    navigationIntent: { route: '/tasks/task-1' },
+    correlationId: 'corr-1',
+    causationId: 'cause-1',
+  });
+}
 
-  function aNotification(overrides: Partial<Parameters<typeof Notification.create>[0]> = {}) {
-    return Notification.create({
-      identityId: testIdentityId,
-      title: 'Test Notification',
-      content: 'Test notification content',
-      type: NotificationType.Info,
-      category: NotificationCategory.System,
-      ...overrides,
-    });
-  }
-
-  describe('create()', () => {
-    it('should create a notification with Pending status', () => {
-      const notification = aNotification();
-
-      expect(notification.id).toBeTruthy();
-      expect(notification.identityId).toBe(testIdentityId);
-      expect(notification.title).toBe('Test Notification');
-      expect(notification.content).toBe('Test notification content');
-      expect(notification.type).toBe(NotificationType.Info);
-      expect(notification.category).toBe(NotificationCategory.System);
-      expect(notification.status).toBe(NotificationStatus.Pending);
-      expect(notification.isRead).toBe(false);
-      expect(notification.readAt).toBeNull();
-      expect(notification.version).toBe(1);
-      expect(notification.deletedAt).toBeNull();
-    });
-
-    it('should use Moderate importance by default', () => {
-      const notification = aNotification();
-
-      expect(notification.importance).toBe('Moderate');
-    });
-
-    it('should accept a custom importance level', () => {
-      const notification = aNotification({ importance: ImportanceLevel.Vital });
-
-      expect(notification.importance).toBe(ImportanceLevel.Vital);
-    });
-
-    it('should set createdAt and updatedAt to the same date', () => {
-      const notification = aNotification();
-
-      expect(notification.createdAt).toBeInstanceOf(Date);
-      expect(notification.updatedAt).toBeInstanceOf(Date);
-      expect(notification.createdAt.getTime()).toBe(notification.updatedAt.getTime());
-    });
-
-    it('should start with no channels', () => {
-      const notification = aNotification();
-
-      expect(notification.notificationChannels).toBeNull();
-    });
-
-    it('should set actions to null when not provided', () => {
-      const notification = aNotification();
-
-      expect(notification.actions).toBeNull();
-    });
-
-    it('should set metadata to null when not provided', () => {
-      const notification = aNotification();
-
-      expect(notification.metadata).toBeNull();
-    });
-
-    it('should emit notification:create domain event', () => {
-      const notification = aNotification();
-
-      expect(notification.domainEvents).toHaveLength(1);
-      expect(notification.domainEvents[0].eventType).toBe('notification:created');
-      expect(notification.domainEvents[0].payload.notificationId).toBe(String(notification.id));
-      expect(notification.domainEvents[0].payload.notification.title).toBe(notification.title);
-    });
+describe('Notification Fact aggregate', () => {
+  it('creates an unread user-visible Fact with stable business identity', () => {
+    const fact = createFact();
+    expect(fact.workflowKey).toBe('task.deadline');
+    expect(fact.topic).toBe('task.deadline');
+    expect(fact.idempotencyKey).toBe('task:1:deadline');
+    expect(fact.isRead).toBe(false);
+    expect(fact.readAt).toBeNull();
+    expect(fact.toServerDTO()).not.toHaveProperty('status');
   });
 
-  describe('send()', () => {
-    it('should transition from Pending to Sent', async () => {
-      const notification = aNotification();
-
-      await notification.send();
-
-      expect(notification.status).toBe(NotificationStatus.Sent);
-    });
-
-    it('should throw when sending a non-Pending notification', async () => {
-      const notification = aNotification();
-      await notification.send();
-
-      expect(() => notification.send()).toThrow();
-    });
-
-    it('should update updatedAt after sending', async () => {
-      const notification = aNotification();
-      const before = notification.updatedAt;
-
-      await notification.send();
-
-      expect(notification.updatedAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
-    });
-
-    it('should emit sent and status-change events', async () => {
-      const notification = aNotification();
-      notification.clearDomainEvents();
-
-      await notification.send();
-
-      expect(notification.domainEvents.map((event) => event.eventType)).toEqual([
-        'notification:sent',
-        'notification:status-changed',
-      ]);
-    });
+  it('emits a created event for the Fact without introducing delivery state', () => {
+    const fact = createFact();
+    expect(fact.domainEvents.map((event) => event.eventType)).toContain('notification:created');
+    expect(fact.domainEvents.map((event) => event.eventType)).not.toContain('notification:sent');
+    expect(fact.domainEvents.map((event) => event.eventType)).not.toContain('notification:status-changed');
   });
 
-  describe('markAsDelivered()', () => {
-    it('should transition from Sent to Delivered', async () => {
-      const notification = aNotification();
-      await notification.send();
-
-      notification.markAsDelivered();
-
-      expect(notification.status).toBe(NotificationStatus.Delivered);
-    });
-
-    it('should throw when not in Sent status', () => {
-      const notification = aNotification();
-
-      expect(() => notification.markAsDelivered()).toThrow();
-    });
-
-    it('should throw when already Delivered', async () => {
-      const notification = aNotification();
-      await notification.send();
-      notification.markAsDelivered();
-
-      expect(() => notification.markAsDelivered()).toThrow();
-    });
+  it('marks read as Fact presentation state only', () => {
+    const fact = createFact();
+    fact.clearDomainEvents();
+    fact.markAsRead();
+    expect(fact.isRead).toBe(true);
+    expect(fact.readAt).toEqual(expect.any(Number));
+    expect(fact.domainEvents.map((event) => event.eventType)).toEqual(['notification:read']);
+    expect(fact.toServerDTO()).not.toHaveProperty('status');
   });
 
-  describe('markAsRead()', () => {
-    it('should set isRead to true and status to Read', async () => {
-      const notification = aNotification();
-      await notification.send();
-      notification.markAsDelivered();
-
-      notification.markAsRead();
-
-      expect(notification.isRead).toBe(true);
-      expect(notification.readAt).toBeTruthy();
-      expect(notification.status).toBe(NotificationStatus.Read);
-    });
-
-    it('should be idempotent when already read', async () => {
-      const notification = aNotification();
-      await notification.send();
-      notification.markAsDelivered();
-      notification.markAsRead();
-      const firstReadAt = notification.readAt;
-
-      notification.markAsRead();
-
-      expect(notification.readAt).toBe(firstReadAt);
-      expect(notification.isRead).toBe(true);
-    });
-
-    it('should set readAt timestamp', async () => {
-      const notification = aNotification();
-      await notification.send();
-      notification.markAsDelivered();
-
-      notification.markAsRead();
-
-      expect(typeof notification.readAt).toBe('number');
-      expect(notification.readAt).toBeGreaterThan(0);
-    });
-
-    it('should emit read and status-change events', async () => {
-      const notification = aNotification();
-      await notification.send();
-      notification.markAsDelivered();
-      notification.clearDomainEvents();
-
-      notification.markAsRead();
-
-      expect(notification.domainEvents.map((event) => event.eventType)).toEqual([
-        'notification:read',
-        'notification:status-changed',
-      ]);
-    });
+  it('markAsRead is idempotent', () => {
+    const fact = createFact();
+    fact.clearDomainEvents();
+    fact.markAsRead();
+    const firstReadAt = fact.readAt;
+    fact.markAsRead();
+    expect(fact.readAt).toBe(firstReadAt);
+    expect(fact.domainEvents).toHaveLength(1);
   });
 
-  describe('markAsUnread()', () => {
-    it('should set isRead to false and status to Delivered', async () => {
-      const notification = aNotification();
-      await notification.send();
-      notification.markAsDelivered();
-      notification.markAsRead();
-
-      notification.markAsUnread();
-
-      expect(notification.isRead).toBe(false);
-      expect(notification.readAt).toBeNull();
-      expect(notification.status).toBe(NotificationStatus.Delivered);
-    });
-
-    it('should be idempotent when already unread', () => {
-      const notification = aNotification();
-
-      notification.markAsUnread();
-
-      expect(notification.isRead).toBe(false);
-    });
+  it('marks unread without fabricating a delivery outcome', () => {
+    const fact = createFact();
+    fact.markAsRead();
+    fact.markAsUnread();
+    expect(fact.isRead).toBe(false);
+    expect(fact.readAt).toBeNull();
+    expect(fact.toServerDTO()).not.toHaveProperty('status');
   });
 
-  describe('cancel()', () => {
-    it('should transition Pending to Cancelled', () => {
-      const notification = aNotification();
-
-      notification.cancel();
-
-      expect(notification.status).toBe(NotificationStatus.Cancelled);
+  it('updates only Fact-owned mutable details', () => {
+    const fact = createFact();
+    fact.updateDetails({
+      title: 'Updated',
+      content: 'Updated content',
+      navigationIntent: { route: '/tasks/task-1', params: { tab: 'activity' } },
+      expiresAt: 123456,
     });
-
-    it('should transition Sent to Cancelled', async () => {
-      const notification = aNotification();
-      await notification.send();
-
-      notification.cancel();
-
-      expect(notification.status).toBe(NotificationStatus.Cancelled);
-    });
-
-    it('should throw when Delivered', async () => {
-      const notification = aNotification();
-      await notification.send();
-      notification.markAsDelivered();
-
-      expect(() => notification.cancel()).toThrow();
-    });
-
-    it('should throw when Read', async () => {
-      const notification = aNotification();
-      await notification.send();
-      notification.markAsDelivered();
-      notification.markAsRead();
-
-      expect(() => notification.cancel()).toThrow();
-    });
+    expect(fact.title).toBe('Updated');
+    expect(fact.content).toBe('Updated content');
+    expect(fact.navigationIntent).toEqual({ route: '/tasks/task-1', params: { tab: 'activity' } });
+    expect(fact.expiresAt).toBe(123456);
   });
 
-  describe('markAsFailed()', () => {
-    it('should transition any status to Failed', async () => {
-      const notification = aNotification();
-
-      notification.markAsFailed();
-
-      expect(notification.status).toBe(NotificationStatus.Failed);
-    });
-
-    it('should transition Sent to Failed', async () => {
-      const notification = aNotification();
-      await notification.send();
-
-      notification.markAsFailed();
-
-      expect(notification.status).toBe(NotificationStatus.Failed);
-    });
+  it('soft deletes the Fact idempotently', () => {
+    const fact = createFact();
+    fact.clearDomainEvents();
+    fact.softDelete();
+    const deletedAt = fact.deletedAt;
+    fact.softDelete();
+    expect(deletedAt).toBeInstanceOf(Date);
+    expect(fact.deletedAt).toBe(deletedAt);
+    expect(fact.domainEvents.map((event) => event.eventType)).toEqual(['notification:deleted']);
   });
 
-  describe('status helpers', () => {
-    it('isPending() returns true for new notifications', () => {
-      const notification = aNotification();
-
-      expect(notification.isPending()).toBe(true);
-      expect(notification.isSent()).toBe(false);
-      expect(notification.isDelivered()).toBe(false);
-      expect(notification.hasBeenRead()).toBe(false);
+  it('projects durable channel attempts without making them root Fact status', () => {
+    const fact = createFact();
+    const channel = NotificationChannel.create({
+      notificationId: fact.id,
+      channelType: NotificationChannelType.Desktop,
+      recipient: 'identity-1',
     });
-
-    it('isSent() returns true after sending', async () => {
-      const notification = aNotification();
-      await notification.send();
-
-      expect(notification.isSent()).toBe(true);
-      expect(notification.isPending()).toBe(false);
-    });
-
-    it('isDelivered() returns true after delivery', async () => {
-      const notification = aNotification();
-      await notification.send();
-      notification.markAsDelivered();
-
-      expect(notification.isDelivered()).toBe(true);
-    });
-
-    it('hasBeenRead() returns true after reading', async () => {
-      const notification = aNotification();
-      await notification.send();
-      notification.markAsDelivered();
-      notification.markAsRead();
-
-      expect(notification.hasBeenRead()).toBe(true);
-    });
+    fact.addChannel(channel);
+    expect(fact.getChannelByType(NotificationChannelType.Desktop)).toBe(channel);
+    expect(fact.toServerDTO().notificationChannels).toHaveLength(1);
+    expect(fact.toServerDTO()).not.toHaveProperty('status');
   });
 
-  describe('addChannel() / getChannelByType()', () => {
-    it('should add a channel to the notification', async () => {
-      const notification = aNotification();
-      const channel = NotificationChannel.create({
-        notificationId: notification.id,
-        channelType: NotificationChannelType.InApp,
-      });
-
-      notification.addChannel(channel);
-
-      expect(notification.notificationChannels).toHaveLength(1);
+  it('serializes workflow, topic, navigation, related entity, importance and urgency on the Fact', () => {
+    const dto = createFact().toServerDTO();
+    expect(dto).toMatchObject({
+      workflowKey: 'task.deadline',
+      topic: 'task.deadline',
+      idempotencyKey: 'task:1:deadline',
+      relatedEntityId: 'task-1',
+      navigationIntent: { route: '/tasks/task-1' },
+      correlationId: 'corr-1',
+      causationId: 'cause-1',
+      isRead: false,
     });
-
-    it('should retrieve a channel by type', () => {
-      const notification = aNotification();
-      const channel = NotificationChannel.create({
-        notificationId: notification.id,
-        channelType: NotificationChannelType.Email,
-        recipient: 'user@example.com',
-      });
-      notification.addChannel(channel);
-
-      const found = notification.getChannelByType(NotificationChannelType.Email);
-
-      expect(found).toBeDefined();
-      expect(found!.channelType).toBe(NotificationChannelType.Email);
-    });
-
-    it('should return undefined for missing channel type', () => {
-      const notification = aNotification();
-
-      const found = notification.getChannelByType(NotificationChannelType.Sms);
-
-      expect(found).toBeUndefined();
-    });
+    expect(dto.importance).toBeDefined();
+    expect(dto.urgency).toBeDefined();
   });
 
-  describe('toServerDTO()', () => {
-    it('should convert to a server DTO', () => {
-      const notification = aNotification();
-
-      const dto = notification.toServerDTO();
-
-      expect(dto.id).toBeTruthy();
-      expect(dto.identityId).toBe(testIdentityId);
-      expect(dto.title).toBe('Test Notification');
-      expect(dto.content).toBe('Test notification content');
-      expect(dto.type).toBe(NotificationType.Info);
-      expect(dto.category).toBe(NotificationCategory.System);
-      expect(dto.status).toBe(NotificationStatus.Pending);
-      expect(dto.isRead).toBe(false);
-      expect(dto.version).toBe(1);
-      expect(typeof dto.createdAt).toBe('number');
-      expect(typeof dto.updatedAt).toBe('number');
-      expect(dto.deletedAt).toBeNull();
+  it('reconstructs persisted Fact state without a delivery-status field', () => {
+    const original = createFact();
+    const loaded = Notification.load({
+      id: original.id,
+      identityId: original.identityId,
+      workflowKey: original.workflowKey,
+      topic: original.topic,
+      idempotencyKey: original.idempotencyKey,
+      title: original.title,
+      content: original.content,
+      type: original.type,
+      category: original.category,
+      importance: original.importance,
+      urgency: original.urgency,
+      relatedEntityType: original.relatedEntityType,
+      relatedEntityId: original.relatedEntityId,
+      navigationIntent: original.navigationIntent,
+      correlationId: original.correlationId,
+      causationId: original.causationId,
+      isRead: false,
+      readAt: null,
+      actions: null,
+      metadata: null,
+      expiresAt: null,
+      version: 1,
+      deletedAt: null,
+      createdAt: original.createdAt,
+      updatedAt: original.updatedAt,
+      notificationChannels: [],
     });
-
-    it('should include channels in DTO when present', () => {
-      const notification = aNotification();
-      const channel = NotificationChannel.create({
-        notificationId: notification.id,
-        channelType: NotificationChannelType.InApp,
-      });
-      notification.addChannel(channel);
-
-      const dto = notification.toServerDTO();
-
-      expect(dto.notificationChannels).toHaveLength(1);
-      expect(dto.notificationChannels![0].channelType).toBe(NotificationChannelType.InApp);
+    expect(loaded.toServerDTO()).toMatchObject({
+      workflowKey: 'task.deadline',
+      idempotencyKey: 'task:1:deadline',
+      isRead: false,
     });
-
-    it('should return null channels when none exist', () => {
-      const notification = aNotification();
-
-      const dto = notification.toServerDTO();
-
-      expect(dto.notificationChannels).toBeNull();
-    });
-  });
-
-  describe('load()', () => {
-    it('should reconstruct from state', () => {
-      const original = aNotification();
-      const state = {
-        id: original.id,
-        identityId: original.identityId,
-        title: original.title,
-        content: original.content,
-        type: original.type,
-        category: original.category,
-        importance: original.importance,
-        status: original.status,
-        isRead: original.isRead,
-        readAt: original.readAt,
-        actions: original.actions,
-        metadata: original.metadata,
-        version: original.version,
-        deletedAt: original.deletedAt,
-        createdAt: original.createdAt,
-        updatedAt: original.updatedAt,
-        notificationChannels: [],
-      };
-
-      const loaded = Notification.load(state);
-
-      expect(String(loaded.id)).toBe(String(original.id));
-      expect(loaded.title).toBe('Test Notification');
-      expect(loaded.status).toBe(NotificationStatus.Pending);
-    });
-  });
-
-  describe('softDelete()', () => {
-    it('should set deletedAt and emit notification:delete', () => {
-      const notification = aNotification();
-      notification.clearDomainEvents();
-
-      notification.softDelete();
-
-      expect(notification.deletedAt).toBeInstanceOf(Date);
-      expect(notification.domainEvents).toHaveLength(1);
-      expect(notification.domainEvents[0].eventType).toBe('notification:deleted');
-    });
+    expect(loaded.toServerDTO()).not.toHaveProperty('status');
   });
 });

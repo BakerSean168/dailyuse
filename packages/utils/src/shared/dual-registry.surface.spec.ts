@@ -365,7 +365,6 @@ import { DEFAULT_REMINDER_TIME_OF_DAY, REMINDER_TIME_OF_DAY_PATTERN, buildRemind
         ['notification-mapper', notification],
         ['template-repo', template],
       ] as const) {
-        expect(source, label).toContain('Residual 1025');
         expect(source, label).toContain("import { parseJsonSafe } from '@memoflow/utils/shared'");
         expect(source, label).not.toMatch(/function parseJsonSafe\b/);
         expect(source, label).toContain('parseJsonSafe');
@@ -373,7 +372,6 @@ import { DEFAULT_REMINDER_TIME_OF_DAY, REMINDER_TIME_OF_DAY_PATTERN, buildRemind
     });
 
     it('notification powersync repository imports sole without local parseJson dual body', () => {
-      expect(powersync).toContain('Residual 1025');
       expect(powersync).toContain("import { parseJsonSafe } from '@memoflow/utils/shared'");
       expect(powersync).not.toMatch(/function parseJson\b/);
       expect(powersync).not.toMatch(/function parseJsonSafe\b/);

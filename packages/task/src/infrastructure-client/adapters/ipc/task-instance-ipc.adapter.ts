@@ -9,10 +9,10 @@ import type { Result } from '@memoflow/contracts/result';
 import { TaskChannels } from '@memoflow/contracts/electron';
 import type { ITaskInstanceApiClient, IResultIpcClient } from '../types';
 import type {
-  CheckExpiredTaskInstancesRes,
   GetTaskInstancesByRangeReq,
   TaskInstanceClientDTO,
   CompleteTaskInstanceReq,
+  MarkTaskInstanceMissedReq,
   SkipTaskInstanceReq,
 } from '@memoflow/contracts/task';
 
@@ -64,8 +64,11 @@ export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
     return this.ipcClient.invoke(TaskChannels.INSTANCE_SKIP, { id, request });
   }
 
-  async checkExpiredInstances(): Promise<Result<CheckExpiredTaskInstancesRes>> {
-    return this.ipcClient.invoke(TaskChannels.INSTANCE_CHECK_EXPIRED);
+  async markTaskInstanceMissed(
+    id: string,
+    request?: MarkTaskInstanceMissedReq,
+  ): Promise<Result<TaskInstanceClientDTO>> {
+    return this.ipcClient.invoke(TaskChannels.INSTANCE_MARK_MISSED, { id, request });
   }
 }
 

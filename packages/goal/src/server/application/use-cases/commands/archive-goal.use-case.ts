@@ -7,14 +7,11 @@
 
 import { GoalPolicy, GoalVersionConflictError, type IGoalRepository } from '../../../domain';
 import type { GoalMutationReceipt } from '@memoflow/contracts/goal';
-import { GoalStatus } from '@memoflow/contracts/goal';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
 import { buildIdempotencyKeyString } from '@memoflow/contracts/reliable-messaging';
 import { createGoalMutationReceipt } from './goal-mutation-receipt';
-import {
-    type GoalWriteTransactionRunner,
-} from './goal-write-support';
+import { type GoalWriteTransactionRunner } from './goal-write-support';
 
 /**
  * Archive Goal Use Case
@@ -46,7 +43,7 @@ export class ArchiveGoalUseCase {
     });
 
     // 终态幂等：已被归档，直接返回既有 receipt，不重复增加 version 或 event
-    if (goal.archivedAt || goal.status === GoalStatus.Archived) {
+    if (goal.archivedAt) {
       await this.goalWriteTransactionRunner.run((ctx) =>
         ctx.recordGoalCompletionReceipt({
           identityId,

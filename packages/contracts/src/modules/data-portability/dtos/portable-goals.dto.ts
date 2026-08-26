@@ -1,146 +1,103 @@
-/**
- * Portable Goals DTOs
- */
-
+/** Portable Goal vNext DTOs — schemaVersion 2. */
 import { z } from 'zod';
 import { PortableRefSchema, IsoDateString } from './portable-common.dto';
+import { KeyResultCalculationMethod } from '../../goal/value-objects/key-result-calculation-method';
 
-export const PortableGoalFolderSchema = z
-  .object({
-    _ref: PortableRefSchema,
-    name: z.string(),
-    description: z.string().nullable().optional(),
-    icon: z.string().nullable().optional(),
-    color: z.string().nullable().optional(),
-    parentRef: PortableRefSchema.nullable().optional(),
-    sortOrder: z.number(),
-    isSystemFolder: z.boolean(),
-    folderType: z.string().nullable().optional(),
-    createdAt: IsoDateString.optional(),
-    updatedAt: IsoDateString.optional(),
-  })
-  .strict();
-
-export type PortableGoalFolder = z.infer<typeof PortableGoalFolderSchema>;
-
-export const PortableKeyResultSchema = z
-  .object({
-    _ref: PortableRefSchema,
-    title: z.string(),
-    description: z.string().nullable().optional(),
-    progress: z.unknown(),
-    weight: z.number(),
-    sortOrder: z.number(),
-    createdAt: IsoDateString.optional(),
-    updatedAt: IsoDateString.optional(),
-  })
-  .strict();
-
+export const PortableKeyResultSchema = z.object({
+  _ref: PortableRefSchema,
+  title: z.string(),
+  description: z.string().nullable().optional(),
+  calculationMethod: z.enum(KeyResultCalculationMethod),
+  startingValue: z.number(),
+  progressBaselineValue: z.number().nullable().optional(),
+  targetValue: z.number(),
+  currentValue: z.number(),
+  unit: z.string().nullable().optional(),
+  weight: z.number(),
+  sortOrder: z.number(),
+  createdAt: IsoDateString.optional(),
+  updatedAt: IsoDateString.optional(),
+}).strict();
 export type PortableKeyResult = z.infer<typeof PortableKeyResultSchema>;
 
-export const PortableGoalReviewSchema = z
-  .object({
-    _ref: PortableRefSchema,
-    reviewType: z.string(),
-    rating: z.number().optional(),
-    content: z.string(),
-    achievements: z.string().nullable().optional(),
-    challenges: z.string().nullable().optional(),
-    lessonsLearned: z.string().nullable().optional(),
-    nextSteps: z.string().nullable().optional(),
-    createdAt: IsoDateString.optional(),
-    updatedAt: IsoDateString.optional(),
-  })
-  .strict();
+const PortableReviewTrendPointSchema = z.object({
+  at: z.number().int(),
+  progressPercentage: z.number().min(0).max(100),
+}).strict();
 
+const PortableReviewKeyResultContextSchema = z.object({
+  keyResultRef: PortableRefSchema,
+  title: z.string(),
+  unit: z.string().nullable(),
+  startPercentage: z.number().min(0).max(100),
+  endPercentage: z.number().min(0).max(100),
+  deltaPercentage: z.number(),
+  trend: z.array(PortableReviewTrendPointSchema),
+}).strict();
+
+export const PortableGoalReviewSystemContextSchema = z.object({
+  windowStartAt: z.number().int(),
+  windowEndAt: z.number().int(),
+  overallProgress: z.object({
+    startPercentage: z.number().min(0).max(100),
+    endPercentage: z.number().min(0).max(100),
+    deltaPercentage: z.number(),
+  }).strict(),
+  keyResults: z.array(PortableReviewKeyResultContextSchema),
+  summary: z.object({
+    recordCount: z.number().int().min(0),
+    manualRecordCount: z.number().int().min(0),
+    taskContributionCount: z.number().int().min(0),
+  }).strict(),
+}).strict();
+export type PortableGoalReviewSystemContext = z.infer<typeof PortableGoalReviewSystemContextSchema>;
+
+export const PortableGoalReviewSchema = z.object({
+  _ref: PortableRefSchema,
+  reflection: z.string(),
+  challenges: z.string().nullable().optional(),
+  adjustments: z.string().nullable().optional(),
+  systemContext: PortableGoalReviewSystemContextSchema,
+  reviewedAt: IsoDateString,
+  createdAt: IsoDateString.optional(),
+  updatedAt: IsoDateString.optional(),
+}).strict();
 export type PortableGoalReview = z.infer<typeof PortableGoalReviewSchema>;
 
-export const PortableGoalSchema = z
-  .object({
-    _ref: PortableRefSchema,
-    name: z.string(),
-    description: z.string().nullable().optional(),
-    color: z.string(),
-    feasibilityAnalysis: z.string().nullable().optional(),
-    motivation: z.string().nullable().optional(),
-    status: z.string(),
-    importance: z.string(),
-    priority: z.number(),
-    category: z.string().nullable().optional(),
-    tags: z.array(z.string()),
-    startDate: IsoDateString.nullable().optional(),
-    targetDate: IsoDateString.nullable().optional(),
-    completedAt: IsoDateString.nullable().optional(),
-    folderRef: PortableRefSchema.nullable().optional(),
-    parentGoalRef: PortableRefSchema.nullable().optional(),
-    sortOrder: z.number(),
-    reminderConfig: z.unknown().optional(),
-    keyResults: z.array(PortableKeyResultSchema),
-    goalReviews: z.array(PortableGoalReviewSchema),
-    createdAt: IsoDateString.optional(),
-    updatedAt: IsoDateString.optional(),
-  })
-  .strict();
-
+export const PortableGoalSchema = z.object({
+  _ref: PortableRefSchema,
+  name: z.string(),
+  description: z.string().nullable().optional(),
+  feasibilityAnalysis: z.string().nullable().optional(),
+  motivation: z.string().nullable().optional(),
+  status: z.string(),
+  startDate: IsoDateString.nullable().optional(),
+  dueDate: IsoDateString.nullable().optional(),
+  completedAt: IsoDateString.nullable().optional(),
+  archivedAt: IsoDateString.nullable().optional(),
+  sortOrder: z.number(),
+  reminderConfig: z.unknown().optional(),
+  keyResults: z.array(PortableKeyResultSchema),
+  goalReviews: z.array(PortableGoalReviewSchema),
+  createdAt: IsoDateString.optional(),
+  updatedAt: IsoDateString.optional(),
+}).strict();
 export type PortableGoal = z.infer<typeof PortableGoalSchema>;
 
-export const PortableGoalRecordSchema = z
-  .object({
-    _ref: PortableRefSchema,
-    keyResultRef: PortableRefSchema,
-    value: z.number(),
-    note: z.string().nullable().optional(),
-    recordedAt: IsoDateString,
-    createdAt: IsoDateString.optional(),
-    updatedAt: IsoDateString.optional(),
-  })
-  .strict();
-
+export const PortableGoalRecordSchema = z.object({
+  _ref: PortableRefSchema,
+  keyResultRef: PortableRefSchema,
+  value: z.number(),
+  note: z.string().nullable().optional(),
+  sourceType: z.string().nullable().optional(),
+  recordedAt: IsoDateString,
+  createdAt: IsoDateString.optional(),
+  updatedAt: IsoDateString.optional(),
+}).strict();
 export type PortableGoalRecord = z.infer<typeof PortableGoalRecordSchema>;
 
-export const PortableFocusSessionSchema = z
-  .object({
-    _ref: PortableRefSchema,
-    goalRef: PortableRefSchema.nullable().optional(),
-    status: z.string(),
-    durationMinutes: z.number(),
-    actualDurationMinutes: z.number(),
-    description: z.string().nullable().optional(),
-    startedAt: IsoDateString.nullable().optional(),
-    completedAt: IsoDateString.nullable().optional(),
-    pauseCount: z.number(),
-    pausedDurationMinutes: z.number(),
-    createdAt: IsoDateString.optional(),
-    updatedAt: IsoDateString.optional(),
-  })
-  .strict();
-
-export type PortableFocusSession = z.infer<typeof PortableFocusSessionSchema>;
-
-export const PortableFocusModeSchema = z
-  .object({
-    _ref: PortableRefSchema,
-    focusedGoalRefs: z.array(PortableRefSchema),
-    startTime: IsoDateString,
-    endTime: IsoDateString,
-    hiddenGoalsMode: z.string(),
-    isActive: z.boolean(),
-    actualEndTime: IsoDateString.nullable().optional(),
-    createdAt: IsoDateString.optional(),
-    updatedAt: IsoDateString.optional(),
-  })
-  .strict();
-
-export type PortableFocusMode = z.infer<typeof PortableFocusModeSchema>;
-
-export const PortableGoalDataSchema = z
-  .object({
-    folders: z.array(PortableGoalFolderSchema),
-    items: z.array(PortableGoalSchema),
-    records: z.array(PortableGoalRecordSchema),
-    focusSessions: z.array(PortableFocusSessionSchema),
-    focusModes: z.array(PortableFocusModeSchema),
-  })
-  .strict();
-
+export const PortableGoalDataSchema = z.object({
+  items: z.array(PortableGoalSchema),
+  records: z.array(PortableGoalRecordSchema),
+}).strict();
 export type PortableGoalData = z.infer<typeof PortableGoalDataSchema>;

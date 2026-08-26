@@ -7,25 +7,15 @@ const managementSource = readFileSync(
   resolve(dirname(fileURLToPath(import.meta.url)), 'TaskManagementView.vue'),
   'utf8',
 );
-const gridSource = readFileSync(
-  resolve(dirname(fileURLToPath(import.meta.url)), '../components/TaskTemplateGrid.vue'),
-  'utf8',
-);
 
-describe('Task single-page architecture', () => {
-  it('keeps one primary action and does not branch business capabilities by panel tier', () => {
-    expect(managementSource).toContain('data-primary-action="quick-task"');
-    expect(managementSource).not.toContain('data-primary-action="create-task-template"');
+describe('Task vNext single-page presentation', () => {
+  it('keeps one create-plan action and no panel-tier business branching', () => {
+    expect(managementSource).toContain('data-primary-action="create-task"');
+    expect(managementSource).toContain('data-testid="create-task-entry"');
     expect(managementSource).not.toContain('usePanelWidth');
     expect(managementSource).not.toContain('isNarrow');
-    expect(managementSource).not.toContain('task-graph-narrow-hint');
-    expect(gridSource).not.toContain('create-first-task-template-button');
-    expect(gridSource).not.toContain("'create-template'");
-  });
-
-  it('uses one batch operation and one summary toast for delete-all feedback', () => {
-    expect(managementSource).toContain('await deleteTemplates(');
-    expect(managementSource).toContain("toast.success(t('task.management.allDeleted'))");
-    expect(managementSource).not.toContain('for (const template of templates.value)');
+    expect(managementSource).not.toContain('TaskTemplateGrid');
+    expect(managementSource).not.toContain('TaskDAG');
+    expect(managementSource).not.toContain('DependencyManager');
   });
 });

@@ -213,3 +213,103 @@ model ReminderOccurrence {
   @@index([leaseExpiresAt])
   @@map("reminder_occurrences")
 }
+
+// ==========================================
+// Routine Coach vNext — first-class domain truth
+// Legacy Reminder runtime tables above remain for reliability/cutover.
+// ==========================================
+
+model RoutineDefinition {
+  id          String   @id
+  identityId  String   @map("identity_id")
+  name        String
+  description String?
+  enabled     Boolean  @default(true)
+  triggerJson String?  @map("trigger_json")
+  version     Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  account     Account                    @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  memberships RoutineProfileMembership[]
+
+  @@unique([identityId, id])
+  @@index([identityId, enabled])
+  @@map("routine_definitions")
+}
+
+model RoutineProfile {
+  id          String   @id
+  identityId  String   @map("identity_id")
+  name        String
+  description String?
+  enabled     Boolean  @default(true)
+  active      Boolean  @default(false)
+  version     Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  account     Account                    @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  memberships RoutineProfileMembership[]
+
+  @@unique([identityId, id])
+  @@index([identityId, enabled, active])
+  @@map("routine_profiles")
+}
+
+model RoutineProfileMembership {
+  identityId String   @map("identity_id")
+  profileId  String   @map("profile_id")
+  routineId  String   @map("routine_id")
+  enabled    Boolean  @default(true)
+  version    Int      @default(1)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  account Account           @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  profile RoutineProfile    @relation(fields: [profileId, identityId], references: [id, identityId], onDelete: Cascade)
+  routine RoutineDefinition @relation(fields: [routineId, identityId], references: [id, identityId], onDelete: Cascade)
+
+  @@id([identityId, profileId, routineId])
+  @@index([identityId, routineId])
+  @@index([identityId, profileId])
+  @@map("routine_profile_memberships")
+}
+
+model RoutineProtocolDefinition {
+  id             String   @id
+  identityId     String   @map("identity_id")
+  name           String
+  definitionJson String   @map("definition_json")
+  version        Int      @default(1)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  account  Account                  @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  sessions RoutineProtocolSession[]
+
+  @@unique([identityId, id])
+  @@index([identityId, name])
+  @@map("routine_protocol_definitions")
+}
+
+model RoutineProtocolSession {
+  id                String    @id
+  identityId        String    @map("identity_id")
+  protocolId        String    @map("protocol_id")
+  protocolVersion   Int       @map("protocol_version")
+  status            String
+  snapshotJson      String    @map("snapshot_json")
+  terminationReason String?   @map("termination_reason")
+  endedAt           DateTime? @map("ended_at")
+  version           Int       @default(1)
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  account  Account                   @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  protocol RoutineProtocolDefinition @relation(fields: [protocolId, identityId], references: [id, identityId], onDelete: Restrict)
+
+  @@index([identityId, status])
+  @@index([identityId, protocolId, createdAt])
+  @@map("routine_protocol_sessions")
+}

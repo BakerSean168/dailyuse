@@ -37,7 +37,7 @@
  * -> `disposed`):
  * - register(): only allowed from `created`. Builds controllers from
  *   `instance.api` and the fixed routes (`/task-templates`,
- *   `/task-instances`, `/tasks`) via `registerTaskRoutes`, AWAITS
+ *   `/task-instances`) via `registerTaskRoutes`, AWAITS
  *   `instance.start()`, and ONLY THEN mounts the combined router — a failed
  *   start happens before any `router.use(...)` call, so the host router never
  *   observes a route for a handle that did not start (no rollback/unmount is
@@ -78,7 +78,6 @@ import type { ServerModuleHandle, ServerTransportModuleContext } from '@memoflow
 import { createLogger } from '@memoflow/utils/logger';
 import type { TaskModuleInstance } from '../server/infrastructure';
 import { createTaskTransportHandlers } from '../server/transport';
-import { TaskDependencyController } from '../server/transport/task-dependency.controller';
 import { TaskInstanceController } from '../server/transport/task-instance.controller';
 import { TaskTemplateController } from '../server/transport/task-template.controller';
 import { registerTaskRoutes } from './routes';
@@ -155,13 +154,11 @@ export function createTaskApiModule(options: TaskApiModuleOptions): TaskApiModul
 
         const templateController = new TaskTemplateController(handlers.template);
         const instanceController = new TaskInstanceController(handlers.instance);
-        const dependencyController = new TaskDependencyController(handlers.dependency);
 
         const taskRoutes = registerTaskRoutes(
           {
             templateController,
             instanceController,
-            dependencyController,
           },
           middleware,
           openApiRegistry,

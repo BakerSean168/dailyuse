@@ -51,7 +51,27 @@ export { NotificationType } from './notification-type';
 
 export { NotificationCategory } from './notification-category';
 
-export { NotificationStatus } from './notification-status';
+export {
+  NotificationPreferenceControl,
+  NotificationDndBehavior,
+} from './notification-workflow';
+export type {
+  NotificationWorkflowChannelCapabilityDTO,
+  NotificationWorkflowDefinitionDTO,
+  NotificationGlobalChannelPreferencesDTO,
+  NotificationWorkflowChannelOverrideDTO,
+  NotificationWorkflowOverridesDTO,
+} from './notification-workflow';
+
+export {
+  NotificationDeliveryPlanOutcome,
+  NotificationDeliveryReason,
+  NotificationPreferenceDecisionSource,
+} from './delivery-plan';
+export type {
+  NotificationDeliveryDecisionDTO,
+  NotificationDeliveryPlanDTO,
+} from './delivery-plan';
 
 export { RelatedEntityType } from './related-entity-type';
 

@@ -128,7 +128,7 @@ export function NotificationDetailScreen() {
             <View style={styles.pillRow}>
               <StatusPill label={notification.type} tone="tint" />
               <StatusPill label={notification.category} tone="textSecondary" />
-              <StatusPill label={notification.status} tone={notification.isRead ? 'success' : 'warning'} />
+              <StatusPill label={notification.isRead ? 'Read' : 'Unread'} tone={notification.isRead ? 'success' : 'warning'} />
               <StatusPill label={notification.importance} tone="textSecondary" />
             </View>
             <View style={styles.actionRow}>

@@ -8,12 +8,23 @@
  * - 隐藏数据访问细节
  */
 
+import type { GoalSystemView } from '@memoflow/contracts/goal';
+import type { LabelDto } from '@memoflow/contracts/label';
 import type { Goal } from '../aggregates/goal';
 
 export class GoalVersionConflictError extends Error {
   readonly code = 'CONFLICT' as const;
   constructor() {
     super('Goal has been modified by another client');
+  }
+}
+
+
+export class GoalLabelOwnershipError extends Error {
+  readonly code = 'VALIDATION_ERROR' as const;
+  constructor() {
+    super('One or more labels do not belong to the identity.');
+    this.name = 'GoalLabelOwnershipError';
   }
 }
 
@@ -52,35 +63,26 @@ export interface IGoalRepository {
     options?: { includeChildren?: boolean },
   ): Promise<Goal | null>;
 
-  /**
-   * 通过 identityId 查找所有目标
-   *
-   * @param identityId - 用户身份 ID
-   * @param options.includeChildren - 是否加载子实体
-   * @param options.status - 过滤状态
-   * @param options.folderId - 过滤文件夹
-   * @returns 目标列表
-   */
+  /** Load identity-scoped goals using derived system views. */
   findByIdentityId(
     identityId: string,
     options?: {
       includeChildren?: boolean;
       status?: string;
-      folderId?: string;
-      systemView?: 'active' | 'completed' | 'expired' | 'deleted';
+      systemView?: GoalSystemView;
+      labelIdsAll?: readonly string[];
     },
   ): Promise<Goal[]>;
 
+  /** Goal-owned shared-label assignment. Must be called inside the owning mutation transaction. */
+  replaceLabels(
+    identityId: string,
+    goalId: string,
+    labelIds: readonly string[],
+  ): Promise<LabelDto[]>;
+
   /** Loads the owning goal aggregate for a key result within one identity. */
   findByKeyResultIdForIdentity(identityId: string, keyResultId: string): Promise<Goal | null>;
-
-  /**
-   * 通过文件夹 ID 查找目标
-   *
-   * @param folderId - 文件夹 ID
-   * @returns 目标列表
-   */
-  findByFolderId(identityId: string, folderId: string): Promise<Goal[]>;
 
   /**
    * 永久删除聚合根（物理删除，必须同时匹配 identity）
@@ -110,36 +112,4 @@ export interface IGoalRepository {
    * @param status - 新状态
    */
   batchUpdateStatus(identityId: string, ids: string[], status: string): Promise<void>;
-
-  /**
-   * 批量移动到文件夹
-   *
-   * @param ids - 目标 ID 列表
-   * @param folderId - 目标文件夹 ID（null 表示移出文件夹）
-   */
-  batchMoveToFolder(identityId: string, ids: string[], folderId: string | null): Promise<void>;
-
-  // ================= 层级关系查询 =================
-
-  /**
-   * 检查目标是否是另一个目标的祖先
-   * 用于循环依赖检测
-   *
-   * @param potentialAncestorId - 可能是祖先的目标 ID
-   * @param potentialDescendantId - 可能是后代的目标 ID
-   * @returns 如果 potentialAncestorId 是 potentialDescendantId 的祖先则返回 true
-   */
-  isAncestor(
-    identityId: string,
-    potentialAncestorId: string,
-    potentialDescendantId: string,
-  ): Promise<boolean>;
-
-  /**
-   * 查找目标的所有直接子目标
-   *
-   * @param parentId - 父目标 ID
-   * @returns 子目标列表
-   */
-  findChildren(identityId: string, parentId: string): Promise<Goal[]>;
 }

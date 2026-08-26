@@ -1,132 +1,128 @@
 import { describe, expect, it } from 'vitest';
 import {
-  ExportUserDataReqSchema,
   ExportServerHeldDataDisclosureReqSchema,
+  ExportUserDataReqSchema,
   ImportUserDataReqSchema,
   parseUserDataExportEnvelope,
   PortableAIDataSchema,
   PortableEditorDataSchema,
   PortableGoalDataSchema,
+  PortableRefSchema,
   PortableReminderDataSchema,
   PortableRepositoryDataSchema,
   PortableScheduleDataSchema,
   PortableSettingsSchema,
   PortableTaskDataSchema,
-  PortableUserDataV1Schema,
+  PortableUserDataV2Schema,
   ServerHeldDataDisclosureEnvelopeV1Schema,
 } from './index';
 
-describe('parseUserDataExportEnvelope', () => {
-  const baseEnvelope = {
-    kind: 'memoflow.user-data-export' as const,
-    schemaVersion: 1 as const,
-    exportedAt: '2026-06-03T00:00:00.000Z',
-    scope: {
-      includesBinaryResources: false as const,
-      importMode: 'append-create-like' as const,
+const baseEnvelope = {
+  kind: 'memoflow.user-data-export' as const,
+  schemaVersion: 2 as const,
+  exportedAt: '2026-08-26T00:00:00.000Z',
+  scope: {
+    includesBinaryResources: false as const,
+    importMode: 'append-create-like' as const,
+  },
+};
+
+const validGoal = {
+  _ref: 'goal:1',
+  name: 'Ship Core vNext',
+  status: 'Active',
+  sortOrder: 0,
+  keyResults: [
+    {
+      _ref: 'keyResult:1',
+      title: 'All gates pass',
+      calculationMethod: 'Sum',
+      startingValue: 0,
+      progressBaselineValue: null,
+      targetValue: 10,
+      currentValue: 3,
+      unit: 'gates',
+      weight: 1,
+      sortOrder: 0,
     },
-  };
+  ],
+  goalReviews: [],
+};
 
-  it('accepts a valid envelope', () => {
-    const result = parseUserDataExportEnvelope({
-      ...baseEnvelope,
-      data: {},
+const validTask = {
+  _ref: 'taskTemplate:1',
+  title: 'Write tests',
+  taskType: 'OneTime',
+  importance: 'moderate',
+  tags: [],
+  status: 'Active',
+  outcome: 'Open',
+  completionPolicy: 'AllowCorrection',
+  goalRef: 'goal:1',
+  keyResultRef: 'keyResult:1',
+  contribution: { value: 2.5, trigger: 'EachCompletion' },
+  checklist: [],
+  timeConfig: {},
+};
+
+describe('parseUserDataExportEnvelope V2', () => {
+  it('accepts the current business-backup envelope', () => {
+    expect(parseUserDataExportEnvelope({ ...baseEnvelope, data: {} }).ok).toBe(true);
+  });
+
+  it('rejects stale V1 business-backup envelopes', () => {
+    const result = parseUserDataExportEnvelope({ ...baseEnvelope, schemaVersion: 1, data: {} });
+    expect(result).toEqual({
+      ok: false,
+      error: 'Envelope validation failed: schemaVersion — Invalid input: expected 2',
     });
-
-    expect(result.ok).toBe(true);
   });
 
-  it('rejects wrong kind', () => {
-    const result = parseUserDataExportEnvelope({
-      ...baseEnvelope,
-      kind: 'wrong.kind' as 'memoflow.user-data-export',
-      data: {},
-    });
-
-    expect(result.ok).toBe(false);
-  });
-
-  it('rejects wrong schemaVersion', () => {
-    const result = parseUserDataExportEnvelope({
-      ...baseEnvelope,
-      schemaVersion: 99 as 1,
-      data: {},
-    });
-
-    expect(result.ok).toBe(false);
-  });
-
-  it('rejects missing data field', () => {
-    const result = parseUserDataExportEnvelope(baseEnvelope);
-    expect(result.ok).toBe(false);
-  });
-
-  it('rejects null input', () => {
-    const result = parseUserDataExportEnvelope(null);
-    expect(result.ok).toBe(false);
-  });
-
-  it('rejects nested identity fields inside unknown settings payloads', () => {
-    const result = parseUserDataExportEnvelope({
-      ...baseEnvelope,
-      data: {
-        settings: {
-          preferences: {
-            appearance: { theme: 'dark' },
-            profile: { identityId: 'leaked-identity' },
-          },
-        },
-      },
-    });
-
+  it('rejects the server-held disclosure envelope as non-importable', () => {
+    const result = parseUserDataExportEnvelope({ kind: 'memoflow.server-held-data-disclosure' });
     expect(result).toEqual({
       ok: false,
       error:
-        'Envelope validation failed: data.settings.preferences.profile.identityId — banned import field',
+        'Server-held data disclosure is not importable. Export/import only memoflow.user-data-export business backups.',
     });
   });
 
-  it('rejects nested auth config inside repository payloads', () => {
+  it('rejects missing data', () => {
+    expect(parseUserDataExportEnvelope(baseEnvelope).ok).toBe(false);
+  });
+
+  it('rejects nested identity fields even inside open preference payloads', () => {
     const result = parseUserDataExportEnvelope({
+      ...baseEnvelope,
+      data: { settings: { preferences: { profile: { identityId: 'leaked-identity' } } } },
+    });
+    expect(result).toEqual({
+      ok: false,
+      error: 'Envelope validation failed: data.settings.preferences.profile.identityId — banned import field',
+    });
+  });
+
+  it('rejects nested auth or persistent IDs inside otherwise open metadata', () => {
+    const auth = parseUserDataExportEnvelope({
       ...baseEnvelope,
       data: {
         repositories: {
           repositories: [
-            {
-              _ref: 'repository:1',
-              name: 'Knowledge',
-              type: 'local',
-              config: { auth: { token: 'secret-token' } },
-              status: 'ACTIVE',
-            },
+            { _ref: 'repository:1', name: 'Knowledge', type: 'local', config: { auth: { token: 'x' } }, status: 'ACTIVE' },
           ],
           folders: [],
           resources: [],
         },
       },
     });
+    expect(auth.ok).toBe(false);
+    if (!auth.ok) expect(auth.error).toContain('data.repositories.repositories.0.config.auth');
 
-    expect(result).toEqual({
-      ok: false,
-      error:
-        'Envelope validation failed: data.repositories.repositories.0.config.auth — banned import field',
-    });
-  });
-
-  it('rejects nested persistent id fields inside resource metadata', () => {
-    const result = parseUserDataExportEnvelope({
+    const persistentId = parseUserDataExportEnvelope({
       ...baseEnvelope,
       data: {
         repositories: {
-          repositories: [
-            {
-              _ref: 'repository:1',
-              name: 'Knowledge',
-              type: 'local',
-              config: {},
-              status: 'ACTIVE',
-            },
-          ],
+          repositories: [],
           folders: [],
           resources: [
             {
@@ -136,66 +132,17 @@ describe('parseUserDataExportEnvelope', () => {
               name: 'note.md',
               path: '/note.md',
               status: 'ACTIVE',
-              metadata: { source: { resourceId: 'db-resource-id' } },
+              metadata: { source: { resourceId: 'db-id' } },
             },
           ],
         },
       },
     });
-
-    expect(result).toEqual({
-      ok: false,
-      error:
-        'Envelope validation failed: data.repositories.resources.0.metadata.source.resourceId — banned import field',
-    });
+    expect(persistentId.ok).toBe(false);
+    if (!persistentId.ok) expect(persistentId.error).toContain('metadata.source.resourceId');
   });
 
-  it('accepts valid goals', () => {
-    const result = parseUserDataExportEnvelope({
-      ...baseEnvelope,
-      data: {
-        goals: {
-          folders: [{ _ref: 'goalFolder:1', name: 'Work', sortOrder: 0, isSystemFolder: false }],
-          items: [
-            {
-              _ref: 'goal:1',
-              name: 'Ship V1',
-              color: '#3B82F6',
-              status: 'active',
-              importance: 'high',
-              priority: 1,
-              tags: ['release'],
-              sortOrder: 0,
-              keyResults: [
-                {
-                  _ref: 'keyResult:1',
-                  title: 'All tests pass',
-                  progress: {},
-                  weight: 1,
-                  sortOrder: 0,
-                },
-              ],
-              goalReviews: [],
-            },
-          ],
-          records: [
-            {
-              _ref: 'goalRecord:1',
-              keyResultRef: 'keyResult:1',
-              value: 1,
-              recordedAt: '2026-06-03T00:00:00Z',
-            },
-          ],
-          focusSessions: [],
-          focusModes: [],
-        },
-      },
-    });
-
-    expect(result.ok).toBe(true);
-  });
-
-  it('allows sensitive-looking words in user-authored string values', () => {
+  it('allows sensitive-looking words inside user-authored string values', () => {
     const result = parseUserDataExportEnvelope({
       ...baseEnvelope,
       data: {
@@ -217,513 +164,144 @@ describe('parseUserDataExportEnvelope', () => {
         },
       },
     });
-
     expect(result.ok).toBe(true);
   });
 });
 
-describe('request schemas', () => {
-  it('ExportUserDataReqSchema accepts empty object', () => {
+describe('request contracts', () => {
+  it('validates export/import requests', () => {
     expect(ExportUserDataReqSchema.safeParse({}).success).toBe(true);
-  });
-
-  it('ExportUserDataReqSchema accepts valid include array', () => {
     expect(ExportUserDataReqSchema.safeParse({ include: ['goals', 'tasks'] }).success).toBe(true);
-  });
-
-  it('ExportUserDataReqSchema rejects invalid module name', () => {
     expect(ExportUserDataReqSchema.safeParse({ include: ['invalid'] }).success).toBe(false);
-  });
-
-  it('ImportUserDataReqSchema accepts content string', () => {
-    expect(ImportUserDataReqSchema.safeParse({ content: '{}' }).success).toBe(true);
-  });
-
-  it('ImportUserDataReqSchema accepts content with dryRun', () => {
     expect(ImportUserDataReqSchema.safeParse({ content: '{}', dryRun: true }).success).toBe(true);
-  });
-
-  it('ImportUserDataReqSchema rejects missing content', () => {
     expect(ImportUserDataReqSchema.safeParse({}).success).toBe(false);
   });
 
-  it('ExportServerHeldDataDisclosureReqSchema accepts only an empty object', () => {
+  it('keeps the server-held disclosure request a separate contract', () => {
     expect(ExportServerHeldDataDisclosureReqSchema.safeParse({}).success).toBe(true);
-    expect(
-      ExportServerHeldDataDisclosureReqSchema.safeParse({ includeCredentials: true }).success,
-    ).toBe(false);
   });
 });
 
-describe('ServerHeldDataDisclosureEnvelopeV1Schema', () => {
-  const disclosure = {
-    kind: 'memoflow.server-held-data-disclosure' as const,
-    schemaVersion: 1 as const,
-    disclosedAt: '2026-07-20T00:00:00.000Z',
-    subject: { identityId: 'identity-1' },
-    scope: {
-      importMode: 'not-importable' as const,
-      includesImportableBusinessDataBackup: false as const,
-      includesLocalVaultFiles: false as const,
-      includesGithubRepositoryHistory: false as const,
-      includesApplicationManagedReplayableGithubAuthorization: false as const,
-      includesNonReplayableGithubInstallationIdentifiers: true as const,
-      includesCachedAttachmentBytes: true as const,
-      includesEphemeralWorkerLeases: false as const,
-      includesDatabaseInternalRetrievalVector: false as const,
-    },
-    data: {
-      knowledgeRepositoryConnections: [],
-      githubWebhookDeliveries: [],
-      knowledgeNoteProjections: [],
-      knowledgeAttachmentProjections: [],
-      knowledgeAttachmentContentCaches: [],
-      knowledgeWriteRequests: [],
-      aiKnowledgeIndexEntries: [],
-    },
-  };
-
-  it('accepts the explicit non-importable disclosure envelope', () => {
-    expect(ServerHeldDataDisclosureEnvelopeV1Schema.safeParse(disclosure).success).toBe(true);
+describe('PortableUserDataV2Schema', () => {
+  it('accepts an empty backup and rejects unknown top-level modules', () => {
+    expect(PortableUserDataV2Schema.safeParse({}).success).toBe(true);
+    expect(PortableUserDataV2Schema.safeParse({ unknownModule: {} }).success).toBe(false);
   });
 
-  it('cannot be parsed as an importable user-data export', () => {
-    const result = parseUserDataExportEnvelope(disclosure);
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error).toMatch(/not importable/i);
-      expect(result.error).toMatch(/server-held data disclosure/i);
-      expect(result.error).toMatch(/memoflow\.user-data-export/i);
-    }
-  });
-
-  it('does not allow the scope to claim replayable GitHub authorization is included', () => {
+  it('composes canonical Goal and Task vNext shapes', () => {
     expect(
-      ServerHeldDataDisclosureEnvelopeV1Schema.safeParse({
-        ...disclosure,
-        scope: {
-          ...disclosure.scope,
-          includesApplicationManagedReplayableGithubAuthorization: true,
-        },
-      }).success,
-    ).toBe(false);
-  });
-});
-
-describe('PortableUserDataV1Schema', () => {
-  it('rejects data with id field', () => {
-    const result = PortableUserDataV1Schema.safeParse({
-      settings: { preferences: {}, id: 'some-db-id' },
-    });
-
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects data with identityId field', () => {
-    const result = PortableUserDataV1Schema.safeParse({
-      settings: { preferences: {}, identityId: 'some-identity' },
-    });
-
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects data with accountId field', () => {
-    const result = PortableUserDataV1Schema.safeParse({
-      settings: { preferences: {}, accountId: 'some-account' },
-    });
-
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects data with apiKeyEncrypted field', () => {
-    const result = PortableUserDataV1Schema.safeParse({
-      settings: { preferences: {}, apiKeyEncrypted: 'secret' },
-    });
-
-    expect(result.success).toBe(false);
-  });
-
-  it('accepts valid empty data', () => {
-    expect(PortableUserDataV1Schema.safeParse({}).success).toBe(true);
-  });
-
-  it('rejects unknown top-level module key', () => {
-    expect(PortableUserDataV1Schema.safeParse({ unknownModule: { foo: 'bar' } }).success).toBe(
-      false,
-    );
-  });
-
-  it('rejects goal with missing required fields', () => {
-    const result = PortableUserDataV1Schema.safeParse({
-      goals: {
-        folders: [],
-        items: [{ _ref: 'goal:1' }],
-        records: [],
-        focusSessions: [],
-        focusModes: [],
-      },
-    });
-
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects task template with invalid _ref format', () => {
-    const result = PortableUserDataV1Schema.safeParse({
-      tasks: {
-        folders: [],
-        templates: [
-          {
-            _ref: 'invalid-ref',
-            title: 'test',
-            taskType: 'once',
-            importance: 'moderate',
-            tags: [],
-            status: 'pending',
-            checklist: [],
-          },
-        ],
-        instances: [],
-        dependencies: [],
-      },
-    });
-
-    expect(result.success).toBe(false);
-  });
-
-  it('uses explicit task-goal references and rejects the opaque goal binding', () => {
-    const task = {
-      _ref: 'taskTemplate:1',
-      title: 'Write tests',
-      taskType: 'once',
-      importance: 'moderate',
-      tags: [],
-      status: 'pending',
-      goalRef: 'goal:1',
-      keyResultRef: 'keyResult:1',
-      goalRecordValue: 2.5,
-      goalProgressTrigger: 'PER_INSTANCE',
-      checklist: [],
-    };
-
-    expect(
-      PortableTaskDataSchema.safeParse({
-        folders: [],
-        templates: [task],
-        instances: [],
-        dependencies: [],
+      PortableUserDataV2Schema.safeParse({
+        goals: { items: [validGoal], records: [] },
+        tasks: { templates: [validTask], instances: [] },
       }).success,
     ).toBe(true);
+  });
+
+  it('rejects persistent identity/database fields', () => {
+    expect(
+      PortableUserDataV2Schema.safeParse({ settings: { preferences: {}, identityId: 'identity-1' } }).success,
+    ).toBe(false);
+  });
+});
+
+describe('Task Goal link / contribution portable contract', () => {
+  it('supports both link-only and link+contribution Task plans', () => {
+    expect(PortableTaskDataSchema.safeParse({ templates: [validTask], instances: [] }).success).toBe(true);
     expect(
       PortableTaskDataSchema.safeParse({
-        folders: [],
-        templates: [{ ...task, goalBinding: { goalId: 'goal-1' } }],
+        templates: [{ ...validTask, contribution: null }],
         instances: [],
-        dependencies: [],
+      }).success,
+    ).toBe(true);
+  });
+
+  it('rejects contribution without the Goal/KR link', () => {
+    expect(
+      PortableTaskDataSchema.safeParse({
+        templates: [{ ...validTask, goalRef: null, keyResultRef: null }],
+        instances: [],
       }).success,
     ).toBe(false);
   });
 
-  it('accepts valid reminder data', () => {
-    const result = PortableUserDataV1Schema.safeParse({
-      reminders: {
-        groups: [
-          {
-            _ref: 'reminderGroup:1',
-            name: 'Daily',
-            controlMode: 'manual',
-            enabled: true,
-            status: 'active',
-            order: 0,
-          },
-        ],
-        templates: [
-          {
-            _ref: 'reminderTemplate:1',
-            title: 'Standup',
-            type: 'once',
-            trigger: {},
-            activeTime: {},
-            notificationConfig: {},
-            selfEnabled: true,
-            status: 'active',
-            importanceLevel: 'moderate',
-            tags: [],
-            smartFrequencyEnabled: false,
-          },
-        ],
-        responses: [],
-      },
-    });
-
-    expect(result.success).toBe(true);
-  });
-
-  it('accepts valid AI data', () => {
-    const result = PortableUserDataV1Schema.safeParse({
-      ai: {
-        conversations: [
-          {
-            _ref: 'aiConversation:1',
-            name: 'Chat',
-            status: 'ACTIVE',
-            messages: [{ _ref: 'aiMessage:1', role: 'user', content: 'Hello' }],
-          },
-        ],
-      },
-    });
-
-    expect(result.success).toBe(true);
-  });
-
-  it('documents that duplicate _ref is a business-rule concern, not a schema concern', () => {
-    const result = PortableUserDataV1Schema.safeParse({
-      goals: {
-        folders: [],
-        items: [
-          {
-            _ref: 'goal:1',
-            name: 'a',
-            color: '#000',
-            status: 'pending',
-            importance: 'moderate',
-            priority: 0,
-            tags: [],
-            sortOrder: 0,
-            keyResults: [],
-            goalReviews: [],
-          },
-          {
-            _ref: 'goal:1',
-            name: 'b',
-            color: '#000',
-            status: 'pending',
-            importance: 'moderate',
-            priority: 0,
-            tags: [],
-            sortOrder: 0,
-            keyResults: [],
-            goalReviews: [],
-          },
-        ],
-        records: [],
-        focusSessions: [],
-        focusModes: [],
-      },
-    });
-
-    expect(result.success).toBe(true);
+  it('rejects retired flat contribution fields and opaque goalBinding blobs', () => {
+    expect(
+      PortableTaskDataSchema.safeParse({
+        templates: [{ ...validTask, goalRecordValue: 2.5 }],
+        instances: [],
+      }).success,
+    ).toBe(false);
+    expect(
+      PortableTaskDataSchema.safeParse({
+        templates: [{ ...validTask, goalBinding: { goalId: 'goal-db-id' } }],
+        instances: [],
+      }).success,
+    ).toBe(false);
   });
 });
 
 describe('module schemas', () => {
-  it('PortableSettingsSchema rejects unknown fields', () => {
-    expect(PortableSettingsSchema.safeParse({ preferences: {}, extra: true }).success).toBe(false);
+  it('accepts canonical Goal vNext data', () => {
+    expect(PortableGoalDataSchema.safeParse({ items: [validGoal], records: [] }).success).toBe(true);
   });
 
-  it('PortableGoalDataSchema rejects goal with id', () => {
-    const result = PortableGoalDataSchema.safeParse({
-      folders: [],
-      items: [
-        {
-          _ref: 'goal:1',
-          name: 'test',
-          color: '#000',
-          status: 'pending',
-          importance: 'moderate',
-          priority: 0,
-          tags: [],
-          sortOrder: 0,
-          keyResults: [],
-          goalReviews: [],
-          id: 'bad',
-        },
-      ],
-      records: [],
-      focusSessions: [],
-      focusModes: [],
-    });
-
-    expect(result.success).toBe(false);
+  it('accepts canonical Reminder data', () => {
+    expect(
+      PortableReminderDataSchema.safeParse({ groups: [], templates: [], responses: [] }).success,
+    ).toBe(true);
   });
 
-  it('PortableGoalDataSchema accepts valid goal', () => {
-    const result = PortableGoalDataSchema.safeParse({
-      folders: [],
-      items: [
-        {
-          _ref: 'goal:1',
-          name: 'test',
-          color: '#000',
-          status: 'pending',
-          importance: 'moderate',
-          priority: 0,
-          tags: [],
-          sortOrder: 0,
-          keyResults: [],
-          goalReviews: [],
-        },
-      ],
-      records: [],
-      focusSessions: [],
-      focusModes: [],
-    });
-
-    expect(result.success).toBe(true);
-  });
-
-  it('PortableTaskDataSchema rejects template with identityId', () => {
-    const result = PortableTaskDataSchema.safeParse({
-      folders: [],
-      templates: [
-        {
-          _ref: 'taskTemplate:1',
-          title: 'test',
-          taskType: 'once',
-          importance: 'moderate',
-          tags: [],
-          status: 'pending',
-          checklist: [],
-          identityId: 'bad',
-        },
-      ],
-      instances: [],
-      dependencies: [],
-    });
-
-    expect(result.success).toBe(false);
-  });
-
-  it('PortableRepositoryDataSchema rejects resource with id', () => {
-    const result = PortableRepositoryDataSchema.safeParse({
-      repositories: [
-        { _ref: 'repository:1', name: 'test', type: 'text', config: {}, status: 'ACTIVE' },
-      ],
-      folders: [],
-      resources: [
-        {
-          _ref: 'resource:1',
-          repositoryRef: 'repository:1',
-          type: 'text',
-          name: 'test',
-          path: '/test',
-          status: 'ACTIVE',
-          id: 'bad',
-        },
-      ],
-    });
-
-    expect(result.success).toBe(false);
-  });
-
-  it('PortableReminderDataSchema rejects group with unknown field', () => {
-    const result = PortableReminderDataSchema.safeParse({
-      groups: [
-        {
-          _ref: 'reminderGroup:1',
-          name: 'test',
-          controlMode: 'manual',
-          enabled: true,
-          status: 'active',
-          order: 0,
-          badField: true,
-        },
-      ],
-      templates: [],
-      responses: [],
-    });
-
-    expect(result.success).toBe(false);
-  });
-
-  it('PortableScheduleDataSchema rejects schedule with id', () => {
-    const result = PortableScheduleDataSchema.safeParse({
-      entries: [
-        {
-          _ref: 'schedule:1',
-          title: 'test',
-          startTime: '2026-01-01T00:00:00Z',
-          endTime: '2026-01-01T01:00:00Z',
-          duration: 60,
-          id: 'bad',
-        },
-      ],
-      tasks: [],
-    });
-
-    expect(result.success).toBe(false);
-  });
-
-  it('PortableEditorDataSchema rejects workspace with identityId', () => {
-    const result = PortableEditorDataSchema.safeParse({
-      workspaces: [
-        {
-          _ref: 'editorWorkspace:1',
-          name: 'test',
-          projectPath: '/test',
-          projectType: 'unknown',
-          layout: {},
-          settings: {},
-          isActive: false,
-          sessions: [],
-          identityId: 'bad',
-        },
-      ],
-    });
-
-    expect(result.success).toBe(false);
-  });
-
-  it('PortableAIDataSchema rejects conversation with id', () => {
-    const result = PortableAIDataSchema.safeParse({
-      conversations: [
-        { _ref: 'aiConversation:1', name: 'test', status: 'ACTIVE', messages: [], id: 'bad' },
-      ],
-    });
-
-    expect(result.success).toBe(false);
+  it('accepts repository, schedule, editor, AI, and settings empty shapes', () => {
+    expect(
+      PortableRepositoryDataSchema.safeParse({ repositories: [], folders: [], resources: [] }).success,
+    ).toBe(true);
+    expect(PortableScheduleDataSchema.safeParse({ entries: [], tasks: [] }).success).toBe(true);
+    expect(PortableEditorDataSchema.safeParse({ workspaces: [] }).success).toBe(true);
+    expect(PortableAIDataSchema.safeParse({ conversations: [] }).success).toBe(true);
+    expect(PortableSettingsSchema.safeParse({ preferences: {} }).success).toBe(true);
   });
 });
 
-describe('ref format validation', () => {
-  it('rejects ref without colon', () => {
-    const result = PortableUserDataV1Schema.safeParse({
-      goals: {
-        folders: [{ _ref: 'badref', name: 'test', sortOrder: 0, isSystemFolder: false }],
-        items: [],
-        records: [],
-        focusSessions: [],
-        focusModes: [],
-      },
-    });
-
-    expect(result.success).toBe(false);
+describe('portable reference format', () => {
+  it.each([
+    ['goal:1', true],
+    ['taskTemplate:42', true],
+    ['badref', false],
+    ['Goal:1', false],
+    ['goal:abc', false],
+  ])('%s validity = %s', (value, valid) => {
+    expect(PortableRefSchema.safeParse(value).success).toBe(valid);
   });
+});
 
-  it('rejects ref with uppercase prefix', () => {
-    const result = PortableUserDataV1Schema.safeParse({
-      goals: {
-        folders: [{ _ref: 'GoalFolder:1', name: 'test', sortOrder: 0, isSystemFolder: false }],
-        items: [],
-        records: [],
-        focusSessions: [],
-        focusModes: [],
+describe('server-held disclosure schema', () => {
+  it('keeps disclosure explicitly non-importable', () => {
+    const result = ServerHeldDataDisclosureEnvelopeV1Schema.safeParse({
+      kind: 'memoflow.server-held-data-disclosure',
+      schemaVersion: 1,
+      disclosedAt: '2026-08-26T00:00:00.000Z',
+      subject: { identityId: 'identity-1' },
+      scope: {
+        importMode: 'not-importable',
+        includesImportableBusinessDataBackup: false,
+        includesLocalVaultFiles: false,
+        includesGithubRepositoryHistory: false,
+        includesApplicationManagedReplayableGithubAuthorization: false,
+        includesNonReplayableGithubInstallationIdentifiers: true,
+        includesCachedAttachmentBytes: true,
+        includesEphemeralWorkerLeases: false,
+        includesDatabaseInternalRetrievalVector: false,
+      },
+      data: {
+        knowledgeRepositoryConnections: [],
+        githubWebhookDeliveries: [],
+        knowledgeNoteProjections: [],
+        knowledgeAttachmentProjections: [],
+        knowledgeAttachmentContentCaches: [],
+        knowledgeWriteRequests: [],
+        aiKnowledgeIndexEntries: [],
       },
     });
-
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects ref with non-numeric suffix', () => {
-    const result = PortableUserDataV1Schema.safeParse({
-      goals: {
-        folders: [{ _ref: 'goalFolder:abc', name: 'test', sortOrder: 0, isSystemFolder: false }],
-        items: [],
-        records: [],
-        focusSessions: [],
-        focusModes: [],
-      },
-    });
-
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 });

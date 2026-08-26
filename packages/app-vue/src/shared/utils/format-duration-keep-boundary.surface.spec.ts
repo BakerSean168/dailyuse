@@ -11,7 +11,6 @@ import { describe, expect, it } from 'vitest';
  * Soft residual 1243:
  * - ConflictAlert: ms floor; hoursMinutes always when h>0
  * - schedule-presentation durationMs/Sec keep-boundary remains
- * - TaskDependencyGraph: concatenative task.dependencyGraph labels
  * - formatTaskDuration: Intl unit hour/minute
  * - app-react buildDuration: compute minutes only
  * Soft residual 1237: formatTime keep-boundary remains separate.
@@ -34,10 +33,6 @@ describe('formatDuration keep-boundary (residual 1243)', () => {
   );
   const formDemo = readFileSync(
     resolve(dir, '../../modules/schedule/components/ScheduleFormDemo.vue'),
-    'utf8',
-  );
-  const taskGraph = readFileSync(
-    resolve(dir, '../../modules/task/components/TaskDependencyGraph.vue'),
     'utf8',
   );
   const taskUtil = readFileSync(
@@ -81,7 +76,7 @@ describe('formatDuration keep-boundary (residual 1243)', () => {
     expect(sole).toContain('schedule.duration.hoursMinutes');
   });
 
-  it('soft residual 1243 ms floor / demo / task graph / Intl / buildDuration stay separate', () => {
+  it('soft residual 1243 ms floor / demo / Intl / buildDuration stay separate', () => {
     expect(conflictMs).toContain('Soft residual 1243');
     const msBody = conflictMs.match(/function formatDuration\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(msBody).toContain('splitDurationMs');
@@ -96,12 +91,6 @@ describe('formatDuration keep-boundary (residual 1243)', () => {
     const formBody = formDemo.match(/function formatDuration\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(formBody).toContain('formatScheduleDurationMinutes');
     expect(formBody).not.toContain('schedule.duration.minutes');
-
-    expect(taskGraph).toContain('Soft residual 1243');
-    const graphBody = taskGraph.match(/function formatDuration\([\s\S]*?\n\}/)?.[0] ?? '';
-    expect(graphBody).toContain('task.dependencyGraph.hours');
-    expect(graphBody).toContain('task.dependencyGraph.minutes');
-    expect(graphBody).not.toContain('schedule.duration');
 
     expect(taskUtil).toContain('Soft residual 1243');
     expect(taskUtil).toMatch(/export function formatTaskDuration\b/);

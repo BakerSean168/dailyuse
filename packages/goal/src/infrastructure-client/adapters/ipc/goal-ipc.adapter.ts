@@ -23,10 +23,12 @@ import type {
   DeleteKeyResultReq,
   GetKeyResultsRes,
   CreateGoalReviewReq,
+  GoalReviewSystemContext,
   UpdateGoalReviewReq,
   DeleteGoalReviewReq,
   GetGoalReviewsRes,
   CreateGoalRecordReq,
+  UpdateGoalRecordReq,
   DeleteGoalRecordReq,
   GetGoalRecordsRes,
   GetGoalAggregateRes,
@@ -47,7 +49,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
     query?: string;
     status?: string[];
     systemView?: GoalSystemView;
-    folderId?: string;
+    labelIdsAll?: string[];
     startDate?: number;
     endDate?: number;
     includeChildren?: boolean;
@@ -67,10 +69,6 @@ export class GoalIpcAdapter implements IGoalApiClient {
     return this.ipcClient.invoke(GoalChannels.DELETE, id, request);
   }
 
-  async archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>> {
-    return this.ipcClient.invoke(GoalChannels.ARCHIVE_EXPIRED);
-  }
-
   // ===== Goal Status =====
 
   async activateGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
@@ -85,6 +83,10 @@ export class GoalIpcAdapter implements IGoalApiClient {
     return this.ipcClient.invoke(GoalChannels.ARCHIVE, id, { expectedVersion });
   }
 
+  async abandonGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>> {
+    return this.ipcClient.invoke(GoalChannels.ABANDON, id, { expectedVersion });
+  }
+
   // ===== Search =====
 
   async searchGoals(params: {
@@ -93,7 +95,6 @@ export class GoalIpcAdapter implements IGoalApiClient {
     pageSize?: number;
     status?: string[];
     systemView?: GoalSystemView;
-    folderId?: string;
   }): Promise<Result<QueryGoalsRes>> {
     return this.ipcClient.invoke(GoalChannels.SEARCH, params);
   }
@@ -154,6 +155,13 @@ export class GoalIpcAdapter implements IGoalApiClient {
     return this.ipcClient.invoke(GoalChannels.REVIEW_LIST, goalId);
   }
 
+  async getGoalReviewContext(
+    goalId: string,
+    windowDays: number = 7,
+  ): Promise<Result<GoalReviewSystemContext>> {
+    return this.ipcClient.invoke(GoalChannels.REVIEW_CONTEXT, goalId, windowDays);
+  }
+
   async updateGoalReview(
     goalId: string,
     reviewId: string,
@@ -178,6 +186,21 @@ export class GoalIpcAdapter implements IGoalApiClient {
     request: Pick<CreateGoalRecordReq, 'value' | 'note' | 'expectedVersion'>,
   ): Promise<Result<GoalMutationReceipt>> {
     return this.ipcClient.invoke(GoalChannels.RECORD_CREATE, goalId, keyResultId, request);
+  }
+
+  async updateGoalRecord(
+    goalId: string,
+    keyResultId: string,
+    recordId: string,
+    request: UpdateGoalRecordReq,
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.ipcClient.invoke(
+      GoalChannels.RECORD_UPDATE,
+      goalId,
+      keyResultId,
+      recordId,
+      request,
+    );
   }
 
   async getGoalRecordsByKeyResult(

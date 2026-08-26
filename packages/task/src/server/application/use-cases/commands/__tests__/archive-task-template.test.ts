@@ -34,7 +34,8 @@ describe('ArchiveTaskTemplateUseCase', () => {
     const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
-    expect(template.status).toBe(TaskTemplateStatus.Archived);
+    expect(template.status).toBe(TaskTemplateStatus.Active);
+    expect(template.archivedAt).not.toBeNull();
     expect(templateRepo.save).toHaveBeenCalledWith(template);
   });
 
@@ -45,7 +46,8 @@ describe('ArchiveTaskTemplateUseCase', () => {
     const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
-    expect(template.status).toBe(TaskTemplateStatus.Archived);
+    expect(template.status).toBe(TaskTemplateStatus.Paused);
+    expect(template.archivedAt).not.toBeNull();
   });
 
   it('should return the client DTO on success', async () => {

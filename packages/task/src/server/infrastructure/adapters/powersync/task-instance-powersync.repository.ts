@@ -36,15 +36,26 @@ export class PowerSyncTaskInstanceRepository
       [data.id],
     );
 
+    // TASK-2204: prevent a second desktop occurrence for the same plan/local day.
+    // Prisma also has a unique constraint; PowerSync schema has no portable unique-index
+    // declaration, so keep the deterministic occurrence key and enforce the same rule here.
+    if (!existing && data.occurrenceKey) {
+      const existingOccurrence = await this.db.getOptional<{ id: string }>(
+        'SELECT id FROM task_instances WHERE template_id = ? AND identity_id = ? AND occurrence_key = ? AND deleted_at IS NULL LIMIT 1',
+        [data.templateId, data.identityId, data.occurrenceKey],
+      );
+      if (existingOccurrence) return;
+    }
+
     if (existing) {
       await this.db.execute(
         `UPDATE task_instances
          SET template_id = ?,
              identity_id = ?,
              instance_date = ?,
+             occurrence_key = ?,
              status = ?,
              importance = ?,
-             priority = ?,
              time_config = ?,
              actual_start_time = ?,
              actual_end_time = ?,
@@ -57,9 +68,9 @@ export class PowerSyncTaskInstanceRepository
           data.templateId,
           data.identityId,
           data.instanceDate,
+          data.occurrenceKey,
           data.status,
           data.importance,
-          data.priority,
           data.timeConfig,
           data.actualStartTime,
           data.actualEndTime,
@@ -73,7 +84,7 @@ export class PowerSyncTaskInstanceRepository
     } else {
       await this.db.execute(
         `INSERT INTO task_instances (
-          id, template_id, identity_id, instance_date, status, importance, priority, time_config,
+          id, template_id, identity_id, instance_date, occurrence_key, status, importance, time_config,
           actual_start_time, actual_end_time, comment, version, created_at, updated_at, deleted_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
@@ -81,9 +92,9 @@ export class PowerSyncTaskInstanceRepository
           data.templateId,
           data.identityId,
           data.instanceDate,
+          data.occurrenceKey,
           data.status,
           data.importance,
-          data.priority,
           data.timeConfig,
           data.actualStartTime,
           data.actualEndTime,

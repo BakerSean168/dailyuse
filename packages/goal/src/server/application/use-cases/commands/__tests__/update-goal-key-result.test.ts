@@ -84,7 +84,9 @@ describe('UpdateGoalKeyResultUseCase', () => {
       title: 'Updated KR',
       description: undefined,
       weight: 5,
-      startValue: undefined,
+      startingValue: undefined,
+      progressBaselineValue: undefined,
+      aggregationMethod: undefined,
       currentValue: undefined,
       targetValue: undefined,
       unit: undefined,
@@ -148,12 +150,12 @@ describe('UpdateGoalKeyResultUseCase', () => {
     });
     const useCase = new UpdateGoalKeyResultUseCase(goalRepo, goalPolicy);
 
-    await expect(useCase.execute('goal-id-1', 'identity-1', 'kr-1', {
-      title: 'New',
-      expectedVersion: 1,
-    })).rejects.toThrow(
-      'Goal cannot be modified',
-    );
+    await expect(
+      useCase.execute('goal-id-1', 'identity-1', 'kr-1', {
+        title: 'New',
+        expectedVersion: 1,
+      }),
+    ).rejects.toThrow('Goal cannot be modified');
     expect(goalRepo.save).not.toHaveBeenCalled();
   });
 
@@ -176,7 +178,9 @@ describe('UpdateGoalKeyResultUseCase', () => {
       title: undefined,
       description: 'New desc',
       weight: undefined,
-      startValue: undefined,
+      startingValue: undefined,
+      progressBaselineValue: undefined,
+      aggregationMethod: undefined,
       currentValue: undefined,
       targetValue: undefined,
       unit: 'books',
@@ -194,7 +198,7 @@ describe('UpdateGoalKeyResultUseCase', () => {
 
     await useCase.execute('goal-id-1', 'identity-1', 'kr-1', {
       currentValue: 11,
-      startValue: 5,
+      startingValue: 5,
       expectedVersion: 1,
     });
 
@@ -202,7 +206,7 @@ describe('UpdateGoalKeyResultUseCase', () => {
       title: undefined,
       description: undefined,
       weight: undefined,
-      startValue: 5,
+      startingValue: 5,
       currentValue: 11,
       targetValue: undefined,
       unit: undefined,

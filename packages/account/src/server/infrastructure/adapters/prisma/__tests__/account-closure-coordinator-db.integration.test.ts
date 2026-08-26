@@ -282,13 +282,15 @@ describe('Account Closure Coordinator & Worker Real DB Concurrency Integration T
       data: {
         id: notifOutboxId,
         identityId,
-        type: 'info',
-        category: 'system',
-        status: 'sent',
+        type: 'Info',
+        category: 'System',
+        workflowKey: 'account.closure.slow-consumer',
+        topic: 'account.closure',
+        idempotencyKey: `seed:${notifOutboxId}`,
         title: 'Slow Consumer Notification',
         content: 'Content',
-        importance: 'normal',
-        urgency: 'normal',
+        importance: 'Moderate',
+        urgency: 'Medium',
       },
     });
     await prisma.notificationDispatchOutbox.create({

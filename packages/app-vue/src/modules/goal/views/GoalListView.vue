@@ -68,13 +68,9 @@ import type { GoalClientDTO } from '@memoflow/contracts/goal';
 const { t } = useI18n();
 const router = useRouter();
 
-const { goals, isLoading, selectedFolderId, systemView, deleteGoal } = useGoal();
+const { goals, isLoading, systemView, deleteGoal } = useGoal();
 
-const filteredGoals = computed(() => {
-  let result = goals.value;
-  if (selectedFolderId.value) result = result.filter((g) => g.folderId === selectedFolderId.value);
-  return result;
-});
+const filteredGoals = computed(() => goals.value);
 
 function handleViewGoal(goal: GoalClientDTO) {
   router.push({ name: 'goal-detail', params: { id: goal.id } });

@@ -34,6 +34,7 @@ describe('ActivateTaskTemplateUseCase', () => {
       save: vi.fn().mockResolvedValue(undefined),
     });
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
+      findByTemplateId: vi.fn().mockResolvedValue([]),
       saveMany: vi.fn().mockResolvedValue(undefined),
     });
 
@@ -102,7 +103,10 @@ describe('ActivateTaskTemplateUseCase', () => {
 
     await useCase.execute(template.id, template.identityId);
 
-    expect(mockGenerateInstances).toHaveBeenCalledWith(template);
+    expect(mockGenerateInstances).toHaveBeenCalledWith(template, {
+      forceGenerate: true,
+      fromDate: expect.any(Number),
+    });
   });
 
   it('should save generated instances when there are some', async () => {

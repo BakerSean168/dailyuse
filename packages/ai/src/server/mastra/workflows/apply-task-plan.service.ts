@@ -84,7 +84,6 @@ function taskRequest(
     importance: task.importance,
     tags: task.tags,
     color: null,
-    folderId: task.folderId as NonNullable<CreateTaskTemplateReq['folderId']> | null,
     goalBinding:
       task.goalId && task.keyResultId
         ? {
@@ -94,8 +93,10 @@ function taskRequest(
             keyResultId: task.keyResultId as NonNullable<
               NonNullable<CreateTaskTemplateReq['goalBinding']>['keyResultId']
             >,
-            goalRecordValue: 1,
-            progressTrigger: TaskGoalBindingTrigger.PerInstance,
+            contribution: {
+              value: 1,
+              trigger: TaskGoalBindingTrigger.EachCompletion,
+            },
           }
         : null,
   };

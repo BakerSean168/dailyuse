@@ -159,8 +159,6 @@ export function composeTask(dependencies: ComposeTaskDependencies): ComposeTaskR
   const {
     taskTemplateRepository,
     taskInstanceRepository,
-    taskDependencyRepository,
-    taskFolderRepository,
     taskWriteTransactionRunner,
   } = createTaskPowerSyncRepositories(dependencies.db);
 
@@ -175,8 +173,6 @@ export function composeTask(dependencies: ComposeTaskDependencies): ComposeTaskR
   const instance = createTaskModule({
     taskTemplateRepository,
     taskInstanceRepository,
-    taskDependencyRepository,
-    taskFolderRepository,
     taskWriteTransactionRunner,
     runtimeContributions,
   });

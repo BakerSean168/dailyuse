@@ -24,10 +24,12 @@ import type {
   DeleteKeyResultReq,
   GetKeyResultsRes,
   CreateGoalReviewReq,
+  GoalReviewSystemContext,
   UpdateGoalReviewReq,
   DeleteGoalReviewReq,
   GetGoalReviewsRes,
   CreateGoalRecordReq,
+  UpdateGoalRecordReq,
   DeleteGoalRecordReq,
   GetGoalRecordsRes,
   GetGoalAggregateRes,
@@ -42,7 +44,7 @@ export interface IGoalApiClient {
     query?: string;
     status?: string[];
     systemView?: GoalSystemView;
-    folderId?: string;
+    labelIdsAll?: string[];
     startDate?: number;
     endDate?: number;
     includeChildren?: boolean;
@@ -50,12 +52,12 @@ export interface IGoalApiClient {
   getGoalById(id: string, includeChildren?: boolean): Promise<Result<GoalClientDTO>>;
   updateGoal(id: string, request: UpdateGoalReq): Promise<Result<GoalMutationReceipt>>;
   deleteGoal(id: string, request: DeleteGoalReq): Promise<Result<GoalMutationReceipt>>;
-  archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>>;
 
   // Goal Status
   activateGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>>;
   completeGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>>;
   archiveGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>>;
+  abandonGoal(id: string, expectedVersion: number): Promise<Result<GoalMutationReceipt>>;
 
   // Search
   searchGoals(params: {
@@ -64,7 +66,6 @@ export interface IGoalApiClient {
     pageSize?: number;
     status?: string[];
     systemView?: GoalSystemView;
-    folderId?: string;
   }): Promise<Result<QueryGoalsRes>>;
 
   // KeyResult Management (via Goal Aggregate)
@@ -98,6 +99,7 @@ export interface IGoalApiClient {
     request: CreateGoalReviewReq,
   ): Promise<Result<GoalMutationReceipt>>;
   getGoalReviewsByGoal(goalId: string): Promise<Result<GetGoalReviewsRes>>;
+  getGoalReviewContext(goalId: string, windowDays?: number): Promise<Result<GoalReviewSystemContext>>;
   updateGoalReview(
     goalId: string,
     reviewId: string,
@@ -114,6 +116,12 @@ export interface IGoalApiClient {
     goalId: string,
     keyResultId: string,
     request: Pick<CreateGoalRecordReq, 'value' | 'note' | 'expectedVersion'>,
+  ): Promise<Result<GoalMutationReceipt>>;
+  updateGoalRecord(
+    goalId: string,
+    keyResultId: string,
+    recordId: string,
+    request: UpdateGoalRecordReq,
   ): Promise<Result<GoalMutationReceipt>>;
   getGoalRecordsByKeyResult(
     goalId: string,
@@ -136,5 +144,4 @@ export interface IGoalApiClient {
   cloneGoal(goalId: string, request: CloneGoalReq): Promise<Result<GoalMutationReceipt>>;
 
   // AI Generation
-
 }

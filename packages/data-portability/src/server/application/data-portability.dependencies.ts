@@ -10,17 +10,8 @@
 export interface GoalRepoPort {
   findByIdentityId(identityId: string, options?: { includeChildren?: boolean }): Promise<unknown[]>;
 }
-export interface GoalFolderRepoPort {
-  findByIdentityId(identityId: string): Promise<unknown[]>;
-}
 export interface GoalRecordRepoPort {
   findByGoalId(identityId: string, goalId: string): Promise<unknown[]>;
-}
-export interface FocusSessionRepoPort {
-  findByIdentityId(identityId: string): Promise<unknown[]>;
-}
-export interface FocusModeRepoPort {
-  findByIdentityId(identityId: string): Promise<unknown[]>;
 }
 
 // ============ Task ============
@@ -30,12 +21,6 @@ export interface TaskTemplateRepoPort {
 }
 export interface TaskInstanceRepoPort {
   findByIdentityId(identityId: string): Promise<unknown[]>;
-}
-export interface TaskFolderRepoPort {
-  findByIdentityId(identityId: string): Promise<unknown[]>;
-}
-export interface TaskDependencyRepoPort {
-  findAllByIdentityId(identityId: string): Promise<unknown[]>;
 }
 
 // ============ Reminder ============
@@ -111,14 +96,9 @@ export interface SettingRepoPort {
 
 export interface DataPortabilityDependencies {
   goalRepository: GoalRepoPort;
-  goalFolderRepository: GoalFolderRepoPort;
   goalRecordRepository: GoalRecordRepoPort;
-  focusSessionRepository: FocusSessionRepoPort;
-  focusModeRepository: FocusModeRepoPort;
   taskTemplateRepository: TaskTemplateRepoPort;
   taskInstanceRepository: TaskInstanceRepoPort;
-  taskFolderRepository: TaskFolderRepoPort;
-  taskDependencyRepository: TaskDependencyRepoPort;
   reminderTemplateRepository: ReminderTemplateRepoPort;
   reminderGroupRepository: ReminderGroupRepoPort;
   reminderResponseRepository: ReminderResponseRepoPort;

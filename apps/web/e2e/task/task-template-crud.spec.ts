@@ -19,7 +19,7 @@ test.describe('Task Plan CRUD Operations', () => {
       landingPath: '/tasks',
     });
 
-    await expect(page.locator('#task-template-management')).toBeVisible({
+    await expect(page.getByTestId('task-management-view')).toBeVisible({
       timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
   });
@@ -30,9 +30,7 @@ test.describe('Task Plan CRUD Operations', () => {
     const creation = await createTaskTemplate(page, templateTitle);
 
     await expect(taskCardByTitle(page, templateTitle)).toBeVisible();
-    await expect(taskCardByTitle(page, templateTitle)).toContainText(
-      /优先级\s+\d+\/100|Priority\s+\d+\/100/i,
-    );
+    await expect(taskCardByTitle(page, templateTitle)).toContainText(/已启用中|Active/i);
     expect(creation.instanceCount).toBeGreaterThanOrEqual(0);
     expect(typeof creation.todayInstanceCreated).toBe('boolean');
     await expect(
@@ -45,8 +43,8 @@ test.describe('Task Plan CRUD Operations', () => {
   });
 
   test('should display task template list', async ({ page }) => {
-    await expect(page.locator('#task-template-management')).toBeVisible();
-    await expect(page.getByTestId('create-task-template-button')).toBeVisible();
+    await expect(page.getByTestId('task-management-view')).toBeVisible();
+    await expect(page.getByTestId('create-task-entry')).toBeVisible();
   });
 
   test('should edit an existing task template', async ({ page }) => {
@@ -55,8 +53,8 @@ test.describe('Task Plan CRUD Operations', () => {
 
     await createTaskTemplate(page, originalTitle);
 
-    const taskId = await openTaskCardMenu(page, originalTitle);
-    await page.getByTestId(`task-card-edit-action-${taskId}`).click();
+    const card = taskCardByTitle(page, originalTitle);
+    await card.getByRole('button', { name: /^(编辑|Edit)$/ }).click();
 
     await expect(taskTitleInput(page)).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
     const saveButton = taskPrimaryActionButton(page);
@@ -88,12 +86,12 @@ test.describe('Task Plan CRUD Operations', () => {
 
     await createTaskTemplate(page, templateTitle);
 
-    const taskId = await openTaskCardMenu(page, templateTitle);
-    await page.getByTestId(`task-card-delete-action-${taskId}`).click();
+    const card = taskCardByTitle(page, templateTitle);
+    await card.getByRole('button', { name: /^(删除|Delete)$/ }).click();
 
     const confirmDialog = page.getByRole('alertdialog');
     await expect(confirmDialog).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-    await confirmDialog.getByRole('button', { name: /确认|confirm/i }).click();
+    await page.getByTestId('global-confirm-confirm').click();
 
     await expect(taskCardByTitle(page, templateTitle)).toHaveCount(0);
   });
@@ -111,8 +109,8 @@ test.describe('Task Plan CRUD Operations', () => {
 
     const toolbar = page.getByTestId('task-page-toolbar');
     const searchInput = page.getByTestId('task-search-input');
-    const primaryCreate = page.locator('[data-primary-action="quick-task"]:visible');
-    const scrollHost = page.locator('#task-template-management');
+    const primaryCreate = page.locator('[data-primary-action="create-task"]:visible');
+    const scrollHost = page.getByTestId('task-management-scroll');
 
     await expect(toolbar).toBeVisible();
     await expect(primaryCreate).toHaveCount(1);
@@ -162,7 +160,7 @@ async function expectToolbarToFit(toolbar: Locator): Promise<void> {
 }
 
 async function openCreateTaskDialog(page: Page) {
-  const primaryCreateButton = page.getByTestId('create-task-template-button');
+  const primaryCreateButton = page.getByTestId('create-task-entry');
   await primaryCreateButton.click();
 
   await expect(page.getByTestId('task-template-dialog')).toBeVisible({
@@ -232,21 +230,7 @@ function taskPrimaryActionButton(page: Page): Locator {
 
 function taskCardByTitle(page: Page, title: string): Locator {
   return page
-    .locator('[data-testid="draggable-task-card"]')
+    .locator('[data-testid="task-plan-card"]')
     .filter({ has: page.getByText(title, { exact: true }) })
     .first();
-}
-
-async function openTaskCardMenu(page: Page, title: string): Promise<string> {
-  const card = taskCardByTitle(page, title);
-  await expect(card).toBeVisible();
-
-  const taskId = await card.getAttribute('data-task-id');
-  if (!taskId) {
-    throw new Error(`Task card id not found for "${title}"`);
-  }
-
-  await card.hover();
-  await page.getByTestId(`task-card-menu-trigger-${taskId}`).click();
-  return taskId;
 }

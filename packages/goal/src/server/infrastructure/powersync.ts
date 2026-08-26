@@ -12,9 +12,7 @@ import {
   type GoalRuntimeContributionsInput,
 } from './goal.module';
 import { GoalPowerSyncRepository } from './adapters/powersync/goal-powersync.repository';
-import { GoalFolderPowerSyncRepository } from './adapters/powersync/goal-folder-powersync.repository';
 import { GoalRecordPowerSyncRepository } from './adapters/powersync/goal-record-powersync.repository';
-import { FocusModePowerSyncRepository } from './adapters/powersync/focus-mode-powersync.repository';
 import { PowerSyncGoalWriteTransactionRunner } from './adapters/powersync/powersync-goal-write-transaction-runner';
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import { createGoalScheduleExecutionSource } from './schedule-execution-source';
@@ -52,18 +50,11 @@ export function createGoalPowerSyncModule(
   if (!options?.taskBindingReadPort) {
     throw new Error('[FAIL-CLOSED] createGoalPowerSyncModule requires options.taskBindingReadPort');
   }
-  const {
-    goalRepository,
-    goalFolderRepository,
-    goalRecordRepository,
-    focusModeRepository,
-    goalWriteTransactionRunner,
-  } = createGoalPowerSyncRepositories(db);
+  const { goalRepository, goalRecordRepository, goalWriteTransactionRunner } =
+    createGoalPowerSyncRepositories(db);
   return createGoalModule({
     goalRepository,
-    goalFolderRepository,
     goalRecordRepository,
-    focusModeRepository,
     goalWriteTransactionRunner,
     taskBindingReadPort: options.taskBindingReadPort,
     runtimeContributions: options?.runtimeContributions,
@@ -89,9 +80,7 @@ export function createGoalPowerSyncModule(
 export function createGoalPowerSyncRepositories(db: IElectronDatabase): GoalRepositorySet {
   return {
     goalRepository: new GoalPowerSyncRepository(db),
-    goalFolderRepository: new GoalFolderPowerSyncRepository(db),
     goalRecordRepository: new GoalRecordPowerSyncRepository(db),
-    focusModeRepository: new FocusModePowerSyncRepository(db),
     goalWriteTransactionRunner: new PowerSyncGoalWriteTransactionRunner(db),
   };
 }
@@ -122,9 +111,4 @@ export function createGoalPowerSyncScheduleExecutionSource(
   });
 }
 
-export {
-  GoalPowerSyncRepository,
-  GoalFolderPowerSyncRepository,
-  GoalRecordPowerSyncRepository,
-  FocusModePowerSyncRepository,
-};
+export { GoalPowerSyncRepository, GoalRecordPowerSyncRepository };

@@ -20,19 +20,18 @@ import {
 } from '@memoflow/contracts/mocks';
 
 describe('goal handlers contracts', () => {
-  it('uses the current goal adapter route prefixes', () => {
+  it('exposes only the canonical goal route prefix', () => {
     expect(goalMockRoutes.goals).toMatch(/\/goals$/);
-    expect(goalMockRoutes.folders).toMatch(/\/goal-folders$/);
+    expect(goalMockRoutes).not.toHaveProperty('folders');
   });
 
   it('keeps goal aggregate and query response shapes aligned with contracts', () => {
     const aggregateResponse = createMockGoalAggregateResponse(createMockGoal().id);
-
     expectSchemaSuccess(GetGoalAggregateResSchema, aggregateResponse);
     expectSchemaSuccess(QueryGoalsResSchema, createMockQueryGoalsRes(3));
   });
 
-  it('uses name-based create, update, search, aggregate, and clone contracts', async () => {
+  it('uses the vNext create, update, search, aggregate, and clone contracts', async () => {
     const { GoalHttpAdapter } = await import('@memoflow/goal/client');
     const httpClient = createHttpClientSpy();
     const adapter = new GoalHttpAdapter(httpClient);
@@ -49,8 +48,8 @@ describe('goal handlers contracts', () => {
 
     const createPayload = expectSchemaSuccess(CreateGoalSchema, {
       name: 'Ship web contracts',
-      importance: 'Important',
       description: 'Unify adapter payloads',
+      dueDate: Date.now(),
     });
     const updatePayload = expectSchemaSuccess(UpdateGoalSchema, {
       expectedVersion: 1,
@@ -62,19 +61,9 @@ describe('goal handlers contracts', () => {
       includeKeyResults: true,
     });
 
-    expectSchemaFailure(CreateGoalSchema, {
-      importance: 'Important',
-    });
-    expectSchemaFailure(CreateGoalSchema, {
-      title: 'Legacy goal title',
-      importance: 'Important',
-    });
-    expectSchemaFailure(UpdateGoalSchema, {
-      title: 'Legacy goal title',
-    });
-    expectSchemaFailure(CloneGoalSchema, {
-      title: 'Legacy goal title',
-    });
+    expectSchemaFailure(CreateGoalSchema, { importance: 'Important' });
+    expectSchemaFailure(CreateGoalSchema, { name: 'Legacy', category: 'work' });
+    expectSchemaFailure(UpdateGoalSchema, { expectedVersion: 1, folderId: 'folder-1' });
 
     await adapter.createGoal(createPayload);
     await adapter.updateGoal('goal-1', updatePayload);
@@ -89,8 +78,5 @@ describe('goal handlers contracts', () => {
     });
     expect(httpClient.get).toHaveBeenNthCalledWith(2, '/goals/goal-1/aggregate');
     expect(httpClient.post).toHaveBeenNthCalledWith(2, '/goals/goal-1/clone', clonePayload);
-    expect(createPayload).not.toHaveProperty('title');
-    expect(updatePayload).not.toHaveProperty('title');
-    expect(clonePayload).not.toHaveProperty('title');
   }, 30_000);
 });

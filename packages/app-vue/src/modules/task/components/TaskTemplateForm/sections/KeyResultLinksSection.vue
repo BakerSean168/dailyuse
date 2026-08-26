@@ -144,8 +144,22 @@
           </p>
         </div>
 
+        <div class="mb-3 rounded-md border p-3">
+          <div class="flex items-center gap-2">
+            <Switch
+              id="task-goal-contribution-enabled"
+              data-testid="task-goal-contribution-toggle"
+              :model-value="contributionEnabled"
+              :disabled="!selectedGoalId || !selectedKeyResultId"
+              @update:model-value="handleContributionToggle"
+            />
+            <Label for="task-goal-contribution-enabled">{{ t('task.krLinks.contributionEnable') }}</Label>
+          </div>
+          <p class="mt-1 text-xs text-muted-foreground">{{ t('task.krLinks.contributionHint') }}</p>
+        </div>
+
         <!-- 增量值设置 -->
-        <div class="mb-3">
+        <div v-if="contributionEnabled" class="mb-3">
           <Label for="task-goal-increment" class="mb-2 block">{{
             t('task.krLinks.progressValue')
           }}</Label>
@@ -171,7 +185,7 @@
           </p>
         </div>
 
-        <div class="mb-3">
+        <div v-if="contributionEnabled" class="mb-3">
           <Label for="task-goal-trigger" class="mb-2 block">{{
             t('task.krLinks.trigger.label')
           }}</Label>
@@ -205,7 +219,7 @@
 
         <!-- 预览卡片 -->
         <Card
-          v-if="hasCompleteBinding"
+          v-if="hasCompleteBinding && contributionEnabled"
           class="mt-4 bg-success/10 dark:bg-success/20 border-success/40 dark:border-success/50"
         >
           <CardContent class="pt-4">
@@ -285,8 +299,9 @@ const emit = defineEmits<{
 const linkEnabled = ref(false);
 const selectedGoalId = ref<string | null>(null);
 const selectedKeyResultId = ref<string | null>(null);
+const contributionEnabled = ref(false);
 const incrementValue = ref<number>(1);
-const progressTrigger = ref<TaskGoalBindingTriggerValue>(TaskGoalBindingTrigger.PerInstance);
+const progressTrigger = ref<TaskGoalBindingTriggerValue>(TaskGoalBindingTrigger.EachCompletion);
 // ===== 计算属性 =====
 const hasGoalBinding = computed(() => {
   return Boolean(props.modelValue.goalBinding?.goalId && props.modelValue.goalBinding?.keyResultId);
@@ -297,6 +312,7 @@ const hasCompleteBinding = computed(() => {
     linkEnabled.value &&
     selectedGoalId.value &&
     selectedKeyResultId.value &&
+    contributionEnabled.value &&
     incrementValue.value > 0 &&
     !!progressTrigger.value
   );
@@ -347,13 +363,13 @@ const wholePlanTriggerAllowed = computed(() => {
 
 const triggerItems = computed(() => [
   {
-    value: TaskGoalBindingTrigger.PerInstance,
+    value: TaskGoalBindingTrigger.EachCompletion,
     title: t('task.krLinks.trigger.perInstance'),
     description: t('task.krLinks.trigger.perInstanceDesc'),
     disabled: false,
   },
   {
-    value: TaskGoalBindingTrigger.AllInstancesCompleted,
+    value: TaskGoalBindingTrigger.PlanCompletion,
     title: t('task.krLinks.trigger.allInstancesCompleted'),
     description: wholePlanTriggerAllowed.value
       ? t('task.krLinks.trigger.allInstancesCompletedDesc')
@@ -399,8 +415,9 @@ const handleLinkToggle = (enabled: boolean | null) => {
   if (!enabled) {
     selectedGoalId.value = null;
     selectedKeyResultId.value = null;
+    contributionEnabled.value = false;
     incrementValue.value = 1;
-    progressTrigger.value = TaskGoalBindingTrigger.PerInstance;
+    progressTrigger.value = TaskGoalBindingTrigger.EachCompletion;
   }
 
   updateBinding();
@@ -425,6 +442,15 @@ const handleKeyResultChange = (value: unknown) => {
   validateAndEmit();
 };
 
+const handleContributionToggle = (enabled: boolean | null) => {
+  contributionEnabled.value = Boolean(enabled);
+  if (contributionEnabled.value && !progressTrigger.value) {
+    progressTrigger.value = TaskGoalBindingTrigger.EachCompletion;
+  }
+  updateBinding();
+  validateAndEmit();
+};
+
 const handleIncrementChange = () => {
   updateBinding();
   validateAndEmit();
@@ -432,11 +458,11 @@ const handleIncrementChange = () => {
 
 const handleTriggerChange = (rawValue: unknown) => {
   const value = normalizeSelectString(rawValue);
-  if (value === TaskGoalBindingTrigger.AllInstancesCompleted && !wholePlanTriggerAllowed.value) {
+  if (value === TaskGoalBindingTrigger.PlanCompletion && !wholePlanTriggerAllowed.value) {
     return;
   }
   progressTrigger.value =
-    (value as typeof progressTrigger.value) ?? TaskGoalBindingTrigger.PerInstance;
+    (value as typeof progressTrigger.value) ?? TaskGoalBindingTrigger.EachCompletion;
   updateBinding();
   validateAndEmit();
 };
@@ -448,8 +474,9 @@ const updateBinding = () => {
       ? {
           goalId: selectedGoalId.value ?? undefined,
           keyResultId: selectedKeyResultId.value ?? undefined,
-          incrementValue: incrementValue.value,
-          progressTrigger: progressTrigger.value,
+          ...(contributionEnabled.value
+            ? { contribution: { value: incrementValue.value, trigger: progressTrigger.value } }
+            : {}),
         }
       : null,
   };
@@ -464,15 +491,15 @@ const retryKeyResults = () => {
 
 const validateAndEmit = () => {
   // 如果启用了关联，必须完整填写所有字段
-  const isValid =
-    !linkEnabled.value ||
-    (!!selectedGoalId.value &&
-      !!selectedKeyResultId.value &&
-      !!progressTrigger.value &&
-      (progressTrigger.value !== TaskGoalBindingTrigger.AllInstancesCompleted ||
+  const hasValidLink = !!selectedGoalId.value && !!selectedKeyResultId.value;
+  const hasValidContribution =
+    !contributionEnabled.value ||
+    (!!progressTrigger.value &&
+      (progressTrigger.value !== TaskGoalBindingTrigger.PlanCompletion ||
         wholePlanTriggerAllowed.value) &&
       incrementValue.value > 0 &&
       incrementValue.value <= 1000);
+  const isValid = !linkEnabled.value || (hasValidLink && hasValidContribution);
 
   emit('update:validation', isValid);
 };
@@ -484,14 +511,16 @@ const initializeFromModel = () => {
     linkEnabled.value = true;
     selectedGoalId.value = binding.goalId ?? null;
     selectedKeyResultId.value = binding.keyResultId ?? null;
-    incrementValue.value = binding.incrementValue ?? 1;
-    progressTrigger.value = binding.progressTrigger ?? TaskGoalBindingTrigger.PerInstance;
+    contributionEnabled.value = !!binding.contribution;
+    incrementValue.value = binding.contribution?.value ?? 1;
+    progressTrigger.value = binding.contribution?.trigger ?? TaskGoalBindingTrigger.EachCompletion;
   } else {
     linkEnabled.value = false;
     selectedGoalId.value = null;
     selectedKeyResultId.value = null;
+    contributionEnabled.value = false;
     incrementValue.value = 1;
-    progressTrigger.value = TaskGoalBindingTrigger.PerInstance;
+    progressTrigger.value = TaskGoalBindingTrigger.EachCompletion;
   }
 };
 
@@ -501,10 +530,11 @@ onMounted(async () => {
   initializeFromModel();
 
   if (
-    progressTrigger.value === TaskGoalBindingTrigger.AllInstancesCompleted &&
+    contributionEnabled.value &&
+    progressTrigger.value === TaskGoalBindingTrigger.PlanCompletion &&
     !wholePlanTriggerAllowed.value
   ) {
-    progressTrigger.value = TaskGoalBindingTrigger.PerInstance;
+    progressTrigger.value = TaskGoalBindingTrigger.EachCompletion;
     updateBinding();
   }
 
@@ -530,10 +560,11 @@ watch(
   () => [props.modelValue.recurrenceRule, props.modelValue.taskType] as const,
   () => {
     if (
-      progressTrigger.value === TaskGoalBindingTrigger.AllInstancesCompleted &&
+      contributionEnabled.value &&
+      progressTrigger.value === TaskGoalBindingTrigger.PlanCompletion &&
       !wholePlanTriggerAllowed.value
     ) {
-      progressTrigger.value = TaskGoalBindingTrigger.PerInstance;
+      progressTrigger.value = TaskGoalBindingTrigger.EachCompletion;
       updateBinding();
     }
     validateAndEmit();

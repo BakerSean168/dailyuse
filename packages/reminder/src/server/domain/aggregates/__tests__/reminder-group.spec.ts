@@ -227,33 +227,18 @@ describe('ReminderGroup aggregate', () => {
   // -----------------------------------------------------------------------
   // enableAllTemplates() / pauseAllTemplates()
   // -----------------------------------------------------------------------
-  describe('enableAllTemplates()', () => {
-    it('should throw if not in GROUP mode', () => {
-      const group = ReminderGroup.load(makeGroupState({ controlMode: ControlMode.Individual }));
-      expect(() => group.enableAllTemplates()).toThrow('只能在 GROUP 模式下批量启用模板');
-    });
-
-    it('should succeed in GROUP mode', () => {
+  describe('legacy enableAllTemplates()/pauseAllTemplates() aliases', () => {
+    it('only changes the profile gate and is independent of ControlMode', () => {
       const group = ReminderGroup.load(
-        makeGroupState({ controlMode: ControlMode.Group, enabled: false }),
+        makeGroupState({ controlMode: ControlMode.Individual, enabled: false, status: ReminderStatus.Paused }),
       );
       group.enableAllTemplates();
       expect(group.enabled).toBe(true);
-    });
-  });
+      expect(group.status).toBe(ReminderStatus.Active);
 
-  describe('pauseAllTemplates()', () => {
-    it('should throw if not in GROUP mode', () => {
-      const group = ReminderGroup.load(makeGroupState({ controlMode: ControlMode.Individual }));
-      expect(() => group.pauseAllTemplates()).toThrow('只能在 GROUP 模式下批量暂停模板');
-    });
-
-    it('should succeed in GROUP mode', () => {
-      const group = ReminderGroup.load(
-        makeGroupState({ controlMode: ControlMode.Group, enabled: true }),
-      );
       group.pauseAllTemplates();
       expect(group.enabled).toBe(false);
+      expect(group.status).toBe(ReminderStatus.Paused);
     });
   });
 

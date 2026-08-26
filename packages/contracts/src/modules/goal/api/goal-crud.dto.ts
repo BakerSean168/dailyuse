@@ -6,11 +6,10 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { GoalId, IdentityId, GoalFolderId, KeyResultId } from '../../../primitives';
+import type { GoalId, IdentityId, KeyResultId } from '../../../primitives';
 import type { GoalClientDTO } from '../aggregates/goal-client';
 import { GoalStatus } from '../value-objects/goal-status';
 import { GoalSystemView } from '../value-objects/goal-system-view';
-import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import {
   GoalReminderConfigDTOSchema,
   ReminderTriggerSchema,
@@ -46,19 +45,11 @@ export const CreateGoalSchema = z
     id: brandedId<GoalId>().optional(),
     name: GoalNameSchema,
     description: z.string().max(2000, '描述不能超过 2000 字符').optional(),
-    color: z
-      .string()
-      .regex(/^#[0-9A-F]{6}$/i, '颜色必须是有效的 hex 格式')
-      .optional(),
     feasibilityAnalysis: z.string().max(2000).optional(),
     motivation: z.string().max(2000).optional(),
-    importance: z.enum(ImportanceLevel),
-    category: z.string().max(100).optional(),
-    tags: z.array(z.string().max(50)).optional(),
     startDate: z.number().int().optional(),
-    targetDate: z.number().int().optional(),
-    folderId: brandedId<GoalFolderId>().optional(),
-    parentGoalId: brandedId<GoalId>().optional(),
+    dueDate: z.number().int().optional(),
+    labelIds: z.array(z.string().min(1)).max(50).optional(),
     reminderConfig: GoalReminderConfigRequestSchema.nullable().optional(),
     initialKeyResults: z.array(KeyResultInputSchema).max(50).optional(),
   })
@@ -79,25 +70,12 @@ export const UpdateGoalSchema = z
     expectedVersion: z.number().int().min(1),
     name: GoalNameSchema.optional(),
     description: z.string().max(2000).nullable().optional(),
-    color: z
-      .string()
-      .regex(/^#[0-9A-F]{6}$/i)
-      .nullable()
-      .optional(),
     feasibilityAnalysis: z.string().max(2000).nullable().optional(),
     motivation: z.string().max(2000).nullable().optional(),
-    importance: z.enum(ImportanceLevel).optional(),
-    category: z.string().max(100).nullable().optional(),
-    tags: z.array(z.string().max(50)).nullable().optional(),
     startDate: z.number().int().nullable().optional(),
-    targetDate: z.number().int().nullable().optional(),
-    folderId: brandedId<GoalFolderId>().nullable().optional(),
-    parentGoalId: brandedId<GoalId>().nullable().optional(),
+    dueDate: z.number().int().nullable().optional(),
+    labelIds: z.array(z.string().min(1)).max(50).optional(),
     reminderConfig: GoalReminderConfigRequestSchema.nullable().optional(),
-    /**
-     * Complete desired KR state for aggregate editing. Existing rows carry their ID;
-     * rows without an ID are created and existing rows omitted from the list are removed.
-     */
     keyResults: z
       .array(
         KeyResultInputSchema.extend({
@@ -145,17 +123,11 @@ export type DeleteGoalRes = import('./response-schemas').GoalMutationReceipt;
 export const ListGoalFiltersSchema = z.object({
   systemView: z.enum(GoalSystemView).optional(),
   status: z.array(z.enum(GoalStatus)).optional(),
-  importance: z.array(z.enum(ImportanceLevel)).optional(),
-  category: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  folderId: brandedId<GoalFolderId>().optional(),
   query: z.string().max(256).optional(),
+  labelIdsAll: z.array(z.string().min(1)).max(50).optional(),
   startDate: z.number().int().optional(),
   endDate: z.number().int().optional(),
-  sortBy: z
-    .enum(['createdAt', 'updatedAt', 'targetDate', 'priority'])
-    .default('createdAt')
-    .optional(),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'dueDate']).default('createdAt').optional(),
   sortOrder: z.enum(['asc', 'desc']).default('desc').optional(),
   page: z.number().int().min(1).default(1).optional(),
   pageSize: z.number().int().min(1).max(100).default(20).optional(),
@@ -216,16 +188,6 @@ export const BatchUpdateGoalStatusSchema = z.object({
 export type BatchUpdateGoalStatusReq = z.infer<typeof BatchUpdateGoalStatusSchema>;
 
 /**
- * 批量移动目标 Schema
- */
-export const BatchMoveGoalsSchema = z.object({
-  goalIds: z.array(brandedId<GoalId>()).min(1),
-  targetFolderId: brandedId<GoalFolderId>(),
-});
-
-export type BatchMoveGoalsReq = z.infer<typeof BatchMoveGoalsSchema>;
-
-/**
  * 批量删除目标 Schema
  */
 export const BatchDeleteGoalsSchema = z.object({
@@ -275,7 +237,6 @@ export type ExportGoalsRes = z.infer<typeof ExportGoalsResSchema>;
 export const ImportGoalPayloadSchema = z.object({
   data: z.union([z.string(), z.custom<Uint8Array>((val) => val instanceof Uint8Array)]),
   format: z.enum(['json', 'csv']),
-  folderId: brandedId<GoalFolderId>().optional(),
   overwriteExisting: z.boolean().default(false).optional(),
 });
 

@@ -20,7 +20,6 @@ describe('goalOperations createGoalErrorHandler keep-boundary (residual 1065)', 
   );
   const consumers = {
     useGoal: readFileSync(resolve(composablesDir, 'useGoal.ts'), 'utf8'),
-    useGoalFolders: readFileSync(resolve(composablesDir, 'useGoalFolders.ts'), 'utf8'),
     useKeyResults: readFileSync(resolve(composablesDir, 'useKeyResults.ts'), 'utf8'),
     useGoalRecords: readFileSync(resolve(composablesDir, 'useGoalRecords.ts'), 'utf8'),
   } as const;

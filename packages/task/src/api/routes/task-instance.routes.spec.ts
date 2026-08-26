@@ -33,7 +33,7 @@ function createControllerStub(): TaskInstanceController {
     skipInstance: vi.fn(),
     startInstance: vi.fn(),
     deleteInstance: vi.fn(),
-    checkExpired: vi.fn(),
+    markMissedInstance: vi.fn(),
   } as unknown as TaskInstanceController;
 }
 
@@ -132,34 +132,17 @@ describe('task-instance route contracts', () => {
     ).toBe(true);
   });
 
-  it('POST /check-expired uses CheckExpiredTaskInstancesResponseSchema', () => {
+  it('POST /:id/missed uses an explicit fact command and there is no check-expired route', () => {
     const registry = new TestOpenApiRegistry();
     registerAll(registry);
 
-    const route = getRegisteredRoute(registry, 'post', `${BASE}/check-expired`);
+    const route = getRegisteredRoute(registry, 'post', `${BASE}/{id}/missed`);
+    const bodySchema = getJsonBodySchema(route);
     const responseSchema = getResponseSchema(route, 200);
+    expect(bodySchema.safeParse({ reason: 'No completion evidence' }).success).toBe(true);
+    expect(bodySchema.safeParse({ reason: 42 }).success).toBe(false);
     expect(responseSchema).toBeDefined();
-    expect(
-      responseSchema.safeParse({
-        ok: true,
-        code: 200,
-        message: 'ok',
-        data: {
-          count: 2,
-          instances: [],
-        },
-        timestamp: Date.now(),
-      }).success,
-    ).toBe(true);
-    expect(
-      responseSchema.safeParse({
-        ok: true,
-        code: 200,
-        message: 'ok',
-        data: [],
-        timestamp: Date.now(),
-      }).success,
-    ).toBe(false);
+    expect(registry.paths.some((candidate) => candidate.path === `${BASE}/check-expired`)).toBe(false);
   });
 
   it('GET / list uses z.array(TaskInstanceResponseSchema)', () => {

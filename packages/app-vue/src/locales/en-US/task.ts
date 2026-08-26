@@ -87,7 +87,7 @@ export default {
     "instanceStatusInProgress": "In progress",
     "instanceStatusCompleted": "Completed",
     "instanceStatusSkipped": "Skipped",
-    "instanceStatusExpired": "Expired",
+    "instanceStatusMissed": "Missed",
     "instanceStatusNotGenerated": "Not generated",
     "edit": "Edit"
   },
@@ -266,6 +266,8 @@ export default {
     "loadError": "Could not load key results",
     "retry": "Retry",
     "emptyKeyResults": "This goal has no key results yet",
+    "contributionEnable": "Automatically contribute progress",
+    "contributionHint": "When enabled, completion updates this key result. Leave it off for a link-only relationship.",
     "progressValue": "Progress increment on completion",
     "progressPlaceholder": "Enter progress increment (positive)",
     "points": "pts",
@@ -282,8 +284,8 @@ export default {
     },
     "configPreview": "Link Configuration Preview",
     "previewText": {
-      "PER_INSTANCE": "Each completed to-do increases key result progress by {value} pts",
-      "ALL_INSTANCES_COMPLETED": "Key result progress increases by {value} pts once the entire finite task plan is complete"
+      "EachCompletion": "Each completion increases key result progress by {value} pts",
+      "PlanCompletion": "Key result progress increases by {value} pts once the finite plan succeeds"
     },
     "validation": {
       "required": "This field is required",
@@ -430,7 +432,7 @@ export default {
     "instanceStatusInProgress": "In progress",
     "instanceStatusCompleted": "Completed",
     "instanceStatusSkipped": "Skipped",
-    "instanceStatusExpired": "Expired",
+    "instanceStatusMissed": "Missed",
     "instanceStatusNotGenerated": "Not generated",
     "moreTagsSuffix": " more tags"
   },
@@ -621,7 +623,7 @@ export default {
     "inprogress": "In Progress",
     "completed": "Completed",
     "skipped": "Skipped",
-    "expired": "Expired"
+    "missed": "Missed"
   },
   "status": {
     "completed": "Completed"

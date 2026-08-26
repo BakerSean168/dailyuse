@@ -91,7 +91,7 @@ const statusBadgeClass = computed(() => {
       return 'bg-info/15 text-info';
     case 'Skipped':
       return 'bg-muted text-muted-foreground';
-    case 'Expired':
+    case 'Missed':
       return 'bg-destructive/15 text-destructive';
     default:
       return 'bg-warning/15 text-warning';
