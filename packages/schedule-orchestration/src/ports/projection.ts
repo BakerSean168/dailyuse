@@ -1,5 +1,6 @@
 import type { ScheduledHandlerRegistration, SchedulingPort } from '@memoflow/contracts/schedule';
 import type { GoalScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
+import type { RoutineScheduleProjectionSource } from '@memoflow/reminder/schedule-projection/routine';
 import type { ReminderScheduleProjectionSource } from '@memoflow/reminder/schedule-projection';
 import type { IScheduleTaskRepository, ScheduleTask } from '@memoflow/schedule';
 import type { TaskScheduleProjectionSource } from '@memoflow/task/schedule-projection';
@@ -43,4 +44,6 @@ export interface CreateScheduleOrchestrationModuleOptions {
   readonly goalProjection: ScheduleOrchestrationProjectionDeps<GoalScheduleProjectionSource>;
   readonly reminderProjection: ScheduleOrchestrationScheduleTaskProjectionDeps<ReminderScheduleProjectionSource>;
   readonly execution: ScheduleOrchestrationExecutionDeps;
+  /** ROUTINE-3401 durable wall-clock lane; joining wires the handler + routine runtime. */
+  readonly routineProjection?: ScheduleOrchestrationProjectionDeps<RoutineScheduleProjectionSource>;
 }

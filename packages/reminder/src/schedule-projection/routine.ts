@@ -1,0 +1,21 @@
+/**
+ * Routine (ROUTINE-3401) wall-clock projection lane (narrow seam).
+ *
+ * Narrow sub-path that avoids dragging the Reminder compose roots (Prisma,
+ * PowerSync) into orchestrators that only join the durable Routine recurrence
+ * projection. The full seam at ./index.ts continues to export both lanes.
+ */
+export {
+  routineScheduleProjectionEventNames,
+  createRoutineScheduleProjectionEventHandlers,
+  createRoutineScheduleProjectionSource,
+} from '../server/infrastructure/routine-schedule/routine-schedule-projection-source';
+export type {
+  RoutineOccurrenceCommittedEvent,
+  RoutineScheduleProjectionEventMap,
+  RoutineScheduleProjectionHandlers,
+  RoutineScheduleProjectionPlan,
+  RoutineScheduleProjectionSource,
+  RoutineScheduleSnapshot,
+  RoutineScheduleStateReader,
+} from '../server/infrastructure/routine-schedule/routine-schedule-projection-source';
