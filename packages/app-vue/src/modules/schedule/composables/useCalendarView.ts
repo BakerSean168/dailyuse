@@ -10,7 +10,7 @@ import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
 import { padTwoDigits } from '../../../shared/utils/pad-two-digits';
 import { useSchedule } from './useSchedule';
 import { useTask } from '../../task/composables/useTask';
-import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@memoflow/contracts/task';
+import type { TaskInstanceClientDTO, TaskInstanceStatus, TaskTemplateClientDTO } from '@memoflow/contracts/task';
 import { startOfDayMs, endOfDayMs } from '../../../shared/utils/product-time';
 
 // ============ 统一内部事件类型 ============
@@ -25,7 +25,7 @@ export interface CalendarEventItem {
   hasConflict?: boolean;
   originalId: string;
   /** 仅当 source === 'task' 时存在，对应 TaskInstanceStatus 值 */
-  instanceStatus?: string;
+  instanceStatus?: TaskInstanceStatus;
 }
 
 /**

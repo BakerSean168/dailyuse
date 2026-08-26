@@ -1,18 +1,31 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, h } from 'vue';
-import { mount, flushPromises } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
-import { ok, fail } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
 import { NOTIFICATION_SERVICE_KEY } from '../../../di/keys';
 import {
-  useNotificationPreferences,
   NOTIFICATION_PREFERENCE_MODULES,
+  useNotificationPreferences,
 } from './useNotificationPreferences';
 
 const service = {
   getPreferences: vi.fn(),
   updatePreferences: vi.fn(),
 };
+
+const basePreference = {
+  id: 'INotificationPreferenceId_550e8400-e29b-41d4-a716-446655440000',
+  identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
+  globalChannels: { InApp: false, Push: false },
+  workflowOverrides: { 'task.general': { InApp: true } },
+  doNotDisturb: null,
+  rateLimit: null,
+  version: 1,
+  createdAt: 1,
+  updatedAt: 1,
+  deletedAt: null,
+} as const;
 
 function mountComposable() {
   const i18n = createI18n({
@@ -41,9 +54,7 @@ function mountComposable() {
   mount(Host, {
     global: {
       plugins: [i18n],
-      provide: {
-        [NOTIFICATION_SERVICE_KEY as symbol]: service,
-      },
+      provide: { [NOTIFICATION_SERVICE_KEY as symbol]: service },
     },
   });
 
@@ -51,58 +62,32 @@ function mountComposable() {
   return api;
 }
 
-describe('useNotificationPreferences (residual 199)', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+describe('useNotificationPreferences vNext hierarchy', () => {
+  beforeEach(() => vi.clearAllMocks());
 
-  it('loads preferences without passing identityId dual-track', async () => {
-    service.getPreferences.mockResolvedValue(
-      ok({
-        id: 'INotificationPreferenceId_550e8400-e29b-41d4-a716-446655440000',
-        identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-        settings: { task: ['InApp', 'Push'] },
-        version: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        deletedAt: null,
-      }),
-    );
+  it('uses workflow override first and global channel preference as fallback', async () => {
+    service.getPreferences.mockResolvedValue(ok(basePreference as never));
 
     const api = mountComposable();
     await api.loadPreferences();
     await flushPromises();
 
     expect(service.getPreferences).toHaveBeenCalledWith();
-    expect(service.getPreferences.mock.calls[0]).toEqual([]);
     expect(api.hasChannel('task', 'inApp')).toBe(true);
-    expect(api.hasChannel('task', 'push')).toBe(true);
+    expect(api.hasChannel('task', 'push')).toBe(false);
     expect(api.hasChannel('goal', 'inApp')).toBe(false);
     expect(NOTIFICATION_PREFERENCE_MODULES).toContain('task');
   });
 
-  it('updates a module channel via categories without identityId', async () => {
-    service.getPreferences.mockResolvedValue(
-      ok({
-        id: 'INotificationPreferenceId_550e8400-e29b-41d4-a716-446655440000',
-        identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-        settings: { task: ['InApp'] },
-        version: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        deletedAt: null,
-      }),
-    );
+  it('updates only the workflow-specific channel override without identity dual-track', async () => {
+    service.getPreferences.mockResolvedValue(ok(basePreference as never));
     service.updatePreferences.mockResolvedValue(
       ok({
-        id: 'INotificationPreferenceId_550e8400-e29b-41d4-a716-446655440000',
-        identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-        settings: { task: ['InApp', 'Push'] },
+        ...basePreference,
+        workflowOverrides: { 'task.general': { InApp: true, Push: true } },
         version: 2,
-        createdAt: 1,
         updatedAt: 2,
-        deletedAt: null,
-      }),
+      } as never),
     );
 
     const api = mountComposable();
@@ -112,11 +97,10 @@ describe('useNotificationPreferences (residual 199)', () => {
 
     expect(saved).toBe(true);
     expect(service.updatePreferences).toHaveBeenCalledWith({
-      categories: {
-        task: { inApp: true, push: true, email: false, sms: false },
+      workflowOverrides: {
+        'task.general': { InApp: true, Push: true },
       },
     });
-    // No identity dual-track on client call.
     expect(service.updatePreferences.mock.calls[0][0]).not.toHaveProperty('identityId');
     expect(api.hasChannel('task', 'push')).toBe(true);
   });

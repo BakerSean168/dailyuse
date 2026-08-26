@@ -15,15 +15,13 @@ type Translate = ComposerTranslation<Record<string, never>, string>;
 const statusMap: Record<string, string> = {
   Active: 'ACTIVE',
   Paused: 'PAUSED',
-  Archived: 'ARCHIVED',
-  Deleted: 'DELETED',
+  Closed: 'CLOSED',
 };
 
 const statusLabelKeys: Record<string, string> = {
   ACTIVE: 'task.templateCard.statusActive',
   PAUSED: 'task.templateCard.statusPaused',
-  ARCHIVED: 'task.templateCard.statusArchived',
-  DELETED: 'common.delete',
+  CLOSED: 'task.templateCard.statusArchived',
 };
 
 const importanceLabelKeys: Record<string, string> = {
@@ -39,7 +37,7 @@ const instanceStatusLabelKeys: Record<string, string> = {
   InProgress: 'task.templateCard.instanceStatusInProgress',
   Completed: 'task.templateCard.instanceStatusCompleted',
   Skipped: 'task.templateCard.instanceStatusSkipped',
-  Expired: 'task.templateCard.instanceStatusExpired',
+  Missed: 'task.templateCard.instanceStatusMissed',
 };
 
 /** Residual 1297: HH:mm pad dual retired onto formatHHmmParts; null/clamp stay local. */
@@ -160,16 +158,11 @@ export function mapTaskTemplateDtoToViewModel(
     statusText: t(statusLabelKeys[status] ?? 'common.unknown'),
     isActive: status === 'ACTIVE',
     isPaused: status === 'PAUSED',
-    isArchived: status === 'ARCHIVED',
+    isArchived: dto.archivedAt !== null,
     importance: dto.importance,
     importanceText: t(importanceLabelKeys[dto.importance] ?? 'common.unknown'),
-    priority: dto.priority ?? 0,
     estimatedMinutes: dto.estimatedMinutes,
     dueDate: dto.dueDate ?? null,
-    parentTaskId: dto.parentTaskId,
-    dependencyStatus: dto.dependencyStatus,
-    isBlocked: dto.isBlocked,
-    blockingReason: dto.blockingReason,
     recurrenceText: getTaskRecurrenceText(t, dto),
     tags: dto.tags ?? [],
     tagSummaryText:
@@ -178,8 +171,9 @@ export function mapTaskTemplateDtoToViewModel(
       ? {
           goalId: dto.goalBinding.goalId,
           keyResultId: dto.goalBinding.keyResultId,
-          incrementValue: dto.goalBinding.goalRecordValue,
-          progressTrigger: dto.goalBinding.progressTrigger,
+          contribution: dto.goalBinding.contribution
+            ? { value: dto.goalBinding.contribution.value, trigger: dto.goalBinding.contribution.trigger }
+            : undefined,
         }
       : null,
     timeConfig: {

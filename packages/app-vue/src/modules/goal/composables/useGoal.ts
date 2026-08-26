@@ -6,9 +6,7 @@
  * 使用 Result<T> 模式替代 try/catch。
  *
  * 子实体操作已拆分：
- * - useFocusMode: focus mode
  * - useGoalFilters: filter/search
- * - useGoalFolders: folder CRUD
  * - useKeyResults: key result CRUD
  * - useGoalRecords: records + reviews
  * - goalOperations: 共享 orchestration helpers
@@ -27,9 +25,7 @@ import type {
   GetGoalAggregateRes,
 } from '@memoflow/contracts/goal';
 import { executeGoalOperation, createGoalErrorHandler } from './goalOperations';
-import { useFocusMode } from './useFocusMode';
 import { useGoalFilters } from './useGoalFilters';
-import { useGoalFolders } from './useGoalFolders';
 import { useKeyResults } from './useKeyResults';
 import { useGoalRecords } from './useGoalRecords';
 
@@ -44,7 +40,6 @@ export function useGoal() {
   const goals = computed(() => store.goals);
   const selectedGoal = computed(() => store.selectedGoal);
   const keyResults = computed(() => store.keyResults);
-  const goalFolders = computed(() => store.goalFolders);
   const goalReviews = computed(() => store.goalReviews);
   const goalRecords = computed(() => store.goalRecords);
   const isLoading = computed(() => store.isLoading);
@@ -63,7 +58,6 @@ export function useGoal() {
     store.setLoading(true);
     store.setError(null);
     try {
-      await service.archiveExpiredGoals?.();
       const searchQuery = store.searchQuery || undefined;
       const params = {
         systemView: store.systemView,
@@ -180,9 +174,7 @@ export function useGoal() {
 
   // ── Sub-composables ──────────────────────────────────────────────────
 
-  const focusMode = useFocusMode();
   const filters = useGoalFilters(fetchGoals);
-  const folders = useGoalFolders();
   const keyResultOps = useKeyResults();
   const recordOps = useGoalRecords();
 
@@ -192,7 +184,6 @@ export function useGoal() {
     selectedGoal,
     getKeyResultById: store.getKeyResultById,
     keyResults,
-    goalFolders,
     goalReviews,
     goalRecords,
     isLoading,
@@ -205,12 +196,8 @@ export function useGoal() {
     deleteGoal,
     // Aggregate view
     getGoalAggregateView,
-    // Focus mode (delegated)
-    ...focusMode,
     // Filters (delegated)
     ...filters,
-    // Folder CRUD (delegated)
-    ...folders,
     // Key Result CRUD (delegated)
     ...keyResultOps,
     // Records + Reviews (delegated)

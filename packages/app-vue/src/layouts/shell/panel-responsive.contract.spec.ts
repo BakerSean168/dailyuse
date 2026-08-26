@@ -25,8 +25,8 @@ describe('split workspace responsive contract', () => {
 
   it('uses business-panel breakpoints for embedded Goal and Repository grids', () => {
     for (const path of [
-      '../../modules/goal/components/comparison/ComparisonStatsPanel.vue',
-      '../../modules/goal/components/cards/GoalInfoShowCard.vue',
+      '../../modules/goal/components/weight/WeightSuggestionPanel.vue',
+      '../../modules/goal/components/weight-snapshot/WeightComparison.vue',
       '../../modules/repository/views/KnowledgeProjectionWorkspaceView.vue',
       '../../modules/repository/components/KnowledgeProjectionRelationsView.vue',
     ]) {

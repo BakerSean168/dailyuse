@@ -17,7 +17,6 @@ import {
   type TaskTemplateListQueryInput,
 } from '../../../platform/server-state/query-keys';
 import { useTaskInstances } from './useTaskInstances';
-import { useTaskDependencies } from './useTaskDependencies';
 import { useTaskTemplateListQuery } from './useTaskTemplateListQuery';
 import { waitForTaskTemplateQuery } from './taskTemplateCache';
 
@@ -35,7 +34,6 @@ export function useTask() {
     enabled: listRequested,
   });
   const instanceOps = useTaskInstances();
-  const dependencyOps = useTaskDependencies();
 
   async function fetchTemplates(query?: TaskTemplateListQueryInput) {
     listParams.value = {
@@ -43,7 +41,6 @@ export function useTask() {
       limit: query?.limit ?? store.pagination.pageSize,
       status: query?.status,
       goalId: query?.goalId,
-      folderId: query?.folderId,
       tags: query?.tags,
     };
     listRequested.value = true;
@@ -85,9 +82,6 @@ export function useTask() {
     completeInstance: instanceOps.completeInstance,
     uncompleteInstance: instanceOps.uncompleteInstance,
     skipInstance: instanceOps.skipInstance,
-    // Dependency operations
-    createDependency: dependencyOps.createDependency,
-    deleteDependency: dependencyOps.deleteDependency,
     // Pagination
     setPage,
   };

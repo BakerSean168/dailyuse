@@ -9,6 +9,7 @@ export default {
   "reset": "Reset",
   "search": "Search",
   "loading": "Loading...",
+  "empty": "Empty",
   "noData": "No data",
   "success": "Success",
   "error": "Error",

@@ -87,7 +87,7 @@ export default {
     "instanceStatusInProgress": "进行中",
     "instanceStatusCompleted": "已完成",
     "instanceStatusSkipped": "已跳过",
-    "instanceStatusExpired": "已过期",
+    "instanceStatusMissed": "已错过",
     "instanceStatusNotGenerated": "尚未生成",
     "edit": "编辑"
   },
@@ -266,6 +266,8 @@ export default {
     "loadError": "关键结果加载失败",
     "retry": "重试",
     "emptyKeyResults": "该目标还没有关键结果",
+    "contributionEnable": "自动贡献关键结果进度",
+    "contributionHint": "启用后任务完成会更新该关键结果；关闭时仅保留关联关系，不自动贡献。",
     "progressValue": "完成后增加的进度值",
     "progressPlaceholder": "输入进度增量（正数）",
     "points": "点",
@@ -282,8 +284,8 @@ export default {
     },
     "configPreview": "关联配置预览",
     "previewText": {
-      "PER_INSTANCE": "每完成一个待办任务后，将为关键结果增加 {value} 点进度",
-      "ALL_INSTANCES_COMPLETED": "当整个有限任务计划完成后，将为关键结果增加 {value} 点进度"
+      "EachCompletion": "每次完成后为关键结果增加 {value} 点进度",
+      "PlanCompletion": "整个有限任务计划成功后，为关键结果增加 {value} 点进度"
     },
     "validation": {
       "required": "此项为必填项",
@@ -430,7 +432,7 @@ export default {
     "instanceStatusInProgress": "进行中",
     "instanceStatusCompleted": "已完成",
     "instanceStatusSkipped": "已跳过",
-    "instanceStatusExpired": "已过期",
+    "instanceStatusMissed": "已错过",
     "instanceStatusNotGenerated": "尚未生成",
     "moreTagsSuffix": "等...个标签"
   },
@@ -621,7 +623,7 @@ export default {
     "inprogress": "进行中",
     "completed": "已完成",
     "skipped": "已跳过",
-    "expired": "已过期"
+    "missed": "已错过"
   },
   "status": {
     "completed": "已完成"

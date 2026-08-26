@@ -26,16 +26,6 @@ export const taskRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'dependency-validation-demo',
-        name: 'task-dependency-demo',
-        component: () => import('../views/DependencyValidationDemoView.vue'),
-        meta: {
-          title: 'task.route.dependencyDemo',
-          requiresAuth: true,
-          showInNav: import.meta.env.DEV, // 仅开发环境显示
-        },
-      },
-      {
         path: ':id',
         name: 'task-detail',
         component: () => import('../views/TaskDetailView.vue'),

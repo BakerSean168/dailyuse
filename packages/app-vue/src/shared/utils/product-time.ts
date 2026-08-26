@@ -82,6 +82,20 @@ export function formatProductDateTime(
   return sessionTime.format.dateTime(ms);
 }
 
+/** Product-time conversion for native date input values (YYYY-MM-DD). */
+export function toProductDateInputValue(
+  value: number | null | undefined,
+): string {
+  return sessionTime.input.dateValue(value);
+}
+
+/** Parse a native date input value at local product-day midnight. */
+export function fromProductDateInputValue(raw: string): number | null {
+  const ymd = sessionTime.input.parseDateValue(raw);
+  if (ymd == null) return null;
+  return sessionTime.input.combine(ymd, '00:00') as number | null;
+}
+
 export function formatProductDate(
   value: number | string | Date | null | undefined,
   empty?: EmptyLabel,

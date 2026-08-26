@@ -26,10 +26,6 @@ describe('formatTime keep-boundary (residual 1237)', () => {
     resolve(dir, '../../modules/goal/components/weight-snapshot/WeightSnapshotList.vue'),
     'utf8',
   );
-  const focus = readFileSync(
-    resolve(dir, '../../modules/goal/views/GoalFocusView.vue'),
-    'utf8',
-  );
   const capsule = readFileSync(
     resolve(dir, '../../layouts/shell/previews/ReminderCapsulePreview.vue'),
     'utf8',
@@ -54,8 +50,6 @@ describe('formatTime keep-boundary (residual 1237)', () => {
     expect(progress).not.toMatch(/function formatTime\b/);
     expect(weight).toContain('formatProductPattern');
     expect(weight).not.toMatch(/function formatTime\b/);
-    expect(focus).toContain('formatProductDateTime');
-    expect(focus).not.toMatch(/function formatTime\b/);
     expect(capsule).toContain('formatProductHm');
     expect(capsule).not.toMatch(/function formatTime\b/);
   });

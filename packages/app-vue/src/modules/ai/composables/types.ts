@@ -6,7 +6,6 @@ import type {
   GoalPlanTaskTemplate,
   QueryKnowledgeRes,
 } from '@memoflow/contracts/ai';
-import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { IAIClient, IWorkflowRuntimeService } from '../../../di/types';
 
 /** Options for useAIGoalWorkflow composable. */
@@ -115,7 +114,7 @@ export type AIWorkspaceRecentGoal = {
   title: string;
   status: string;
   updatedAt: number;
-  targetDate: number | null;
+  dueDate: number | null;
   progress: number | null;
 };
 export type AIWorkspaceRecentKnowledgeNote = {
@@ -148,21 +147,18 @@ export interface GoalClarificationView {
 export type EditableGoal = {
   name: string;
   description: string;
-  category: string;
-  importance: CreateGoalReq['importance'];
   motivation: string;
   feasibilityAnalysis: string;
-  tags: string[];
   startDate: number | null;
-  targetDate: number | null;
+  dueDate: number | null;
 };
 
 export type EditableKeyResult = {
   title: string;
   description: string;
-  valueType: AddKeyResultReq['valueType'];
   calculationMethod: AddKeyResultReq['calculationMethod'];
-  startValue: number;
+  startingValue: number;
+  progressBaselineValue: number | null;
   currentValue: number;
   targetValue: number;
   unit: string;
@@ -206,17 +202,7 @@ export type PersistedWorkflowEntry = {
 export type PersistedConversationModelMap = Record<string, string>;
 
 export function createEmptyGoalDraft(): EditableGoal {
-  return {
-    name: '',
-    description: '',
-    category: '',
-    importance: 'Moderate' as typeof ImportanceLevel.Moderate,
-    motivation: '',
-    feasibilityAnalysis: '',
-    tags: [],
-    startDate: null,
-    targetDate: null,
-  };
+  return { name: '', description: '', motivation: '', feasibilityAnalysis: '', startDate: null, dueDate: null };
 }
 
 export function createEmptyGoalTaskTemplateDraft(): EditableGoalTaskTemplate {

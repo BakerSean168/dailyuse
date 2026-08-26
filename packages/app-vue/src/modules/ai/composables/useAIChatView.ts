@@ -91,7 +91,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
         title: goal.name,
         status: String(goal.status),
         updatedAt: Number(goal.updatedAt ?? 0),
-        targetDate: goal.targetDate === null ? null : Number(goal.targetDate),
+        dueDate: goal.dueDate === null ? null : Number(goal.dueDate),
         progress: goal.overallProgress,
       })),
   );

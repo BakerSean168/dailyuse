@@ -5,7 +5,6 @@
  */
 
 // Types
-export * from './types/task-dag.types';
 
 // Store (instances/currentInstance + UI state; templates live in the query cache)
 export { useTaskStore } from './stores/task-store';
@@ -14,7 +13,6 @@ export type { TaskStoreType } from './stores/task-store';
 // Composables
 export { useTask } from './composables/useTask';
 export {
-  useTaskTemplateGraphQuery,
   useTaskTemplateListQuery,
   useTaskTemplateDetailQuery,
   useTaskTemplateMutations,

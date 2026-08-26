@@ -159,8 +159,8 @@ describe('GoalModuleLayout', () => {
     );
     await vi.waitFor(() => {
       expect(goalMocks.fetchGoals).toHaveBeenCalledOnce();
-      expect(goalMocks.fetchFolders).toHaveBeenCalledOnce();
-      expect(goalMocks.getCurrentFocusMode).toHaveBeenCalledOnce();
+      expect(goalMocks.fetchFolders).not.toHaveBeenCalled();
+      expect(goalMocks.getCurrentFocusMode).not.toHaveBeenCalled();
     });
 
     await wrapper.get('[data-testid="create-goal-entry"]').trigger('click');

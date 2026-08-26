@@ -82,16 +82,14 @@ describe('GoalPageToolbar', () => {
     expect(wrapper.findAll('[data-primary-action="create-goal"]')).toHaveLength(1);
     expect(wrapper.findAll('[data-testid="create-goal-entry"]')).toHaveLength(1);
     expect(wrapper.findAll('[data-testid="goal-refresh-entry"]')).toHaveLength(1);
-    expect(wrapper.findAll('[data-testid="goal-focus-entry"]')).toHaveLength(1);
-    expect(wrapper.findAll('[data-testid="goal-toolbar-more"]')).toHaveLength(1);
+    expect(wrapper.find('[data-testid="goal-focus-entry"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="goal-toolbar-more"]').exists()).toBe(false);
 
     await wrapper.get('[data-testid="create-goal-entry"]').trigger('click');
     await wrapper.get('[data-testid="goal-refresh-entry"]').trigger('click');
-    await wrapper.get('[data-testid="goal-focus-entry"]').trigger('click');
 
     expect(wrapper.emitted('create-goal')).toHaveLength(1);
     expect(wrapper.emitted('refresh')).toHaveLength(1);
-    expect(wrapper.emitted('open-focus')).toHaveLength(1);
     wrapper.unmount();
   });
 
@@ -115,16 +113,12 @@ describe('GoalPageToolbar', () => {
     wrapper.unmount();
   });
 
-  it('localizes the focus-cycle remaining-day unit', async () => {
-    i18n.global.locale.value = 'zh-CN';
+  it('does not resurrect retired Focus/Folder/Comparison actions', () => {
     const wrapper = mountToolbar();
-    await wrapper.setProps({
-      focusMode: { endTime: Date.now() + 36 * 60 * 60 * 1000 } as never,
-    });
-
-    expect(wrapper.get('[data-testid="goal-focus-entry"]').text()).toContain('剩余 2 天');
-    expect(wrapper.get('[data-testid="goal-focus-entry"]').text()).not.toContain('2d');
+    expect(wrapper.find('[data-testid="goal-focus-entry"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="goal-toolbar-more"]').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain('New Folder');
+    expect(wrapper.text()).not.toContain('Compare');
     wrapper.unmount();
-    i18n.global.locale.value = 'en-US';
   });
 });

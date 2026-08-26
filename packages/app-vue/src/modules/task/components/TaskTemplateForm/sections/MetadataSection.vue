@@ -40,22 +40,7 @@
           />
         </div>
 
-        <div class="col-span-12 md:col-span-6">
-          <Label for="parent-task-select">{{ t('task.metadata.parentTask') }}</Label>
-          <Select v-model="parentTaskSelection">
-            <SelectTrigger id="parent-task-select" class="mt-1">
-              <SelectValue :placeholder="t('task.metadata.selectParentTask')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem :value="NO_PARENT_VALUE">
-                {{ t('task.metadata.noParentTask') }}
-              </SelectItem>
-              <SelectItem v-for="task in availableParentTasks" :key="task.id" :value="task.id">
-                {{ task.title }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+
 
         <!-- 任务标签 (Story 2.3: 占满整行，因为紧急性已移除) -->
         <div class="col-span-12">
@@ -111,19 +96,15 @@ import {
   Input,
 } from '@memoflow/ui-vue-shadcn';
 import { Info, X } from '@lucide/vue';
-import type { TaskTemplateFormProps, TaskTemplateViewModel } from '../../types';
+import type { TaskTemplateViewModel } from '../../types';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { useI18n } from 'vue-i18n';
 import { ColorPickerField } from '../../../../../shared/components';
 import { defaultNamedColor } from '../../../../../shared/constants/color-palette';
 
 const { t } = useI18n();
-const NO_PARENT_VALUE = '__none__';
 
-const props = defineProps<{
-  modelValue: TaskTemplateViewModel;
-  availableParentTasks?: TaskTemplateFormProps['availableParentTasks'];
-}>();
+const props = defineProps<{ modelValue: TaskTemplateViewModel }>();
 const emit = defineEmits<{
   'update:modelValue': [value: TaskTemplateViewModel];
   'update:validation': [isValid: boolean];
@@ -209,17 +190,6 @@ const color = computed({
   set: (value: string | null) => {
     updateTemplate((template) => {
       template.color = value ?? defaultNamedColor;
-    });
-  },
-});
-
-const availableParentTasks = computed(() => props.availableParentTasks ?? []);
-
-const parentTaskSelection = computed({
-  get: () => props.modelValue.parentTaskId ?? NO_PARENT_VALUE,
-  set: (value: string) => {
-    updateTemplate((template) => {
-      template.parentTaskId = value === NO_PARENT_VALUE ? null : value;
     });
   },
 });
