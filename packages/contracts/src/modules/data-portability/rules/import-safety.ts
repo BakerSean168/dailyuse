@@ -5,8 +5,8 @@
  * other sensitive data from leaking into portable import files.
  */
 
-import type { UserDataExportEnvelopeV1 } from '../dtos/portable-envelope.dto';
-import { UserDataExportEnvelopeV1Schema } from '../dtos/portable-envelope.dto';
+import type { UserDataExportEnvelopeV2 } from '../dtos/portable-envelope.dto';
+import { UserDataExportEnvelopeV2Schema } from '../dtos/portable-envelope.dto';
 
 // ============ Banned Key Detection ============
 
@@ -67,11 +67,11 @@ export function findBannedImportKey(value: unknown, path: string[] = []): string
 // ============ Typed Envelope Parser ============
 
 export type ParseUserDataExportEnvelopeResult =
-  | { ok: true; envelope: UserDataExportEnvelopeV1 }
+  | { ok: true; envelope: UserDataExportEnvelopeV2 }
   | { ok: false; error: string };
 
 /**
- * Parse and validate a raw object as a UserDataExportEnvelopeV1.
+ * Parse and validate a raw object as a UserDataExportEnvelopeV2.
  *
  * Unlike the old `validateEnvelope` which returned `{ ok, data: Record<string, unknown> }`
  * and required a downstream cast, this returns a fully typed envelope on success.
@@ -93,7 +93,7 @@ export function parseUserDataExportEnvelope(raw: unknown): ParseUserDataExportEn
     };
   }
 
-  const result = UserDataExportEnvelopeV1Schema.safeParse(raw);
+  const result = UserDataExportEnvelopeV2Schema.safeParse(raw);
   if (!result.success) {
     const issue = result.error.issues[0];
     return {

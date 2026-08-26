@@ -101,45 +101,22 @@ const user_settings = new Table({
 });
 
 // ──────────────────────────────────────────────
-// Goal
+// Goal — Core vNext Direction + Measurement
 // ──────────────────────────────────────────────
 
 const goals = new Table({
   identity_id: column.text,
   name: column.text,
   description: column.text,
-  color: column.text,
   feasibility_analysis: column.text,
   motivation: column.text,
   status: column.text,
-  importance: column.text,
-  priority: column.integer,
-  category: column.text,
-  tags: column.text, // JSON array
-  start_date: column.text, // DateTime
-  target_date: column.text, // DateTime
-  completed_at: column.text, // DateTime
-  archived_at: column.text, // DateTime
-  folder_id: column.text, // FK
-  parent_goal_id: column.text, // FK (self)
+  start_date: column.text,
+  due_date: column.text,
+  completed_at: column.text,
+  archived_at: column.text,
   sort_order: column.integer,
-  reminder_config: column.text, // JSON
-  version: column.integer,
-  created_at: column.text,
-  updated_at: column.text,
-  deleted_at: column.text,
-});
-
-const goal_folders = new Table({
-  identity_id: column.text,
-  name: column.text,
-  description: column.text,
-  color: column.text,
-  icon: column.text,
-  folder_type: column.text,
-  is_system_folder: column.integer, // boolean
-  parent_folder_id: column.text, // FK (self)
-  sort_order: column.integer,
+  reminder_config: column.text,
   version: column.integer,
   created_at: column.text,
   updated_at: column.text,
@@ -148,12 +125,12 @@ const goal_folders = new Table({
 
 const key_results = new Table({
   identity_id: column.text,
-  goal_id: column.text, // FK
+  goal_id: column.text,
   title: column.text,
   description: column.text,
-  value_type: column.text,
   aggregation_method: column.text,
-  initial_value: column.real,
+  starting_value: column.real,
+  progress_baseline_value: column.real,
   target_value: column.real,
   current_value: column.real,
   unit: column.text,
@@ -165,76 +142,40 @@ const key_results = new Table({
 
 const goal_records = new Table({
   identity_id: column.text,
-  key_result_id: column.text, // FK
+  key_result_id: column.text,
   value: column.real,
   note: column.text,
   source_type: column.text,
   source_id: column.text,
-  recorded_at: column.text, // DateTime
+  recorded_at: column.text,
   created_at: column.text,
   updated_at: column.text,
 });
 
 const goal_reviews = new Table({
   identity_id: column.text,
-  goal_id: column.text, // FK
-  review_type: column.text,
-  content: column.text,
-  achievements: column.text,
+  goal_id: column.text,
+  reflection: column.text,
   challenges: column.text,
-  lessons_learned: column.text,
-  next_steps: column.text,
-  rating: column.integer,
+  adjustments: column.text,
+  system_context: column.text,
+  reviewed_at: column.text,
   created_at: column.text,
   updated_at: column.text,
 });
 
 const key_result_weight_snapshots = new Table({
   identity_id: column.text,
-  goal_id: column.text, // FK
-  key_result_id: column.text, // FK
+  goal_id: column.text,
+  key_result_id: column.text,
   old_weight: column.real,
   new_weight: column.real,
   weight_delta: column.real,
-  snapshot_time: column.text, // DateTime
+  snapshot_time: column.text,
   trigger: column.text,
   reason: column.text,
   operator_id: column.text,
   created_at: column.text,
-});
-
-const focus_sessions = new Table({
-  identity_id: column.text,
-  goal_id: column.text, // FK (optional)
-  status: column.text,
-  duration_minutes: column.integer,
-  actual_duration_minutes: column.integer,
-  description: column.text,
-  started_at: column.text, // DateTime
-  paused_at: column.text, // DateTime
-  resumed_at: column.text, // DateTime
-  completed_at: column.text, // DateTime
-  cancelled_at: column.text, // DateTime
-  pause_count: column.integer,
-  paused_duration_minutes: column.integer,
-  version: column.integer,
-  created_at: column.text,
-  updated_at: column.text,
-  deleted_at: column.text,
-});
-
-const focus_modes = new Table({
-  identity_id: column.text,
-  focused_goal_ids: column.text, // JSON array
-  hidden_goals_mode: column.text,
-  start_time: column.text, // DateTime
-  end_time: column.text, // DateTime
-  actual_end_time: column.text, // DateTime
-  is_active: column.integer, // boolean
-  version: column.integer,
-  created_at: column.text,
-  updated_at: column.text,
-  deleted_at: column.text,
 });
 
 // ──────────────────────────────────────────────
@@ -608,6 +549,64 @@ const user_reminder_preferences = new Table({
   worst_time_slots: column.text, // JSON
   global_reminder_enabled: column.integer, // boolean
   global_smart_frequency: column.integer, // boolean
+  created_at: column.text,
+  updated_at: column.text,
+});
+
+// ──────────────────────────────────────────────
+// Routine Coach vNext
+// ──────────────────────────────────────────────
+
+const routine_definitions = new Table({
+  identity_id: column.text,
+  name: column.text,
+  description: column.text,
+  enabled: column.integer,
+  trigger_json: column.text,
+  version: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+});
+
+const routine_profiles = new Table({
+  identity_id: column.text,
+  name: column.text,
+  description: column.text,
+  enabled: column.integer,
+  active: column.integer,
+  version: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+});
+
+const routine_profile_memberships = new Table({
+  identity_id: column.text,
+  profile_id: column.text,
+  routine_id: column.text,
+  enabled: column.integer,
+  version: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+});
+
+const routine_protocol_definitions = new Table({
+  identity_id: column.text,
+  name: column.text,
+  definition_json: column.text,
+  version: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+});
+
+const routine_protocol_sessions = new Table({
+  identity_id: column.text,
+  protocol_id: column.text,
+  protocol_version: column.integer,
+  status: column.text,
+  snapshot_json: column.text,
+  termination_reason: column.text,
+  ended_at: column.text,
+  version: column.integer,
   created_at: column.text,
   updated_at: column.text,
 });
@@ -1089,13 +1088,10 @@ export const PowerSyncAppSchema = new Schema({
   user_settings,
   // Goal
   goals,
-  goal_folders,
   key_results,
   goal_records,
   goal_reviews,
   key_result_weight_snapshots,
-  focus_sessions,
-  focus_modes,
   goal_operation_receipts,
   labels,
   goal_labels,
@@ -1120,6 +1116,11 @@ export const PowerSyncAppSchema = new Schema({
   reminder_statistics,
   reminder_responses,
   user_reminder_preferences,
+  routine_definitions,
+  routine_profiles,
+  routine_profile_memberships,
+  routine_protocol_definitions,
+  routine_protocol_sessions,
   // Notification
   notifications,
   notification_channels,

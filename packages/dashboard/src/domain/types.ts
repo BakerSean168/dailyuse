@@ -12,10 +12,9 @@ export interface DashboardGoalRecord {
   name: string;
   status: string;
   deletedAt: number | null;
-  priority: number;
   updatedAt: number;
   overallProgress: number;
-  targetDate: number | null;
+  dueDate: number | null;
   totalKeyResults: number;
 }
 

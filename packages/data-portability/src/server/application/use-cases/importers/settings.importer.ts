@@ -27,11 +27,10 @@ export async function importNotificationPreference(
   await tx.upsertNotificationPreference({
     id: newId(),
     identityId: ctx.identityId,
-    channels: jsonStringify(pref.channels ?? {}),
-    categories: jsonStringify(pref.categories ?? {}),
+    globalChannels: jsonStringify(pref.globalChannels ?? {}),
+    workflowOverrides: jsonStringify(pref.workflowOverrides ?? {}),
     doNotDisturb: pref.doNotDisturb ? jsonStringify(pref.doNotDisturb) : null,
     rateLimit: pref.rateLimit ? jsonStringify(pref.rateLimit) : null,
-    enabled: pref.enabled ?? true,
   });
   incSingleton(ctx, 'notificationPreference');
 }

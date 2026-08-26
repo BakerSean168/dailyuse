@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { PrismaFocusSessionAdapter } from '../adapters/prisma-adapters';
+import { PrismaRepositoryAdapter } from '../adapters/prisma-adapters';
 import { PrismaDataPortabilityImportStore } from '../import-store/prisma-data-portability-import-store';
 
 /**
@@ -35,7 +35,7 @@ describe('data portability Prisma adapter placement', () => {
       "import type { PrismaClient, Prisma } from '@memoflow/database';",
     );
 
-    expect(PrismaFocusSessionAdapter).toBeDefined();
+    expect(PrismaRepositoryAdapter).toBeDefined();
     expect(PrismaDataPortabilityImportStore).toBeDefined();
   });
 
@@ -51,7 +51,7 @@ describe('data portability Prisma adapter placement', () => {
 
     for (const source of [applicationIndex, importStoreIndex]) {
       expect(source).not.toMatch(/from '@memoflow\/database'/);
-      expect(source).not.toMatch(/PrismaFocusSessionAdapter|PrismaDataPortabilityImportStore/);
+      expect(source).not.toMatch(/PrismaRepositoryAdapter|PrismaDataPortabilityImportStore/);
       expect(source).not.toMatch(/prisma-adapters|prisma-data-portability-import-store/);
     }
   });

@@ -103,9 +103,7 @@ describe('composeGoal assembly order', () => {
     const moduleCall = createGoalModule.mock.calls[0][0];
     expect(moduleCall).toMatchObject({
       goalRepository: repoSet.goalRepository,
-      goalFolderRepository: repoSet.goalFolderRepository,
       goalRecordRepository: repoSet.goalRecordRepository,
-      focusModeRepository: repoSet.focusModeRepository,
       goalWriteTransactionRunner: repoSet.goalWriteTransactionRunner,
       habitRepository: repoSet.habitRepository,
       relationRepository: repoSet.relationRepository,
@@ -156,7 +154,7 @@ describe('composeGoal structural registration', () => {
     routerUse = vi.fn();
   });
 
-  it('mounts /goals + /goal-folders on the router and starts the owned instance', () => {
+  it('mounts /goals on the router and starts the owned instance', () => {
     const composed = composeGoal({ db: fakeDb, taskBindingReadPort: fakeReadPort });
 
     const instance = createGoalModule.mock.results[0].value;
@@ -175,7 +173,6 @@ describe('composeGoal structural registration', () => {
 
     expect(() => composed.module.register(context)).not.toThrow();
     expect(routerUse).toHaveBeenCalledWith('/goals', expect.anything());
-    expect(routerUse).toHaveBeenCalledWith('/goal-folders', expect.anything());
 
     expect(startSpy).toHaveBeenCalledTimes(1);
 

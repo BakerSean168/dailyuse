@@ -2,16 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { PrismaGoalMapper } from './prisma-goal-mapper';
 
 describe('PrismaGoalMapper key result progress mapping', () => {
-  it('maps physical initialValue to canonical startingValue', () => {
+  it('maps physical startingValue to canonical startingValue', () => {
     const dto = PrismaGoalMapper.mapKeyResult({
       id: 'kr-1',
       goalId: 'goal-1',
       identityId: 'identity-1',
       title: 'KR 1',
       description: null,
-      valueType: 'Incremental',
       aggregationMethod: 'Sum',
-      initialValue: 0,
+      startingValue: 0,
+      progressBaselineValue: null,
       targetValue: 100,
       currentValue: 90,
       unit: null,
@@ -29,7 +29,7 @@ describe('PrismaGoalMapper key result progress mapping', () => {
     expect(dto.progress.currentValue).toBe(90);
   });
 
-  it('maps canonical startingValue back to the temporary physical initialValue seam', () => {
+  it('maps canonical progress directly to canonical physical fields', () => {
     const progress = PrismaGoalMapper.parseKeyResultProgress({
       id: 'kr-1',
       goalId: 'goal-1',
@@ -51,8 +51,10 @@ describe('PrismaGoalMapper key result progress mapping', () => {
       deletedAt: null,
     } as any);
 
-    expect(progress.initialValue).toBe(0);
-    expect(progress.valueType).toBe('Incremental');
+    expect(progress.startingValue).toBe(0);
+    expect(progress.progressBaselineValue).toBeNull();
+    expect('valueType' in progress).toBe(false);
+    expect('initialValue' in progress).toBe(false);
     expect(progress.currentValue).toBe(91);
   });
 });

@@ -17,17 +17,12 @@ import type {
   CreateRepositoryInput,
   CreateResourceFolderInput,
   CreateResourceInput,
-  CreateGoalFolderInput,
   CreateGoalInput,
   CreateKeyResultInput,
   CreateGoalReviewInput,
   CreateGoalRecordInput,
-  CreateFocusSessionInput,
-  CreateFocusModeInput,
-  CreateTaskFolderInput,
   CreateTaskTemplateInput,
   CreateTaskInstanceInput,
-  CreateTaskDependencyInput,
   CreateScheduleInput,
   CreateScheduleTaskInput,
   CreateReminderGroupInput,
@@ -101,13 +96,13 @@ class PowerSyncDataPortabilityImportTx implements DataPortabilityImportTx {
     );
     if (existing) {
       await this.tx.execute(
-        `UPDATE notification_preferences SET enabled = ?, channels = ?, categories = ?, do_not_disturb = ?, rate_limit = ?, updated_at = ? WHERE identity_id = ?`,
-        [bool(input.enabled), input.channels, input.categories, str(input.doNotDisturb), str(input.rateLimit), new Date().toISOString(), input.identityId],
+        `UPDATE notification_preferences SET global_channels = ?, workflow_overrides = ?, do_not_disturb = ?, rate_limit = ?, updated_at = ? WHERE identity_id = ?`,
+        [input.globalChannels, input.workflowOverrides, str(input.doNotDisturb), str(input.rateLimit), new Date().toISOString(), input.identityId],
       );
     } else {
       await this.tx.execute(
-        `INSERT INTO notification_preferences (id, identity_id, enabled, channels, categories, do_not_disturb, rate_limit, version, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
-        [input.id, input.identityId, bool(input.enabled), input.channels, input.categories, str(input.doNotDisturb), str(input.rateLimit), ...createdUpdated({})],
+        `INSERT INTO notification_preferences (id, identity_id, global_channels, workflow_overrides, do_not_disturb, rate_limit, version, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)`,
+        [input.id, input.identityId, input.globalChannels, input.workflowOverrides, str(input.doNotDisturb), str(input.rateLimit), ...createdUpdated({})],
       );
     }
   }
@@ -155,82 +150,47 @@ class PowerSyncDataPortabilityImportTx implements DataPortabilityImportTx {
 
   // --- Goal ---
 
-  async createGoalFolder(input: CreateGoalFolderInput): Promise<void> {
-    await this.tx.execute(
-      `INSERT INTO goal_folders (id, identity_id, name, description, color, icon, parent_folder_id, sort_order, is_system_folder, folder_type, version, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
-      [input.id, input.identityId, input.name, str(input.description), str(input.color), str(input.icon), str(input.parentFolderId), input.sortOrder, bool(input.isSystemFolder), str(input.folderType), ...createdUpdated(input)],
-    );
-  }
-
   async createGoal(input: CreateGoalInput): Promise<void> {
     await this.tx.execute(
-      `INSERT INTO goals (id, identity_id, name, description, color, feasibility_analysis, motivation, status, importance, priority, category, tags, start_date, target_date, completed_at, folder_id, parent_goal_id, sort_order, reminder_config, version, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
-      [input.id, input.identityId, input.name, str(input.description), input.color, str(input.feasibilityAnalysis), str(input.motivation), input.status, input.importance, input.priority, str(input.category), json(input.tags), str(input.startDate), str(input.targetDate), str(input.completedAt), str(input.folderId), str(input.parentGoalId), input.sortOrder, str(input.reminderConfig), ...createdUpdated(input)],
+      `INSERT INTO goals (id, identity_id, name, description, feasibility_analysis, motivation, status, start_date, due_date, completed_at, archived_at, sort_order, reminder_config, version, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
+      [input.id, input.identityId, input.name, str(input.description), str(input.feasibilityAnalysis), str(input.motivation), input.status, str(input.startDate), str(input.dueDate), str(input.completedAt), str(input.archivedAt), input.sortOrder, str(input.reminderConfig), ...createdUpdated(input)],
     );
   }
 
   async createKeyResult(input: CreateKeyResultInput): Promise<void> {
     await this.tx.execute(
-      `INSERT INTO key_results (id, identity_id, goal_id, title, description, value_type, aggregation_method, initial_value, target_value, current_value, unit, weight, "order", version, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
-      [input.id, input.identityId, input.goalId, input.title, str(input.description), input.valueType, input.aggregationMethod, input.initialValue, input.targetValue, input.currentValue, str(input.unit), input.weight, input.order, ...createdUpdated(input)],
+      `INSERT INTO key_results (id, identity_id, goal_id, title, description, aggregation_method, starting_value, progress_baseline_value, target_value, current_value, unit, weight, "order", created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [input.id, input.identityId, input.goalId, input.title, str(input.description), input.aggregationMethod, input.startingValue, input.progressBaselineValue, input.targetValue, input.currentValue, str(input.unit), input.weight, input.order, ...createdUpdated(input)],
     );
   }
 
   async createGoalReview(input: CreateGoalReviewInput): Promise<void> {
     await this.tx.execute(
-      `INSERT INTO goal_reviews (id, identity_id, goal_id, review_type, content, achievements, challenges, lessons_learned, next_steps, rating, version, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
-      [input.id, input.identityId, input.goalId, input.reviewType, input.content, str(input.achievements), str(input.challenges), str(input.lessonsLearned), str(input.nextSteps), input.rating ?? null, ...createdUpdated(input)],
+      `INSERT INTO goal_reviews (id, identity_id, goal_id, reflection, challenges, adjustments, system_context, reviewed_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [input.id, input.identityId, input.goalId, input.reflection, str(input.challenges), str(input.adjustments), input.systemContext, input.reviewedAt, ...createdUpdated(input)],
     );
   }
 
   async createGoalRecord(input: CreateGoalRecordInput): Promise<void> {
     await this.tx.execute(
-      `INSERT INTO goal_records (id, identity_id, key_result_id, value, note, recorded_at, version, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
-      [input.id, input.identityId, input.keyResultId, input.value, str(input.note), input.recordedAt, ...createdUpdated(input)],
-    );
-  }
-
-  async createFocusSession(input: CreateFocusSessionInput): Promise<void> {
-    await this.tx.execute(
-      `INSERT INTO focus_sessions (id, identity_id, goal_id, status, duration_minutes, actual_duration_minutes, description, started_at, completed_at, pause_count, paused_duration_minutes, version, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
-      [input.id, input.identityId, str(input.goalId), input.status, input.durationMinutes, input.actualDurationMinutes, str(input.description), str(input.startedAt), str(input.completedAt), input.pauseCount, input.pausedDurationMinutes, ...createdUpdated(input)],
-    );
-  }
-
-  async createFocusMode(input: CreateFocusModeInput): Promise<void> {
-    await this.tx.execute(
-      `INSERT INTO focus_modes (id, identity_id, focused_goal_ids, hidden_goals_mode, start_time, end_time, actual_end_time, is_active, version, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
-      [input.id, input.identityId, json(input.focusedGoalIds), input.hiddenGoalsMode, input.startTime, input.endTime, str(input.actualEndTime), bool(input.isActive), ...createdUpdated(input)],
+      `INSERT INTO goal_records (id, identity_id, key_result_id, value, note, source_type, source_id, recorded_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [input.id, input.identityId, input.keyResultId, input.value, str(input.note), str(input.sourceType), str(input.sourceId), input.recordedAt, ...createdUpdated(input)],
     );
   }
 
   // --- Task ---
 
-  async createTaskFolder(input: CreateTaskFolderInput): Promise<void> {
-    await this.tx.execute(
-      `INSERT INTO task_folders (id, identity_id, name, color, icon, "order", version, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
-      [input.id, input.identityId, input.name, str(input.color), str(input.icon), input.order, ...createdUpdated(input)],
-    );
-  }
-
   async createTaskTemplate(input: CreateTaskTemplateInput): Promise<void> {
     await this.tx.execute(
-      `INSERT INTO task_templates (id, identity_id, name, description, status, importance, color, tags, folder_id, parent_task_id, time_config_type, time_config_start_time, time_config_end_time, time_config_duration_minutes, time_config_time_point, time_config_time_range_start, time_config_time_range_end, recurrence_rule_type, recurrence_rule_interval, recurrence_rule_days_of_week, recurrence_rule_day_of_month, recurrence_rule_month_of_year, recurrence_rule_end_date, recurrence_rule_count, reminder_config_enabled, reminder_config_time_offset_minutes, reminder_config_unit, reminder_config_channel, goal_id, key_result_id, goal_record_value, goal_progress_trigger, checklist, dependency_status, is_blocked, version, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
-      [input.id, input.identityId, input.name, str(input.description), input.status, input.importance, str(input.color), input.tags, str(input.folderId), str(input.parentTaskId), str(input.timeConfigType), str(input.timeConfigStartTime), str(input.timeConfigEndTime), input.timeConfigDurationMinutes, input.timeConfigTimePoint, input.timeConfigTimeRangeStart, input.timeConfigTimeRangeEnd, str(input.recurrenceRuleType), input.recurrenceRuleInterval, str(input.recurrenceRuleDaysOfWeek), input.recurrenceRuleDayOfMonth, input.recurrenceRuleMonthOfYear, str(input.recurrenceRuleEndDate), input.recurrenceRuleCount, input.reminderConfigEnabled != null ? bool(input.reminderConfigEnabled) : null, input.reminderConfigTimeOffsetMinutes, str(input.reminderConfigUnit), str(input.reminderConfigChannel), str(input.goalId), str(input.keyResultId), input.goalRecordValue, str(input.goalProgressTrigger), str(input.checklist), input.dependencyStatus, bool(input.isBlocked), ...createdUpdated(input)],
+      `INSERT INTO task_templates (id, identity_id, name, description, status, outcome, completion_policy, closed_at, archived_at, abandoned_reason, importance, color, tags, time_config_type, time_config_start_time, time_config_end_time, time_config_duration_minutes, time_config_time_point, time_config_time_range_start, time_config_time_range_end, recurrence_rule_type, recurrence_rule_interval, recurrence_rule_days_of_week, recurrence_rule_end_date, recurrence_rule_count, reminder_config_enabled, reminder_config_time_offset_minutes, reminder_config_unit, reminder_config_channel, last_generated_date, generate_ahead_days, goal_id, key_result_id, goal_record_value, goal_progress_trigger, checklist, version, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
+      [input.id, input.identityId, input.name, str(input.description), input.status, input.outcome, input.completionPolicy, str(input.closedAt), str(input.archivedAt), str(input.abandonedReason), input.importance, str(input.color), input.tags, str(input.timeConfigType), str(input.timeConfigStartTime), str(input.timeConfigEndTime), input.timeConfigDurationMinutes, input.timeConfigTimePoint, input.timeConfigTimeRangeStart, input.timeConfigTimeRangeEnd, str(input.recurrenceRuleType), input.recurrenceRuleInterval, str(input.recurrenceRuleDaysOfWeek), str(input.recurrenceRuleEndDate), input.recurrenceRuleCount, input.reminderConfigEnabled != null ? bool(input.reminderConfigEnabled) : null, input.reminderConfigTimeOffsetMinutes, str(input.reminderConfigUnit), str(input.reminderConfigChannel), str(input.lastGeneratedDate), input.generateAheadDays, str(input.goalId), str(input.keyResultId), input.goalRecordValue, str(input.goalProgressTrigger), str(input.checklist), ...createdUpdated(input)],
     );
   }
 
   async createTaskInstance(input: CreateTaskInstanceInput): Promise<void> {
     await this.tx.execute(
-      `INSERT INTO task_instances (id, template_id, identity_id, instance_date, status, importance, time_config, actual_start_time, actual_end_time, comment, version, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
-      [input.id, input.templateId, input.identityId, input.instanceDate, input.status, input.importance, input.timeConfig, str(input.actualStartTime), str(input.actualEndTime), str(input.comment), ...createdUpdated(input)],
-    );
-  }
-
-  async createTaskDependency(input: CreateTaskDependencyInput): Promise<void> {
-    await this.tx.execute(
-      `INSERT INTO task_dependencies (id, identity_id, predecessor_task_id, successor_task_id, dependency_type, lag_days, version, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
-      [input.id, input.identityId, input.predecessorTaskId, input.successorTaskId, input.dependencyType, input.lagDays, ...createdUpdated(input)],
+      `INSERT INTO task_instances (id, template_id, identity_id, instance_date, occurrence_key, status, importance, time_config, actual_start_time, actual_end_time, comment, version, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
+      [input.id, input.templateId, input.identityId, input.instanceDate, str(input.occurrenceKey), input.status, input.importance, input.timeConfig, str(input.actualStartTime), str(input.actualEndTime), str(input.comment), ...createdUpdated(input)],
     );
   }
 

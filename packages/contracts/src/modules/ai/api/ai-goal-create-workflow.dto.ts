@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { KeyResultCalculationMethod } from '../../goal/value-objects/key-result-calculation-method';
-import { KeyResultValueType } from '../../goal/value-objects/key-result-value-type';
 import { NotificationChannel } from '../../reminder/value-objects/notification-channel';
 
 /**
@@ -42,19 +41,16 @@ export const GoalPlanGoalSchema = z
     description: z.string().trim().max(2000).default(''),
     motivation: z.string().trim().max(2000).optional(),
     feasibilityAnalysis: z.string().trim().max(2000).optional(),
-    category: z.string().trim().max(100).optional(),
-    importance: z.enum(ImportanceLevel).default(ImportanceLevel.Moderate),
-    tags: z.array(z.string().trim().min(1).max(50)).max(50).default([]),
     startDate: z.number().int().nonnegative().nullable().default(null),
-    targetDate: z.number().int().nonnegative().nullable().default(null),
+    dueDate: z.number().int().nonnegative().nullable().default(null),
   })
   .strict()
   .superRefine((value, ctx) => {
-    if (value.startDate != null && value.targetDate != null && value.startDate > value.targetDate) {
+    if (value.startDate != null && value.dueDate != null && value.startDate > value.dueDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ['targetDate'],
-        message: 'Goal targetDate must not be earlier than startDate',
+        path: ['dueDate'],
+        message: 'Goal dueDate must not be earlier than startDate',
       });
     }
   });
@@ -64,11 +60,11 @@ export const GoalPlanKeyResultSchema = z
   .object({
     title: z.string().trim().min(1).max(256),
     description: z.string().trim().max(2000).optional(),
-    valueType: z.enum(KeyResultValueType),
     calculationMethod: z.enum(KeyResultCalculationMethod),
-    startValue: z.number().default(0),
+    startingValue: z.number().default(0),
+    progressBaselineValue: z.number().nullable().default(null),
     currentValue: z.number().default(0),
-    targetValue: z.number().nonnegative(),
+    targetValue: z.number(),
     unit: z.string().trim().max(50).default(''),
     weight: z.number().int().min(1).max(5),
   })

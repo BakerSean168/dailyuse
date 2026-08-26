@@ -9,8 +9,8 @@ import { createLogger } from '@memoflow/utils/logger';
 import { createTypedEventPublisher, eventBus } from '@memoflow/utils/domain';
 import type {
   DataPortabilityEventMap,
-  UserDataExportEnvelopeV1,
-  PortableUserDataV1,
+  UserDataExportEnvelopeV2,
+  PortableUserDataV2,
   ExportableModule,
   ExportUserDataRes,
 } from '@memoflow/contracts/data-portability';
@@ -19,8 +19,8 @@ import type { ExportContext } from '../portable-runtime';
 import { RefAllocator } from '../portable-runtime';
 import type { DataPortabilityDependencies } from '../data-portability.dependencies';
 import { sanitizeSensitiveFields } from '../sanitize';
-import { projectGoals, projectGoalFolders, projectGoalRecords, projectFocusSessions, projectFocusModes } from './projections/goal.projection';
-import { projectTaskFolders, projectTaskTemplates, projectTaskInstances, projectTaskDependencies } from './projections/task.projection';
+import { projectGoals, projectGoalRecords } from './projections/goal.projection';
+import { projectTaskTemplates, projectTaskInstances } from './projections/task.projection';
 import { projectReminderGroups, projectReminderTemplates, projectReminderResponses, projectUserReminderPreference } from './projections/reminder.projection';
 import { projectRepositories, projectResourceFolders, projectResources } from './projections/repository.projection';
 import { projectCalendarEntries, projectScheduleTasks } from './projections/schedule.projection';
@@ -58,7 +58,7 @@ export class ExportUserDataUseCase {
       refToIdMap,
     };
 
-    const data: PortableUserDataV1 = {};
+    const data: PortableUserDataV2 = {};
 
     // ─── Settings (singleton) ───
     if (modules.includes('settings')) {
@@ -116,59 +116,32 @@ export class ExportUserDataUseCase {
       entityCounts.resources = portableResources.length;
     }
 
-    // ─── Goal Folders ───
+    // ─── Goals ───
     if (modules.includes('goals')) {
-      const goalFolders = await this.deps.goalFolderRepository.findByIdentityId(identityId);
       const goals = await this.deps.goalRepository.findByIdentityId(identityId, { includeChildren: true });
-
-      // Collect all goal IDs for record queries
       const goalIds = (goals as { id: string }[]).map((g) => g.id);
       const allRecords: unknown[] = [];
       for (const goalId of goalIds) {
-        const records = await this.deps.goalRecordRepository.findByGoalId(identityId, goalId);
-        allRecords.push(...records);
+        allRecords.push(...(await this.deps.goalRecordRepository.findByGoalId(identityId, goalId)));
       }
 
-      const focusSessions = await this.deps.focusSessionRepository.findByIdentityId(identityId);
-      const focusModes = await this.deps.focusModeRepository.findByIdentityId(identityId);
-
-      const portableGoalFolders = projectGoalFolders(goalFolders, ctx);
       const portableGoals = projectGoals(goals, ctx);
       const portableRecords = projectGoalRecords(allRecords, ctx);
-      const portableSessions = projectFocusSessions(focusSessions, ctx);
-      const portableModes = projectFocusModes(focusModes, ctx);
-
-      data.goals = {
-        folders: portableGoalFolders,
-        items: portableGoals,
-        records: portableRecords,
-        focusSessions: portableSessions,
-        focusModes: portableModes,
-      };
-      entityCounts.goalFolders = portableGoalFolders.length;
+      data.goals = { items: portableGoals, records: portableRecords };
       entityCounts.goals = portableGoals.length;
       entityCounts.goalRecords = portableRecords.length;
-      entityCounts.focusSessions = portableSessions.length;
-      entityCounts.focusModes = portableModes.length;
     }
 
     // ─── Tasks ───
     if (modules.includes('tasks')) {
-      const taskFolders = await this.deps.taskFolderRepository.findByIdentityId(identityId);
       const taskTemplates = await this.deps.taskTemplateRepository.findByIdentityId(identityId);
       const taskInstances = await this.deps.taskInstanceRepository.findByIdentityId(identityId);
-      const taskDeps = await this.deps.taskDependencyRepository.findAllByIdentityId(identityId);
-
       data.tasks = {
-        folders: projectTaskFolders(taskFolders, ctx),
         templates: projectTaskTemplates(taskTemplates, ctx),
         instances: projectTaskInstances(taskInstances, ctx),
-        dependencies: projectTaskDependencies(taskDeps, ctx),
       };
-      entityCounts.taskFolders = data.tasks.folders.length;
       entityCounts.taskTemplates = data.tasks.templates.length;
       entityCounts.taskInstances = data.tasks.instances.length;
-      entityCounts.taskDependencies = data.tasks.dependencies.length;
     }
 
     // ─── Reminders (groups + templates + responses) ───
@@ -226,9 +199,9 @@ export class ExportUserDataUseCase {
     }
 
     // ─── Build Envelope ───
-    const envelope: UserDataExportEnvelopeV1 = {
+    const envelope: UserDataExportEnvelopeV2 = {
       kind: 'memoflow.user-data-export',
-      schemaVersion: 1,
+      schemaVersion: 2,
       exportedAt,
       exportedBy: {
         appName: 'MemoFlow',
@@ -244,7 +217,7 @@ export class ExportUserDataUseCase {
     const sanitized = sanitizeSensitiveFields(envelope);
     const content = JSON.stringify(sanitized, null, 2);
     const timestamp = exportedAt.replace(/[:.]/g, '-').slice(0, 19);
-    const fileName = `memoflow-user-data-v1-${timestamp}.json`;
+    const fileName = `memoflow-user-data-v2-${timestamp}.json`;
 
     logger.info('Export completed', { identityId, entityCounts, warnings: warnings.length });
 

@@ -139,7 +139,6 @@ export function composeNotification(
 
   const createNotificationPort = createNotificationScheduleNotificationPort({
     notificationRepository: repositories.notificationRepository,
-    notificationTemplateRepository: repositories.notificationTemplateRepository,
     notificationPreferenceRepository: repositories.notificationPreferenceRepository,
     closureChecker: dependencies.closureChecker,
   });

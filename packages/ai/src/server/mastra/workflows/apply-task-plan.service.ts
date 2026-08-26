@@ -84,7 +84,6 @@ function taskRequest(
     importance: task.importance,
     tags: task.tags,
     color: null,
-    folderId: task.folderId as NonNullable<CreateTaskTemplateReq['folderId']> | null,
     goalBinding:
       task.goalId && task.keyResultId
         ? {

@@ -40,7 +40,7 @@ export class PowerSyncGoalMapper {
       motivation: row.motivation ? String(row.motivation) : null,
       status: String(row.status),
       startDate: optionalMs(row.start_date ? String(row.start_date) : null),
-      dueDate: optionalMs(row.target_date ? String(row.target_date) : null),
+      dueDate: optionalMs(row.due_date ? String(row.due_date) : null),
       completedAt: optionalMs(row.completed_at ? String(row.completed_at) : null),
       archivedAt: optionalMs(row.archived_at ? String(row.archived_at) : null),
       sortOrder: Number(row.sort_order ?? 0),
@@ -64,8 +64,8 @@ export class PowerSyncGoalMapper {
       title: String(row.title),
       description: row.description ? String(row.description) : null,
       progress: {
-        startingValue: Number(row.initial_value ?? 0),
-        progressBaselineValue: null,
+        startingValue: Number(row.starting_value ?? 0),
+        progressBaselineValue: row.progress_baseline_value == null ? null : Number(row.progress_baseline_value),
         currentValue: Number(row.current_value ?? 0),
         targetValue: Number(row.target_value ?? 100),
         aggregationMethod: row.aggregation_method ? String(row.aggregation_method) : 'Last',
@@ -79,33 +79,15 @@ export class PowerSyncGoalMapper {
   }
 
   static mapGoalReviewRow(row: Record<string, unknown>): RawGoalReviewData {
-    const at = requiredMs(row.created_at ? String(row.created_at) : null);
-    let systemContext: GoalReviewSystemContext = {
-      windowStartAt: at,
-      windowEndAt: at,
-      overallProgress: { startPercentage: 0, endPercentage: 0, deltaPercentage: 0 },
-      keyResults: [],
-      summary: { recordCount: 0, manualRecordCount: 0, taskContributionCount: 0 },
-    };
-    if (row.lessons_learned) {
-      try {
-        const parsed = JSON.parse(String(row.lessons_learned));
-        if (parsed && typeof parsed === 'object' && 'overallProgress' in parsed) {
-          systemContext = parsed as GoalReviewSystemContext;
-        }
-      } catch {
-        // legacy prose is intentionally ignored during the destructive vNext cutover
-      }
-    }
     return {
       id: String(row.id),
       goalId: String(row.goal_id),
-      reflection: row.content ? String(row.content) : '',
+      reflection: String(row.reflection),
       challenges: row.challenges ? String(row.challenges) : null,
-      adjustments: row.next_steps ? String(row.next_steps) : null,
-      systemContext,
-      reviewedAt: at,
-      createdAt: at,
+      adjustments: row.adjustments ? String(row.adjustments) : null,
+      systemContext: JSON.parse(String(row.system_context)) as GoalReviewSystemContext,
+      reviewedAt: requiredMs(row.reviewed_at ? String(row.reviewed_at) : null),
+      createdAt: requiredMs(row.created_at ? String(row.created_at) : null),
       updatedAt: requiredMs(row.updated_at ? String(row.updated_at) : null),
     };
   }

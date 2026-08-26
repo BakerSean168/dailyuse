@@ -56,10 +56,7 @@ export async function getDashboardData(
     (goal) => goal.status === GoalStatus.Active && goal.deletedAt === null,
   );
   const activeTemplates = taskTemplates.filter(
-    (template) =>
-      template.deletedAt === null &&
-      template.status !== TaskTemplateStatus.Deleted &&
-      template.status !== TaskTemplateStatus.Archived,
+    (template) => template.deletedAt === null && template.status !== TaskTemplateStatus.Closed,
   );
   const liveTaskInstances = taskInstances.filter((instance) => instance.deletedAt === null);
   const todayTaskInstances = liveTaskInstances.filter((instance) =>
@@ -73,9 +70,7 @@ export async function getDashboardData(
     const completedAt = getTaskCompletionTimestamp(instance);
     return completedAt !== null && isWithinRange(completedAt, todayStart, todayEnd);
   }).length;
-  const overdueTaskCount = liveTaskInstances.filter(
-    (instance) => instance.status === TaskInstanceStatus.Expired || instance.isOverdue(),
-  ).length;
+  const overdueTaskCount = liveTaskInstances.filter((instance) => instance.isOverdue()).length;
 
   const upcomingReminders = reminders.filter(
     (reminder) =>
@@ -101,20 +96,14 @@ export async function getDashboardData(
 
   const goalProgress: GoalProgressItem[] = activeGoals
     .slice()
-    .sort((left, right) => {
-      if (right.priority !== left.priority) {
-        return right.priority - left.priority;
-      }
-
-      return right.updatedAt - left.updatedAt;
-    })
+    .sort((left, right) => right.updatedAt - left.updatedAt)
     .slice(0, GOAL_PROGRESS_LIMIT)
     .map((goal) => ({
       id: goal.id as GoalId,
       name: goal.name,
       progress: normalizePercentage(goal.overallProgress),
       status: goal.status as GoalStatus,
-      dueDate: goal.targetDate ?? 0,
+      dueDate: goal.dueDate ?? 0,
       keyResultCount: goal.totalKeyResults,
     }));
 

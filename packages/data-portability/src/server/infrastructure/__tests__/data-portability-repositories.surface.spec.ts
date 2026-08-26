@@ -33,14 +33,9 @@ describe('data portability dependency factories surface', () => {
 
   const expectedFieldNames = [
     'goalRepository',
-    'goalFolderRepository',
     'goalRecordRepository',
-    'focusSessionRepository',
-    'focusModeRepository',
     'taskTemplateRepository',
     'taskInstanceRepository',
-    'taskFolderRepository',
-    'taskDependencyRepository',
     'reminderTemplateRepository',
     'reminderGroupRepository',
     'reminderResponseRepository',

@@ -103,8 +103,6 @@ describe('composeTask assembly order with goalProgressHandler', () => {
     expect(moduleCall).toMatchObject({
       taskTemplateRepository: repoSet.taskTemplateRepository,
       taskInstanceRepository: repoSet.taskInstanceRepository,
-      taskDependencyRepository: repoSet.taskDependencyRepository,
-      taskFolderRepository: repoSet.taskFolderRepository,
       taskWriteTransactionRunner: repoSet.taskWriteTransactionRunner,
     });
     expect(moduleCall.runtimeContributions).toContain(

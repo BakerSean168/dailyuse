@@ -144,9 +144,7 @@ export interface ComposeGoalResult {
 export function composeGoal(dependencies: ComposeGoalDependencies): ComposeGoalResult {
   const {
     goalRepository,
-    goalFolderRepository,
     goalRecordRepository,
-    focusModeRepository,
     goalWriteTransactionRunner,
   } = createGoalPowerSyncRepositories(dependencies.db);
 
@@ -164,9 +162,7 @@ export function composeGoal(dependencies: ComposeGoalDependencies): ComposeGoalR
 
   const instance = createGoalModule({
     goalRepository,
-    goalFolderRepository,
     goalRecordRepository,
-    focusModeRepository,
     goalWriteTransactionRunner,
     taskBindingReadPort: dependencies.taskBindingReadPort,
     runtimeContributions,

@@ -29,17 +29,14 @@ describe('projection from PowerSync-shaped rows', () => {
         {
           id: 'goal-db-id',
           name: 'Ship portability',
-          status: 'active',
-          importance: 'high',
-          priority: 10,
-          tags: '["desktop"]',
+          status: 'Active',
           keyResults: [
             {
               id: 'kr-db-id',
               title: 'Round trip passes',
-              valueType: 'numeric',
-              aggregationMethod: 'sum',
-              initialValue: 0,
+              aggregationMethod: 'Sum',
+              startingValue: 0,
+              progressBaselineValue: null,
               targetValue: 1,
               currentValue: 1,
               weight: 2,
@@ -65,17 +62,15 @@ describe('projection from PowerSync-shaped rows', () => {
 
     expect(goals[0]).toMatchObject({
       _ref: 'goal:1',
-      tags: ['desktop'],
+      status: 'Active',
       keyResults: [
         {
           _ref: 'keyResult:1',
-          progress: {
-            valueType: 'numeric',
-            aggregationMethod: 'sum',
-            initialValue: 0,
-            targetValue: 1,
-            currentValue: 1,
-          },
+          calculationMethod: 'Sum',
+          startingValue: 0,
+          progressBaselineValue: null,
+          targetValue: 1,
+          currentValue: 1,
           sortOrder: 3,
         },
       ],
@@ -103,7 +98,7 @@ describe('projection from PowerSync-shaped rows', () => {
           goalId: 'goal-db-id',
           keyResultId: 'kr-db-id',
           goalRecordValue: 2.5,
-          goalProgressTrigger: 'PER_INSTANCE',
+          goalProgressTrigger: 'EachCompletion',
           checklist: '[{"title":"cover IPC","order":0}]',
           reminderConfigEnabled: 1,
           reminderConfigTimeOffsetMinutes: 15,
@@ -120,10 +115,10 @@ describe('projection from PowerSync-shaped rows', () => {
       goalRef: 'goal:1',
       keyResultRef: 'keyResult:1',
       goalRecordValue: 2.5,
-      goalProgressTrigger: 'PER_INSTANCE',
+      goalProgressTrigger: 'EachCompletion',
       checklist: [{ title: 'cover IPC', order: 0 }],
       reminderConfig: {
-        enabled: 1,
+        enabled: true,
         triggers: [{ relativeValue: 15, relativeUnit: 'Minute' }],
       },
     });
@@ -185,7 +180,7 @@ describe('projection from PowerSync-shaped rows', () => {
           sourceModule: 'task',
           sourceEntityId: 'missing-source-id',
           status: 'active',
-          enabled: 1,
+          enabled: true,
           cronExpression: '0 9 * * *',
           timezone: 'Asia/Shanghai',
           maxRetries: 5,

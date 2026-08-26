@@ -619,15 +619,15 @@ describe('TaskInstance Aggregate', () => {
     });
 
     describe('dueDate (computed)', () => {
-      it('should compute dueDate from AllDay timeConfig', () => {
-        const instanceDate = new Date('2025-06-15').getTime();
+      it('should compute dueDate at the local calendar-day boundary for AllDay', () => {
+        const localDay = new Date(2025, 5, 15, 0, 0, 0);
+        const instanceDate = localDay.getTime();
         const inst = makeInstance({
           instanceDate,
-          timeConfig: makeAllDayTimeConfig(new Date('2025-06-15')),
+          timeConfig: makeAllDayTimeConfig(localDay),
         });
 
-        // AllDay: instanceDate + 86400000 - 1
-        expect(inst.dueDate).toBe(instanceDate + 86400000 - 1);
+        expect(inst.dueDate).toBe(new Date(2025, 5, 15, 23, 59, 59, 999).getTime());
       });
 
       it('uses the local DST day boundary for AllDay dueDate', () => {
@@ -678,15 +678,16 @@ describe('TaskInstance Aggregate', () => {
         }
       });
 
-      it('should compute dueDate from TimePoint timeConfig', () => {
-        const instanceDate = new Date('2025-06-15').getTime();
+      it('should combine TimePoint with the local occurrence day', () => {
+        const localDay = new Date(2025, 5, 15, 0, 0, 0);
+        const instanceDate = localDay.getTime();
         const minutesFromMidnight = 540; // 9:00 AM
         const inst = makeInstance({
           instanceDate,
-          timeConfig: makeTimePointConfig(minutesFromMidnight, new Date('2025-06-15')),
+          timeConfig: makeTimePointConfig(minutesFromMidnight, localDay),
         });
 
-        expect(inst.dueDate).toBe(instanceDate + minutesFromMidnight * 60_000);
+        expect(inst.dueDate).toBe(new Date(2025, 5, 15, 9, 0, 0, 0).getTime());
       });
     });
   });

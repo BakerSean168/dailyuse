@@ -8,20 +8,13 @@ describe('PrismaGoalMapper additional coverage', () => {
       identityId: 'identity-1',
       name: 'Goal',
       description: null,
-      color: null,
       feasibilityAnalysis: null,
       motivation: null,
       status: 'Active',
-      importance: 'Medium',
-      priority: null,
-      category: null,
-      tags: null,
       startDate: new Date(1_000),
-      targetDate: new Date(2_000),
+      dueDate: new Date(2_000),
       completedAt: null,
       archivedAt: null,
-      folderId: null,
-      parentGoalId: null,
       sortOrder: null,
       reminderConfig: JSON.stringify({ enabled: true, triggers: '[]' }),
       keyResults: [
@@ -30,15 +23,14 @@ describe('PrismaGoalMapper additional coverage', () => {
           goalId: 'goal-1',
           title: 'KR',
           description: null,
-          valueType: null,
-          aggregationMethod: null,
-          initialValue: null,
-          targetValue: null,
-          currentValue: null,
+          aggregationMethod: 'Last',
+          startingValue: 0,
+          progressBaselineValue: null,
+          targetValue: 100,
+          currentValue: 0,
           unit: null,
-          weight: null,
-          order: null,
-          version: null,
+          weight: 1,
+          order: 0,
           createdAt: new Date(1_000),
           updatedAt: new Date(1_200),
           deletedAt: null,
@@ -48,17 +40,13 @@ describe('PrismaGoalMapper additional coverage', () => {
         {
           id: 'review-1',
           goalId: 'goal-1',
-          reviewType: 'Adhoc',
-          rating: null,
-          content: 'summary',
-          achievements: null,
+          reflection: 'summary',
           challenges: 'blocked',
-          lessonsLearned: '{"windowStartAt":1000,"windowEndAt":1300,"overallProgress":{"startPercentage":10,"endPercentage":30,"deltaPercentage":20},"keyResults":[],"summary":{"recordCount":2,"manualRecordCount":1,"taskContributionCount":1}}',
-          nextSteps: 'adjust',
+          adjustments: 'adjust',
+          systemContext: '{"windowStartAt":1000,"windowEndAt":1300,"overallProgress":{"startPercentage":10,"endPercentage":30,"deltaPercentage":20},"keyResults":[],"summary":{"recordCount":2,"manualRecordCount":1,"taskContributionCount":1}}',
+          reviewedAt: new Date(1_300),
           createdAt: new Date(1_300),
           updatedAt: new Date(1_400),
-          deletedAt: null,
-          version: null,
         },
       ],
       keyResultWeightSnapshots: [
@@ -110,20 +98,13 @@ describe('PrismaGoalMapper additional coverage', () => {
       identityId: 'identity-1',
       name: 'Goal2',
       description: 'desc',
-      color: '#000',
       feasibilityAnalysis: 'f',
       motivation: 'm',
       status: 'Completed',
-      importance: 'High',
-      priority: 10,
-      category: 'cat',
-      tags: ['a'],
       startDate: null,
-      targetDate: null,
+      dueDate: null,
       completedAt: null,
       archivedAt: null,
-      folderId: 'folder-1',
-      parentGoalId: 'goal-1',
       sortOrder: 2,
       reminderConfig: null,
       keyResults: undefined,
@@ -181,17 +162,17 @@ describe('PrismaGoalMapper additional coverage', () => {
     } as any);
 
     expect(fromPartial).toEqual({
-      valueType: 'Incremental',
       aggregationMethod: 'Last',
-      initialValue: 0,
+      startingValue: 0,
+      progressBaselineValue: null,
       targetValue: 100,
       currentValue: 8,
       unit: null,
     });
     expect(fromFull).toEqual({
-      valueType: 'Incremental',
       aggregationMethod: 'Max',
-      initialValue: 2,
+      startingValue: 2,
+      progressBaselineValue: null,
       targetValue: 20,
       currentValue: 10,
       unit: 'pt',
@@ -206,21 +187,13 @@ describe('PrismaGoalMapper fallback branches (R4)', () => {
       identityId: 'identity-1',
       name: 'Goal',
       description: null,
-      color: null,
       feasibilityAnalysis: null,
       motivation: null,
       status: 'Active',
-      importance: 'Medium',
-      priority: null,
-      category: null,
-      tags: null,
       startDate: Date.parse('2026-01-01T00:00:00.000Z'),
-      targetDate: null,
+      dueDate: null,
       completedAt: null,
       archivedAt: null,
-      folderId: null,
-      parentGoalId: null,
-      rollupPolicy: null,
       sortOrder: null,
       reminderConfig: null,
       keyResults: null,
@@ -234,7 +207,6 @@ describe('PrismaGoalMapper fallback branches (R4)', () => {
 
     const raw = PrismaGoalMapper.toDomainDTO(row as never);
     expect(raw.dueDate).toBeNull();
-    expect('rollupPolicy' in raw).toBe(false);
     expect(raw.sortOrder).toBe(0);
     expect(raw.version).toBe(1);
     expect(raw.reminderConfig).toBeNull();
@@ -244,21 +216,14 @@ describe('PrismaGoalMapper fallback branches (R4)', () => {
     expect(raw.updatedAt).toBe(2_000);
   });
 
-  it('parses review system context and falls back to a neutral factual snapshot', () => {
-    const at = 1_700;
-    const neutral = PrismaGoalMapper.parseReviewSystemContext(null, at);
-    expect(neutral.windowStartAt).toBe(at);
-    expect(neutral.windowEndAt).toBe(at);
-    expect(neutral.overallProgress).toEqual({
-      startPercentage: 0, endPercentage: 0, deltaPercentage: 0,
-    });
+  it('parses required authoritative review system context', () => {
     const context = {
       windowStartAt: 1_000, windowEndAt: 1_700,
       overallProgress: { startPercentage: 25, endPercentage: 50, deltaPercentage: 25 },
       keyResults: [],
       summary: { recordCount: 1, manualRecordCount: 1, taskContributionCount: 0 },
     };
-    expect(PrismaGoalMapper.parseReviewSystemContext(JSON.stringify(context), at)).toEqual(context);
-    expect(PrismaGoalMapper.parseReviewSystemContext('not-json', at)).toEqual(neutral);
+    expect(PrismaGoalMapper.parseReviewSystemContext(JSON.stringify(context))).toEqual(context);
+    expect(() => PrismaGoalMapper.parseReviewSystemContext('not-json')).toThrow();
   });
 });

@@ -35,7 +35,6 @@ describe('resolveExportRef dual retired (residual 1003)', () => {
       ['reminder', reminder, 'reminder'],
       ['repository', repository, 'repository'],
     ] as const) {
-      expect(source, label).toContain('Residual 1003');
       expect(source, label).toContain('resolveExportRef');
       expect(source, label).toContain('resolveExportRefOrThrow');
       expect(source, label).toContain(`'${entity}'`);
@@ -49,7 +48,6 @@ describe('resolveExportRef dual retired (residual 1003)', () => {
       ['goal', goal, 'goal'],
       ['editor', editor, 'editor'],
     ] as const) {
-      expect(source, label).toContain('Residual 1017');
       expect(source, label).toContain('resolveExportRef');
       expect(source, label).toContain(`'${entity}'`);
       expect(source, label).not.toMatch(/function resolveRef\b/);

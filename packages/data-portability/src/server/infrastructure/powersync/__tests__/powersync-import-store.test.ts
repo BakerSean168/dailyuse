@@ -77,12 +77,15 @@ describe('PowerSyncDataPortabilityImportStore', () => {
         identityId: 'identity-1',
         name: 'Write tests',
         description: null,
-        status: 'active',
+        status: 'Active',
+        outcome: 'Open',
+        completionPolicy: 'AllowCorrection',
+        closedAt: null,
+        archivedAt: null,
+        abandonedReason: null,
         importance: 'moderate',
         color: null,
         tags: JSON.stringify(['qa']),
-        folderId: null,
-        parentTaskId: null,
         timeConfigType: 'FixedTime',
         timeConfigStartTime: null,
         timeConfigEndTime: null,
@@ -93,8 +96,6 @@ describe('PowerSyncDataPortabilityImportStore', () => {
         recurrenceRuleType: null,
         recurrenceRuleInterval: null,
         recurrenceRuleDaysOfWeek: null,
-        recurrenceRuleDayOfMonth: null,
-        recurrenceRuleMonthOfYear: null,
         recurrenceRuleEndDate: null,
         recurrenceRuleCount: null,
         reminderConfigEnabled: true,
@@ -104,10 +105,8 @@ describe('PowerSyncDataPortabilityImportStore', () => {
         goalId: 'goal-1',
         keyResultId: 'kr-1',
         goalRecordValue: 2.5,
-        goalProgressTrigger: 'PER_INSTANCE',
+        goalProgressTrigger: 'EachCompletion',
         checklist: JSON.stringify([{ title: 'cover IPC', order: 0 }]),
-        dependencyStatus: 'NONE',
-        isBlocked: true,
       }),
     );
 
@@ -121,13 +120,13 @@ describe('PowerSyncDataPortabilityImportStore', () => {
     expect(insert?.sql).toContain('goal_record_value');
     expect(insert?.sql).toContain('goal_progress_trigger');
     expect(insert?.sql).not.toContain('goal_binding');
-    expect(insert?.sql).toContain('is_blocked');
+    expect(insert?.sql).not.toContain('is_blocked');
     expect(insert?.sql).not.toContain('timeConfigType');
     expect(insert?.parameters).toContain(JSON.stringify(['qa']));
     expect(insert?.parameters).toContain('goal-1');
     expect(insert?.parameters).toContain('kr-1');
     expect(insert?.parameters).toContain(2.5);
-    expect(insert?.parameters).toContain('PER_INSTANCE');
+    expect(insert?.parameters).toContain('EachCompletion');
     expect(insert?.parameters).toContain(1);
   });
 
@@ -159,7 +158,12 @@ describe('PowerSyncDataPortabilityImportStore', () => {
         description: null,
         sourceModule: 'task',
         sourceEntityId: 'task-1',
-        status: 'active',
+        status: 'Active',
+        outcome: 'Open',
+        completionPolicy: 'AllowCorrection',
+        closedAt: null,
+        archivedAt: null,
+        abandonedReason: null,
         enabled: true,
         cronExpression: '0 8 * * *',
         timezone: 'Asia/Shanghai',

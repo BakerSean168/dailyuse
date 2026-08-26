@@ -53,6 +53,7 @@ describe('PowerSync desktop data portability round trip', () => {
     expect(exported.content).not.toContain('sessionToken');
     expect(exported.content).toContain('"repositories"');
     expect(exported.content).toContain('"goals"');
+    expect(JSON.parse(exported.content).schemaVersion).toBe(2);
     expect(exported.content).toContain('"templates"');
     expect(exported.content).toContain('"groups"');
     expect(exported.content).toContain('"tasks"');
@@ -86,7 +87,6 @@ describe('PowerSync desktop data portability round trip', () => {
     const goal = insertedRow(firstStatements, 'goals');
     const keyResult = insertedRow(firstStatements, 'key_results');
     const goalRecord = insertedRow(firstStatements, 'goal_records');
-    const taskFolder = insertedRow(firstStatements, 'task_folders');
     const taskTemplate = insertedRow(firstStatements, 'task_templates');
     const taskInstance = insertedRow(firstStatements, 'task_instances');
     const scheduleTask = insertedRow(firstStatements, 'schedule_tasks');
@@ -105,7 +105,8 @@ describe('PowerSync desktop data portability round trip', () => {
     expect(resource.folder_id).toBe(folder.id);
     expect(keyResult.goal_id).toBe(goal.id);
     expect(goalRecord.key_result_id).toBe(keyResult.id);
-    expect(taskTemplate.folder_id).toBe(taskFolder.id);
+    expect(taskTemplate.goal_id).toBe(goal.id);
+    expect(taskTemplate.key_result_id).toBe(keyResult.id);
     expect(taskInstance.template_id).toBe(taskTemplate.id);
     expect(scheduleTask.source_entity_id).toBe(taskTemplate.id);
     expect(reminderTemplate.reminder_group_id).toBe(reminderGroup.id);
@@ -420,9 +421,8 @@ function existingSingleton(table: string, identityUuid: unknown): Row {
       return {
         id: 'existing-notification-b',
         identity_id: identityUuid,
-        enabled: 1,
-        channels: '{}',
-        categories: '{}',
+        global_channels: '{}',
+        workflow_overrides: '{}',
         do_not_disturb: null,
         rate_limit: null,
         created_at: now,
@@ -480,14 +480,13 @@ function seedProfile(identityUuid: string): SeedTables {
       {
         id: 'notification-preference-a',
         identity_id: identityUuid,
-        enabled: 1,
-        channels: JSON.stringify({ desktop: true }),
-        categories: JSON.stringify({ reminders: true }),
+        global_channels: JSON.stringify({ InApp: true, Desktop: true, Email: false }),
+        workflow_overrides: JSON.stringify({ 'task.reminder': { Desktop: true } }),
         do_not_disturb: JSON.stringify({ enabled: false }),
         rate_limit: JSON.stringify({ perHour: 20 }),
+        version: 1,
         created_at: now,
         updated_at: later,
-        deleted_at: null,
       },
     ],
     user_reminder_preferences: [
@@ -564,35 +563,22 @@ function seedProfile(identityUuid: string): SeedTables {
         deleted_at: null,
       },
     ],
-    goal_folders: [
-      {
-        id: 'goal-folder-a',
-        identity_id: identityUuid,
-        name: 'Outcome',
-        parent_folder_id: null,
-        sort_order: 0,
-        is_system_folder: 0,
-        created_at: now,
-        updated_at: later,
-        deleted_at: null,
-      },
-    ],
     goals: [
       {
         id: 'goal-a',
         identity_id: identityUuid,
-        folder_id: 'goal-folder-a',
         name: 'Ship portability',
         description: 'Complete desktop portability',
-        color: '#3B82F6',
-        status: 'active',
-        importance: 'high',
-        priority: 1,
-        sort_order: 0,
+        feasibility_analysis: 'Executable',
+        motivation: 'Protect user data',
+        status: 'Active',
         start_date: now,
-        target_date: later,
+        due_date: later,
         completed_at: null,
-        tags: JSON.stringify(['release']),
+        archived_at: null,
+        sort_order: 0,
+        reminder_config: null,
+        version: 1,
         created_at: now,
         updated_at: later,
         deleted_at: null,
@@ -605,8 +591,9 @@ function seedProfile(identityUuid: string): SeedTables {
         goal_id: 'goal-a',
         title: 'Round trip passes',
         description: 'Automated proof',
-        value_type: 'numeric',
-        initial_value: 0,
+        aggregation_method: 'Last',
+        starting_value: 0,
+        progress_baseline_value: null,
         current_value: 1,
         target_value: 1,
         unit: 'test',
@@ -614,7 +601,6 @@ function seedProfile(identityUuid: string): SeedTables {
         order: 0,
         created_at: now,
         updated_at: later,
-        deleted_at: null,
       },
     ],
     goal_reviews: [
@@ -622,12 +608,30 @@ function seedProfile(identityUuid: string): SeedTables {
         id: 'goal-review-a',
         identity_id: identityUuid,
         goal_id: 'goal-a',
-        review_type: 'completion',
-        content: 'Looks good',
-        rating: 5,
+        reflection: 'Looks good',
+        challenges: null,
+        adjustments: 'Keep the round trip gate',
+        system_context: JSON.stringify({
+          windowStartAt: Date.parse(now),
+          windowEndAt: Date.parse(later),
+          overallProgress: { startPercentage: 0, endPercentage: 100, deltaPercentage: 100 },
+          keyResults: [{
+            keyResultId: 'kr-a',
+            title: 'Round trip passes',
+            unit: 'test',
+            startPercentage: 0,
+            endPercentage: 100,
+            deltaPercentage: 100,
+            trend: [
+              { at: Date.parse(now), progressPercentage: 0 },
+              { at: Date.parse(later), progressPercentage: 100 },
+            ],
+          }],
+          summary: { recordCount: 1, manualRecordCount: 1, taskContributionCount: 0 },
+        }),
+        reviewed_at: later,
         created_at: now,
         updated_at: later,
-        deleted_at: null,
       },
     ],
     goal_records: [
@@ -637,70 +641,52 @@ function seedProfile(identityUuid: string): SeedTables {
         key_result_id: 'kr-a',
         value: 1,
         note: 'Done',
+        source_type: null,
+        source_id: null,
         recorded_at: later,
         created_at: now,
         updated_at: later,
-        deleted_at: null,
-      },
-    ],
-    focus_sessions: [
-      {
-        id: 'focus-session-a',
-        identity_id: identityUuid,
-        goal_id: 'goal-a',
-        description: 'Verify portability',
-        status: 'completed',
-        duration_minutes: 60,
-        actual_duration_minutes: 55,
-        started_at: now,
-        completed_at: later,
-        pause_count: 0,
-        paused_duration_minutes: 0,
-        created_at: now,
-        updated_at: later,
-        deleted_at: null,
-      },
-    ],
-    focus_modes: [
-      {
-        id: 'focus-mode-a',
-        identity_id: identityUuid,
-        focused_goal_ids: JSON.stringify(['goal-a']),
-        hidden_goals_mode: 'dim',
-        start_time: now,
-        end_time: later,
-        is_active: 1,
-        created_at: now,
-        updated_at: later,
-        deleted_at: null,
-      },
-    ],
-    task_folders: [
-      {
-        id: 'task-folder-a',
-        identity_id: identityUuid,
-        name: 'Build',
-        color: null,
-        icon: null,
-        order: 0,
-        created_at: now,
-        updated_at: later,
-        deleted_at: null,
       },
     ],
     task_templates: [
       {
         id: 'task-template-a',
         identity_id: identityUuid,
-        folder_id: 'task-folder-a',
         name: 'Write tests',
         description: 'Cover profile round trip',
-        status: 'active',
+        status: 'Active',
+        outcome: 'Open',
+        completion_policy: 'AllowCorrection',
+        closed_at: null,
+        archived_at: null,
+        abandoned_reason: null,
         importance: 'high',
-        priority: 1,
+        color: null,
         tags: JSON.stringify(['qa']),
         checklist: JSON.stringify([{ title: 'run tests', checked: true }]),
-        time_config_type: 'fixed',
+        time_config_type: 'FixedTime',
+        time_config_start_time: null,
+        time_config_end_time: null,
+        time_config_duration_minutes: null,
+        time_config_time_point: 540,
+        time_config_time_range_start: null,
+        time_config_time_range_end: null,
+        recurrence_rule_type: null,
+        recurrence_rule_interval: null,
+        recurrence_rule_days_of_week: null,
+        recurrence_rule_end_date: null,
+        recurrence_rule_count: null,
+        reminder_config_enabled: 1,
+        reminder_config_time_offset_minutes: 15,
+        reminder_config_unit: 'Minute',
+        reminder_config_channel: 'Desktop',
+        last_generated_date: null,
+        generate_ahead_days: 14,
+        goal_id: 'goal-a',
+        key_result_id: 'kr-a',
+        goal_record_value: 1,
+        goal_progress_trigger: 'PER_INSTANCE',
+        version: 1,
         created_at: now,
         updated_at: later,
         deleted_at: null,
@@ -712,16 +698,19 @@ function seedProfile(identityUuid: string): SeedTables {
         template_id: 'task-template-a',
         identity_id: identityUuid,
         instance_date: now,
-        status: 'completed',
+        occurrence_key: 'task-template-a:2026-06-04',
+        status: 'Completed',
         importance: 'high',
-        priority: 1,
-        time_config: JSON.stringify({ startTime: now, endTime: later }),
+        time_config: JSON.stringify({ type: 'FixedTime', timePoint: 540 }),
+        actual_start_time: now,
+        actual_end_time: later,
+        comment: 'done',
+        version: 1,
         created_at: now,
         updated_at: later,
         deleted_at: null,
       },
     ],
-    task_dependencies: [],
     reminder_groups: [
       {
         id: 'reminder-group-a',

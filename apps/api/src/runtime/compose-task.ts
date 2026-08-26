@@ -132,8 +132,6 @@ export function composeTask(
   const {
     taskTemplateRepository,
     taskInstanceRepository,
-    taskDependencyRepository,
-    taskFolderRepository,
     taskWriteTransactionRunner,
   } = createTaskPrismaRepositories(dependencies.db);
 
@@ -153,8 +151,6 @@ export function composeTask(
   const instance = createTaskModule({
     taskTemplateRepository,
     taskInstanceRepository,
-    taskDependencyRepository,
-    taskFolderRepository,
     taskWriteTransactionRunner,
     runtimeContributions,
   });

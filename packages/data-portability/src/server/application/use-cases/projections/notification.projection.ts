@@ -1,17 +1,16 @@
-/**
- * Notification Module — Export Projections
- */
-
+/** Notification Preference V2 export projection. */
 import type { PortableNotificationPreference } from '@memoflow/contracts/data-portability';
-import { parseJsonField, toBoolean } from './projection-helpers';
+import { parseJsonField } from './projection-helpers';
 
 export function projectNotificationPreference(pref: unknown): PortableNotificationPreference {
   const entity = pref as Record<string, unknown>;
   return {
-    channels: parseJsonField(entity.channels) ?? {},
-    categories: parseJsonField(entity.categories) ?? {},
+    globalChannels: (parseJsonField(entity.globalChannels, {}) ?? {}) as Record<string, boolean>,
+    workflowOverrides: (parseJsonField(entity.workflowOverrides, {}) ?? {}) as Record<
+      string,
+      Record<string, boolean>
+    >,
     doNotDisturb: entity.doNotDisturb ? parseJsonField(entity.doNotDisturb) : undefined,
     rateLimit: entity.rateLimit ? parseJsonField(entity.rateLimit) : undefined,
-    enabled: entity.enabled == null ? undefined : toBoolean(entity.enabled, true),
   };
 }

@@ -219,7 +219,7 @@ export class GoalPowerSyncRepository
                motivation = ?,
                status = ?,
                start_date = ?,
-               target_date = ?,
+               due_date = ?,
                completed_at = ?,
                archived_at = ?,
                sort_order = ?,
@@ -250,31 +250,22 @@ export class GoalPowerSyncRepository
       } else {
         await tx.execute(
           `INSERT INTO goals (
-             id, identity_id, name, description, color, feasibility_analysis,
-             motivation, status, importance, priority, category, tags,
-             start_date, target_date, completed_at, archived_at,
-             folder_id, parent_goal_id, sort_order, reminder_config,
+             id, identity_id, name, description, feasibility_analysis, motivation, status,
+             start_date, due_date, completed_at, archived_at, sort_order, reminder_config,
              version, created_at, updated_at, deleted_at
-           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             dto.id,
             dto.identityId,
             dto.name,
             dto.description,
-            '#3B82F6',
             dto.feasibilityAnalysis,
             dto.motivation,
             dto.status,
-            'moderate',
-            0,
-            null,
-            '[]',
             toDbDateTime(dto.startDate),
             toDbDateTime(dto.dueDate),
             toDbDateTime(dto.completedAt),
             toDbDateTime(dto.archivedAt),
-            null,
-            null,
             dto.sortOrder,
             dto.reminderConfig ? JSON.stringify(dto.reminderConfig) : null,
             dto.version,
@@ -331,7 +322,7 @@ export class GoalPowerSyncRepository
     const dto = goal.toServerDTO(false);
     const result = await this.db.execute(
       `UPDATE goals SET name = ?, description = ?, feasibility_analysis = ?, motivation = ?,
-       status = ?, start_date = ?, target_date = ?, completed_at = ?, archived_at = ?,
+       status = ?, start_date = ?, due_date = ?, completed_at = ?, archived_at = ?,
        reminder_config = ?, version = ?, updated_at = ?, deleted_at = ?
        WHERE id = ? AND identity_id = ? AND version = ?`,
       [
@@ -515,9 +506,9 @@ export class GoalPowerSyncRepository
                goal_id = ?,
                title = ?,
                description = ?,
-               value_type = ?,
                aggregation_method = ?,
-               initial_value = ?,
+               starting_value = ?,
+               progress_baseline_value = ?,
                target_value = ?,
                current_value = ?,
                unit = ?,
@@ -530,9 +521,9 @@ export class GoalPowerSyncRepository
             goalId,
             keyResult.title,
             keyResult.description,
-            'Incremental',
             progress.aggregationMethod ?? 'Last',
             progress.startingValue ?? 0,
+            progress.progressBaselineValue ?? null,
             progress.targetValue ?? 100,
             progress.currentValue ?? 0,
             progress.unit ?? null,
@@ -545,8 +536,8 @@ export class GoalPowerSyncRepository
       } else {
         await tx.execute(
           `INSERT INTO key_results (
-             id, identity_id, goal_id, title, description,
-             value_type, aggregation_method, initial_value, target_value, current_value,
+             id, identity_id, goal_id, title, description, aggregation_method,
+             starting_value, progress_baseline_value, target_value, current_value,
              unit, weight, "order", created_at, updated_at
            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
@@ -555,9 +546,9 @@ export class GoalPowerSyncRepository
             goalId,
             keyResult.title,
             keyResult.description,
-            'Incremental',
             progress.aggregationMethod ?? 'Last',
             progress.startingValue ?? 0,
+            progress.progressBaselineValue ?? null,
             progress.targetValue ?? 100,
             progress.currentValue ?? 0,
             progress.unit ?? null,
@@ -600,25 +591,21 @@ export class GoalPowerSyncRepository
           `UPDATE goal_reviews
            SET identity_id = ?,
                goal_id = ?,
-               review_type = ?,
-               content = ?,
-               achievements = ?,
+               reflection = ?,
                challenges = ?,
-               lessons_learned = ?,
-               next_steps = ?,
-               rating = ?,
+               adjustments = ?,
+               system_context = ?,
+               reviewed_at = ?,
                updated_at = ?
            WHERE id = ?`,
           [
             identityId,
             goalId,
-            'Adhoc',
             review.reflection,
-            null,
             review.challenges,
-            JSON.stringify(review.systemContext),
             review.adjustments,
-            null,
+            JSON.stringify(review.systemContext),
+            toDbDateTime(review.reviewedAt),
             toDbDateTime(review.updatedAt),
             review.id,
           ],
@@ -626,21 +613,18 @@ export class GoalPowerSyncRepository
       } else {
         await tx.execute(
           `INSERT INTO goal_reviews (
-             id, identity_id, goal_id, review_type, content, achievements,
-             challenges, lessons_learned, next_steps, rating,
-             created_at, updated_at
-           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             id, identity_id, goal_id, reflection, challenges, adjustments,
+             system_context, reviewed_at, created_at, updated_at
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             review.id,
             identityId,
             goalId,
-            'Adhoc',
             review.reflection,
-            null,
             review.challenges,
-            JSON.stringify(review.systemContext),
             review.adjustments,
-            null,
+            JSON.stringify(review.systemContext),
+            toDbDateTime(review.reviewedAt),
             toDbDateTime(review.createdAt),
             toDbDateTime(review.updatedAt),
           ],

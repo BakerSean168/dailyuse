@@ -10,14 +10,9 @@ import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type {
   DataPortabilityDependencies,
   GoalRepoPort,
-  GoalFolderRepoPort,
   GoalRecordRepoPort,
-  FocusSessionRepoPort,
-  FocusModeRepoPort,
   TaskTemplateRepoPort,
   TaskInstanceRepoPort,
-  TaskFolderRepoPort,
-  TaskDependencyRepoPort,
   ReminderTemplateRepoPort,
   ReminderGroupRepoPort,
   ReminderResponseRepoPort,
@@ -71,13 +66,13 @@ class PowerSyncGoalAdapter implements GoalRepoPort {
       const goalId = goal.id as string;
       goal.keyResults = mapRows(
         await this.db.getAll<Record<string, unknown>>(
-          `SELECT * FROM key_results WHERE goal_id = ? AND deleted_at IS NULL ORDER BY "order"`,
+          `SELECT * FROM key_results WHERE goal_id = ? ORDER BY "order"`,
           [goalId],
         ),
       );
       goal.goalReviews = mapRows(
         await this.db.getAll<Record<string, unknown>>(
-          `SELECT * FROM goal_reviews WHERE goal_id = ? AND deleted_at IS NULL ORDER BY created_at`,
+          `SELECT * FROM goal_reviews WHERE goal_id = ? ORDER BY reviewed_at`,
           [goalId],
         ),
       );
@@ -87,45 +82,12 @@ class PowerSyncGoalAdapter implements GoalRepoPort {
   }
 }
 
-class PowerSyncGoalFolderAdapter implements GoalFolderRepoPort {
-  constructor(private readonly db: IElectronDatabase) {}
-  async findByIdentityId(identityId: string): Promise<unknown[]> {
-    const rows = await this.db.getAll<Record<string, unknown>>(
-      `SELECT * FROM goal_folders WHERE identity_id = ? AND deleted_at IS NULL ORDER BY sort_order`,
-      [identityId],
-    );
-    return mapRows(rows);
-  }
-}
-
 class PowerSyncGoalRecordAdapter implements GoalRecordRepoPort {
   constructor(private readonly db: IElectronDatabase) {}
   async findByGoalId(identityId: string, goalId: string): Promise<unknown[]> {
     const rows = await this.db.getAll<Record<string, unknown>>(
-      `SELECT * FROM goal_records WHERE identity_id = ? AND key_result_id IN (SELECT id FROM key_results WHERE goal_id = ?) AND deleted_at IS NULL ORDER BY recorded_at DESC`,
+      `SELECT * FROM goal_records WHERE identity_id = ? AND key_result_id IN (SELECT id FROM key_results WHERE goal_id = ?) ORDER BY recorded_at DESC`,
       [identityId, goalId],
-    );
-    return mapRows(rows);
-  }
-}
-
-class PowerSyncFocusSessionAdapter implements FocusSessionRepoPort {
-  constructor(private readonly db: IElectronDatabase) {}
-  async findByIdentityId(identityId: string): Promise<unknown[]> {
-    const rows = await this.db.getAll<Record<string, unknown>>(
-      `SELECT * FROM focus_sessions WHERE identity_id = ? AND deleted_at IS NULL ORDER BY created_at DESC`,
-      [identityId],
-    );
-    return mapRows(rows);
-  }
-}
-
-class PowerSyncFocusModeAdapter implements FocusModeRepoPort {
-  constructor(private readonly db: IElectronDatabase) {}
-  async findByIdentityId(identityId: string): Promise<unknown[]> {
-    const rows = await this.db.getAll<Record<string, unknown>>(
-      `SELECT * FROM focus_modes WHERE identity_id = ? AND deleted_at IS NULL ORDER BY created_at DESC`,
-      [identityId],
     );
     return mapRows(rows);
   }
@@ -147,28 +109,6 @@ class PowerSyncTaskInstanceAdapter implements TaskInstanceRepoPort {
   async findByIdentityId(identityId: string): Promise<unknown[]> {
     const rows = await this.db.getAll<Record<string, unknown>>(
       `SELECT * FROM task_instances WHERE identity_id = ? AND deleted_at IS NULL ORDER BY created_at DESC`,
-      [identityId],
-    );
-    return mapRows(rows);
-  }
-}
-
-class PowerSyncTaskFolderAdapter implements TaskFolderRepoPort {
-  constructor(private readonly db: IElectronDatabase) {}
-  async findByIdentityId(identityId: string): Promise<unknown[]> {
-    const rows = await this.db.getAll<Record<string, unknown>>(
-      `SELECT * FROM task_folders WHERE identity_id = ? AND deleted_at IS NULL ORDER BY "order"`,
-      [identityId],
-    );
-    return mapRows(rows);
-  }
-}
-
-class PowerSyncTaskDependencyAdapter implements TaskDependencyRepoPort {
-  constructor(private readonly db: IElectronDatabase) {}
-  async findAllByIdentityId(identityId: string): Promise<unknown[]> {
-    const rows = await this.db.getAll<Record<string, unknown>>(
-      `SELECT * FROM task_dependencies WHERE identity_id = ? AND deleted_at IS NULL`,
       [identityId],
     );
     return mapRows(rows);
@@ -370,14 +310,9 @@ export function createPowerSyncDataPortabilityDependencies(
 ): DataPortabilityDependencies {
   return {
     goalRepository: new PowerSyncGoalAdapter(db),
-    goalFolderRepository: new PowerSyncGoalFolderAdapter(db),
     goalRecordRepository: new PowerSyncGoalRecordAdapter(db),
-    focusSessionRepository: new PowerSyncFocusSessionAdapter(db),
-    focusModeRepository: new PowerSyncFocusModeAdapter(db),
     taskTemplateRepository: new PowerSyncTaskTemplateAdapter(db),
     taskInstanceRepository: new PowerSyncTaskInstanceAdapter(db),
-    taskFolderRepository: new PowerSyncTaskFolderAdapter(db),
-    taskDependencyRepository: new PowerSyncTaskDependencyAdapter(db),
     reminderTemplateRepository: new PowerSyncReminderTemplateAdapter(db),
     reminderGroupRepository: new PowerSyncReminderGroupAdapter(db),
     reminderResponseRepository: new PowerSyncReminderResponseAdapter(db),
