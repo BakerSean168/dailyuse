@@ -3,11 +3,10 @@ import type {
   NotificationCategory,
   NotificationEventMap,
   NotificationServerDTO,
-  NotificationStatus,
   NotificationType,
   NotificationChannelType,
 } from '@memoflow/contracts/notification';
-import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import type { ImportanceLevel, UrgencyLevel } from '@memoflow/contracts/shared';
 import type {
   INotificationRepository,
   NotificationDeliveryUsage,
@@ -30,8 +29,16 @@ interface NotificationRow {
   content: string;
   type: string;
   category: string;
+  workflow_key: string;
+  topic: string;
+  idempotency_key: string;
   importance: string | null;
-  status: string;
+  urgency: string | null;
+  related_entity_type: string | null;
+  related_entity_id: string | null;
+  navigation_intent: string | null;
+  correlation_id: string | null;
+  causation_id: string | null;
   is_read: number | null;
   read_at: string | null;
   metadata: string | null;
@@ -73,12 +80,20 @@ function toServerDTO(row: NotificationRow): NotificationServerDTO {
   return {
     id: row.id as NotificationServerDTO['id'],
     identityId: row.identity_id as NotificationServerDTO['identityId'],
+    workflowKey: row.workflow_key,
+    topic: row.topic,
+    idempotencyKey: row.idempotency_key,
     title: row.title,
     content: row.content,
     type: row.type as NotificationType,
     category: row.category as NotificationCategory,
     importance: (row.importance ?? 'Moderate') as ImportanceLevel,
-    status: row.status as NotificationStatus,
+    urgency: (row.urgency ?? 'Medium') as UrgencyLevel,
+    relatedEntityType: row.related_entity_type as never,
+    relatedEntityId: row.related_entity_id,
+    navigationIntent: parseJsonSafe(row.navigation_intent),
+    correlationId: row.correlation_id,
+    causationId: row.causation_id,
     isRead: Boolean(row.is_read ?? 0),
     readAt: toTimestamp(row.read_at),
     actions: parseJsonSafe<NotificationServerDTO['actions']>(row.actions),
@@ -122,12 +137,19 @@ function hydrateNotification(row: NotificationRow, channels: NotificationChannel
   return Notification.load({
     id: NotificationId.of(String(dto.id)),
     identityId: dto.identityId,
+    workflowKey: dto.workflowKey,
+    topic: dto.topic,
+    idempotencyKey: dto.idempotencyKey,
     title: dto.title,
     content: dto.content,
     type: dto.type,
     category: dto.category,
     importance: dto.importance,
-    status: dto.status,
+    urgency: dto.urgency,
+    relatedEntityType: dto.relatedEntityType ?? null,
+    relatedEntityId: dto.relatedEntityId ?? null,
+    correlationId: dto.correlationId ?? null,
+    causationId: dto.causationId ?? null,
     isRead: dto.isRead,
     readAt: dto.readAt ?? null,
     actions: dto.actions?.map((action) => NotificationAction.fromDTO(action)) ?? null,
@@ -187,6 +209,21 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
       );
     `);
     await this.db.execute(`
+      CREATE TABLE IF NOT EXISTS notification_delivery_decisions (
+        id TEXT PRIMARY KEY,
+        identity_id TEXT NOT NULL,
+        notification_id TEXT NOT NULL,
+        channel TEXT NOT NULL,
+        outcome TEXT NOT NULL,
+        reason TEXT NOT NULL,
+        preference_source TEXT,
+        retry_at TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        UNIQUE(notification_id, channel)
+      );
+    `);
+    await this.db.execute(`
       CREATE TABLE IF NOT EXISTS notification_dispatch_outbox (
         id TEXT PRIMARY KEY,
         identity_id TEXT NOT NULL,
@@ -234,91 +271,45 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
     if (existing) {
       await tx.execute(
         `UPDATE notifications
-            SET identity_id = ?,
-                title = ?,
-                content = ?,
-                type = ?,
-                category = ?,
-                importance = ?,
-                urgency = ?,
-                status = ?,
-                is_read = ?,
-                read_at = ?,
-                related_entity_type = ?,
-                related_entity_id = ?,
-                metadata = ?,
-                actions = ?,
-                expires_at = ?,
-                version = ?,
-                updated_at = ?,
-                deleted_at = ?
+            SET identity_id = ?, workflow_key = ?, topic = ?, idempotency_key = ?,
+                title = ?, content = ?, type = ?, category = ?, importance = ?, urgency = ?,
+                is_read = ?, read_at = ?, related_entity_type = ?, related_entity_id = ?,
+                navigation_intent = ?, correlation_id = ?, causation_id = ?, metadata = ?, actions = ?,
+                expires_at = ?, version = ?, updated_at = ?, deleted_at = ?
           WHERE id = ?`,
         [
-          dto.identityId,
-          dto.title,
-          dto.content,
-          dto.type,
-          dto.category,
-          dto.importance,
-          dto.importance,
-          dto.status,
-          dto.isRead ? 1 : 0,
-          dto.readAt ? new Date(dto.readAt).toISOString() : null,
-          null,
-          null,
+          dto.identityId, dto.workflowKey, dto.topic, dto.idempotencyKey,
+          dto.title, dto.content, dto.type, dto.category, dto.importance, dto.urgency,
+          dto.isRead ? 1 : 0, dto.readAt ? new Date(dto.readAt).toISOString() : null,
+          dto.relatedEntityType ?? null, dto.relatedEntityId ?? null,
+          dto.navigationIntent ? JSON.stringify(dto.navigationIntent) : null,
+          dto.correlationId ?? null, dto.causationId ?? null,
           dto.metadata ? JSON.stringify(dto.metadata) : null,
           dto.actions ? JSON.stringify(dto.actions) : null,
           dto.expiresAt ? new Date(dto.expiresAt).toISOString() : null,
-          dto.version,
-          new Date(dto.updatedAt).toISOString(),
-          dto.deletedAt ? new Date(dto.deletedAt).toISOString() : null,
-          dto.id,
+          dto.version, new Date(dto.updatedAt).toISOString(),
+          dto.deletedAt ? new Date(dto.deletedAt).toISOString() : null, dto.id,
         ],
       );
     } else {
       await tx.execute(
         `INSERT INTO notifications (
-            id,
-            identity_id,
-            title,
-            content,
-            type,
-            category,
-            importance,
-            urgency,
-            status,
-            is_read,
-            read_at,
-            related_entity_type,
-            related_entity_id,
-            metadata,
-            actions,
-            expires_at,
-            version,
-            created_at,
-            updated_at,
-            deleted_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            id, identity_id, workflow_key, topic, idempotency_key, title, content, type, category,
+            importance, urgency, is_read, read_at, related_entity_type, related_entity_id,
+            navigation_intent, correlation_id, causation_id, metadata, actions, expires_at,
+            version, created_at, updated_at, deleted_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          dto.id,
-          dto.identityId,
-          dto.title,
-          dto.content,
-          dto.type,
-          dto.category,
-          dto.importance,
-          dto.importance,
-          dto.status,
-          dto.isRead ? 1 : 0,
-          dto.readAt ? new Date(dto.readAt).toISOString() : null,
-          null,
-          null,
+          dto.id, dto.identityId, dto.workflowKey, dto.topic, dto.idempotencyKey,
+          dto.title, dto.content, dto.type, dto.category, dto.importance, dto.urgency,
+          dto.isRead ? 1 : 0, dto.readAt ? new Date(dto.readAt).toISOString() : null,
+          dto.relatedEntityType ?? null, dto.relatedEntityId ?? null,
+          dto.navigationIntent ? JSON.stringify(dto.navigationIntent) : null,
+          dto.correlationId ?? null, dto.causationId ?? null,
           dto.metadata ? JSON.stringify(dto.metadata) : null,
           dto.actions ? JSON.stringify(dto.actions) : null,
-          dto.expiresAt ? new Date(dto.expiresAt).toISOString() : null,
-          dto.version,
-          new Date(dto.createdAt).toISOString(),
-          new Date(dto.updatedAt).toISOString(),
+          dto.expiresAt ? new Date(dto.expiresAt).toISOString() : null, dto.version,
+          new Date(dto.createdAt).toISOString(), new Date(dto.updatedAt).toISOString(),
           dto.deletedAt ? new Date(dto.deletedAt).toISOString() : null,
         ],
       );
@@ -433,24 +424,29 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
     }
 
     for (const decision of deliveryDecisions ?? []) {
-      if (decision.outcome === 'deliver_now') continue;
-      await tx.execute(
-        `INSERT INTO notification_history (
-          id, identity_id, notification_id, action, details, actor_id, created_at
-        ) VALUES (?, ?, ?, 'delivery_policy', ?, NULL, ?)`,
-        [
-          randomUUID(),
-          dto.identityId,
-          dto.id,
-          JSON.stringify({
-            channel: decision.channel,
-            outcome: decision.outcome,
-            reason: decision.reason,
-            retryAt: decision.retryAt?.toISOString() ?? null,
-          }),
-          new Date().toISOString(),
-        ],
+      const nowIso = new Date().toISOString();
+      const existingDecision = await tx.getOptional<{ id: string }>(
+        `SELECT id FROM notification_delivery_decisions WHERE notification_id = ? AND channel = ? LIMIT 1`,
+        [dto.id, decision.channel],
       );
+      if (existingDecision) {
+        await tx.execute(
+          `UPDATE notification_delivery_decisions
+             SET outcome = ?, reason = ?, preference_source = ?, retry_at = ?, updated_at = ?
+           WHERE id = ?`,
+          [decision.outcome, decision.reason, decision.preferenceSource ?? null,
+           decision.retryAt?.toISOString() ?? null, nowIso, existingDecision.id],
+        );
+      } else {
+        await tx.execute(
+          `INSERT INTO notification_delivery_decisions (
+             id, identity_id, notification_id, channel, outcome, reason, preference_source,
+             retry_at, created_at, updated_at
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [randomUUID(), dto.identityId, dto.id, decision.channel, decision.outcome, decision.reason,
+           decision.preferenceSource ?? null, decision.retryAt?.toISOString() ?? null, nowIso, nowIso],
+        );
+      }
     }
 
     });
@@ -465,7 +461,7 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
 
   async getDeliveryUsage(
     identityId: string,
-    category: NotificationCategory,
+    workflowKey: string,
     channel: NotificationChannelType,
     now: Date,
   ): Promise<NotificationDeliveryUsage> {
@@ -479,9 +475,9 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
        JOIN notifications n ON n.id = c.notification_id
        WHERE c.identity_id = ?
          AND c.channel_type = ?
-         AND n.category = ?
+         AND n.workflow_key = ?
          AND n.created_at >= ?`,
-      [hourStart, identityId, channel, category, dayStart],
+      [hourStart, identityId, channel, workflowKey, dayStart],
     );
 
     return {
@@ -542,6 +538,16 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
     return hydrateNotification(row, channels);
   }
 
+  async findByIdempotencyKey(identityId: string, idempotencyKey: string): Promise<Notification | null> {
+    const row = await this.db.getOptional<NotificationRow>(
+      `SELECT * FROM notifications WHERE identity_id = ? AND idempotency_key = ? LIMIT 1`,
+      [identityId, idempotencyKey],
+    );
+    if (!row) return null;
+    const channels = await this.loadChannels(row.id);
+    return hydrateNotification(row, channels);
+  }
+
   async findByIdentityId(
     identityId: string,
     options?: {
@@ -574,17 +580,6 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
 
     const rows = await this.db.getAll<NotificationRow>(sql, params);
     return this.hydrateWithChannels(rows);
-  }
-
-  async findByStatus(
-    identityId: string,
-    status: NotificationStatus,
-    options?: { limit?: number; offset?: number },
-  ): Promise<Notification[]> {
-    return this.findByIdentityId(identityId, {
-      ...options,
-      includeDeleted: false,
-    }).then((items) => items.filter((item) => item.toServerDTO().status === status));
   }
 
   async findByCategory(
@@ -703,12 +698,11 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
     await this.db.execute(
       `UPDATE notifications
           SET is_read = 1,
-              status = ?,
               read_at = ?,
               updated_at = ?
         WHERE identity_id = ?
           AND id IN (${placeholders})`,
-      ['Read', new Date().toISOString(), new Date().toISOString(), identityId, ...ids],
+      [new Date().toISOString(), new Date().toISOString(), identityId, ...ids],
     );
   }
 
@@ -717,13 +711,12 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
     await this.db.execute(
       `UPDATE notifications
           SET is_read = 1,
-              status = ?,
               read_at = COALESCE(read_at, ?),
               updated_at = ?
         WHERE identity_id = ?
           AND deleted_at IS NULL
           AND COALESCE(is_read, 0) = 0`,
-      ['Read', now, now, identityId],
+      [now, now, identityId],
     );
   }
 

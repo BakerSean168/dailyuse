@@ -1,7 +1,3 @@
-/**
- * NotificationPreference 聚合根实现
- */
-
 import type {
   NotificationPreferenceServerDTO,
   NotificationPreferenceClientDTO,
@@ -9,19 +5,15 @@ import type {
 } from '@memoflow/contracts/notification';
 import type { IdentityId, NotificationPreferenceId as NotificationPreferenceIdBranded } from '@memoflow/contracts/primitives';
 import { AggregateRoot } from '@memoflow/utils/domain';
-import {
-  NotificationPreferenceId,
-} from '../value-objects/notification-preference-id';
+import { NotificationPreferenceId } from '../value-objects/notification-preference-id';
 import { DoNotDisturbConfig } from '../value-objects/do-not-disturb-config';
 import { RateLimit } from '../value-objects/rate-limit';
 
-/**
- * NotificationPreference 内部状态接口
- */
 export interface NotificationPreferenceState {
   id: NotificationPreferenceId;
   identityId: IdentityId;
-  settings: Map<string, NotificationChannelType[]>;
+  globalChannels: Map<NotificationChannelType, boolean>;
+  workflowOverrides: Map<string, Map<NotificationChannelType, boolean>>;
   doNotDisturb?: DoNotDisturbConfig | null;
   rateLimit?: RateLimit | null;
   version: number;
@@ -30,188 +22,115 @@ export interface NotificationPreferenceState {
   updatedAt: Date;
 }
 
-/**
- * NotificationPreference 聚合根
- * 负责用户通知偏好设置的管理
- * 
- * 设计说明:
- * - settings: Map<moduleName, channelTypes[]> 记录每个模块启用的渠道
- * - 例如: task -> [InApp, Email], system -> [InApp]
- */
+/** User-owned preference layers; workflow capability/default is not stored here. */
 export class NotificationPreference extends AggregateRoot<NotificationPreferenceId> {
-  // ===== 私有状态 =====
   private _props: NotificationPreferenceState;
 
-  // ===== 构造函数（私有） =====
   private constructor(state: NotificationPreferenceState) {
     super(state.id);
-    this._props = { ...state };
+    this._props = {
+      ...state,
+      globalChannels: new Map(state.globalChannels),
+      workflowOverrides: new Map(
+        [...state.workflowOverrides].map(([key, value]) => [key, new Map(value)]),
+      ),
+    };
   }
 
-  // ===== Getter 属性 =====
-  public get identityId(): IdentityId {
-    return this._props.identityId;
+  get identityId(): IdentityId { return this._props.identityId; }
+  get globalChannels(): Map<NotificationChannelType, boolean> { return new Map(this._props.globalChannels); }
+  get workflowOverrides(): Map<string, Map<NotificationChannelType, boolean>> {
+    return new Map([...this._props.workflowOverrides].map(([key, value]) => [key, new Map(value)]));
+  }
+  get doNotDisturb(): DoNotDisturbConfig | null { return this._props.doNotDisturb ?? null; }
+  get rateLimit(): RateLimit | null { return this._props.rateLimit ?? null; }
+  get version(): number { return this._props.version; }
+  get deletedAt(): Date | null { return this._props.deletedAt; }
+  get createdAt(): Date { return this._props.createdAt; }
+  get updatedAt(): Date { return this._props.updatedAt; }
+
+  getGlobalChannel(channel: NotificationChannelType): boolean | undefined {
+    return this._props.globalChannels.get(channel);
   }
 
-  public get settings(): Map<string, NotificationChannelType[]> {
-    return new Map(this._props.settings);
+  setGlobalChannel(channel: NotificationChannelType, enabled: boolean): void {
+    this._props.globalChannels.set(channel, enabled);
+    this.touch();
   }
 
-  public get doNotDisturb(): DoNotDisturbConfig | null {
-    return this._props.doNotDisturb ?? null;
+  clearGlobalChannel(channel: NotificationChannelType): void {
+    this._props.globalChannels.delete(channel);
+    this.touch();
   }
 
-  public get rateLimit(): RateLimit | null {
-    return this._props.rateLimit ?? null;
+  getWorkflowChannelOverride(
+    workflowKey: string,
+    channel: NotificationChannelType,
+  ): boolean | undefined {
+    return this._props.workflowOverrides.get(workflowKey)?.get(channel);
   }
 
-  public get version(): number {
-    return this._props.version;
+  setWorkflowChannelOverride(
+    workflowKey: string,
+    channel: NotificationChannelType,
+    enabled: boolean,
+  ): void {
+    const override = this._props.workflowOverrides.get(workflowKey) ?? new Map();
+    override.set(channel, enabled);
+    this._props.workflowOverrides.set(workflowKey, override);
+    this.touch();
   }
 
-  public get deletedAt(): Date | null {
-    return this._props.deletedAt;
+  clearWorkflowChannelOverride(workflowKey: string, channel: NotificationChannelType): void {
+    const override = this._props.workflowOverrides.get(workflowKey);
+    if (!override) return;
+    override.delete(channel);
+    if (override.size === 0) this._props.workflowOverrides.delete(workflowKey);
+    this.touch();
   }
 
-  public get createdAt(): Date {
-    return this._props.createdAt;
-  }
-
-  public get updatedAt(): Date {
-    return this._props.updatedAt;
-  }
-
-  // ===== 业务方法 =====
-
-  /**
-   * 获取模块的渠道配置
-   */
-  public getModuleChannels(moduleName: string): NotificationChannelType[] {
-    return this._props.settings.get(moduleName) ?? [];
-  }
-
-  /**
-   * 设置模块的渠道配置
-   */
-  public setModuleChannels(moduleName: string, channels: NotificationChannelType[]): void {
-    this._props.settings.set(moduleName, [...channels]);
-  }
-
-  /**
-   * 启用模块的某个渠道
-   */
-  public enableChannel(moduleName: string, channel: NotificationChannelType): void {
-    const channels = this._props.settings.get(moduleName) ?? [];
-    if (!channels.includes(channel)) {
-      channels.push(channel);
-      this._props.settings.set(moduleName, channels);
-    }
-  }
-
-  /**
-   * 禁用模块的某个渠道
-   */
-  public disableChannel(moduleName: string, channel: NotificationChannelType): void {
-    const channels = this._props.settings.get(moduleName) ?? [];
-    const index = channels.indexOf(channel);
-    if (index !== -1) {
-      channels.splice(index, 1);
-      this._props.settings.set(moduleName, channels);
-    }
-  }
-
-  /**
-   * 禁用模块的所有通知
-   */
-  public disableModule(moduleName: string): void {
-    this._props.settings.set(moduleName, []);
-  }
-
-  public setDoNotDisturb(config: DoNotDisturbConfig | null): void {
+  setDoNotDisturb(config: DoNotDisturbConfig | null): void {
     this._props.doNotDisturb = config;
-    this._props.updatedAt = new Date();
+    this.touch();
   }
 
-  public setRateLimit(rateLimit: RateLimit | null): void {
+  setRateLimit(rateLimit: RateLimit | null): void {
     this._props.rateLimit = rateLimit;
-    this._props.updatedAt = new Date();
+    this.touch();
   }
 
-  /**
-   * 判断是否应该发送通知
-   */
-  public shouldSendNotification(moduleName: string, channel: NotificationChannelType): boolean {
-    const channels = this._props.settings.get(moduleName);
-    if (!channels) {
-      return false; // 未配置的模块不发送
-    }
-    return channels.includes(channel);
-  }
-
-  // ===== 转换方法 =====
-
-  public toServerDTO(): NotificationPreferenceServerDTO {
-    const settingsRecord: Record<string, NotificationChannelType[]> = {};
-    for (const [key, value] of this._props.settings) {
-      settingsRecord[key] = [...value];
-    }
-
+  toServerDTO(): NotificationPreferenceServerDTO {
     return {
       id: this.id as NotificationPreferenceIdBranded,
       identityId: this._props.identityId,
-      settings: settingsRecord,
+      globalChannels: Object.fromEntries(this._props.globalChannels),
+      workflowOverrides: Object.fromEntries(
+        [...this._props.workflowOverrides].map(([key, value]) => [key, Object.fromEntries(value)]),
+      ),
+      doNotDisturb: this.doNotDisturb?.toDTO() ?? null,
+      rateLimit: this.rateLimit?.toDTO() ?? null,
       version: this._props.version,
-      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
     };
   }
 
-  public toClientDTO(): NotificationPreferenceClientDTO {
-    const settingsRecord: Record<string, NotificationChannelType[]> = {};
-    for (const [key, value] of this._props.settings) {
-      settingsRecord[key] = [...value];
-    }
-    return {
-      id: this.id as NotificationPreferenceIdBranded,
-      identityId: this._props.identityId,
-      settings: settingsRecord,
-      version: this._props.version,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
-    };
+  toClientDTO(): NotificationPreferenceClientDTO {
+    return this.toServerDTO() as NotificationPreferenceClientDTO;
   }
 
-  // ===== 静态工厂方法 =====
-
-  public static load(state: NotificationPreferenceState): NotificationPreference {
+  static load(state: NotificationPreferenceState): NotificationPreference {
     return new NotificationPreference(state);
   }
 
-  /**
-   * 创建新的通知偏好
-   */
-  public static create(params: {
-    identityId: IdentityId;
-    defaultChannels?: NotificationChannelType[];
-  }): NotificationPreference {
-    const id = NotificationPreferenceId.of(NotificationPreferenceId.generate());
-    const settings = new Map<string, NotificationChannelType[]>();
-
-    // 可以为常用模块设置默认渠道
-    if (params.defaultChannels && params.defaultChannels.length > 0) {
-      const defaultModules = ['task', 'goal', 'schedule', 'reminder', 'system'];
-      for (const moduleName of defaultModules) {
-        settings.set(moduleName, [...params.defaultChannels]);
-      }
-    }
-
+  static create(params: { identityId: IdentityId }): NotificationPreference {
     const now = new Date();
     return new NotificationPreference({
-      id,
+      id: NotificationPreferenceId.of(NotificationPreferenceId.generate()),
       identityId: params.identityId,
-      settings,
+      globalChannels: new Map(),
+      workflowOverrides: new Map(),
       doNotDisturb: null,
       rateLimit: null,
       version: 1,
@@ -220,4 +139,6 @@ export class NotificationPreference extends AggregateRoot<NotificationPreference
       updatedAt: now,
     });
   }
+
+  private touch(): void { this._props.updatedAt = new Date(); }
 }

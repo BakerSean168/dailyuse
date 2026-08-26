@@ -1,23 +1,16 @@
-/**
- * Notification 聚合根实现
- */
-
 import type {
   NotificationServerDTO,
   NotificationActionDTO,
   NotificationMetadataDTO,
   NotificationNavigationIntentDTO,
   NotificationEventMap,
+  NotificationType,
+  NotificationCategory,
+  RelatedEntityType,
 } from '@memoflow/contracts/notification';
 import type { IdentityId, NotificationId as NotificationIdBranded } from '@memoflow/contracts/primitives';
-import {
-  NotificationCategory,
-  NotificationStatus,
-  NotificationType,
-} from '@memoflow/contracts/notification';
-import { ImportanceLevel } from '@memoflow/contracts/shared';
+import { ImportanceLevel, UrgencyLevel } from '@memoflow/contracts/shared';
 import { AggregateRoot } from '@memoflow/utils/domain';
-import { createLogger } from '@memoflow/utils/logger';
 import {
   NotificationId,
   NotificationAction,
@@ -25,25 +18,27 @@ import {
 } from '../value-objects';
 import { NotificationChannel } from '../entities/notification-channel';
 
-const logger = createLogger('Notification');
-
-/**
- * Notification 内部状态接口
- */
 export interface NotificationState {
   id: NotificationId;
   identityId: IdentityId;
+  workflowKey: string;
+  topic: string;
+  idempotencyKey: string;
   title: string;
   content: string;
   type: NotificationType;
   category: NotificationCategory;
   importance: ImportanceLevel;
-  status: NotificationStatus;
+  urgency: UrgencyLevel;
+  relatedEntityType: RelatedEntityType | null;
+  relatedEntityId: string | null;
+  navigationIntent: NotificationNavigationIntentDTO | null;
+  correlationId: string | null;
+  causationId: string | null;
   isRead: boolean;
   readAt: number | null;
   actions: NotificationAction[] | null;
   metadata: NotificationMetadata | null;
-  navigationIntent: NotificationNavigationIntentDTO | null;
   expiresAt: number | null;
   version: number;
   deletedAt: Date | null;
@@ -52,231 +47,92 @@ export interface NotificationState {
   notificationChannels: NotificationChannel[];
 }
 
-/**
- * Notification 聚合根
- */
+/** Durable user-visible Notification Fact. Delivery lifecycle is not root state. */
 export class Notification extends AggregateRoot<NotificationId> {
-  // ===== 私有状态 =====
   private _props: NotificationState;
 
-  // ===== 构造函数（私有） =====
   private constructor(state: NotificationState) {
     super(state.id);
     this._props = { ...state };
   }
 
-  // ===== Getter 属性 =====
-  public get identityId(): IdentityId {
-    return this._props.identityId;
-  }
-
-  public get title(): string {
-    return this._props.title;
-  }
-
-  public get content(): string {
-    return this._props.content;
-  }
-
-  public get type(): NotificationType {
-    return this._props.type;
-  }
-
-  public get category(): NotificationCategory {
-    return this._props.category;
-  }
-
-  public get importance(): ImportanceLevel {
-    return this._props.importance;
-  }
-
-  public get status(): NotificationStatus {
-    return this._props.status;
-  }
-
-  public get isRead(): boolean {
-    return this._props.isRead;
-  }
-
-  public get readAt(): number | null {
-    return this._props.readAt;
-  }
-
-  public get actions(): NotificationAction[] | null {
-    return this._props.actions ? [...this._props.actions] : null;
-  }
-
-  public get metadata(): NotificationMetadata | null {
-    return this._props.metadata;
-  }
-
-  public get navigationIntent(): NotificationNavigationIntentDTO | null {
-    return this._props.navigationIntent;
-  }
-
-  public get expiresAt(): number | null {
-    return this._props.expiresAt;
-  }
-
-  public get version(): number {
-    return this._props.version;
-  }
-
-  public get deletedAt(): Date | null {
-    return this._props.deletedAt;
-  }
-
-  public get createdAt(): Date {
-    return this._props.createdAt;
-  }
-
-  public get updatedAt(): Date {
-    return this._props.updatedAt;
-  }
-
-  public get notificationChannels(): NotificationChannel[] | null {
+  get identityId(): IdentityId { return this._props.identityId; }
+  get workflowKey(): string { return this._props.workflowKey; }
+  get topic(): string { return this._props.topic; }
+  get idempotencyKey(): string { return this._props.idempotencyKey; }
+  get title(): string { return this._props.title; }
+  get content(): string { return this._props.content; }
+  get type(): NotificationType { return this._props.type; }
+  get category(): NotificationCategory { return this._props.category; }
+  get importance(): ImportanceLevel { return this._props.importance; }
+  get urgency(): UrgencyLevel { return this._props.urgency; }
+  get relatedEntityType(): RelatedEntityType | null { return this._props.relatedEntityType; }
+  get relatedEntityId(): string | null { return this._props.relatedEntityId; }
+  get navigationIntent(): NotificationNavigationIntentDTO | null { return this._props.navigationIntent; }
+  get correlationId(): string | null { return this._props.correlationId; }
+  get causationId(): string | null { return this._props.causationId; }
+  get isRead(): boolean { return this._props.isRead; }
+  get readAt(): number | null { return this._props.readAt; }
+  get actions(): NotificationAction[] | null { return this._props.actions ? [...this._props.actions] : null; }
+  get metadata(): NotificationMetadata | null { return this._props.metadata; }
+  get expiresAt(): number | null { return this._props.expiresAt; }
+  get version(): number { return this._props.version; }
+  get deletedAt(): Date | null { return this._props.deletedAt; }
+  get createdAt(): Date { return this._props.createdAt; }
+  get updatedAt(): Date { return this._props.updatedAt; }
+  get notificationChannels(): NotificationChannel[] | null {
     return this._props.notificationChannels.length > 0 ? [...this._props.notificationChannels] : null;
   }
 
-  // ===== 业务方法 =====
-
-  public send(): void {
-    logger.info('📨 [聚合根] 发送通知', {
-      id: String(this.id),
-      title: this._props.title,
-      status: this._props.status,
-    });
-
-    if (this._props.status !== NotificationStatus.Pending) {
-      logger.error('❌ [聚合根] 通知状态不允许发送', {
-        id: String(this.id),
-        currentStatus: this._props.status,
-      });
-      throw new Error('只能发送待发送状态的通知');
-    }
-
-    const previousStatus = this._props.status;
-    this._props.status = NotificationStatus.Sent;
-    this._props.updatedAt = new Date();
-
-    this.addDomainEvent<NotificationEventMap['notification:sent']>('notification:sent', {
-      identityId: this._props.identityId as IdentityId,
-      notificationId: this.id as NotificationIdBranded,
-      notification: this.toServerDTO(),
-      channelTypes: this._props.notificationChannels.map((channel) => channel.channelType),
-      sentAt: this._props.updatedAt.getTime(),
-    });
-    this.emitStatusChanged(previousStatus, this._props.status);
-
-    logger.info('✅ [聚合根] 通知已标记为已发送', {
-      id: String(this.id),
-      status: this._props.status,
-    });
-  }
-
-  public markAsDelivered(): void {
-    if (this._props.status !== NotificationStatus.Sent) {
-      throw new Error('只能将已发送状态的通知标记为已送达');
-    }
-    const previousStatus = this._props.status;
-    this._props.status = NotificationStatus.Delivered;
-    this._props.updatedAt = new Date();
-    this.emitStatusChanged(previousStatus, this._props.status);
-  }
-
-  public markAsRead(): void {
+  markAsRead(): void {
     if (this._props.isRead) return;
-
-    const previousStatus = this._props.status;
     this._props.isRead = true;
     this._props.readAt = Date.now();
-    this._props.status = NotificationStatus.Read;
     this._props.updatedAt = new Date();
-
     this.addDomainEvent<NotificationEventMap['notification:read']>('notification:read', {
-      identityId: this._props.identityId as IdentityId,
+      identityId: this._props.identityId,
       notificationId: this.id as NotificationIdBranded,
       notification: this.toServerDTO(),
       readAt: this._props.readAt,
     });
-    this.emitStatusChanged(previousStatus, this._props.status);
   }
 
-  public markAsUnread(): void {
+  markAsUnread(): void {
     if (!this._props.isRead) return;
-
-    const previousStatus = this._props.status;
     this._props.isRead = false;
     this._props.readAt = null;
-    this._props.status = NotificationStatus.Delivered;
     this._props.updatedAt = new Date();
-    this.emitStatusChanged(previousStatus, this._props.status);
   }
 
-  public cancel(): void {
-    if (
-      this._props.status === NotificationStatus.Delivered ||
-      this._props.status === NotificationStatus.Read
-    ) {
-      throw new Error('无法取消：通知已交付或已读');
-    }
+  hasBeenRead(): boolean { return this._props.isRead; }
 
-    const previousStatus = this._props.status;
-    this._props.status = NotificationStatus.Cancelled;
-    this._props.updatedAt = new Date();
-    this.emitStatusChanged(previousStatus, this._props.status);
-  }
-
-  public markAsFailed(): void {
-    const previousStatus = this._props.status;
-    this._props.status = NotificationStatus.Failed;
-    this._props.updatedAt = new Date();
-    this.emitStatusChanged(previousStatus, this._props.status);
-  }
-
-  public updateDetails(patch: {
+  updateDetails(patch: {
     title?: string;
     content?: string;
-    status?: NotificationStatus;
     metadata?: NotificationMetadataDTO | null;
     navigationIntent?: NotificationNavigationIntentDTO | null;
+    importance?: ImportanceLevel;
+    urgency?: UrgencyLevel;
     expiresAt?: number | null;
   }): void {
-    const previousStatus = this._props.status;
-
-    if (patch.title !== undefined) {
-      this._props.title = patch.title;
-    }
-    if (patch.content !== undefined) {
-      this._props.content = patch.content;
-    }
-    if (patch.status !== undefined) {
-      this._props.status = patch.status;
-    }
+    if (patch.title !== undefined) this._props.title = patch.title;
+    if (patch.content !== undefined) this._props.content = patch.content;
     if (patch.metadata !== undefined) {
       this._props.metadata = patch.metadata ? NotificationMetadata.fromDTO(patch.metadata) : null;
     }
-    if (patch.navigationIntent !== undefined) {
-      this._props.navigationIntent = patch.navigationIntent ?? null;
-    }
-    if (patch.expiresAt !== undefined) {
-      this._props.expiresAt = patch.expiresAt;
-    }
-
+    if (patch.navigationIntent !== undefined) this._props.navigationIntent = patch.navigationIntent;
+    if (patch.importance !== undefined) this._props.importance = patch.importance;
+    if (patch.urgency !== undefined) this._props.urgency = patch.urgency;
+    if (patch.expiresAt !== undefined) this._props.expiresAt = patch.expiresAt;
     this._props.updatedAt = new Date();
-    this.emitStatusChanged(previousStatus, this._props.status);
   }
 
-  public softDelete(): void {
-    if (this._props.deletedAt) {
-      return;
-    }
-
+  softDelete(): void {
+    if (this._props.deletedAt) return;
     this._props.deletedAt = new Date();
     this._props.updatedAt = new Date();
-
     this.addDomainEvent<NotificationEventMap['notification:deleted']>('notification:deleted', {
-      identityId: this._props.identityId as IdentityId,
+      identityId: this._props.identityId,
       notificationId: this.id as NotificationIdBranded,
       notification: this.toServerDTO(),
       isSoftDelete: true,
@@ -284,103 +140,95 @@ export class Notification extends AggregateRoot<NotificationId> {
     });
   }
 
-  public isPending(): boolean {
-    return this._props.status === NotificationStatus.Pending;
-  }
-
-  public isSent(): boolean {
-    return this._props.status === NotificationStatus.Sent;
-  }
-
-  public isDelivered(): boolean {
-    return this._props.status === NotificationStatus.Delivered;
-  }
-
-  public hasBeenRead(): boolean {
-    return this._props.isRead;
-  }
-
-  // ===== 子实体管理 =====
-
-  public addChannel(channel: NotificationChannel): void {
+  addChannel(channel: NotificationChannel): void {
     this._props.notificationChannels.push(channel);
     this._props.updatedAt = new Date();
   }
 
-  public getChannelByType(type: string): NotificationChannel | undefined {
-    return this._props.notificationChannels.find((c) => c.channelType === type);
+  getChannelByType(type: string): NotificationChannel | undefined {
+    return this._props.notificationChannels.find((channel) => channel.channelType === type);
   }
 
-  // ===== 转换方法 =====
-
-  public toServerDTO(): NotificationServerDTO {
+  toServerDTO(): NotificationServerDTO {
     return {
-      id: this.id as NotificationId,
+      id: this.id as NotificationIdBranded,
       identityId: this._props.identityId,
+      workflowKey: this._props.workflowKey,
+      topic: this._props.topic,
+      idempotencyKey: this._props.idempotencyKey,
       title: this._props.title,
       content: this._props.content,
       type: this._props.type,
       category: this._props.category,
       importance: this._props.importance,
-      status: this._props.status,
+      urgency: this._props.urgency,
+      relatedEntityType: this._props.relatedEntityType,
+      relatedEntityId: this._props.relatedEntityId,
+      navigationIntent: this._props.navigationIntent,
+      correlationId: this._props.correlationId,
+      causationId: this._props.causationId,
       isRead: this._props.isRead,
       readAt: this._props.readAt,
-      actions: this._props.actions?.map((a) => a.toDTO()) ?? null,
+      actions: this._props.actions?.map((action) => action.toDTO()) ?? null,
       metadata: this._props.metadata?.toDTO() ?? null,
-      navigationIntent: this._props.navigationIntent,
       expiresAt: this._props.expiresAt,
       version: this._props.version,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
-      notificationChannels: this._props.notificationChannels.length > 0
-        ? this._props.notificationChannels.map((c) => c.toServerDTO())
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      notificationChannels: this._props.notificationChannels.length
+        ? this._props.notificationChannels.map((channel) => channel.toServerDTO())
         : null,
     };
   }
 
-  // ===== 静态工厂方法 =====
-
-  public static load(state: NotificationState): Notification {
+  static load(state: NotificationState): Notification {
     return new Notification(state);
   }
 
-  public static create(params: {
+  static create(params: {
     identityId: IdentityId;
+    workflowKey: string;
+    topic: string;
+    idempotencyKey: string;
     title: string;
     content: string;
     type: NotificationType;
     category: NotificationCategory;
     importance?: ImportanceLevel;
+    urgency?: UrgencyLevel;
+    relatedEntityType?: RelatedEntityType | null;
+    relatedEntityId?: string | null;
     actions?: NotificationActionDTO[];
     metadata?: NotificationMetadataDTO;
     navigationIntent?: NotificationNavigationIntentDTO | null;
+    correlationId?: string | null;
+    causationId?: string | null;
     expiresAt?: number | null;
   }): Notification {
-    logger.info('🔨 [聚合根] 创建 Notification 实例', {
-      identityId: String(params.identityId),
-      title: params.title,
-      type: params.type,
-      category: params.category,
-    });
-
     const id = NotificationId.of(NotificationId.generate());
     const now = new Date();
-
     const notification = new Notification({
       id,
       identityId: params.identityId,
+      workflowKey: params.workflowKey,
+      topic: params.topic,
+      idempotencyKey: params.idempotencyKey,
       title: params.title,
       content: params.content,
       type: params.type,
       category: params.category,
-      importance: params.importance ?? ('Moderate' as ImportanceLevel),
-      status: NotificationStatus.Pending,
+      importance: params.importance ?? ImportanceLevel.Moderate,
+      urgency: params.urgency ?? UrgencyLevel.Medium,
+      relatedEntityType: params.relatedEntityType ?? null,
+      relatedEntityId: params.relatedEntityId ?? null,
+      navigationIntent: params.navigationIntent ?? null,
+      correlationId: params.correlationId ?? null,
+      causationId: params.causationId ?? null,
       isRead: false,
       readAt: null,
-      actions: params.actions?.map((a) => NotificationAction.fromDTO(a)) ?? null,
+      actions: params.actions?.map((action) => NotificationAction.fromDTO(action)) ?? null,
       metadata: params.metadata ? NotificationMetadata.fromDTO(params.metadata) : null,
-      navigationIntent: params.navigationIntent ?? null,
       expiresAt: params.expiresAt ?? null,
       version: 1,
       deletedAt: null,
@@ -389,37 +237,11 @@ export class Notification extends AggregateRoot<NotificationId> {
       notificationChannels: [],
     });
 
-    logger.info('✅ [聚合根] Notification 实例已创建', {
-      id: String(notification.id),
-      status: notification.status,
-    });
-
     notification.addDomainEvent<NotificationEventMap['notification:created']>('notification:created', {
-      identityId: notification.identityId as IdentityId,
+      identityId: notification.identityId,
       notificationId: notification.id as NotificationIdBranded,
       notification: notification.toServerDTO(),
     });
-
     return notification;
-  }
-
-  private emitStatusChanged(
-    previousStatus: NotificationStatus,
-    newStatus: NotificationStatus,
-  ): void {
-    if (previousStatus === newStatus) {
-      return;
-    }
-
-    this.addDomainEvent<NotificationEventMap['notification:status-changed']>(
-      'notification:status-changed',
-      {
-        identityId: this._props.identityId as IdentityId,
-        notificationId: this.id as NotificationIdBranded,
-        notification: this.toServerDTO(),
-        previousStatus,
-        newStatus,
-      },
-    );
   }
 }

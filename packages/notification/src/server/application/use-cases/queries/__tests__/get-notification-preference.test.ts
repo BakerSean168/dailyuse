@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockRepo } from '@memoflow/test-utils/mocks';
 import { anIdentityId } from '@memoflow/test-utils/fixtures';
 import type { INotificationPreferenceRepository } from '../../../../domain/repositories/i-notification-preference-repository';
-import { GetNotificationPreferenceUseCase } from '../get-notification-preference.use-case';
 import { NotificationPreference } from '../../../../domain/aggregates/notification-preference';
 import { NotificationChannelType } from '@memoflow/contracts/notification';
+import { GetNotificationPreferenceUseCase } from '../get-notification-preference.use-case';
 
 describe('GetNotificationPreferenceUseCase', () => {
   let preferenceRepo: ReturnType<typeof createMockRepo<INotificationPreferenceRepository>>;
@@ -12,94 +12,49 @@ describe('GetNotificationPreferenceUseCase', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-
     preferenceRepo = createMockRepo<INotificationPreferenceRepository>({
       findByIdentityId: vi.fn().mockResolvedValue(null),
       getOrCreate: vi.fn(),
     });
-
     useCase = new GetNotificationPreferenceUseCase(preferenceRepo);
   });
 
-  describe('execute()', () => {
-    it('should return null when no preference exists', async () => {
-      vi.mocked(preferenceRepo.findByIdentityId).mockResolvedValue(null);
-
-      const result = await useCase.execute(anIdentityId());
-
-      expect(result.ok).toBe(true);
-      if (!result.ok) throw new Error('Expected ok');
-      expect(result.data).toBeNull();
-    });
-
-    it('should return a client DTO when preference exists', async () => {
-      const identityId = anIdentityId();
-      const pref = NotificationPreference.create({
-        identityId,
-        defaultChannels: [NotificationChannelType.InApp],
-      });
-      vi.mocked(preferenceRepo.findByIdentityId).mockResolvedValue(pref);
-
-      const result = await useCase.execute(identityId);
-
-      expect(result.ok).toBe(true);
-      if (!result.ok) throw new Error('Expected ok');
-      expect(result.data).toBeDefined();
-      expect(result.data!.identityId).toBe(identityId);
-      expect(result.data!.settings).toBeDefined();
-      expect(result.data!.settings['task']).toEqual([NotificationChannelType.InApp]);
-    });
-
-    it('should call findByIdentityId on repository', async () => {
-      const identityId = anIdentityId();
-
-      await useCase.execute(identityId);
-
-      expect(preferenceRepo.findByIdentityId).toHaveBeenCalledWith(identityId);
-    });
+  it('returns null when no user preference document exists', async () => {
+    const result = await useCase.execute(anIdentityId());
+    expect(result).toEqual({ ok: true, data: null });
   });
 
-  describe('executeOrCreate()', () => {
-    it('should return a client DTO from getOrCreate', async () => {
-      const identityId = anIdentityId();
-      const pref = NotificationPreference.create({
-        identityId,
-        defaultChannels: [NotificationChannelType.InApp, NotificationChannelType.Email],
-      });
-      vi.mocked(preferenceRepo.getOrCreate).mockResolvedValue(pref);
+  it('returns global and workflow-specific layers', async () => {
+    const identityId = anIdentityId();
+    const pref = NotificationPreference.create({ identityId });
+    pref.setGlobalChannel(NotificationChannelType.Email, false);
+    pref.setWorkflowChannelOverride('task.deadline', NotificationChannelType.Desktop, true);
+    vi.mocked(preferenceRepo.findByIdentityId).mockResolvedValue(pref);
+    const result = await useCase.execute(identityId);
+    expect(result.ok).toBe(true);
+    if (!result.ok || !result.data) throw new Error('expected preference');
+    expect(result.data.identityId).toBe(identityId);
+    expect(result.data.globalChannels).toEqual({ Email: false });
+    expect(result.data.workflowOverrides).toEqual({ 'task.deadline': { Desktop: true } });
+    expect(result.data).not.toHaveProperty('settings');
+  });
 
-      const result = await useCase.executeOrCreate(identityId);
+  it('calls the repository with identity scope', async () => {
+    const identityId = anIdentityId();
+    await useCase.execute(identityId);
+    expect(preferenceRepo.findByIdentityId).toHaveBeenCalledWith(identityId);
+  });
 
-      expect(result.ok).toBe(true);
-      if (!result.ok) throw new Error('Expected ok');
-      expect(result.data).toBeDefined();
-      expect(result.data.identityId).toBe(identityId);
-      expect(result.data.settings['task']).toContain(NotificationChannelType.InApp);
-      expect(result.data.settings['task']).toContain(NotificationChannelType.Email);
-    });
-
-    it('should call getOrCreate on repository', async () => {
-      const identityId = anIdentityId();
-      const pref = NotificationPreference.create({ identityId });
-      vi.mocked(preferenceRepo.getOrCreate).mockResolvedValue(pref);
-
-      await useCase.executeOrCreate(identityId);
-
-      expect(preferenceRepo.getOrCreate).toHaveBeenCalledWith(identityId);
-    });
-
-    it('should always return a non-null result', async () => {
-      const identityId = anIdentityId();
-      const pref = NotificationPreference.create({ identityId });
-      vi.mocked(preferenceRepo.getOrCreate).mockResolvedValue(pref);
-
-      const result = await useCase.executeOrCreate(identityId);
-
-      expect(result.ok).toBe(true);
-      if (!result.ok) throw new Error('Expected ok');
-      expect(result.data).not.toBeNull();
-      expect(result.data.id).toBeTruthy();
-      expect(typeof result.data.createdAt).toBe('number');
-    });
+  it('executeOrCreate returns a deterministic empty user layer when first created', async () => {
+    const identityId = anIdentityId();
+    const pref = NotificationPreference.create({ identityId });
+    vi.mocked(preferenceRepo.getOrCreate).mockResolvedValue(pref);
+    const result = await useCase.executeOrCreate(identityId);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data.identityId).toBe(identityId);
+    expect(result.data.globalChannels).toEqual({});
+    expect(result.data.workflowOverrides).toEqual({});
+    expect(preferenceRepo.getOrCreate).toHaveBeenCalledWith(identityId);
   });
 });

@@ -5,10 +5,8 @@
  */
 
 export type { NotificationCreatedEvent } from './notification-created.event';
-export type { NotificationSentEvent } from './notification-sent.event';
 export type { NotificationReadEvent } from './notification-read.event';
 export type { NotificationDeletedEvent } from './notification-deleted.event';
-export type { NotificationStatusChangedEvent } from './notification-status-changed.event';
 export type { NotificationChannelFailedEvent } from './notification-channel-failed.event';
 export type { NotificationTemplateCreatedEvent } from './notification-template-created.event';
 export type { NotificationTemplateUpdatedEvent } from './notification-template-updated.event';

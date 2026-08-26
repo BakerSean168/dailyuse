@@ -13,7 +13,7 @@ import type {
   NotificationOutboxDispatchPlan,
 } from '../../../domain/repositories/i-notification-repository';
 import type { NotificationDeliveryDecision } from '../../../domain/services/notification-policy';
-import type { NotificationCategory, NotificationEventMap, NotificationStatus, NotificationChannelType } from '@memoflow/contracts/notification';
+import type { NotificationCategory, NotificationEventMap, NotificationChannelType } from '@memoflow/contracts/notification';
 import { Notification } from '../../../domain/aggregates/notification';
 import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@memoflow/utils/domain';
 import {
@@ -66,9 +66,15 @@ export class NotificationPrismaRepository implements INotificationRepository {
           content: dto.content,
           type: dto.type,
           category: dto.category,
+          workflowKey: dto.workflowKey,
+          topic: dto.topic,
+          idempotencyKey: dto.idempotencyKey,
           importance: dto.importance,
-          urgency: dto.importance,
-          status: dto.status,
+          urgency: dto.urgency,
+          relatedEntityType: dto.relatedEntityType ?? null,
+          relatedEntityId: dto.relatedEntityId ?? null,
+          correlationId: dto.correlationId ?? null,
+          causationId: dto.causationId ?? null,
           isRead: dto.isRead,
           readAt: dto.readAt ? new Date(dto.readAt) : null,
           metadata: dto.metadata ? JSON.stringify(dto.metadata) : null,
@@ -83,9 +89,15 @@ export class NotificationPrismaRepository implements INotificationRepository {
           content: dto.content,
           type: dto.type,
           category: dto.category,
+          workflowKey: dto.workflowKey,
+          topic: dto.topic,
+          idempotencyKey: dto.idempotencyKey,
           importance: dto.importance,
-          urgency: dto.importance,
-          status: dto.status,
+          urgency: dto.urgency,
+          relatedEntityType: dto.relatedEntityType ?? null,
+          relatedEntityId: dto.relatedEntityId ?? null,
+          correlationId: dto.correlationId ?? null,
+          causationId: dto.causationId ?? null,
           isRead: dto.isRead,
           readAt: dto.readAt ? new Date(dto.readAt) : null,
           metadata: dto.metadata ? JSON.stringify(dto.metadata) : null,
@@ -187,20 +199,28 @@ export class NotificationPrismaRepository implements INotificationRepository {
       }
 
       for (const decision of deliveryDecisions ?? []) {
-        if (decision.outcome === 'deliver_now') continue;
-        await tx.notificationHistory.create({
-          data: {
+        await tx.notificationDeliveryDecisionRecord.upsert({
+          where: {
+            notificationId_channel: {
+              notificationId: String(dto.id),
+              channel: decision.channel,
+            },
+          },
+          create: {
             id: randomUUID(),
             identityId: String(dto.identityId),
             notificationId: String(dto.id),
-            action: 'delivery_policy',
-            details: JSON.stringify({
-              channel: decision.channel,
-              outcome: decision.outcome,
-              reason: decision.reason,
-              retryAt: decision.retryAt?.toISOString() ?? null,
-            }),
-            actorId: null,
+            channel: decision.channel,
+            outcome: decision.outcome,
+            reason: decision.reason,
+            preferenceSource: decision.preferenceSource ?? null,
+            retryAt: decision.retryAt ?? null,
+          },
+          update: {
+            outcome: decision.outcome,
+            reason: decision.reason,
+            preferenceSource: decision.preferenceSource ?? null,
+            retryAt: decision.retryAt ?? null,
           },
         });
       }
@@ -217,7 +237,7 @@ export class NotificationPrismaRepository implements INotificationRepository {
 
   async getDeliveryUsage(
     identityId: string,
-    category: NotificationCategory,
+    workflowKey: string,
     channel: NotificationChannelType,
     now: Date,
   ): Promise<NotificationDeliveryUsage> {
@@ -232,13 +252,13 @@ export class NotificationPrismaRepository implements INotificationRepository {
       this.prisma.notificationChannel.count({
         where: {
           ...baseWhere,
-          notification: { is: { category, createdAt: { gte: hourStart } } },
+          notification: { is: { workflowKey, createdAt: { gte: hourStart } } },
         },
       }),
       this.prisma.notificationChannel.count({
         where: {
           ...baseWhere,
-          notification: { is: { category, createdAt: { gte: dayStart } } },
+          notification: { is: { workflowKey, createdAt: { gte: dayStart } } },
         },
       }),
     ]);
@@ -273,6 +293,14 @@ export class NotificationPrismaRepository implements INotificationRepository {
     return NotificationPrismaMapper.toDomain(row as PrismaNotificationWithRelations);
   }
 
+  async findByIdempotencyKey(identityId: string, idempotencyKey: string): Promise<Notification | null> {
+    const row = await this.prisma.notification.findUnique({
+      where: { identityId_idempotencyKey: { identityId, idempotencyKey } },
+      include: INCLUDE_CHANNELS,
+    });
+    return row ? NotificationPrismaMapper.toDomain(row as PrismaNotificationWithRelations) : null;
+  }
+
   async findByIdentityId(
     identityId: string,
     options?: {
@@ -295,26 +323,6 @@ export class NotificationPrismaRepository implements INotificationRepository {
     const rows = await this.prisma.notification.findMany({
       where,
       include: options?.includeChildren ? INCLUDE_CHILDREN : INCLUDE_CHANNELS,
-      orderBy: { createdAt: 'desc' },
-      take: options?.limit,
-      skip: options?.offset,
-    });
-
-    return rows.map((row) => NotificationPrismaMapper.toDomain(row as PrismaNotificationWithRelations));
-  }
-
-  async findByStatus(
-    identityId: string,
-    status: NotificationStatus,
-    options?: { limit?: number; offset?: number },
-  ): Promise<Notification[]> {
-    const rows = await this.prisma.notification.findMany({
-      where: {
-        identityId,
-        status,
-        deletedAt: null,
-      },
-      include: INCLUDE_CHANNELS,
       orderBy: { createdAt: 'desc' },
       take: options?.limit,
       skip: options?.offset,
@@ -452,7 +460,6 @@ export class NotificationPrismaRepository implements INotificationRepository {
       where: { id: { in: ids }, identityId },
       data: {
         isRead: true,
-        status: 'Read',
         readAt: now,
         updatedAt: now,
       },
@@ -469,7 +476,6 @@ export class NotificationPrismaRepository implements INotificationRepository {
       },
       data: {
         isRead: true,
-        status: 'Read',
         readAt: now,
         updatedAt: now,
       },

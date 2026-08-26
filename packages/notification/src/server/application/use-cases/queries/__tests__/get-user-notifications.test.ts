@@ -13,6 +13,9 @@ describe('GetUserNotificationsUseCase', () => {
   function aNotification(identityId: string) {
     return Notification.create({
       identityId,
+      workflowKey: 'system.general',
+      topic: 'system.general',
+      idempotencyKey: 'user-list:' + identityId,
       title: 'Test',
       content: 'Content',
       type: NotificationType.Info,

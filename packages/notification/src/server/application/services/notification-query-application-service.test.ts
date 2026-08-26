@@ -4,7 +4,6 @@ import type { INotificationRepository } from '../../domain/repositories';
 import { NotificationQueryApplicationService } from './notification-query-application-service';
 import {
   NotificationCategory,
-  NotificationStatus,
   NotificationType,
 } from '@memoflow/contracts/notification';
 
@@ -17,7 +16,8 @@ type NotificationDtoOverrides = Partial<{
   content: string;
   type: NotificationType;
   category: NotificationCategory;
-  status: NotificationStatus;
+  workflowKey: string;
+  topic: string;
   isRead: boolean;
   importance: string;
   createdAt: number;
@@ -29,12 +29,20 @@ function createNotificationRecord(overrides: NotificationDtoOverrides = {}) {
   const dto = {
     id: 'INotificationId_550e8400-e29b-41d4-a716-446655440000',
     identityId: IDENTITY_ID,
+    workflowKey: 'system.general',
+    topic: 'system.general',
+    idempotencyKey: 'query-test-1',
     title: 'System update',
     content: 'A system event happened',
     type: NotificationType.Info,
     category: NotificationCategory.System,
     importance: 'Moderate',
-    status: NotificationStatus.Sent,
+    urgency: 'Medium',
+    relatedEntityType: null,
+    relatedEntityId: null,
+    navigationIntent: null,
+    correlationId: null,
+    causationId: null,
     isRead: false,
     readAt: null,
     actions: null,

@@ -96,6 +96,9 @@ describe('Notification Durable Dispatch Worker & Capability (W2)', () => {
 
     const notification = Notification.create({
       identityId: 'user_123' as any,
+      workflowKey: 'system.general',
+      topic: 'system.general',
+      idempotencyKey: 'durable-failure',
       title: 'Alert',
       content: 'Critical alert',
       type: 'Warning',
@@ -163,6 +166,9 @@ describe('Notification Durable Dispatch Worker & Capability (W2)', () => {
 
     const notification = Notification.create({
       identityId: 'user_456' as any,
+      workflowKey: 'system.general',
+      topic: 'system.general',
+      idempotencyKey: 'durable-success',
       title: 'Welcome',
       content: 'Hello!',
       type: 'Info',

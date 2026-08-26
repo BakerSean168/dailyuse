@@ -1,279 +1,106 @@
-import { describe, it, expect } from 'vitest';
-import { NotificationPreference } from '../notification-preference';
+import { describe, expect, it } from 'vitest';
 import { NotificationChannelType } from '@memoflow/contracts/notification';
+import { NotificationPreference } from '../notification-preference';
+import { DoNotDisturbConfig } from '../../value-objects/do-not-disturb-config';
+import { RateLimit } from '../../value-objects/rate-limit';
 
-describe('NotificationPreference Aggregate Root', () => {
-  const testIdentityId = 'test-identity-456';
+const identityId = 'identity-pref' as never;
 
-  describe('create()', () => {
-    it('should create a preference with empty settings when no defaults', () => {
-      const pref = NotificationPreference.create({ identityId: testIdentityId });
-
-      expect(pref.id).toBeTruthy();
-      expect(pref.identityId).toBe(testIdentityId);
-      expect(pref.settings.size).toBe(0);
-      expect(pref.version).toBe(1);
-    });
-
-    it('should populate default modules when defaultChannels is provided', () => {
-      const pref = NotificationPreference.create({
-        identityId: testIdentityId,
-        defaultChannels: [NotificationChannelType.InApp, NotificationChannelType.Email],
-      });
-
-      const expectedModules = ['task', 'goal', 'schedule', 'reminder', 'system'];
-      for (const mod of expectedModules) {
-        const channels = pref.getModuleChannels(mod);
-        expect(channels).toContain(NotificationChannelType.InApp);
-        expect(channels).toContain(NotificationChannelType.Email);
-      }
-    });
-
-    it('should not populate modules when defaultChannels is empty', () => {
-      const pref = NotificationPreference.create({
-        identityId: testIdentityId,
-        defaultChannels: [],
-      });
-
-      expect(pref.settings.size).toBe(0);
-    });
-
-    it('should set createdAt and updatedAt', () => {
-      const pref = NotificationPreference.create({ identityId: testIdentityId });
-
-      expect(pref.createdAt).toBeInstanceOf(Date);
-      expect(pref.updatedAt).toBeInstanceOf(Date);
-    });
-
-    it('should have null deletedAt', () => {
-      const pref = NotificationPreference.create({ identityId: testIdentityId });
-
-      expect(pref.deletedAt).toBeNull();
-    });
+describe('NotificationPreference aggregate', () => {
+  it('starts with no user overrides so workflow defaults remain authoritative', () => {
+    const pref = NotificationPreference.create({ identityId });
+    expect(pref.globalChannels.size).toBe(0);
+    expect(pref.workflowOverrides.size).toBe(0);
+    expect(pref.doNotDisturb).toBeNull();
+    expect(pref.rateLimit).toBeNull();
   });
 
-  describe('getModuleChannels()', () => {
-    it('should return channels for a configured module', () => {
-      const pref = NotificationPreference.create({
-        identityId: testIdentityId,
-        defaultChannels: [NotificationChannelType.InApp],
-      });
-
-      const channels = pref.getModuleChannels('task');
-
-      expect(channels).toEqual([NotificationChannelType.InApp]);
-    });
-
-    it('should return empty array for an unconfigured module', () => {
-      const pref = NotificationPreference.create({ identityId: testIdentityId });
-
-      const channels = pref.getModuleChannels('nonexistent');
-
-      expect(channels).toEqual([]);
-    });
+  it('sets, reads and clears a global channel preference', () => {
+    const pref = NotificationPreference.create({ identityId });
+    pref.setGlobalChannel(NotificationChannelType.Email, false);
+    expect(pref.getGlobalChannel(NotificationChannelType.Email)).toBe(false);
+    pref.setGlobalChannel(NotificationChannelType.Email, true);
+    expect(pref.getGlobalChannel(NotificationChannelType.Email)).toBe(true);
+    pref.clearGlobalChannel(NotificationChannelType.Email);
+    expect(pref.getGlobalChannel(NotificationChannelType.Email)).toBeUndefined();
   });
 
-  describe('setModuleChannels()', () => {
-    it('should set channels for a module', () => {
-      const pref = NotificationPreference.create({ identityId: testIdentityId });
-
-      pref.setModuleChannels('task', [NotificationChannelType.InApp, NotificationChannelType.Push]);
-
-      expect(pref.getModuleChannels('task')).toEqual([
-        NotificationChannelType.InApp,
-        NotificationChannelType.Push,
-      ]);
-    });
-
-    it('should overwrite existing channels', () => {
-      const pref = NotificationPreference.create({
-        identityId: testIdentityId,
-        defaultChannels: [NotificationChannelType.InApp, NotificationChannelType.Email],
-      });
-
-      pref.setModuleChannels('task', [NotificationChannelType.Push]);
-
-      expect(pref.getModuleChannels('task')).toEqual([NotificationChannelType.Push]);
-    });
-
-    it('should create a new module entry if not present', () => {
-      const pref = NotificationPreference.create({ identityId: testIdentityId });
-
-      pref.setModuleChannels('custom-module', [NotificationChannelType.Sms]);
-
-      expect(pref.getModuleChannels('custom-module')).toEqual([NotificationChannelType.Sms]);
-    });
+  it('sets, reads and clears a workflow-specific override', () => {
+    const pref = NotificationPreference.create({ identityId });
+    pref.setWorkflowChannelOverride('task.deadline', NotificationChannelType.Desktop, true);
+    expect(pref.getWorkflowChannelOverride('task.deadline', NotificationChannelType.Desktop)).toBe(true);
+    pref.setWorkflowChannelOverride('task.deadline', NotificationChannelType.Desktop, false);
+    expect(pref.getWorkflowChannelOverride('task.deadline', NotificationChannelType.Desktop)).toBe(false);
+    pref.clearWorkflowChannelOverride('task.deadline', NotificationChannelType.Desktop);
+    expect(pref.getWorkflowChannelOverride('task.deadline', NotificationChannelType.Desktop)).toBeUndefined();
+    expect(pref.workflowOverrides.has('task.deadline')).toBe(false);
   });
 
-  describe('enableChannel()', () => {
-    it('should add a channel to an existing module', () => {
-      const pref = NotificationPreference.create({
-        identityId: testIdentityId,
-        defaultChannels: [NotificationChannelType.InApp],
-      });
-
-      pref.enableChannel('task', NotificationChannelType.Email);
-
-      expect(pref.getModuleChannels('task')).toContain(NotificationChannelType.Email);
-      expect(pref.getModuleChannels('task')).toContain(NotificationChannelType.InApp);
-    });
-
-    it('should not duplicate an already-enabled channel', () => {
-      const pref = NotificationPreference.create({
-        identityId: testIdentityId,
-        defaultChannels: [NotificationChannelType.InApp],
-      });
-
-      pref.enableChannel('task', NotificationChannelType.InApp);
-
-      const channels = pref.getModuleChannels('task');
-      const inAppCount = channels.filter((c) => c === NotificationChannelType.InApp).length;
-      expect(inAppCount).toBe(1);
-    });
-
-    it('should create module entry if not present', () => {
-      const pref = NotificationPreference.create({ identityId: testIdentityId });
-
-      pref.enableChannel('newModule', NotificationChannelType.Push);
-
-      expect(pref.getModuleChannels('newModule')).toEqual([NotificationChannelType.Push]);
-    });
+  it('keeps workflow overrides isolated by workflow key', () => {
+    const pref = NotificationPreference.create({ identityId });
+    pref.setWorkflowChannelOverride('task.deadline', NotificationChannelType.Email, false);
+    pref.setWorkflowChannelOverride('goal.progress', NotificationChannelType.Email, true);
+    expect(pref.getWorkflowChannelOverride('task.deadline', NotificationChannelType.Email)).toBe(false);
+    expect(pref.getWorkflowChannelOverride('goal.progress', NotificationChannelType.Email)).toBe(true);
   });
 
-  describe('disableChannel()', () => {
-    it('should remove a channel from a module', () => {
-      const pref = NotificationPreference.create({
-        identityId: testIdentityId,
-        defaultChannels: [NotificationChannelType.InApp, NotificationChannelType.Email],
-      });
+  it('returns defensive copies of preference maps', () => {
+    const pref = NotificationPreference.create({ identityId });
+    pref.setGlobalChannel(NotificationChannelType.Email, false);
+    const globals = pref.globalChannels;
+    globals.set(NotificationChannelType.Email, true);
+    expect(pref.getGlobalChannel(NotificationChannelType.Email)).toBe(false);
 
-      pref.disableChannel('task', NotificationChannelType.Email);
-
-      expect(pref.getModuleChannels('task')).toEqual([NotificationChannelType.InApp]);
-    });
-
-    it('should not throw when disabling a non-existent channel', () => {
-      const pref = NotificationPreference.create({
-        identityId: testIdentityId,
-        defaultChannels: [NotificationChannelType.InApp],
-      });
-
-      expect(() => pref.disableChannel('task', NotificationChannelType.Sms)).not.toThrow();
-    });
-
-    it('should not throw when disabling from a non-existent module', () => {
-      const pref = NotificationPreference.create({ identityId: testIdentityId });
-
-      expect(() => pref.disableChannel('nonexistent', NotificationChannelType.InApp)).not.toThrow();
-    });
+    pref.setWorkflowChannelOverride('task.deadline', NotificationChannelType.Desktop, true);
+    const overrides = pref.workflowOverrides;
+    overrides.get('task.deadline')?.set(NotificationChannelType.Desktop, false);
+    expect(pref.getWorkflowChannelOverride('task.deadline', NotificationChannelType.Desktop)).toBe(true);
   });
 
-  describe('disableModule()', () => {
-    it('should set module channels to empty array', () => {
-      const pref = NotificationPreference.create({
-        identityId: testIdentityId,
-        defaultChannels: [NotificationChannelType.InApp, NotificationChannelType.Email],
-      });
-
-      pref.disableModule('task');
-
-      expect(pref.getModuleChannels('task')).toEqual([]);
+  it('persists DND and rate-limit policy configuration independently from channel preferences', () => {
+    const pref = NotificationPreference.create({ identityId });
+    const dnd = DoNotDisturbConfig.create({
+      enabled: true,
+      startTime: '22:00',
+      endTime: '08:00',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
     });
-
-    it('should create empty entry for non-existent module', () => {
-      const pref = NotificationPreference.create({ identityId: testIdentityId });
-
-      pref.disableModule('some-module');
-
-      expect(pref.getModuleChannels('some-module')).toEqual([]);
-    });
+    const rate = RateLimit.create({ enabled: true, maxPerHour: 2, maxPerDay: 10 });
+    pref.setDoNotDisturb(dnd);
+    pref.setRateLimit(rate);
+    expect(pref.doNotDisturb?.toDTO()).toEqual(dnd.toDTO());
+    expect(pref.rateLimit?.toDTO()).toEqual(rate.toDTO());
   });
 
-  describe('shouldSendNotification()', () => {
-    it('should return true when the channel is enabled for the module', () => {
-      const pref = NotificationPreference.create({
-        identityId: testIdentityId,
-        defaultChannels: [NotificationChannelType.InApp],
-      });
-
-      expect(pref.shouldSendNotification('task', NotificationChannelType.InApp)).toBe(true);
-    });
-
-    it('should return false when the channel is not enabled', () => {
-      const pref = NotificationPreference.create({
-        identityId: testIdentityId,
-        defaultChannels: [NotificationChannelType.InApp],
-      });
-
-      expect(pref.shouldSendNotification('task', NotificationChannelType.Email)).toBe(false);
-    });
-
-    it('should return false for an unconfigured module', () => {
-      const pref = NotificationPreference.create({ identityId: testIdentityId });
-
-      expect(pref.shouldSendNotification('unknown', NotificationChannelType.InApp)).toBe(false);
-    });
-
-    it('should return false after disabling the module', () => {
-      const pref = NotificationPreference.create({
-        identityId: testIdentityId,
-        defaultChannels: [NotificationChannelType.InApp],
-      });
-      pref.disableModule('task');
-
-      expect(pref.shouldSendNotification('task', NotificationChannelType.InApp)).toBe(false);
-    });
+  it('serializes global and workflow layers without legacy module/category settings', () => {
+    const pref = NotificationPreference.create({ identityId });
+    pref.setGlobalChannel(NotificationChannelType.Email, false);
+    pref.setWorkflowChannelOverride('task.deadline', NotificationChannelType.Desktop, true);
+    const dto = pref.toServerDTO();
+    expect(dto.globalChannels).toEqual({ Email: false });
+    expect(dto.workflowOverrides).toEqual({ 'task.deadline': { Desktop: true } });
+    expect(dto).not.toHaveProperty('settings');
+    expect(dto).not.toHaveProperty('categories');
+    expect(dto).not.toHaveProperty('enabled');
   });
 
-  describe('toServerDTO()', () => {
-    it('should convert Map settings to Record', () => {
-      const pref = NotificationPreference.create({
-        identityId: testIdentityId,
-        defaultChannels: [NotificationChannelType.InApp],
-      });
-
-      const dto = pref.toServerDTO();
-
-      expect(dto.id).toBeTruthy();
-      expect(dto.identityId).toBe(testIdentityId);
-      expect(dto.settings).toBeDefined();
-      expect(dto.settings['task']).toEqual([NotificationChannelType.InApp]);
-      expect(dto.version).toBe(1);
-      expect(typeof dto.createdAt).toBe('number');
-      expect(typeof dto.updatedAt).toBe('number');
-      expect(dto.deletedAt).toBeNull();
+  it('reconstructs persisted preference layers', () => {
+    const pref = NotificationPreference.load({
+      id: 'pref-1' as never,
+      identityId,
+      globalChannels: new Map([[NotificationChannelType.Email, false]]),
+      workflowOverrides: new Map([
+        ['task.deadline', new Map([[NotificationChannelType.Desktop, true]])],
+      ]),
+      doNotDisturb: null,
+      rateLimit: null,
+      version: 2,
+      deletedAt: null,
+      createdAt: new Date('2026-08-25T00:00:00Z'),
+      updatedAt: new Date('2026-08-25T01:00:00Z'),
     });
-
-    it('should return empty settings record when no modules configured', () => {
-      const pref = NotificationPreference.create({ identityId: testIdentityId });
-
-      const dto = pref.toServerDTO();
-
-      expect(Object.keys(dto.settings)).toHaveLength(0);
-    });
-  });
-
-  describe('load()', () => {
-    it('should reconstruct from state', () => {
-      const original = NotificationPreference.create({
-        identityId: testIdentityId,
-        defaultChannels: [NotificationChannelType.InApp],
-      });
-      const state = {
-        id: original.id,
-        identityId: original.identityId,
-        settings: new Map(original.settings),
-        version: original.version,
-        deletedAt: original.deletedAt,
-        createdAt: original.createdAt,
-        updatedAt: original.updatedAt,
-      };
-
-      const loaded = NotificationPreference.load(state);
-
-      expect(String(loaded.id)).toBe(String(original.id));
-      expect(loaded.identityId).toBe(testIdentityId);
-      expect(loaded.shouldSendNotification('task', NotificationChannelType.InApp)).toBe(true);
-    });
+    expect(pref.getGlobalChannel(NotificationChannelType.Email)).toBe(false);
+    expect(pref.getWorkflowChannelOverride('task.deadline', NotificationChannelType.Desktop)).toBe(true);
+    expect(pref.version).toBe(2);
   });
 });

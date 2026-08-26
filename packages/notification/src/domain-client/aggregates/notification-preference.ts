@@ -1,14 +1,3 @@
-/**
- * NotificationPreference Aggregate Root - Domain Client
- * 通知偏好聚合根 - 领域客户端
- *
- * 【规范说明】
- * - Private constructor with props object
- * - Public getters via this._props.xxx
- * - Static load(state: NotificationPreferenceState): NotificationPreference
- * - Instance toDTO(): NotificationPreferenceClientDTO
- */
-
 import type {
   NotificationPreferenceClientDTO,
   NotificationChannelType,
@@ -21,7 +10,8 @@ import type { NotificationPreferenceId as NotificationPreferenceIdBranded, Ident
 export interface NotificationPreferenceState {
   id: NotificationPreferenceId;
   identityId: IdentityId;
-  settings: Record<string, NotificationChannelType[]>;
+  globalChannels: Partial<Record<NotificationChannelType, boolean>>;
+  workflowOverrides: Record<string, Partial<Record<NotificationChannelType, boolean>>>;
   version: number;
   createdAt: Date;
   updatedAt: Date;
@@ -29,70 +19,25 @@ export interface NotificationPreferenceState {
 }
 
 export class NotificationPreference extends AggregateRoot<NotificationPreferenceId> {
-  private readonly _props: NotificationPreferenceState;
-
-  // ================= 2. Constructor (Private) =================
-  private constructor(props: NotificationPreferenceState) {
-    super(props.id);
-    this._props = props;
-  }
-
-  // ================= 3. Getters =================
-  get identityId(): IdentityId {
-    return this._props.identityId;
-  }
-
-  get settings(): Record<string, NotificationChannelType[]> {
-    return this._props.settings;
-  }
-
-  get version(): number {
-    return this._props.version;
-  }
-
-  get createdAt(): Date {
-    return this._props.createdAt;
-  }
-
-  get updatedAt(): Date {
-    return this._props.updatedAt;
-  }
-
-  get deletedAt(): Date | null {
-    return this._props.deletedAt;
-  }
-
-  // UI 计算属性
-  get isDeleted(): boolean {
-    return this._props.deletedAt !== null;
-  }
-
-  /**
-   * 获取指定模块的通知渠道设置
-   */
-  getModuleChannels(moduleName: string): NotificationChannelType[] {
-    return this._props.settings[moduleName] ?? [];
-  }
-
-  /**
-   * 检查指定模块是否启用了特定渠道
-   */
-  isChannelEnabled(moduleName: string, channelType: NotificationChannelType): boolean {
-    const channels = this.getModuleChannels(moduleName);
-    return channels.includes(channelType);
-  }
-
-  // ================= 4. Factory Methods =================
-  public static load(state: NotificationPreferenceState): NotificationPreference {
-    return new NotificationPreference(state);
-  }
-
-  // ================= 5. DTO Conversion =================
-  public toDTO(): NotificationPreferenceClientDTO {
+  private constructor(private readonly _props: NotificationPreferenceState) { super(_props.id); }
+  get identityId(): IdentityId { return this._props.identityId; }
+  get globalChannels() { return this._props.globalChannels; }
+  get workflowOverrides() { return this._props.workflowOverrides; }
+  get version(): number { return this._props.version; }
+  get createdAt(): Date { return this._props.createdAt; }
+  get updatedAt(): Date { return this._props.updatedAt; }
+  get deletedAt(): Date | null { return this._props.deletedAt; }
+  get isDeleted(): boolean { return this._props.deletedAt !== null; }
+  isChannelEnabled(channel: NotificationChannelType): boolean | undefined { return this._props.globalChannels[channel]; }
+  static load(state: NotificationPreferenceState): NotificationPreference { return new NotificationPreference(state); }
+  toDTO(): NotificationPreferenceClientDTO {
     return {
       id: this.id as unknown as NotificationPreferenceIdBranded,
       identityId: this._props.identityId as unknown as IdentityIdBranded,
-      settings: this._props.settings,
+      globalChannels: this._props.globalChannels,
+      workflowOverrides: this._props.workflowOverrides,
+      doNotDisturb: null,
+      rateLimit: null,
       version: this._props.version,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),

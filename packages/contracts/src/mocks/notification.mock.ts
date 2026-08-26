@@ -22,16 +22,24 @@ export function createMockNotification(
   const isRead = faker.datatype.boolean();
 
   return {
-    id,
-    identityId: faker.string.uuid(),
+    id: id as never,
+    identityId: faker.string.uuid() as never,
+    workflowKey: 'system.general',
+    topic: 'system.general',
+    idempotencyKey: `mock:${id}`,
     title: faker.lorem.words({ min: 2, max: 6 }),
     content: faker.lorem.paragraph({ min: 1, max: 3 }),
     type: faker.helpers.arrayElement(['Info', 'Warning', 'Error', 'Success', 'Reminder']),
     category: faker.helpers.arrayElement(['System', 'Task', 'Goal', 'Reminder', 'AI', 'Security']),
     importance: faker.helpers.arrayElement(['Vital', 'Important', 'Moderate', 'Minor', 'Trivial']),
+    urgency: faker.helpers.arrayElement(['Low', 'Medium', 'High', 'Critical']),
+    relatedEntityType: null,
+    relatedEntityId: null,
+    navigationIntent: null,
+    correlationId: null,
+    causationId: null,
     isRead,
     readAt: isRead ? now - faker.number.int({ min: 0, max: 86400000 }) : null,
-    status: faker.helpers.arrayElement(['Pending', 'Sent', 'Delivered', 'Failed']),
     actions: faker.datatype.boolean()
       ? [
           {
@@ -58,7 +66,7 @@ export function createMockNotification(
     deletedAt: null,
     notificationChannels: null,
     ...overrides,
-  } as NotificationClientDTO;
+  } as unknown as NotificationClientDTO;
 }
 
 export function createMockNotificationList(

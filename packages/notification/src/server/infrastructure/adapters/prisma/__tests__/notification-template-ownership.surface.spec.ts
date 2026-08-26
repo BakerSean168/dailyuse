@@ -31,8 +31,8 @@ describe('notification template ownership surface', () => {
     ),
     'utf8',
   );
-  const domainService = readFileSync(
-    resolve(__dirname, '../../../../domain/services/notification-domain-service.ts'),
+  const createUseCase = readFileSync(
+    resolve(__dirname, '../../../../application/use-cases/commands/create-notification.use-case.ts'),
     'utf8',
   );
   const aggregate = readFileSync(
@@ -66,15 +66,11 @@ describe('notification template ownership surface', () => {
     expect(templateService).not.toMatch(/findByIdForIdentity/);
   });
 
-  it('notification create from template uses global template id then owned identityId', () => {
-    expect(domainService).toContain(
-      'const template = await this.templateRepo.findById(params.templateId);',
-    );
-    expect(domainService).toContain(
-      'public async createNotificationFromTemplate(params: {\n    identityId: string;\n    templateId: string;',
-    );
-    // Notification identity fence is separate from template catalog load.
-    expect(domainService).toContain('identityId: params.identityId');
+  it('keeps template catalog separate from Notification Fact creation authority', () => {
+    expect(createUseCase).not.toContain('templateId');
+    expect(createUseCase).not.toContain('templateRepo');
+    expect(createUseCase).toContain('workflowKey');
+    expect(createUseCase).toContain('idempotencyKey');
   });
 
   it('template aggregate is system-scoped (no identityId ownership field)', () => {

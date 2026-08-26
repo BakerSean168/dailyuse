@@ -1,9 +1,5 @@
-/**
- * Notification List Result DTO
- */
-
 import type { NotificationServerDTO } from '../aggregates/notification-server';
-import type { NotificationCategory, NotificationType, NotificationStatus } from '../value-objects';
+import type { NotificationCategory, NotificationType } from '../value-objects';
 
 export interface NotificationListResultDTO {
   notifications: NotificationServerDTO[];
@@ -17,5 +13,5 @@ export interface NotificationStatsDTO {
   totalCount: number;
   byCategory: Record<NotificationCategory, number>;
   byType: Record<NotificationType, number>;
-  byStatus: Record<NotificationStatus, number>;
+  readState: { read: number; unread: number };
 }

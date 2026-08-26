@@ -1,9 +1,3 @@
-/**
- * Notification DTO Converters
- *
- * Keep conversion logic minimal and aligned with current contracts module shapes.
- */
-
 import type {
   NotificationServerDTO,
   NotificationClientDTO,
@@ -33,23 +27,7 @@ export function toNotificationClientDTO(serverDTO: NotificationServerDTO): Notif
     })) ?? null;
 
   return {
-    id: serverDTO.id,
-    identityId: serverDTO.identityId,
-    title: serverDTO.title,
-    content: serverDTO.content,
-    type: serverDTO.type,
-    category: serverDTO.category,
-    importance: serverDTO.importance,
-    isRead: serverDTO.isRead,
-    readAt: serverDTO.readAt,
-    status: serverDTO.status,
-    actions: serverDTO.actions ?? null,
-    metadata: serverDTO.metadata ?? null,
-    expiresAt: serverDTO.expiresAt ?? null,
-    version: serverDTO.version,
-    createdAt: serverDTO.createdAt,
-    updatedAt: serverDTO.updatedAt,
-    deletedAt: serverDTO.deletedAt,
+    ...serverDTO,
     notificationChannels,
   };
 }
@@ -60,7 +38,10 @@ export function toNotificationPreferenceClientDTO(
   return {
     id: serverDTO.id,
     identityId: serverDTO.identityId,
-    settings: serverDTO.settings,
+    globalChannels: serverDTO.globalChannels,
+    workflowOverrides: serverDTO.workflowOverrides,
+    doNotDisturb: serverDTO.doNotDisturb ?? null,
+    rateLimit: serverDTO.rateLimit ?? null,
     version: serverDTO.version,
     createdAt: serverDTO.createdAt,
     updatedAt: serverDTO.updatedAt,
