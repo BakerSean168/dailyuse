@@ -61,12 +61,27 @@ export interface RoutineOccurrenceCommittedEvent {
   readonly scheduledFor: number;
 }
 
-export interface RoutineScheduleProjectionEventMap {
-  readonly 'routine:occurrence-committed': RoutineOccurrenceCommittedEvent;
+/** Snooze/override changed: rebuild the routine's desired scheduling set now. */
+export interface RoutineOverrideChangedEvent {
+  readonly routineId: string;
+  readonly identityId: string;
 }
+
+/**
+ * NOTE: this stays a TYPE LITERAL, not an interface. `TypedEventMap` constrains
+ * the keyed payload map to `Record<string, unknown>`, and only a type literal
+ * carries an implicit string index signature (`keyof Map` is exactly the two
+ * declared keys, never `string | number`). Interfaces do NOT — they would widen
+ * to `string` and instantly break every `Subscriber<...>` wiring.
+ */
+export type RoutineScheduleProjectionEventMap = {
+  readonly 'routine:occurrence-committed': RoutineOccurrenceCommittedEvent;
+  readonly 'routine:override-changed': RoutineOverrideChangedEvent;
+};
 
 export const routineScheduleProjectionEventNames = [
   'routine:occurrence-committed',
+  'routine:override-changed',
 ] as const satisfies readonly (keyof RoutineScheduleProjectionEventMap)[];
 
 export function createRoutineScheduleProjectionEventHandlers(
@@ -76,6 +91,12 @@ export function createRoutineScheduleProjectionEventHandlers(
 } {
   return {
     'routine:occurrence-committed': (event) => {
+      void projector.upsertRoutine(event.routineId, event.identityId);
+    },
+    // An override/snooze change means the desired set may jump (suppress) or
+    // reappear (expiry) in place — rebuild the full plan so the neutral
+    // Scheduler converges without waiting for the next occurrence commit.
+    'routine:override-changed': (event) => {
       void projector.upsertRoutine(event.routineId, event.identityId);
     },
   };

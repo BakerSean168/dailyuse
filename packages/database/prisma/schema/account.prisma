@@ -78,6 +78,7 @@ model Account {
   reminderHistory                ReminderHistory[]               @relation("AccountReminderHistory")
   reminderResponses              ReminderResponse[]              @relation("AccountReminderResponses")
   reminderOccurrences            ReminderOccurrence[]            @relation("AccountReminderOccurrences")
+  routineOccurrences             RoutineOccurrence[]             @relation("AccountRoutineOccurrences")
   notificationChannels           NotificationChannel[]           @relation("AccountNotificationChannels")
   notificationHistory            NotificationHistory[]           @relation("AccountNotificationHistory")
   notificationDispatchOutboxes   NotificationDispatchOutbox[]    @relation("AccountNotificationDispatchOutboxes")

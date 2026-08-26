@@ -1,0 +1,266 @@
+import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { IdentityId } from '@memoflow/domain-shared';
+import {
+  buildIdempotencyKeyString,
+  LeaseFencingException,
+} from '@memoflow/contracts/reliable-messaging';
+import { NOTIFICATION_REQUESTED_MESSAGE_TYPE } from '@memoflow/contracts/notification';
+import {
+  cleanAll,
+  disconnectPrisma,
+  getPrisma,
+  seedAccount,
+} from '../../../../__tests__/integration-helpers';
+import { serializeRoutineTrigger } from '../../routine-vnext/trigger-persistence-parity';
+import { PrismaRoutineOccurrenceNotificationWriter } from '../routine-occurrence-notification-writer.prisma';
+import { PrismaRoutineOccurrenceStore } from '../routine-occurrence-store.prisma';
+import { createPrismaRoutineScheduleStateReader } from '../routine-schedule-state-reader.prisma';
+import { FIXTURE_F, fixtureOccurrenceKey, fixtureTrigger } from './test-support';
+
+async function seedRoutineDefinition(prisma: Awaited<ReturnType<typeof getPrisma>>, identityId: string) {
+  await prisma.routineDefinition.create({
+    data: {
+      id: FIXTURE_F.routineId,
+      identityId,
+      name: '晚间熄灯',
+      description: '屋内灯光关闭，进入休息时间。',
+      enabled: true,
+      triggerJson: serializeRoutineTrigger(fixtureTrigger()),
+      version: FIXTURE_F.version,
+      createdAt: new Date(Date.parse('2026-08-01T00:00:00.000Z')),
+      updatedAt: new Date(Date.parse('2026-08-24T00:00:00.000Z')),
+    },
+  });
+}
+
+describe('ROUTINE-3401 Prisma durable adapters integration', () => {
+  afterAll(async () => {
+    await cleanAll();
+    await disconnectPrisma();
+  });
+
+  beforeEach(async () => {
+    await cleanAll();
+  });
+
+  it('commits the occurrence and its notification intent in one transaction', async () => {
+    const prisma = await getPrisma();
+    const identityId = IdentityId.generate();
+    await seedAccount({ id: identityId });
+    await seedRoutineDefinition(prisma, identityId);
+
+    const store = new PrismaRoutineOccurrenceStore(prisma);
+    const writer = new PrismaRoutineOccurrenceNotificationWriter(prisma);
+    const occurrenceKey = fixtureOccurrenceKey();
+    const claimedAt = Date.now();
+
+    const lease = await store.claimOccurrence({
+      identityId,
+      routineId: FIXTURE_F.routineId,
+      occurrenceKey,
+      scheduledFor: FIXTURE_F.firstOccurrenceAt,
+      sourceRevision: FIXTURE_F.version,
+      claimedAt,
+      leaseExpiresAt: claimedAt + 60_000,
+    });
+
+    expect(lease.alreadyFinalized).toBe(false);
+    expect(lease.ownerToken).toBeTruthy();
+    expect(lease.fencingToken).toBe(1);
+
+    const [commitReceipt, notificationReceipt] = await store.withOccurrenceTransaction(async (tx) => {
+      const commit = await store.completeOccurrence(
+        {
+          occurrenceId: lease.occurrenceId,
+          fencingToken: lease.fencingToken,
+          ownerToken: lease.ownerToken,
+          status: 'succeeded',
+          history: {
+            routineId: FIXTURE_F.routineId,
+            identityId,
+            occurrenceKey,
+            scheduledFor: FIXTURE_F.firstOccurrenceAt,
+            triggeredAt: claimedAt,
+            result: 'success',
+            reason: null,
+          },
+          nextOccurrenceAt: FIXTURE_F.nextOccurrenceAt,
+        },
+        { transaction: tx },
+      );
+      const requested = await writer.enqueueRoutineOccurrenceRequested(
+        {
+          identityId,
+          routineId: FIXTURE_F.routineId,
+          occurrenceKey,
+          scheduledFor: FIXTURE_F.firstOccurrenceAt,
+          sourceRevision: FIXTURE_F.version,
+          title: '晚间熄灯',
+          content: '屋内灯光关闭，进入休息时间。',
+        },
+        { transaction: tx },
+      );
+      return [commit, requested] as const;
+    });
+
+    expect(commitReceipt.status).toBe('succeeded');
+
+    const occurrenceRow = await prisma.routineOccurrence.findUniqueOrThrow({
+      where: { id: lease.occurrenceId },
+    });
+    expect(occurrenceRow.status).toBe('succeeded');
+    expect(occurrenceRow.ownerToken).toBeNull();
+    expect(occurrenceRow.leaseExpiresAt).toBeNull();
+    expect(occurrenceRow.nextOccurrenceAt?.getTime()).toBe(FIXTURE_F.nextOccurrenceAt);
+
+    const outboxRows = await prisma.outboxMessage.findMany({ orderBy: { createdAt: 'asc' } });
+    expect(outboxRows).toHaveLength(1);
+    expect(outboxRows[0]!.messageType).toBe(NOTIFICATION_REQUESTED_MESSAGE_TYPE);
+    expect(outboxRows[0]!.identityId).toBe(identityId);
+    expect(outboxRows[0]!.idempotencyKey).toBe(
+      buildIdempotencyKeyString({ identityId, source: 'routine', occurrenceKey }),
+    );
+    expect(notificationReceipt.idempotencyKey).toBe(outboxRows[0]!.idempotencyKey);
+  });
+
+  it('replays an already-finalized occurrence idempotently through the durable writer', async () => {
+    const prisma = await getPrisma();
+    const identityId = IdentityId.generate();
+    await seedAccount({ id: identityId });
+    await seedRoutineDefinition(prisma, identityId);
+
+    const store = new PrismaRoutineOccurrenceStore(prisma);
+    const writer = new PrismaRoutineOccurrenceNotificationWriter(prisma);
+    const occurrenceKey = fixtureOccurrenceKey();
+    const claimedAt = Date.now();
+    const request = {
+      identityId,
+      routineId: FIXTURE_F.routineId,
+      occurrenceKey,
+      scheduledFor: FIXTURE_F.firstOccurrenceAt,
+      sourceRevision: FIXTURE_F.version,
+      title: '晚间熄灯',
+      content: '屋内灯光关闭，进入休息时间。',
+    };
+
+    const first = await store.claimOccurrence({
+      identityId,
+      routineId: FIXTURE_F.routineId,
+      occurrenceKey,
+      scheduledFor: FIXTURE_F.firstOccurrenceAt,
+      sourceRevision: FIXTURE_F.version,
+      claimedAt,
+      leaseExpiresAt: claimedAt + 60_000,
+    });
+    await store.completeOccurrence({
+      occurrenceId: first.occurrenceId,
+      fencingToken: first.fencingToken,
+      ownerToken: first.ownerToken,
+      status: 'succeeded',
+      history: {
+        routineId: FIXTURE_F.routineId,
+        identityId,
+        occurrenceKey,
+        scheduledFor: FIXTURE_F.firstOccurrenceAt,
+        triggeredAt: claimedAt,
+        result: 'success',
+        reason: null,
+      },
+      nextOccurrenceAt: FIXTURE_F.nextOccurrenceAt,
+    });
+    await writer.enqueueRoutineOccurrenceRequested(request);
+
+    const replay = await store.claimOccurrence({
+      identityId,
+      routineId: FIXTURE_F.routineId,
+      occurrenceKey,
+      scheduledFor: FIXTURE_F.firstOccurrenceAt,
+      sourceRevision: FIXTURE_F.version,
+      claimedAt: claimedAt + 1,
+      leaseExpiresAt: claimedAt + 60_001,
+    });
+
+    expect(replay.alreadyFinalized).toBe(true);
+    expect(replay.terminalStatus).toBe('succeeded');
+
+    const replayReceipt = await writer.enqueueRoutineOccurrenceRequested(request);
+    expect(replayReceipt.idempotencyKey).toBe(
+      buildIdempotencyKeyString({ identityId, source: 'routine', occurrenceKey }),
+    );
+
+    expect(await prisma.routineOccurrence.count()).toBe(1);
+    expect(await prisma.outboxMessage.count()).toBe(1);
+  });
+
+  it('rejects a stale lease commit after an expired takeover bumps the fencing token', async () => {
+    const prisma = await getPrisma();
+    const identityId = IdentityId.generate();
+    await seedAccount({ id: identityId });
+    await seedRoutineDefinition(prisma, identityId);
+
+    const store = new PrismaRoutineOccurrenceStore(prisma);
+    const occurrenceKey = fixtureOccurrenceKey();
+    const baseInput = {
+      identityId,
+      routineId: FIXTURE_F.routineId,
+      occurrenceKey,
+      scheduledFor: FIXTURE_F.firstOccurrenceAt,
+      sourceRevision: FIXTURE_F.version,
+    };
+
+    const firstClaimAt = Date.now();
+    const first = await store.claimOccurrence({
+      ...baseInput,
+      claimedAt: firstClaimAt,
+      leaseExpiresAt: firstClaimAt + 50_000,
+    });
+
+    const secondClaimAt = firstClaimAt + 120_000;
+    const second = await store.claimOccurrence({
+      ...baseInput,
+      claimedAt: secondClaimAt,
+      leaseExpiresAt: secondClaimAt + 60_000,
+    });
+
+    expect(second.fencingToken).toBe(first.fencingToken + 1);
+    expect(second.ownerToken).not.toBe(first.ownerToken);
+
+    const stale = store.completeOccurrence({
+      occurrenceId: first.occurrenceId,
+      fencingToken: first.fencingToken,
+      ownerToken: first.ownerToken,
+      status: 'succeeded',
+      history: {
+        routineId: FIXTURE_F.routineId,
+        identityId,
+        occurrenceKey,
+        scheduledFor: FIXTURE_F.firstOccurrenceAt,
+        triggeredAt: secondClaimAt,
+        result: 'success',
+        reason: null,
+      },
+      nextOccurrenceAt: FIXTURE_F.nextOccurrenceAt,
+    });
+
+    await expect(stale).rejects.toBeInstanceOf(LeaseFencingException);
+  });
+
+  it('reads the persisted wall-clock snapshot and lists the durable routine ref', async () => {
+    const prisma = await getPrisma();
+    const identityId = IdentityId.generate();
+    await seedAccount({ id: identityId });
+    await seedRoutineDefinition(prisma, identityId);
+
+    const reader = createPrismaRoutineScheduleStateReader(prisma);
+
+    const snapshot = await reader.readRoutineScheduleSnapshot(FIXTURE_F.routineId, identityId);
+    expect(snapshot).not.toBeNull();
+    expect(snapshot?.definition.id).toBe(FIXTURE_F.routineId);
+    expect(snapshot?.definition.enabled).toBe(true);
+    expect(snapshot?.definition.trigger?.type).toBe('WallClock');
+    expect(snapshot?.temporaryOverride).toBeNull();
+
+    const refs = await reader.listRoutineRefs();
+    expect(refs).toContainEqual({ routineId: FIXTURE_F.routineId, identityId });
+  });
+});

@@ -47,6 +47,20 @@ export interface RoutineOccurrenceCommitInput {
 }
 
 /**
+ * Opaque handle to a single commit transaction spanning the occurrence store
+ * and the notification writer. Paired adapters created against the same
+ * database client (in one composition) unwrap it; hosts pass it through
+ * untouched. Joining the finalize + durable `notification.requested` intent in
+ * ONE transaction is the ROUTINE-3401 crash-window guard: a crash can never
+ * surface a committed occurrence without its durable notification intent.
+ */
+export interface RoutineOccurrenceTransactionHandle {
+  readonly kind: 'routine-occurrence-transaction';
+  /** Paired-adapter transaction client (Prisma.TransactionClient in the reference impl). */
+  readonly client: unknown;
+}
+
+/**
  * Durable occurrence fence for the Routine wall-clock lane.
  *
  * Semantics mirror the protected ReminderOccurrence assets (ADR-059 §10):
@@ -58,5 +72,16 @@ export interface RoutineOccurrenceCommitInput {
  */
 export interface RoutineOccurrenceStore {
   claimOccurrence(input: RoutineOccurrenceClaimInput): Promise<RoutineOccurrenceLease>;
-  completeOccurrence(input: RoutineOccurrenceCommitInput): Promise<BusinessOperationReceipt>;
+  completeOccurrence(
+    input: RoutineOccurrenceCommitInput,
+    options?: { readonly transaction?: RoutineOccurrenceTransactionHandle },
+  ): Promise<BusinessOperationReceipt>;
+  /**
+   * Runs `callback` inside one commit transaction. The occurrence finalize and
+   * the notification writer (same handle) join the transaction so they commit
+   * or roll back together.
+   */
+  withOccurrenceTransaction<T>(
+    callback: (transaction: RoutineOccurrenceTransactionHandle) => Promise<T>,
+  ): Promise<T>;
 }

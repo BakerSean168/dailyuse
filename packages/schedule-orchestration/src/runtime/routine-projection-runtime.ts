@@ -27,7 +27,6 @@ export function createRoutineProjectionRuntime(
   });
 
   const handlers = createRoutineScheduleProjectionEventHandlers(projector);
-  const eventName = routineScheduleProjectionEventNames[0];
   let started = false;
 
   /** Startup source-of-truth reconcile repairs occurrences committed while the host was down. */
@@ -47,8 +46,14 @@ export function createRoutineProjectionRuntime(
     async start(): Promise<void> {
       if (started) return;
 
-      // Register before full reconcile so occurrences committed during startup are not lost.
-      deps.routineEvents.on(eventName, handlers[eventName]);
+      // Register all subscribed event names before the full reconcile so
+      // occurrences committed during startup are not lost.
+      for (const name of routineScheduleProjectionEventNames) {
+        deps.routineEvents.on(
+          name,
+          handlers[name] as (event: RoutineScheduleProjectionEventMap[typeof name]) => void,
+        );
+      }
 
       await reconcile();
       started = true;
@@ -57,7 +62,12 @@ export function createRoutineProjectionRuntime(
     async stop(): Promise<void> {
       if (!started) return;
 
-      deps.routineEvents.off(eventName, handlers[eventName]);
+      for (const name of routineScheduleProjectionEventNames) {
+        deps.routineEvents.off(
+          name,
+          handlers[name] as (event: RoutineScheduleProjectionEventMap[typeof name]) => void,
+        );
+      }
       started = false;
     },
   };

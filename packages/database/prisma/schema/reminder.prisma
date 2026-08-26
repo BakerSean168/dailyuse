@@ -232,6 +232,7 @@ model RoutineDefinition {
 
   account     Account                    @relation(fields: [identityId], references: [id], onDelete: Cascade)
   memberships RoutineProfileMembership[]
+  occurrences RoutineOccurrence[]
 
   @@unique([identityId, id])
   @@index([identityId, enabled])
@@ -312,4 +313,43 @@ model RoutineProtocolSession {
   @@index([identityId, status])
   @@index([identityId, protocolId, createdAt])
   @@map("routine_protocol_sessions")
+}
+
+/// RoutineOccurrence durable occurrence fence for the ROUTINE-3401 wall-clock lane.
+/// Mirrors the protected ReminderOccurrence lease-claim contract (ADR-059 §10)
+/// keyed by the canonical occurrenceKey so crash/retry replay is idempotent.
+model RoutineOccurrence {
+  id               String    @id
+  identityId       String    @map("identity_id")
+  routineId        String    @map("routine_id")
+  source           String    @default("routine")
+  occurrenceKey    String    @map("occurrence_key")
+  scheduledFor     DateTime  @map("scheduled_for")
+  sourceRevision   String?   @map("source_revision")
+  idempotencyKey   String    @unique @map("idempotency_key")
+  status           String
+  attempt          Int       @default(0)
+  ownerToken       String?   @map("owner_token")
+  claimId          String?   @map("claim_id")
+  fencingToken     Int       @default(0) @map("fencing_token")
+  leaseExpiresAt   DateTime? @map("lease_expires_at")
+  lastError        String?   @map("last_error")
+  nextRetryAt      DateTime? @map("next_retry_at")
+  deadLetterAt     DateTime? @map("dead_letter_at")
+  correlationId    String?   @map("correlation_id")
+  causationId      String?   @map("causation_id")
+  historyJson      String?   @map("history_json")
+  nextOccurrenceAt DateTime? @map("next_occurrence_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  finishedAt       DateTime? @map("finished_at")
+
+  routine RoutineDefinition @relation(fields: [routineId, identityId], references: [id, identityId], onDelete: Cascade)
+  account Account           @relation("AccountRoutineOccurrences", fields: [identityId], references: [id])
+
+  @@unique([identityId, routineId, occurrenceKey])
+  @@index([identityId])
+  @@index([status])
+  @@index([leaseExpiresAt])
+  @@map("routine_occurrences")
 }

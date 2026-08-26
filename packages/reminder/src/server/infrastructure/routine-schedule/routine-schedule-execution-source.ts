@@ -115,15 +115,38 @@ export function createRoutineWallClockExecutionSource(
       };
 
       if (lease.alreadyFinalized) {
+        // Crash/retry replay: the durable commit already landed, so we only
+        // re-confirm the idempotent notification intent and re-publish the
+        // post-commit signal to re-arm the next Scheduler trigger that may have
+        // been lost between the original commit and the next schedule
+        // (ROUTINE-3401 finding: the commit and the re-arm must not split a
+        // crash; the projection runtime dedups the re-published occurrence).
         try {
           await deps.notificationWriter.enqueueRoutineOccurrenceRequested(notificationRequest);
         } catch (error) {
           return { kind: 'retryable', error: serializeError(error) };
         }
+
+        const nextEligibleAfterReplay = computeRoutineNextEligibleOccurrence({
+          routineId: input.routineId,
+          engine: deps.recurrenceEngine,
+          trigger,
+          after: input.scheduledFor,
+          temporaryOverride: snapshot.temporaryOverride,
+        });
+        deps.publishOccurrenceCommitted?.({
+          routineId: input.routineId,
+          identityId: input.identityId,
+          occurrenceKey: input.occurrenceKey,
+          scheduledFor: input.scheduledFor,
+        });
+
         return {
           kind: 'succeeded',
           occurrenceId: lease.occurrenceId,
-          nextOccurrenceAt: null,
+          nextOccurrenceAt: nextEligibleAfterReplay
+            ? Number(nextEligibleAfterReplay.occurrenceAt)
+            : null,
           notificationRequested: true,
         };
       }
@@ -138,32 +161,40 @@ export function createRoutineWallClockExecutionSource(
       const nextOccurrenceAt = nextEligible ? Number(nextEligible.occurrenceAt) : null;
 
       try {
-        await deps.occurrenceStore.completeOccurrence({
-          occurrenceId: lease.occurrenceId,
-          fencingToken: lease.fencingToken,
-          ownerToken: lease.ownerToken,
-          status: 'succeeded',
-          history: {
-            routineId: input.routineId,
-            identityId: input.identityId,
-            occurrenceKey: input.occurrenceKey,
-            scheduledFor: input.scheduledFor,
-            triggeredAt: nowMs,
-            result: 'success',
-            reason: null,
-          },
-          nextOccurrenceAt,
+        // ROUTINE-3401 crash-window guard: the occurrence finalize AND the
+        // durable notification intent commit atomically in ONE transaction.
+        // Without the transaction a crash between them surfaces a committed
+        // occurrence whose notification intent was never persisted.
+        await deps.occurrenceStore.withOccurrenceTransaction(async (transaction) => {
+          await deps.occurrenceStore.completeOccurrence(
+            {
+              occurrenceId: lease.occurrenceId,
+              fencingToken: lease.fencingToken,
+              ownerToken: lease.ownerToken,
+              status: 'succeeded',
+              history: {
+                routineId: input.routineId,
+                identityId: input.identityId,
+                occurrenceKey: input.occurrenceKey,
+                scheduledFor: input.scheduledFor,
+                triggeredAt: nowMs,
+                result: 'success',
+                reason: null,
+              },
+              nextOccurrenceAt,
+            },
+            { transaction },
+          );
+
+          await deps.notificationWriter.enqueueRoutineOccurrenceRequested(
+            notificationRequest,
+            { transaction },
+          );
         });
       } catch (error) {
         if (error instanceof LeaseFencingException) {
           return { kind: 'dead-letter', reason: 'fencing-rejected', error: error.message };
         }
-        throw error;
-      }
-
-      try {
-        await deps.notificationWriter.enqueueRoutineOccurrenceRequested(notificationRequest);
-      } catch (error) {
         return { kind: 'retryable', error: serializeError(error) };
       }
 

@@ -1,4 +1,5 @@
 import type { BusinessOperationReceipt } from '@memoflow/contracts/reliable-messaging';
+import type { RoutineOccurrenceTransactionHandle } from './routine-occurrence-store.port';
 
 export interface RoutineOccurrenceNotificationRequestInput {
   readonly identityId: string;
@@ -16,11 +17,13 @@ export interface RoutineOccurrenceNotificationRequestInput {
  *
  * The writer must enqueue a `notification.requested` envelope (NOTIF-3301)
  * idempotently keyed by (identityId/source='routine'/occurrenceKey) so a
- * crash/retry replay never surfaces a duplicate notification. Writing happens
- * inside the occurrence commit transaction in production.
+ * crash/retry replay never surfaces a duplicate notification. In production the
+ * write joins the occurrence commit transaction via the shared transaction
+ * handle (ROUTINE-3401 crash-window guard).
  */
 export interface RoutineOccurrenceNotificationWriterPort {
   enqueueRoutineOccurrenceRequested(
     input: RoutineOccurrenceNotificationRequestInput,
+    options?: { readonly transaction?: RoutineOccurrenceTransactionHandle },
   ): Promise<BusinessOperationReceipt>;
 }

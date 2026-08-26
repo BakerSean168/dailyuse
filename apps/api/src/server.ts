@@ -72,6 +72,8 @@ import { createSchedulePrismaRepositories } from '@memoflow/schedule';
 import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestration';
 import { createTaskPrismaScheduleExecutionSource } from '@memoflow/task/schedule-execution';
 import { createTaskPrismaScheduleProjectionSource } from '@memoflow/task/schedule-projection';
+import { createRoutinePrismaScheduleExecutionDeps } from '@memoflow/reminder/schedule-execution';
+import { createRoutinePrismaScheduleProjectionSource } from '@memoflow/reminder/schedule-projection';
 import { composeTask } from './runtime/compose-task';
 // 基础设施模块（直接在 API 内部定义）
 import { composePowerSyncApiModule } from './modules/powersync/module.js';
@@ -231,10 +233,14 @@ async function bootstrap(): Promise<void> {
       source: reminderComposed.scheduleProjectionSource,
       scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
+    routineProjection: {
+      source: createRoutinePrismaScheduleProjectionSource(prisma),
+    },
     execution: {
       taskSource: createTaskPrismaScheduleExecutionSource(prisma),
       goalSource: createGoalPrismaScheduleExecutionSource(prisma),
       reminderSource: reminderComposed.scheduleExecutionSource,
+      routineSource: createRoutinePrismaScheduleExecutionDeps(prisma),
       notificationPort: notificationApiModule.scheduleNotificationPort,
     },
   });

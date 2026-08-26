@@ -11,6 +11,7 @@ import type {
   RoutineOccurrenceCommitInput,
   RoutineOccurrenceLease,
   RoutineOccurrenceStore,
+  RoutineOccurrenceTransactionHandle,
   RoutineTerminalStatus,
 } from '../../domain/ports/routine-occurrence-store.port';
 
@@ -126,7 +127,9 @@ export function createInMemoryRoutineOccurrenceStore(options?: {
       });
     },
 
-    async completeOccurrence(input: RoutineOccurrenceCommitInput): Promise<BusinessOperationReceipt> {
+    async completeOccurrence(
+      input: RoutineOccurrenceCommitInput,
+    ): Promise<BusinessOperationReceipt> {
       return withLock(`commit:${input.occurrenceId}`, async () => {
         const record = [...occurrences.values()].find((occ) => occ.id === input.occurrenceId);
         if (!record) {
@@ -192,6 +195,17 @@ export function createInMemoryRoutineOccurrenceStore(options?: {
         });
         return receipt;
       });
+    },
+
+    async withOccurrenceTransaction<T>(
+      callback: (transaction: RoutineOccurrenceTransactionHandle) => Promise<T>,
+    ): Promise<T> {
+      return withLock(`transaction:global`, () =>
+        callback({
+          kind: 'routine-occurrence-transaction',
+          client: undefined,
+        }),
+      );
     },
   };
 }

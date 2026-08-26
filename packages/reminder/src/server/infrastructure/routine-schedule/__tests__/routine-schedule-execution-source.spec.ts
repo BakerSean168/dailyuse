@@ -124,7 +124,7 @@ describe('createRoutineWallClockExecutionSource (ROUTINE-3401)', () => {
     expect(lease.alreadyFinalized).toBe(true);
   });
 
-  it('replays a committed occurrence idempotently without a second notification or publish', async () => {
+  it('replays a committed occurrence idempotently and re-arms the next trigger', async () => {
     const deps = createDeployment();
     const input = createExecutionInput();
     const first = await deps.source.executeRoutineOccurrence(input);
@@ -135,11 +135,21 @@ describe('createRoutineWallClockExecutionSource (ROUTINE-3401)', () => {
     expect(replay.kind).toBe('succeeded');
     if (replay.kind !== 'succeeded') return;
     expect(replay.occurrenceId).toBe(first.kind === 'succeeded' ? first.occurrenceId : null);
-    expect(replay.nextOccurrenceAt).toBeNull();
+    // The notification is still idempotent (exactly one durable envelope)...
     expect(replay.notificationRequested).toBe(true);
-
     expect(deps.writer.rows).toHaveLength(1);
-    expect(deps.published).toHaveLength(1);
+
+    // ...but the post-commit signal is published again so the projection
+    // runtime re-arms the next Scheduler trigger that a crash between the
+    // original commit and the next schedule would otherwise have lost.
+    expect(replay.nextOccurrenceAt).toBe(FIXTURE_F.nextOccurrenceAt);
+    expect(deps.published).toHaveLength(2);
+    expect(deps.published[1]).toEqual({
+      routineId: FIXTURE_F.routineId,
+      identityId: FIXTURE_F.identityId,
+      occurrenceKey: fixtureOccurrenceKey(),
+      scheduledFor: FIXTURE_F.firstOccurrenceAt,
+    });
   });
 
   it('takes over an expired lease with a higher fencing token and commits', async () => {
