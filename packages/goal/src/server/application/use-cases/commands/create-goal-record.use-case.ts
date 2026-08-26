@@ -11,7 +11,7 @@ import type { IGoalRepository, IGoalRecordRepository } from '../../../domain';
 import { GoalVersionConflictError } from '../../../domain';
 import { GoalRecord } from '../../../domain';
 import { KeyResultProgress } from '../../../domain';
-import type { GoalMutationReceipt, GoalRecordSource } from '@memoflow/contracts/goal';
+import { KeyResultCalculationMethod, type GoalMutationReceipt, type GoalRecordSource } from '@memoflow/contracts/goal';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
 import type { IdentityId, KeyResultId } from '@memoflow/contracts/primitives';
@@ -58,6 +58,12 @@ export class CreateGoalRecordUseCase {
         }
 
         if (params.source) {
+          if (keyResult.progress.aggregationMethod !== KeyResultCalculationMethod.Sum) {
+            return error(
+              'VALIDATION_ERROR',
+              'Automatic Task contribution is supported only for Sum key results',
+            );
+          }
           const existing = await goalRecordRepository.findBySource(
             identityId,
             params.source.type,

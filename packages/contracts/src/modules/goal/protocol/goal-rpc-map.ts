@@ -14,8 +14,7 @@ import type {
   ListGoalFilters,
 } from '../api/goal-crud.dto';
 import type { GetKeyResultsReq, GetKeyResultsRes } from '../api/key-result.dto';
-import type { GoalMutationReceipt, QueryGoalsRes } from '../api/response-schemas';
-import type { GoalReviewSystemContext } from '../value-objects/goal-review-context';
+import type { GoalMutationReceipt, GoalReviewSystemContext, QueryGoalsRes } from '../api/response-schemas';
 import type {
   AddKeyResultInvocation,
   BatchKeyResultWeightsInvocation,

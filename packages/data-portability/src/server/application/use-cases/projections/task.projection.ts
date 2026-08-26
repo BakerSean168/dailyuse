@@ -18,6 +18,23 @@ export function projectTaskTemplates(
     const goalRef = goalId ? resolveExportRef(goalId, ctx, 'task') : null;
     const keyResultRef = keyResultId ? resolveExportRef(keyResultId, ctx, 'task') : null;
     const hasPortableBinding = goalRef != null && keyResultRef != null;
+    const semanticContribution =
+      goalBinding?.contribution && typeof goalBinding.contribution === 'object'
+        ? (goalBinding.contribution as Record<string, unknown>)
+        : null;
+    const physicalContribution =
+      entity.goalRecordValue != null && entity.goalProgressTrigger != null
+        ? {
+            value: Number(entity.goalRecordValue),
+            trigger: entity.goalProgressTrigger as TaskGoalBindingTrigger,
+          }
+        : null;
+    const contribution = semanticContribution
+      ? {
+          value: Number(semanticContribution.value),
+          trigger: semanticContribution.trigger as TaskGoalBindingTrigger,
+        }
+      : physicalContribution;
     const flattenedRecurrence = entity.recurrenceRuleType
       ? {
           type: String(entity.recurrenceRuleType),
@@ -70,12 +87,7 @@ export function projectTaskTemplates(
       abandonedReason: entity.abandonedReason as string | null | undefined,
       goalRef: hasPortableBinding ? goalRef : null,
       keyResultRef: hasPortableBinding ? keyResultRef : null,
-      goalRecordValue: hasPortableBinding
-        ? Number(goalBinding?.recordValue ?? entity.goalRecordValue ?? 0)
-        : null,
-      goalProgressTrigger: hasPortableBinding
-        ? ((goalBinding?.trigger ?? entity.goalProgressTrigger ?? null) as TaskGoalBindingTrigger | null)
-        : null,
+      contribution: hasPortableBinding ? contribution : null,
       checklist: Array.isArray(entity.checklist)
         ? entity.checklist
         : ((parseJsonField(entity.checklist, []) as unknown[]) ?? []),

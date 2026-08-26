@@ -8,7 +8,14 @@ export type { TaskCreatedEvent } from './task-created.event';
 export type { TaskUpdatedEvent } from './task-updated.event';
 export type { TaskDeletedEvent } from './task-deleted.event';
 export type { TaskInstanceCompletedEvent } from './task-instance-completed.event';
-export type { TaskGoalProgressOutboxEventV1 } from './task-goal-progress-outbox.event';
+export {
+  TaskGoalSettlementSourceType,
+  type TaskGoalSettlementSource,
+  type TaskGoalSettlementSourceTypeValue,
+  type TaskGoalProgressApplyEventV2,
+  type TaskGoalProgressRevertEventV2,
+  type TaskGoalProgressOutboxEventV2,
+} from './task-goal-progress-outbox.event';
 export type { TaskInstanceSkippedEvent } from './task-instance-skipped.event';
 export type { TaskInstanceDeletedEvent } from './task-instance-deleted.event';
 export type { TaskInstancesGeneratedEvent } from './task-instances-generated.event';

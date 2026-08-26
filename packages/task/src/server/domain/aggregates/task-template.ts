@@ -6,7 +6,7 @@ import type {
   TaskTemplateClientDTO,
   TaskTemplateServerDTO,
   TaskEventMap,
-  TaskGoalBindingTrigger as TaskGoalBindingTriggerValue,
+  GoalContributionRule,
 } from '@memoflow/contracts/task';
 import {
   RecurrenceEndConditionType,
@@ -681,10 +681,9 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   public bindToGoal(
     goalId: string,
     keyResultId: string,
-    goalRecordValue?: number,
-    progressTrigger: TaskGoalBindingTriggerValue = TaskGoalBindingTrigger.PerInstance,
+    contribution: GoalContributionRule | null = null,
   ): void {
-    goalPolicy.bindToGoal(this, goalId, keyResultId, goalRecordValue, progressTrigger);
+    goalPolicy.bindToGoal(this, goalId, keyResultId, contribution);
   }
 
   public unbindFromGoal(): void {
@@ -988,8 +987,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     goalBinding?: {
       goalId: string;
       keyResultId: string;
-      goalRecordValue: number;
-      progressTrigger: TaskGoalBindingTriggerValue;
+      contribution?: GoalContributionRule | null;
     } | null;
     completionPolicy?: (typeof TaskPlanCompletionPolicy)[keyof typeof TaskPlanCompletionPolicy];
   }): TaskTemplate {
@@ -1037,9 +1035,9 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       abandonedReason: null,
       goalBinding: params.goalBinding
         ? TaskGoalBinding.create({
-            ...params.goalBinding,
             goalId: params.goalBinding.goalId as TaskGoalBinding['goalId'],
             keyResultId: params.goalBinding.keyResultId as TaskGoalBinding['keyResultId'],
+            contribution: params.goalBinding.contribution ?? null,
           })
         : null,
       checklist: [],

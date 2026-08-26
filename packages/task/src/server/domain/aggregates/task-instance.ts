@@ -198,7 +198,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     goalContext?: {
       taskTitle: string;
       goalBinding: TaskGoalBindingDTO | null;
-      allInstancesCompleted: boolean;
+      planSucceeded: boolean;
     },
   ): void {
     if (!this.canComplete()) {
@@ -241,7 +241,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       completedAt: now,
       taskTitle: goalContext?.taskTitle ?? '',
       goalBinding: goalContext?.goalBinding ?? null,
-      allInstancesCompleted: goalContext?.allInstancesCompleted ?? false,
+      planSucceeded: goalContext?.planSucceeded ?? false,
     });
   }
 

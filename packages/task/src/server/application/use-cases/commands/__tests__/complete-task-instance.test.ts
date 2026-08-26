@@ -132,13 +132,13 @@ describe('CompleteTaskInstanceUseCase', () => {
     expect(completeSpy).toHaveBeenCalledWith(45, 'Great work', 5, {
       taskTitle: '',
       goalBinding: null,
-      allInstancesCompleted: false,
+      planSucceeded: false,
     });
   });
 
   it('includes the task goal binding in the completion event context', async () => {
     const template = aLoadedTaskTemplate({ title: 'Ship linked task' });
-    template.bindToGoal('goal-1', 'kr-1', 2, TaskGoalBindingTrigger.PerInstance);
+    template.bindToGoal('goal-1', 'kr-1', { value: 2, trigger: TaskGoalBindingTrigger.EachCompletion });
     const instance = await aTaskInstance({ templateId: template.id });
     const completeSpy = vi.spyOn(instance, 'complete');
     vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
@@ -149,13 +149,13 @@ describe('CompleteTaskInstanceUseCase', () => {
     expect(completeSpy).toHaveBeenCalledWith(undefined, undefined, undefined, {
       taskTitle: 'Ship linked task',
       goalBinding: template.goalBinding?.toDTO(),
-      allInstancesCompleted: false,
+      planSucceeded: false,
     });
   });
 
-  it('marks AllInstancesCompleted when all relevant sibling instances are completed', async () => {
+  it('marks planSucceeded when the Task outcome evaluator succeeds after this completion', async () => {
     const template = aLoadedTaskTemplate({ title: 'Finish recurring work' });
-    template.bindToGoal('goal-1', 'kr-1', 3, TaskGoalBindingTrigger.AllInstancesCompleted);
+    template.bindToGoal('goal-1', 'kr-1', { value: 3, trigger: TaskGoalBindingTrigger.PlanCompletion });
     const instance = await aTaskInstance({ templateId: template.id, instanceDate: 200 });
     const completedSibling = await aTaskInstance({ templateId: template.id, instanceDate: 100 });
     completedSibling.complete();
@@ -169,13 +169,13 @@ describe('CompleteTaskInstanceUseCase', () => {
     expect(completeSpy).toHaveBeenCalledWith(undefined, undefined, undefined, {
       taskTitle: 'Finish recurring work',
       goalBinding: template.goalBinding?.toDTO(),
-      allInstancesCompleted: true,
+      planSucceeded: true,
     });
   });
 
   it('does not mark a finite plan complete while a future sibling is still pending', async () => {
     const template = aLoadedTaskTemplate({ title: 'Finish the complete plan' });
-    template.bindToGoal('goal-1', 'kr-1', 3, TaskGoalBindingTrigger.AllInstancesCompleted);
+    template.bindToGoal('goal-1', 'kr-1', { value: 3, trigger: TaskGoalBindingTrigger.PlanCompletion });
     const instance = await aTaskInstance({ templateId: template.id, instanceDate: 200 });
     const completedSibling = await aTaskInstance({ templateId: template.id, instanceDate: 100 });
     const futurePendingSibling = await aTaskInstance({
@@ -197,7 +197,7 @@ describe('CompleteTaskInstanceUseCase', () => {
     expect(completeSpy).toHaveBeenCalledWith(undefined, undefined, undefined, {
       taskTitle: 'Finish the complete plan',
       goalBinding: template.goalBinding?.toDTO(),
-      allInstancesCompleted: false,
+      planSucceeded: false,
     });
   });
 

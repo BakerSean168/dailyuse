@@ -114,8 +114,7 @@ describe('projection from PowerSync-shaped rows', () => {
       tags: ['qa'],
       goalRef: 'goal:1',
       keyResultRef: 'keyResult:1',
-      goalRecordValue: 2.5,
-      goalProgressTrigger: 'EachCompletion',
+      contribution: { value: 2.5, trigger: 'EachCompletion' },
       checklist: [{ title: 'cover IPC', order: 0 }],
       reminderConfig: {
         enabled: true,
@@ -123,6 +122,38 @@ describe('projection from PowerSync-shaped rows', () => {
       },
     });
     expect(templates[0]).not.toHaveProperty('goalBinding');
+    expect(templates[0]).not.toHaveProperty('goalRecordValue');
+    expect(templates[0]).not.toHaveProperty('goalProgressTrigger');
+  });
+
+
+  it('exports a Task Goal link without inventing a zero contribution', () => {
+    const ctx = createExportContext({
+      'goal-db-id': 'goal:1',
+      'kr-db-id': 'keyResult:1',
+    });
+    const [template] = projectTaskTemplates([
+      {
+        id: 'task-link-only',
+        name: 'Read linked context',
+        status: 'Active',
+        outcome: 'Open',
+        completionPolicy: 'AllowCorrection',
+        importance: 'moderate',
+        tags: '[]',
+        goalId: 'goal-db-id',
+        keyResultId: 'kr-db-id',
+        goalRecordValue: null,
+        goalProgressTrigger: null,
+        checklist: '[]',
+      },
+    ], ctx);
+
+    expect(template).toMatchObject({
+      goalRef: 'goal:1',
+      keyResultRef: 'keyResult:1',
+      contribution: null,
+    });
   });
 
   it('exports reminders from PowerSync names, refs, JSON strings, and integer booleans', () => {

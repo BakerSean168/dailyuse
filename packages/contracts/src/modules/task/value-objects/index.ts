@@ -20,10 +20,17 @@ export { TaskReminderConfigSchema } from './task-reminder-config';
 
 // TaskGoalBinding
 export type {
+  GoalContributionRule,
+  TaskGoalLink,
+  TaskGoalLinkDTO,
   TaskGoalBinding,
   TaskGoalBindingDTO,
 } from './task-goal-binding';
-export { TaskGoalBindingSchema } from './task-goal-binding';
+export {
+  GoalContributionRuleSchema,
+  TaskGoalLinkSchema,
+  TaskGoalBindingSchema,
+} from './task-goal-binding';
 export { TaskGoalBindingTrigger } from './task-goal-binding-trigger';
 export type { TaskGoalBindingTrigger as TaskGoalBindingTriggerValue } from './task-goal-binding-trigger';
 

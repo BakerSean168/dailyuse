@@ -130,8 +130,7 @@ function parseGoalBinding(dto: TaskGoalBindingDTO): TaskGoalBinding {
   return {
     goalId: dto.goalId,
     keyResultId: dto.keyResultId,
-    goalRecordValue: dto.goalRecordValue,
-    progressTrigger: dto.progressTrigger,
+    contribution: dto.contribution ? { ...dto.contribution } : null,
   };
 }
 

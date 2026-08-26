@@ -249,15 +249,14 @@ describe('UpdateTaskTemplateUseCase', () => {
       taskType: TaskType.Recurring,
       recurrenceRule: RecurrenceRule.createDaily(),
     });
-    template.bindToGoal('goal-1', 'kr-1', 1, TaskGoalBindingTrigger.PerInstance);
+    template.bindToGoal('goal-1', 'kr-1', { value: 1, trigger: TaskGoalBindingTrigger.EachCompletion });
     vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
     const result = await useCase.execute(template.id, template.identityId, {
       goalBinding: {
         goalId: 'goal-1',
         keyResultId: 'kr-1',
-        goalRecordValue: 1,
-        progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
+        contribution: { value: 1, trigger: TaskGoalBindingTrigger.PlanCompletion },
       },
     });
 

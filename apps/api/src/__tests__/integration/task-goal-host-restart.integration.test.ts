@@ -103,8 +103,7 @@ describe('API host Task -> Goal restart recovery', () => {
       goalBinding: {
         goalId,
         keyResultId,
-        goalRecordValue: 2,
-        progressTrigger: TaskGoalBindingTrigger.PerInstance,
+        contribution: { value: 2, trigger: TaskGoalBindingTrigger.EachCompletion },
       },
     });
     expect(createdTask.ok).toBe(true);

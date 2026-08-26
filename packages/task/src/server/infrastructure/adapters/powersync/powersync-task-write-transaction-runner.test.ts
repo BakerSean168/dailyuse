@@ -400,8 +400,7 @@ describe('PowerSyncTaskWriteTransactionRunner', () => {
       goalBinding: {
         goalId: 'goal-1',
         keyResultId: 'kr-1',
-        goalRecordValue: 1,
-        progressTrigger: TaskGoalBindingTrigger.PerInstance,
+        contribution: { value: 1, trigger: TaskGoalBindingTrigger.EachCompletion },
       },
     });
     expect(createRes.ok).toBe(true);

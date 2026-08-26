@@ -5,12 +5,16 @@ import {
   TaskType,
   type TaskPlanOutcomeValue,
 } from '@memoflow/contracts/task';
-import type { TaskInstance } from '../aggregates/task-instance';
 import type { TaskTemplate } from '../aggregates/task-template';
+
+export interface TaskPlanOccurrenceFact {
+  status: (typeof TaskInstanceStatus)[keyof typeof TaskInstanceStatus];
+  deletedAt: number | null;
+}
 
 /** Deterministic Task-owned evaluator. Goal and recurrence engines do not decide Task outcome. */
 export class TaskPlanOutcomeEvaluator {
-  evaluate(template: TaskTemplate, instances: readonly TaskInstance[]): TaskPlanOutcomeValue {
+  evaluate(template: TaskTemplate, instances: readonly TaskPlanOccurrenceFact[]): TaskPlanOutcomeValue {
     if (template.outcome === TaskPlanOutcome.Abandoned) return TaskPlanOutcome.Abandoned;
     if (!this.isFinite(template)) return TaskPlanOutcome.Open;
 

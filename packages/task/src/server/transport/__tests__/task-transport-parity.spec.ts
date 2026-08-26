@@ -22,6 +22,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import type { RequestHandler } from 'express';
 import { TaskChannels, type IElectronModuleContext } from '@memoflow/contracts/electron';
+import { TaskGoalBindingTrigger } from '@memoflow/contracts/task';
 import type { ExecutionContext, RequestContext } from '@memoflow/contracts/shared';
 import type { TaskApplicationPort } from '../../application';
 import { createTaskTransportHandlers } from '..';
@@ -166,8 +167,16 @@ const malformedUpdateTemplate = { name: '' };
 const validGenerate = { fromDate: 1_700_000_000_000, toDate: 1_700_000_086_400 };
 const malformedGenerate = { fromDate: 'not-a-number', toDate: 1_700_000_086_400 };
 
-const validBindGoal = { goalId: GOAL_ID, keyResultId: KR_ID, goalRecordValue: 1 };
-const malformedBindGoal = { goalId: GOAL_ID, keyResultId: KR_ID, goalRecordValue: -1 };
+const validBindGoal = {
+  goalId: GOAL_ID,
+  keyResultId: KR_ID,
+  contribution: { value: 1, trigger: TaskGoalBindingTrigger.EachCompletion },
+};
+const malformedBindGoal = {
+  goalId: GOAL_ID,
+  keyResultId: KR_ID,
+  contribution: { value: -1, trigger: TaskGoalBindingTrigger.EachCompletion },
+};
 
 const validComplete = { duration: 30, rating: 5 };
 const malformedComplete = { rating: 99 };

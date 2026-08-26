@@ -246,9 +246,7 @@ describe('PrismaTaskWriteTransactionRunner integration', () => {
         id: goalId,
         identityId,
         name: 'Outbox Rollback Goal',
-        color: '#3B82F6',
-        status: 'active',
-        importance: 'moderate',
+        status: 'Active',
       },
     });
     await prisma.keyResult.create({
@@ -257,9 +255,11 @@ describe('PrismaTaskWriteTransactionRunner integration', () => {
         identityId,
         goalId,
         title: 'KR',
-        valueType: 'numeric',
-        aggregationMethod: 'sum',
+        aggregationMethod: 'Sum',
+        startingValue: 0,
+        currentValue: 0,
         targetValue: 10,
+        weight: 1,
       },
     });
     const module = createTaskPrismaModule(prisma);
@@ -287,8 +287,7 @@ describe('PrismaTaskWriteTransactionRunner integration', () => {
       goalBinding: {
         goalId,
         keyResultId,
-        goalRecordValue: 1,
-        progressTrigger: TaskGoalBindingTrigger.PerInstance,
+        contribution: { value: 1, trigger: TaskGoalBindingTrigger.EachCompletion },
       },
     });
     expect(createRes.ok).toBe(true);

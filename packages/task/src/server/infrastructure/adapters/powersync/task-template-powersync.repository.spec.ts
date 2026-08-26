@@ -47,7 +47,7 @@ function createBoundRow(): PowerSyncTaskTemplateRow {
     goal_id: goalId,
     key_result_id: keyResultId,
     goal_record_value: 3,
-    goal_progress_trigger: 'PER_INSTANCE',
+    goal_progress_trigger: 'EachCompletion',
     checklist: null,
     blocking_reason: null,
     dependency_status: 'NONE',
@@ -91,7 +91,7 @@ describe('PowerSync task template goal binding', () => {
       goalId,
       keyResultId,
       goalRecordValue: 3,
-      goalProgressTrigger: 'PER_INSTANCE',
+      goalProgressTrigger: 'EachCompletion',
     });
   });
 
@@ -127,7 +127,7 @@ describe('PowerSync task template goal binding', () => {
       goal_id: goalId,
       key_result_id: keyResultId,
       goal_record_value: 3,
-      goal_progress_trigger: 'PER_INSTANCE',
+      goal_progress_trigger: 'EachCompletion',
     });
   });
 
@@ -153,7 +153,7 @@ describe('PowerSync task template goal binding', () => {
       goal_id: goalId,
       key_result_id: keyResultId,
       goal_record_value: 3,
-      goal_progress_trigger: 'PER_INSTANCE',
+      goal_progress_trigger: 'EachCompletion',
     });
   });
 });

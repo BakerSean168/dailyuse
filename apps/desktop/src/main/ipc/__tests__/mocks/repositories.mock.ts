@@ -142,7 +142,6 @@ export function createMockGoalDTO(overrides: Partial<GoalServerDTO> = {}): GoalS
     archivedAt: null,
     sortOrder: goalCounter,
     reminderConfig: null,
-    labels: [],
     keyResults: [],
     weightSnapshots: [],
     goalReviews: [],

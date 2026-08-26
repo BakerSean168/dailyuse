@@ -1672,16 +1672,14 @@ describe('TaskTemplate Aggregate', () => {
         goalBinding: {
           goalId: 'goal-123',
           keyResultId: 'kr-456',
-          goalRecordValue: 10,
-          progressTrigger: TaskGoalBindingTrigger.PerInstance,
+          contribution: { value: 10, trigger: TaskGoalBindingTrigger.EachCompletion },
         },
       });
 
       expect(template.goalBinding?.toDTO()).toEqual({
         goalId: 'goal-123',
         keyResultId: 'kr-456',
-        goalRecordValue: 10,
-        progressTrigger: TaskGoalBindingTrigger.PerInstance,
+        contribution: { value: 10, trigger: TaskGoalBindingTrigger.EachCompletion },
       });
       expect(template).not.toHaveProperty('goalId');
       expect(template).not.toHaveProperty('keyResultId');
@@ -1696,8 +1694,7 @@ describe('TaskTemplate Aggregate', () => {
           timeConfig: makeAllDayTimeConfig(),
           goalBinding: {
             goalId: 'goal-123',
-            goalRecordValue: 10,
-            progressTrigger: TaskGoalBindingTrigger.PerInstance,
+            contribution: { value: 10, trigger: TaskGoalBindingTrigger.EachCompletion },
           } as never,
         }),
       ).toThrow('Key Result ID is required');
@@ -1707,7 +1704,7 @@ describe('TaskTemplate Aggregate', () => {
       it('should bind to goal with required params', () => {
         const template = TaskTemplate.load(makeState({ status: TaskTemplateStatus.Active }));
 
-        template.bindToGoal('goal-123', 'kr-456', 10);
+        template.bindToGoal('goal-123', 'kr-456');
         expect(template.isLinkedToGoal()).toBe(true);
         expect(template.goalBinding).not.toBeNull();
       });
@@ -1715,27 +1712,27 @@ describe('TaskTemplate Aggregate', () => {
       it('should throw for empty goalId', () => {
         const template = TaskTemplate.load(makeState({ status: TaskTemplateStatus.Active }));
 
-        expect(() => template.bindToGoal('', 'kr-456', 10)).toThrow(InvalidGoalBindingError);
+        expect(() => template.bindToGoal('', 'kr-456')).toThrow(InvalidGoalBindingError);
       });
 
       it('should throw for empty keyResultId', () => {
         const template = TaskTemplate.load(makeState({ status: TaskTemplateStatus.Active }));
 
-        expect(() => template.bindToGoal('goal-123', '', 10)).toThrow(InvalidGoalBindingError);
+        expect(() => template.bindToGoal('goal-123', '')).toThrow(InvalidGoalBindingError);
       });
 
       it('should throw if already bound', () => {
         const template = TaskTemplate.load(makeState({ status: TaskTemplateStatus.Active }));
 
-        template.bindToGoal('goal-123', 'kr-456', 10);
-        expect(() => template.bindToGoal('goal-789', 'kr-012', 5)).toThrow(InvalidGoalBindingError);
+        template.bindToGoal('goal-123', 'kr-456');
+        expect(() => template.bindToGoal('goal-789', 'kr-012')).toThrow(InvalidGoalBindingError);
       });
 
       it('should throw for closed plan', () => {
         const template = TaskTemplate.load(
           makeState({ status: TaskTemplateStatus.Closed, outcome: TaskPlanOutcome.Succeeded }),
         );
-        expect(() => template.bindToGoal('goal-123', 'kr-456', 10)).toThrow(
+        expect(() => template.bindToGoal('goal-123', 'kr-456')).toThrow(
           InvalidGoalBindingError,
         );
       });
@@ -1745,7 +1742,7 @@ describe('TaskTemplate Aggregate', () => {
       it('should unbind from goal', () => {
         const template = TaskTemplate.load(makeState({ status: TaskTemplateStatus.Active }));
 
-        template.bindToGoal('goal-123', 'kr-456', 10);
+        template.bindToGoal('goal-123', 'kr-456');
         template.unbindFromGoal();
         expect(template.goalBinding).toBeNull();
         expect(template.isLinkedToGoal()).toBe(false);
@@ -1759,8 +1756,9 @@ describe('TaskTemplate Aggregate', () => {
 
       it('should throw for closed plan', () => {
         const binding = TaskGoalBinding.fromDTO({
-          goalId: 'goal-123', keyResultId: 'kr-456', goalRecordValue: 10,
-          progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
+          goalId: 'goal-123',
+          keyResultId: 'kr-456',
+          contribution: { value: 10, trigger: TaskGoalBindingTrigger.PlanCompletion },
         });
         const template = TaskTemplate.load(
           makeState({ status: TaskTemplateStatus.Closed, outcome: TaskPlanOutcome.Succeeded, goalBinding: binding }),

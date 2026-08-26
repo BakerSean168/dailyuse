@@ -1,105 +1,67 @@
 /**
- * TaskGoalBinding 值对象
- * 
- * 【规范说明：Class 类型值对象 - 参考 domain-class-value-object-spec.md】
- * 
- * 任务目标绑定：关联任务与 OKR 目标/关键成果
- * 不可变性（所有修改返回新实例）
+ * Task Goal Link value object.
+ *
+ * ADR-056 separates the contextual Goal/KR link from the optional automatic
+ * contribution rule. A link-only Task never emits Goal progress settlement.
  */
 
 import { ValueObject } from '@memoflow/utils/domain';
 import type {
-  TaskGoalBinding as ITaskGoalBinding,
-  TaskGoalBindingDTO,
-  TaskGoalBindingTrigger as TaskGoalBindingTriggerValue,
+  GoalContributionRule,
+  TaskGoalBinding as ITaskGoalLink,
+  TaskGoalBindingDTO as TaskGoalLinkDTO,
 } from '@memoflow/contracts/task';
 import { TaskGoalBindingTrigger } from '@memoflow/contracts/task';
 import type { GoalId, KeyResultId } from '@memoflow/contracts/primitives';
 
-/**
- * TaskGoalBinding 值对象实现
- * 
- * 包含：
- * - goalId: 关联的目标 ID
- * - keyResultId: 关联的关键成果 ID
- * - goalRecordValue: 完成任务时对 KR 的贡献值
- */
-export class TaskGoalBinding extends ValueObject<TaskGoalBindingDTO> implements ITaskGoalBinding {
-
-  private constructor(props: TaskGoalBindingDTO) {
+export class TaskGoalBinding extends ValueObject<TaskGoalLinkDTO> implements ITaskGoalLink {
+  private constructor(props: TaskGoalLinkDTO) {
     super(props);
   }
 
-  // ================= 工厂方法 1: 标准创建 =================
-  /**
-   * 创建新的值对象（包含校验）
-   */
-  public static create(props: TaskGoalBindingDTO): TaskGoalBinding {
+  public static create(props: TaskGoalLinkDTO): TaskGoalBinding {
     const normalized = this.normalize(props);
     this.validate(normalized);
     return new TaskGoalBinding(normalized);
   }
 
-  // ================= 工厂方法 2: 快速创建 =================
-  /**
-   * 快速创建绑定
-   */
   public static bindToGoal(
     goalId: GoalId,
     keyResultId: KeyResultId,
-    goalRecordValue: number = 1,
-    progressTrigger: TaskGoalBindingTriggerValue = TaskGoalBindingTrigger.PerInstance,
+    contribution: GoalContributionRule | null = null,
   ): TaskGoalBinding {
-    return TaskGoalBinding.create({
-      goalId,
-      keyResultId,
-      goalRecordValue,
-      progressTrigger,
-    });
+    return TaskGoalBinding.create({ goalId, keyResultId, contribution });
   }
 
-  // ================= 工厂方法 3: 从 DTO 恢复 =================
-  /**
-   * 从 DTO 恢复值对象
-   */
-  public static fromDTO(dto: TaskGoalBindingDTO): TaskGoalBinding {
-    return new TaskGoalBinding(TaskGoalBinding.normalize(dto));
+  public static fromDTO(dto: TaskGoalLinkDTO): TaskGoalBinding {
+    const normalized = TaskGoalBinding.normalize(dto);
+    TaskGoalBinding.validate(normalized);
+    return new TaskGoalBinding(normalized);
   }
 
-  // ================= 内部校验逻辑 =================
-  /**
-   * 集中校验逻辑
-   */
-  private static validate(props: TaskGoalBindingDTO): void {
+  private static validate(props: TaskGoalLinkDTO): void {
     if (!props.goalId || props.goalId.trim().length === 0) {
       throw new Error('Goal ID is required');
     }
-
     if (!props.keyResultId || props.keyResultId.trim().length === 0) {
       throw new Error('Key Result ID is required');
     }
-
-    if (props.goalRecordValue < 0) {
-      throw new Error('Goal record value must be non-negative');
+    if (!props.contribution) return;
+    if (!Number.isFinite(props.contribution.value) || props.contribution.value <= 0) {
+      throw new Error('Goal contribution value must be positive');
     }
-
-    if (!Object.values(TaskGoalBindingTrigger).includes(props.progressTrigger)) {
-      throw new Error('Task goal binding trigger is invalid');
+    if (!Object.values(TaskGoalBindingTrigger).includes(props.contribution.trigger)) {
+      throw new Error('Task goal contribution trigger is invalid');
     }
   }
 
-  private static normalize(
-    props: Omit<TaskGoalBindingDTO, 'progressTrigger'> & {
-      progressTrigger?: TaskGoalBindingTriggerValue;
-    },
-  ): TaskGoalBindingDTO {
+  private static normalize(props: TaskGoalLinkDTO): TaskGoalLinkDTO {
     return {
-      ...props,
-      progressTrigger: props.progressTrigger ?? TaskGoalBindingTrigger.PerInstance,
+      goalId: props.goalId,
+      keyResultId: props.keyResultId,
+      contribution: props.contribution ?? null,
     };
   }
-
-  // ================= Getters（只读暴露）=================
 
   public get goalId(): GoalId {
     return this.props.goalId as GoalId;
@@ -109,59 +71,30 @@ export class TaskGoalBinding extends ValueObject<TaskGoalBindingDTO> implements 
     return this.props.keyResultId as KeyResultId;
   }
 
-  public get goalRecordValue(): number {
-    return this.props.goalRecordValue;
+  public get contribution(): GoalContributionRule | null {
+    return this.props.contribution ? { ...this.props.contribution } : null;
   }
 
-  public get progressTrigger(): TaskGoalBindingTriggerValue {
-    return this.props.progressTrigger;
-  }
-
-  // ================= 行为方法（不可变变更）=================
-
-  /**
-   * 更新贡献值
-   */
-  public updateGoalRecordValue(value: number): TaskGoalBinding {
-    const newProps = { ...this.props, goalRecordValue: value };
-    TaskGoalBinding.validate(newProps);
-    return new TaskGoalBinding(newProps);
-  }
-
-  public updateProgressTrigger(progressTrigger: TaskGoalBindingTriggerValue): TaskGoalBinding {
-    const newProps = { ...this.props, progressTrigger };
-    TaskGoalBinding.validate(newProps);
-    return new TaskGoalBinding(newProps);
-  }
-
-  // ================= 计算属性（Rich Logic）=================
-
-  /**
-   * 是否有贡献值
-   */
   public get hasContribution(): boolean {
-    return this.props.goalRecordValue > 0;
+    return this.props.contribution !== null;
   }
 
-  /**
-   * 获取显示文本
-   */
+  public withContribution(contribution: GoalContributionRule | null): TaskGoalBinding {
+    return TaskGoalBinding.create({ ...this.props, contribution });
+  }
+
   public getDisplayText(): string {
-    return `Goal: ${this.props.goalId}, KR: ${this.props.keyResultId}, Value: ${this.props.goalRecordValue}, Trigger: ${this.props.progressTrigger}`;
+    const contribution = this.props.contribution
+      ? `, Contribution: ${this.props.contribution.value} (${this.props.contribution.trigger})`
+      : ', Contribution: off';
+    return `Goal: ${this.props.goalId}, KR: ${this.props.keyResultId}${contribution}`;
   }
 
-  // ================= 序列化方法 =================
-
-  /**
-   * 转换为 DTO（用于 API 传输或前端展示）
-   */
-  public toDTO(): TaskGoalBindingDTO {
+  public toDTO(): TaskGoalLinkDTO {
     return {
       goalId: this.props.goalId,
       keyResultId: this.props.keyResultId,
-      goalRecordValue: this.props.goalRecordValue,
-      progressTrigger: this.props.progressTrigger,
+      contribution: this.props.contribution ? { ...this.props.contribution } : null,
     };
   }
-
 }

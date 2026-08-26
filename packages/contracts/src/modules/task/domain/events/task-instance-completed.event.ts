@@ -18,9 +18,9 @@ export interface TaskInstanceCompletedEvent {
   /** 模板的目标绑定；未绑定目标时为 null。 */
   goalBinding: TaskGoalBindingDTO | null;
   /**
-   * 该模板在「本实例完成后」是否所有相关实例都已完成。
-   * 仅用于 progressTrigger = AllInstancesCompleted 的判定；
-   * 由 Task 应用层在发布前算好（订阅方不再回查兄弟实例状态）。
+   * Whether the Task Plan evaluates to Succeeded after applying this completion.
+   * This is Task-owned policy output (including skipped waivers / strict failure),
+   * not a raw "all rows completed" shortcut.
    */
-  allInstancesCompleted: boolean;
+  planSucceeded: boolean;
 }

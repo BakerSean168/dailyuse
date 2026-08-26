@@ -104,7 +104,7 @@ describe('PrismaTaskTemplateMapper', () => {
     goalId: GOAL_ID_1,
     keyResultId: KEY_RESULT_ID_1,
     goalRecordValue: 2,
-    goalProgressTrigger: 'PER_INSTANCE',
+    goalProgressTrigger: 'EachCompletion',
     checklist: JSON.stringify([
       { title: 'Step 1', order: 1 },
       { title: 'Step 2', order: 2 },
@@ -222,8 +222,7 @@ describe('PrismaTaskTemplateMapper', () => {
       expect(domain.goalBinding?.toDTO()).toEqual({
         goalId: GOAL_ID_1,
         keyResultId: KEY_RESULT_ID_1,
-        goalRecordValue: 2,
-        progressTrigger: 'PER_INSTANCE',
+        contribution: { value: 2, trigger: 'EachCompletion' },
       });
     });
 
@@ -297,7 +296,7 @@ describe('PrismaTaskTemplateMapper', () => {
       expect(persistence.goalId).toBe(GOAL_ID_1);
       expect(persistence.keyResultId).toBe(KEY_RESULT_ID_1);
       expect(persistence.goalRecordValue).toBe(2);
-      expect(persistence.goalProgressTrigger).toBe('PER_INSTANCE');
+      expect(persistence.goalProgressTrigger).toBe('EachCompletion');
       expect(typeof persistence.checklist).toBe('string');
     });
 

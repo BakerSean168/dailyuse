@@ -13,6 +13,10 @@ export async function importTasks(tx: TxClient, ctx: ImportContext, data: Portab
     const reminderTrigger = Array.isArray(rc?.triggers)
       ? (rc?.triggers[0] as Record<string, unknown> | undefined)
       : undefined;
+    const contribution =
+      t.contribution && typeof t.contribution === 'object'
+        ? (t.contribution as Record<string, unknown>)
+        : null;
     await tx.createTaskTemplate({
       id: allocateId(ctx, t._ref as string),
       identityId: ctx.identityId,
@@ -47,8 +51,8 @@ export async function importTasks(tx: TxClient, ctx: ImportContext, data: Portab
       generateAheadDays: t.generateAheadDays == null ? null : Number(t.generateAheadDays),
       goalId: optRef(t.goalRef as string | null, ctx),
       keyResultId: optRef(t.keyResultRef as string | null, ctx),
-      goalRecordValue: t.goalRecordValue == null ? null : Number(t.goalRecordValue),
-      goalProgressTrigger: (t.goalProgressTrigger as string | null | undefined) ?? null,
+      goalRecordValue: contribution?.value == null ? null : Number(contribution.value),
+      goalProgressTrigger: (contribution?.trigger as string | null | undefined) ?? null,
       checklist: t.checklist ? jsonStringify(t.checklist) : null,
       ...timestamps(t),
     });

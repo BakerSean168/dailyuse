@@ -71,14 +71,11 @@ describe('task domain value objects', () => {
     const binding = TaskGoalBinding.bindToGoal(
       'GoalId_1',
       'KeyResultId_1',
-      2,
-      TaskGoalBindingTrigger.PerInstance,
-    )
-      .updateGoalRecordValue(5)
-      .updateProgressTrigger(TaskGoalBindingTrigger.AllInstancesCompleted);
+      { value: 5, trigger: TaskGoalBindingTrigger.PlanCompletion },
+    );
 
     expect(binding.hasContribution).toBe(true);
-    expect(binding.getDisplayText()).toContain('ALL_INSTANCES_COMPLETED');
+    expect(binding.getDisplayText()).toContain('PlanCompletion');
 
     expect(TaskInstanceStatus.getAll()).toEqual([
       TaskInstanceStatus.Pending,

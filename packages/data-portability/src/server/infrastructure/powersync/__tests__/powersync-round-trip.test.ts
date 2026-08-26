@@ -685,7 +685,7 @@ function seedProfile(identityUuid: string): SeedTables {
         goal_id: 'goal-a',
         key_result_id: 'kr-a',
         goal_record_value: 1,
-        goal_progress_trigger: 'PER_INSTANCE',
+        goal_progress_trigger: 'EachCompletion',
         version: 1,
         created_at: now,
         updated_at: later,

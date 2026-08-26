@@ -330,8 +330,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return {
       goalId: String(binding.goalId) as GoalId,
       keyResultId: String(binding.keyResultId) as KeyResultId,
-      goalRecordValue: binding.goalRecordValue,
-      progressTrigger: binding.progressTrigger,
+      contribution: binding.contribution ? { ...binding.contribution } : null,
     };
   }
 }

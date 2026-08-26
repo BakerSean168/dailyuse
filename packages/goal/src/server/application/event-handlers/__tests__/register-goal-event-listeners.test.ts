@@ -1,7 +1,6 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { createMockRepo } from '@memoflow/test-utils/mocks';
 import { createTypedEventPublisher, eventBus } from '@memoflow/utils/domain';
-import { TaskGoalBindingTrigger } from '@memoflow/contracts/task';
 import type { TaskEventMap, TaskGoalBindingDTO } from '@memoflow/contracts/task';
 import { ok } from '@memoflow/contracts/result';
 import type { IGoalRepository } from '../../../domain/repositories/i-goal-repository';
@@ -19,8 +18,7 @@ function aGoalBinding(overrides: Partial<TaskGoalBindingDTO> = {}): TaskGoalBind
   return {
     goalId: 'goal-1' as TaskGoalBindingDTO['goalId'],
     keyResultId: 'kr-1' as TaskGoalBindingDTO['keyResultId'],
-    goalRecordValue: 1,
-    progressTrigger: TaskGoalBindingTrigger.PerInstance,
+    contribution: { value: 1, trigger: 'EachCompletion' },
     ...overrides,
   };
 }
@@ -33,7 +31,7 @@ function aCompletedEvent(overrides: Partial<CompletedEvent> = {}): CompletedEven
     completedAt: Date.now(),
     taskTitle: 'Write ADR',
     goalBinding: aGoalBinding(),
-    allInstancesCompleted: false,
+    planSucceeded: false,
     ...overrides,
   };
 }

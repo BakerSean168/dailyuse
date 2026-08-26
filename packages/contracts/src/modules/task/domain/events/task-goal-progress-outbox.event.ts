@@ -5,29 +5,50 @@ import type {
   TaskInstanceId,
   TaskTemplateId,
 } from '../../../../primitives';
-import type { TaskGoalBindingTrigger } from '../../value-objects/task-goal-binding-trigger';
 
-/**
- * Persisted Task → Goal delivery contract. This is deliberately independent
- * from the in-process domain-event envelope: it has a durable event ID and a
- * version that a dispatcher can safely replay after restart.
- */
-export interface TaskGoalProgressOutboxEventV1 {
+/** Explicit settlement source owned by the durable Task -> Goal contract. */
+export const TaskGoalSettlementSourceType = {
+  TaskInstance: 'TaskInstance',
+  TaskPlan: 'TaskPlan',
+} as const;
+export type TaskGoalSettlementSourceTypeValue =
+  (typeof TaskGoalSettlementSourceType)[keyof typeof TaskGoalSettlementSourceType];
+
+export interface TaskGoalSettlementSource {
+  type: TaskGoalSettlementSourceTypeValue;
+  id: string;
+}
+
+interface TaskGoalProgressOutboxEventV2Base {
   eventId: string;
-  schemaVersion: 1;
+  schemaVersion: 2;
   eventType: 'task.goal-progress-requested';
-  /**
-   * R2-5b：贡献方向。'complete'（默认，历史事件缺省视为 complete）应用贡献，
-   * 'uncomplete' 回滚贡献（撤销完成时投递，消费方按 source 删除 GoalRecord）。
-   */
-  action?: 'complete' | 'uncomplete';
   identityId: IdentityId;
   taskInstanceId: TaskInstanceId;
   taskTemplateId: TaskTemplateId;
-  goalId: GoalId;
-  keyResultId: KeyResultId;
-  goalRecordValue: number;
-  progressTrigger: TaskGoalBindingTrigger;
-  taskTitle: string;
   occurredAt: number;
 }
+
+/** Apply one configured Task contribution to a Goal KR. */
+export interface TaskGoalProgressApplyEventV2 extends TaskGoalProgressOutboxEventV2Base {
+  action: 'apply';
+  goalId: GoalId;
+  keyResultId: KeyResultId;
+  value: number;
+  source: TaskGoalSettlementSource;
+  taskTitle: string;
+}
+
+/**
+ * Revert Task-owned contribution sources after an execution correction.
+ * A correction intentionally names both possible source identities so Goal never
+ * has to infer settlement source from a trigger or re-read Task state.
+ */
+export interface TaskGoalProgressRevertEventV2 extends TaskGoalProgressOutboxEventV2Base {
+  action: 'revert';
+  sources: TaskGoalSettlementSource[];
+}
+
+export type TaskGoalProgressOutboxEventV2 =
+  | TaskGoalProgressApplyEventV2
+  | TaskGoalProgressRevertEventV2;

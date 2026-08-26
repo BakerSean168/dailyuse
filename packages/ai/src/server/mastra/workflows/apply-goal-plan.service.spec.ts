@@ -21,18 +21,15 @@ const draft = GoalPlanDraftSchema.parse({
     description: 'Build a durable study plan.',
     motivation: 'Study in Japan',
     feasibilityAnalysis: 'One focused hour per day is available.',
-    category: 'learning',
-    importance: 'Important',
-    tags: ['japanese'],
     startDate: Date.UTC(2026, 8, 1),
-    targetDate: Date.UTC(2026, 11, 1),
+    dueDate: Date.UTC(2026, 11, 1),
   },
   keyResults: [
     {
       title: 'Complete mock exams',
-      valueType: 'Incremental',
       calculationMethod: 'Sum',
-      startValue: 0,
+      startingValue: 0,
+      progressBaselineValue: null,
       currentValue: 0,
       targetValue: 8,
       unit: 'exams',
@@ -139,8 +136,7 @@ describe('ApplyGoalPlanService', () => {
       goalBinding: {
         goalId: expected.goal,
         keyResultId: expected.kr0,
-        goalRecordValue: 1,
-        progressTrigger: 'PER_INSTANCE',
+        contribution: { value: 1, trigger: 'EachCompletion' },
       },
     });
     expect(port.createTaskTemplate.mock.calls[1]?.[0]).toMatchObject({

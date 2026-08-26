@@ -95,7 +95,7 @@ export class CreateTaskTemplateUseCase {
             : undefined;
 
           if (
-            request.goalBinding?.progressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted &&
+            request.goalBinding?.contribution?.trigger === TaskGoalBindingTrigger.PlanCompletion &&
             !isFiniteTaskPlan(request.taskType, recurrenceRule)
           ) {
             return error(
@@ -121,8 +121,7 @@ export class CreateTaskTemplateUseCase {
               ? {
                   goalId: request.goalBinding.goalId,
                   keyResultId: request.goalBinding.keyResultId,
-                  goalRecordValue: request.goalBinding.goalRecordValue,
-                  progressTrigger: request.goalBinding.progressTrigger,
+                  contribution: request.goalBinding.contribution ?? null,
                 }
               : null,
           });

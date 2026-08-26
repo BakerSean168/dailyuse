@@ -16,6 +16,7 @@ import type {
 } from '../../../primitives';
 import { GoalStatus } from '../value-objects/goal-status';
 import { GoalReviewSystemContextSchema } from '../value-objects/goal-review-context';
+export type { GoalReviewSystemContext } from '../value-objects/goal-review-context';
 
 import { KeyResultProgressDTOSchema } from '../value-objects/key-result-progress';
 import { KeyResultSnapshotDTOSchema } from '../value-objects/key-result-snapshot';

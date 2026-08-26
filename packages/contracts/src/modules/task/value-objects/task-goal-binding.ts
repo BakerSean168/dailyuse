@@ -1,6 +1,6 @@
 /**
- * TaskGoalBinding Value Object -  Interface
- * 任务目标绑定值对象 - 服务端接口
+ * Task -> Goal semantic link and optional automatic contribution rule.
+ * ADR-056: business context linking is independent from progress settlement.
  */
 
 import { z } from 'zod';
@@ -8,23 +8,24 @@ import { brandedId } from '../../../primitives';
 import type { GoalId, KeyResultId } from '../../../primitives';
 import { TaskGoalBindingTrigger } from './task-goal-binding-trigger';
 
-// ============ 接口定义 ============
+export const GoalContributionRuleSchema = z.object({
+  value: z.number().positive(),
+  trigger: z.enum(TaskGoalBindingTrigger),
+});
+export type GoalContributionRule = z.infer<typeof GoalContributionRuleSchema>;
 
-export interface TaskGoalBinding {
-  goalId: GoalId;
-  keyResultId: KeyResultId;
-  goalRecordValue: number;
-  progressTrigger: TaskGoalBindingTrigger;
-}
-
-// Residual 739: TaskGoalBindingDTO dual body retired — OpenAPI + transport use
-// TaskGoalBindingSchema (semantic type is a z.infer alias).
-
-export const TaskGoalBindingSchema = z.object({
+export const TaskGoalLinkSchema = z.object({
   goalId: brandedId<GoalId>(),
   keyResultId: brandedId<KeyResultId>(),
-  goalRecordValue: z.number().nonnegative(),
-  progressTrigger: z.enum(TaskGoalBindingTrigger).default(TaskGoalBindingTrigger.PerInstance),
+  contribution: GoalContributionRuleSchema.nullable().optional().default(null),
 });
+export type TaskGoalLinkDTO = z.infer<typeof TaskGoalLinkSchema>;
+export type TaskGoalLink = TaskGoalLinkDTO;
 
+/**
+ * Transitional symbol aliases while call sites move from the historical
+ * "binding" noun. The serialized shape is already the canonical ADR-056 link.
+ */
+export const TaskGoalBindingSchema = TaskGoalLinkSchema;
 export type TaskGoalBindingDTO = z.infer<typeof TaskGoalBindingSchema>;
+export type TaskGoalBinding = TaskGoalBindingDTO;

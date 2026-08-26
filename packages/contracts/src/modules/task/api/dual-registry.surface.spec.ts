@@ -87,12 +87,8 @@ import { describe, expect, it } from 'vitest';
 
 // --- merged from task-goal-binding-reminder-dual.surface.spec.ts ---
 {
-  /**
-   * Residual 739: task goal-binding / reminder-config dual bodies retired.
-   * TaskGoalBindingDTO / TaskReminderConfigDTO reuse *Schema only.
-   * (TaskTimeConfig Instant dual names remain separate interfaces.)
-   */
-  describe('task goal-binding/reminder dual retired (residual 739)', () => {
+  /** ADR-056: Goal link owns one schema; contribution is a nested optional rule. */
+  describe('task goal-link/reminder canonical schemas', () => {
     const apiDir = __dirname;
     const binding = readFileSync(resolve(apiDir, '../value-objects/task-goal-binding.ts'), 'utf8');
     const reminder = readFileSync(
@@ -101,10 +97,12 @@ import { describe, expect, it } from 'vitest';
     );
     const templateDto = readFileSync(resolve(apiDir, 'task-template.dto.ts'), 'utf8');
 
-    it('exports binding/reminder schemas as sole shapes from VO modules', () => {
-      expect(binding).toContain('Residual 739');
-      expect(binding).toContain('export const TaskGoalBindingSchema = z.object({');
-      expect(reminder).toContain('Residual 739');
+    it('exports one ADR-056 link schema with nested contribution and the reminder schema', () => {
+      expect(binding).toContain('export const TaskGoalLinkSchema = z.object({');
+      expect(binding).toContain('contribution: GoalContributionRuleSchema.nullable().optional().default(null)');
+      expect(binding).toContain('export const TaskGoalBindingSchema = TaskGoalLinkSchema');
+      expect(binding).not.toContain('goalRecordValue:');
+      expect(binding).not.toContain('progressTrigger:');
       expect(reminder).toContain('export const TaskReminderConfigSchema = z');
     });
 
@@ -112,6 +110,7 @@ import { describe, expect, it } from 'vitest';
       expect(binding).toContain(
         'export type TaskGoalBindingDTO = z.infer<typeof TaskGoalBindingSchema>',
       );
+      expect(binding).toContain('export type TaskGoalLinkDTO = z.infer<typeof TaskGoalLinkSchema>');
       expect(binding).not.toMatch(/export interface TaskGoalBindingDTO\b/);
       expect(reminder).toContain(
         'export type TaskReminderConfigDTO = z.infer<typeof TaskReminderConfigSchema>',

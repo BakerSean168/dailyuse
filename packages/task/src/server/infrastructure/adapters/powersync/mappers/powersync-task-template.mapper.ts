@@ -136,8 +136,13 @@ export class PowerSyncTaskTemplateMapper {
           ? TaskGoalBinding.fromDTO({
               goalId: data.goal_id,
               keyResultId: data.key_result_id,
-              goalRecordValue: data.goal_record_value,
-              progressTrigger: data.goal_progress_trigger,
+              contribution:
+                data.goal_record_value != null && data.goal_progress_trigger != null
+                  ? {
+                      value: data.goal_record_value,
+                      trigger: data.goal_progress_trigger as never,
+                    }
+                  : null,
             } as Parameters<typeof TaskGoalBinding.fromDTO>[0])
           : null,
       checklist: data.checklist
@@ -210,8 +215,8 @@ export class PowerSyncTaskTemplateMapper {
       generateAheadDays: dto.generateAheadDays ?? null,
       goalId: dto.goalBinding?.goalId ?? null,
       keyResultId: dto.goalBinding?.keyResultId ?? null,
-      goalRecordValue: dto.goalBinding?.goalRecordValue ?? null,
-      goalProgressTrigger: dto.goalBinding?.progressTrigger ?? null,
+      goalRecordValue: dto.goalBinding?.contribution?.value ?? null,
+      goalProgressTrigger: dto.goalBinding?.contribution?.trigger ?? null,
       checklist: dto.checklist?.length ? JSON.stringify(dto.checklist) : null,
       version: dto.version,
       createdAt: new Date(dto.createdAt).toISOString(),

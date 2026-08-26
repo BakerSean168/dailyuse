@@ -3,6 +3,12 @@ import { z } from 'zod';
 import { PortableRefSchema, IsoDateString } from './portable-common.dto';
 import { TaskGoalBindingTrigger } from '../../task/value-objects/task-goal-binding-trigger';
 
+export const PortableTaskContributionSchema = z.object({
+  value: z.number().positive(),
+  trigger: z.enum(TaskGoalBindingTrigger),
+}).strict();
+export type PortableTaskContribution = z.infer<typeof PortableTaskContributionSchema>;
+
 export const PortableTaskTemplateSchema = z.object({
   _ref: PortableRefSchema,
   title: z.string(),
@@ -19,8 +25,7 @@ export const PortableTaskTemplateSchema = z.object({
   abandonedReason: z.string().nullable().optional(),
   goalRef: PortableRefSchema.nullable().optional(),
   keyResultRef: PortableRefSchema.nullable().optional(),
-  goalRecordValue: z.number().nullable().optional(),
-  goalProgressTrigger: z.enum(TaskGoalBindingTrigger).nullable().optional(),
+  contribution: PortableTaskContributionSchema.nullable().optional(),
   checklist: z.array(z.unknown()),
   timeConfig: z.unknown(),
   recurrenceRule: z.unknown().nullable().optional(),
@@ -33,10 +38,10 @@ export const PortableTaskTemplateSchema = z.object({
   const hasGoalRef = task.goalRef != null;
   const hasKeyResultRef = task.keyResultRef != null;
   if (hasGoalRef !== hasKeyResultRef) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Task goal binding requires both goalRef and keyResultRef' });
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Task goal link requires both goalRef and keyResultRef' });
   }
-  if (!hasGoalRef && (task.goalRecordValue != null || task.goalProgressTrigger != null)) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Task contribution fields require a goal binding' });
+  if (!hasGoalRef && task.contribution != null) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Task contribution requires a Goal/KR link' });
   }
 });
 export type PortableTaskTemplate = z.infer<typeof PortableTaskTemplateSchema>;

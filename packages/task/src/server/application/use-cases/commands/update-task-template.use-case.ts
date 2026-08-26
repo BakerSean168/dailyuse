@@ -125,11 +125,11 @@ export class UpdateTaskTemplateUseCase {
           request.importance !== undefined && request.importance !== template.importance;
         const nextProgressTrigger =
           request.goalBinding === undefined
-            ? template.goalBinding?.progressTrigger
-            : request.goalBinding?.progressTrigger;
+            ? template.goalBinding?.contribution?.trigger
+            : request.goalBinding?.contribution?.trigger;
 
         if (
-          nextProgressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted &&
+          nextProgressTrigger === TaskGoalBindingTrigger.PlanCompletion &&
           !isFiniteTaskPlan(template.taskType, nextRecurrenceRule)
         ) {
           return error(
@@ -189,8 +189,7 @@ export class UpdateTaskTemplateUseCase {
             template.bindToGoal(
               request.goalBinding.goalId,
               request.goalBinding.keyResultId,
-              request.goalBinding.goalRecordValue,
-              request.goalBinding.progressTrigger,
+              request.goalBinding.contribution ?? null,
             );
           }
         }

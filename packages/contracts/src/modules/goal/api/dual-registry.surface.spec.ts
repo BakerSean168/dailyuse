@@ -147,7 +147,8 @@ import { describe, expect, it } from 'vitest';
       expect(responseSchemas).not.toMatch(
         /export const GoalReviewClientDTOSchema:\s*z\.ZodType<GoalReviewClientDTO>/,
       );
-      expect(responseSchemas).toContain('keyResultSnapshots: z.array(KeyResultSnapshotDTOSchema)');
+      expect(responseSchemas).toContain('systemContext: GoalReviewSystemContextSchema');
+      expect(responseSchemas).not.toContain('keyResultSnapshots:');
     });
 
     it('list envelopes nest KeyResult/GoalReview ClientDTOSchema arrays', () => {
@@ -178,7 +179,6 @@ import { describe, expect, it } from 'vitest';
     });
 
     it('review and key-result list reqs reuse GoalIdParamsSchema without dual bodies', () => {
-      expect(review).toContain('Residual 677');
       expect(review).toContain(
         'export type GetGoalReviewsReq = z.infer<typeof GoalIdParamsSchema>',
       );
@@ -237,7 +237,6 @@ import { describe, expect, it } from 'vitest';
       );
       expect(record).not.toMatch(/export interface GetGoalRecordsRes\b/);
 
-      expect(review).toContain('Residual 689');
       expect(review).toContain(
         'export type GetGoalReviewsRes = z.infer<typeof GoalReviewListResSchema>',
       );
@@ -386,11 +385,12 @@ import { describe, expect, it } from 'vitest';
     );
     const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
 
-    it('exports progress/snapshot schemas as sole shapes from VO modules', () => {
-      expect(progress).toContain('Residual 737');
+    it('exports canonical Measurement V2 progress/snapshot schemas from VO modules', () => {
       expect(progress).toContain('export const KeyResultProgressDTOSchema = z.object({');
-      expect(snapshot).toContain('Residual 737');
+      expect(progress).toContain('startingValue: z.number()');
+      expect(progress).toContain('aggregationMethod: z.enum(KeyResultCalculationMethod)');
       expect(snapshot).toContain('export const KeyResultSnapshotDTOSchema = z.object({');
+      expect(snapshot).toContain('progressPercentage: z.number().min(0).max(100)');
     });
 
     it('semantic DTOs are z.infer aliases without interface dual bodies', () => {
@@ -399,8 +399,9 @@ import { describe, expect, it } from 'vitest';
       );
       expect(progress).not.toMatch(/export interface KeyResultProgressDTO\b/);
       expect(snapshot).toContain(
-        'export type KeyResultSnapshotDTO = z.infer<typeof KeyResultSnapshotDTOSchema>',
+        'export type KeyResultSnapshot = z.infer<typeof KeyResultSnapshotDTOSchema>',
       );
+      expect(snapshot).toContain('export type KeyResultSnapshotDTO = KeyResultSnapshot');
       expect(snapshot).not.toMatch(/export interface KeyResultSnapshotDTO\b/);
     });
 
@@ -414,7 +415,8 @@ import { describe, expect, it } from 'vitest';
       expect(responseSchemas).not.toMatch(/const KeyResultProgressDTOSchema = z\.object\(\{/);
       expect(responseSchemas).not.toMatch(/const KeyResultSnapshotDTOSchema = z\.object\(\{/);
       expect(responseSchemas).toContain('progress: KeyResultProgressDTOSchema');
-      expect(responseSchemas).toContain('keyResultSnapshots: z.array(KeyResultSnapshotDTOSchema)');
+      expect(responseSchemas).toContain('systemContext: GoalReviewSystemContextSchema');
+      expect(responseSchemas).not.toContain('keyResultSnapshots:');
     });
   });
 }

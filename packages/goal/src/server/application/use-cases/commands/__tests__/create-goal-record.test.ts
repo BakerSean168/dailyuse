@@ -150,6 +150,35 @@ describe('CreateGoalRecordUseCase', () => {
     }
   });
 
+
+  it('rejects automatic Task contributions to non-Sum key results', async () => {
+    const goal = createTestGoal();
+    const keyResult = goal.createAndAddKeyResult({
+      title: 'Latest score',
+      aggregationMethod: 'Last',
+      startingValue: 41,
+      currentValue: 41,
+      targetValue: 50,
+      weight: 1,
+      unit: 'points',
+    });
+    vi.mocked(goalRepository.findByIdForIdentity).mockResolvedValue(goal);
+
+    const result = await useCase.execute(
+      goal.id,
+      keyResult.id,
+      {
+        value: 1,
+        source: { type: 'TASK_INSTANCE' as const, id: 'task-instance-1' },
+      },
+      'identity-1',
+    );
+
+    expect(result).toMatchObject({ ok: false, error: { code: 'VALIDATION_ERROR' } });
+    expect(goalRecordRepository.save).not.toHaveBeenCalled();
+    expect(goalRepository.saveRootWithExpectedVersion).not.toHaveBeenCalled();
+  });
+
   it('applies the same task-instance contribution only once', async () => {
     const goal = createTestGoal();
     const keyResult = goal.createAndAddKeyResult({

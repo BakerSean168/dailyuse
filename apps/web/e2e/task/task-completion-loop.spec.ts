@@ -79,8 +79,7 @@ test.describe('Task completion closed loop', () => {
           goalBinding: {
             goalId: goalReceipt.goalId,
             keyResultId,
-            goalRecordValue: 1,
-            progressTrigger: 'PER_INSTANCE',
+            contribution: { value: 1, trigger: 'EachCompletion' },
           },
         },
       }),

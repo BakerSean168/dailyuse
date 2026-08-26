@@ -109,8 +109,13 @@ export class PrismaTaskTemplateMapper {
       ? TaskGoalBinding.fromDTO({
           goalId: data.goalId,
           keyResultId: data.keyResultId,
-          goalRecordValue: data.goalRecordValue,
-          progressTrigger: data.goalProgressTrigger,
+          contribution:
+            data.goalRecordValue != null && data.goalProgressTrigger != null
+              ? {
+                  value: data.goalRecordValue,
+                  trigger: data.goalProgressTrigger as never,
+                }
+              : null,
         } as Parameters<typeof TaskGoalBinding.fromDTO>[0])
       : null;
 
@@ -223,8 +228,8 @@ export class PrismaTaskTemplateMapper {
       generateAheadDays: dto.generateAheadDays,
       goalId: dto.goalBinding?.goalId ?? null,
       keyResultId: dto.goalBinding?.keyResultId ?? null,
-      goalRecordValue: dto.goalBinding?.goalRecordValue ?? null,
-      goalProgressTrigger: dto.goalBinding?.progressTrigger ?? null,
+      goalRecordValue: dto.goalBinding?.contribution?.value ?? null,
+      goalProgressTrigger: dto.goalBinding?.contribution?.trigger ?? null,
       checklist: dto.checklist?.length ? JSON.stringify(dto.checklist) : null,
       version: dto.version,
       deletedAt: toDateOrNull(dto.deletedAt),
