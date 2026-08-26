@@ -226,7 +226,6 @@ async function bootstrap(): Promise<void> {
     },
     goalProjection: {
       source: createGoalPrismaScheduleProjectionSource(prisma),
-      scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
     reminderProjection: {
       source: reminderComposed.scheduleProjectionSource,

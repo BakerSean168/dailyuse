@@ -149,7 +149,6 @@ async function registerBusinessModules(
     },
     goalProjection: {
       source: createGoalPowerSyncScheduleProjectionSource(db),
-      scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
     reminderProjection: {
       source: reminderComposed.scheduleProjectionSource,

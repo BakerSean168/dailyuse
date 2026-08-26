@@ -11,6 +11,7 @@ export type {
   ScheduleOrchestrationHandlerRegistry,
   ScheduleOrchestrationModule,
   ScheduleOrchestrationProjectionDeps,
+  ScheduleOrchestrationScheduleTaskProjectionDeps,
 } from './ports/projection';
 export type {
   ScheduleNotificationPort,

@@ -61,9 +61,12 @@ export {
 export {
   createGoalScheduleProjectionEventHandlers,
   createGoalScheduleProjectionSource,
+  goalScheduleProjectionEventNames,
+  GOAL_REMINDER_HANDLER_KEY,
+  GOAL_REMINDER_PAYLOAD_VERSION,
+  type GoalReminderScheduledPayload,
   type GoalScheduleProjectionEventMap,
   type GoalScheduleProjectionHandlers,
   type GoalScheduleProjectionPlan,
-  type GoalScheduleProjectionSelection,
   type GoalScheduleProjectionSource,
 } from './schedule-projection-source';
