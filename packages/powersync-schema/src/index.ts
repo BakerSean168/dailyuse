@@ -113,12 +113,14 @@ const goals = new Table({
   motivation: column.text,
   status: column.text,
   importance: column.text,
+  priority: column.integer,
   category: column.text,
   tags: column.text, // JSON array
   start_date: column.text, // DateTime
   target_date: column.text, // DateTime
   completed_at: column.text, // DateTime
   archived_at: column.text, // DateTime
+  folder_id: column.text, // FK
   parent_goal_id: column.text, // FK (self)
   sort_order: column.integer,
   reminder_config: column.text, // JSON
@@ -380,6 +382,7 @@ const schedules = new Table({
   duration: column.integer,
   has_conflict: column.integer, // boolean
   conflicting_schedules: column.text, // JSON
+  priority: column.integer,
   location: column.text,
   attendees: column.text, // JSON
   version: column.integer,
@@ -886,6 +889,7 @@ const ai_provider_configs = new Table({
   available_models: column.text, // JSON
   is_active: column.integer, // boolean
   is_default: column.integer, // boolean
+  priority: column.integer,
   version: column.integer,
   created_at: column.text,
   updated_at: column.text,
@@ -986,6 +990,7 @@ const folders = new Table({
 const resources = new Table({
   identity_id: column.text,
   repository_id: column.text, // FK
+  folder_id: column.text, // FK
   name: column.text,
   type: column.text,
   path: column.text,
