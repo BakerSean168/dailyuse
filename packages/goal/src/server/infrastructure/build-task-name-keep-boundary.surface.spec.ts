@@ -5,7 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 1177: buildTaskName keep-boundary (goal vs task schedule projections).
  * - goal: GoalServerDTO + ReminderTrigger → RemainingDays / progress % Chinese name
- * - task: TaskTemplateServerDTO + Relative/Absolute trigger → 提前/定时提醒 name
+ * - task: TASK-3101 neutral ScheduledIntent observability name keeps the same
+ *   TaskTemplate + Relative/Absolute business wording without ScheduleTask coupling.
  * Soft residual 1168: mapImportanceToTaskPriority dual-retired sole remains separate.
  * Soft residual 1174: normalizePath keep-boundary remains separate.
  * Does not flip §13.2 checkboxes.
@@ -34,15 +35,15 @@ describe('buildTaskName keep-boundary (residual 1177)', () => {
     expect(body).not.toContain('定时提醒');
   });
 
-  it('differs from task template Relative/Absolute buildTaskName (no force-merge)', () => {
-    expect(task).toContain('Residual 1177 keep-boundary');
-    expect(task).toMatch(/function buildTaskName\b/);
-    expect(task).toContain('Soft residual 1177');
+  it('keeps Goal legacy naming distinct from Task neutral intent observability naming', () => {
+    expect(task).toMatch(/function buildIntentName\b/);
     expect(task).toContain('TaskTemplateServerDTO');
-    expect(task).toContain("'Relative'");
+    expect(task).toContain("trigger.type === 'Relative'");
     expect(task).toContain('formatUnit');
     expect(task).toContain('定时提醒');
-    const body = task.match(/function buildTaskName\([\s\S]*?\n\}/)?.[0] ?? '';
+    expect(task).toContain('observability:');
+    expect(task).not.toContain('ScheduleTask');
+    const body = task.match(/function buildIntentName\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(body).toContain('template.name');
     expect(body).toContain('relativeValue');
     expect(body).not.toContain('RemainingDays');

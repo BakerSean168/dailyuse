@@ -72,6 +72,52 @@ export interface SchedulingPort {
   removeOwner(owner: SchedulingOwner): Promise<SchedulingReconcileReceipt>;
 }
 
+function encodeSchedulingKeySegment(
+  segment: string,
+  label = 'Scheduling key segment',
+  maxLength = 256,
+): string {
+  if (typeof segment !== 'string' || segment.length === 0) {
+    throw new TypeError(`${label} must be a non-empty string.`);
+  }
+  if (segment !== segment.trim()) {
+    throw new TypeError(`${label} must not contain leading or trailing whitespace.`);
+  }
+  if (segment.length > maxLength) {
+    throw new TypeError(`${label} must be at most ${maxLength} characters.`);
+  }
+  if (/[\u0000-\u001f\u007f]/.test(segment)) {
+    throw new TypeError(`${label} must not contain control characters.`);
+  }
+  return `${segment.length}:${segment}`;
+}
+
+/**
+ * Collision-free canonical identity for one desired scheduled invocation.
+ *
+ * This belongs to the neutral contract seam rather than Scheduler
+ * infrastructure because business projectors must be able to construct stable
+ * intent identity without importing the legacy scheduling engine.
+ */
+export function buildSchedulingKey(...segments: readonly string[]): string {
+  if (segments.length === 0) {
+    throw new TypeError('At least one scheduling key segment is required.');
+  }
+  const key = `sk:v1:${segments.map((segment) => encodeSchedulingKeySegment(segment)).join(':')}`;
+  if (key.length > 512) {
+    throw new TypeError('schedulingKey must be at most 512 characters.');
+  }
+  return key;
+}
+
+/** Stable storage/lock key for one complete owner desired set. */
+export function buildSchedulingOwnerKey(owner: SchedulingOwner): string {
+  if (!owner || typeof owner !== 'object') {
+    throw new TypeError('Scheduling owner is required.');
+  }
+  return `owner:v1:${encodeSchedulingKeySegment(owner.identityId, 'Scheduling owner identityId', 256)}:${encodeSchedulingKeySegment(owner.type, 'Scheduling owner type', 128)}:${encodeSchedulingKeySegment(owner.id, 'Scheduling owner id', 256)}`;
+}
+
 export interface ScheduledInvocationContext<TPayload = unknown> {
   readonly identityId: string;
   readonly owner: SchedulingOwner;
