@@ -1,9 +1,16 @@
 import { createLogger } from '@memoflow/utils/logger';
-import { ChannelStatus, NotificationChannelType as ChannelTypeEnum } from '@memoflow/contracts/notification';
+import {
+  ChannelStatus,
+  NotificationChannelType as ChannelTypeEnum,
+  NotificationRequestedSchema,
+  NOTIFICATION_REQUESTED_MESSAGE_TYPE,
+} from '@memoflow/contracts/notification';
 import { Notification } from '../../domain/aggregates/notification';
 import { NotificationChannel } from '../../domain/entities/notification-channel';
 import { ChannelError } from '../../domain/value-objects/channel-error';
+import { CreateNotificationUseCase } from '../../application/use-cases/commands/create-notification.use-case';
 import type { INotificationRepository } from '../../domain/repositories/i-notification-repository';
+import type { INotificationPreferenceRepository } from '../../domain/repositories';
 import type { NotificationModuleRuntimeContribution } from '../notification.module';
 import {
   assertProductionCapabilityOrFailFast,
@@ -38,9 +45,12 @@ export interface NotificationDispatchOutboxRow {
 /** Structural cross-module shared-outbox row consumed by the durable runtime. */
 export interface NotificationSharedOutboxMessageRow {
   readonly id: string;
+  readonly messageType: string;
   readonly identityId: string | null;
   readonly payloadJson: string;
   readonly idempotencyKey: string | null;
+  readonly correlationId: string | null;
+  readonly causationId: string | null;
   readonly ownerToken: string | null;
   readonly claimId: string | null;
   readonly fencingToken: number | null;
@@ -135,6 +145,8 @@ export interface ChannelCapabilitySpec {
 
 export interface NotificationRuntimeDeps {
   readonly repository?: INotificationRepository;
+  readonly preferenceRepository?: INotificationPreferenceRepository;
+  readonly closureChecker?: (identityId: string) => Promise<boolean>;
   readonly reliableAdapter?: NotificationReliableOperationPort;
   readonly sseAdapter?: NotificationSseAdapter;
   readonly deliverer?: NotificationChannelDeliverer;
@@ -272,7 +284,30 @@ export function createNotificationRuntimeContribution(
   const metricsService = deps?.metricsService ?? new NotificationMetricsService();
   const sseAdapter = deps?.sseAdapter ?? new NotificationSseAdapter(deps?.reliableAdapter);
   const repository = deps?.repository;
+  const preferenceRepository = deps?.preferenceRepository;
+  const closureChecker = deps?.closureChecker ?? (async () => false as const);
   const reliableAdapter = deps?.reliableAdapter;
+
+  /**
+   * NotificationRequested consumer: materialize the Notification Fact plus the
+   * per-channel DeliveryPlan and dispatch outboxes in ONE transactional save.
+   *
+   * Idempotency is anchored on the shared envelope's canonical idempotencyKey:
+   * a re-claimed message after a crash-before/after Fact commit returns the
+   * existing Fact (CreateNotificationUseCase idempotency branch) and never
+   * creates a second Fact / duplicate dispatch outboxes.
+   */
+  let createNotificationUseCase: CreateNotificationUseCase | null = null;
+  const getCreateNotificationUseCase = (): CreateNotificationUseCase => {
+    if (!createNotificationUseCase) {
+      createNotificationUseCase = new CreateNotificationUseCase(
+        repository as INotificationRepository,
+        preferenceRepository as INotificationPreferenceRepository,
+        closureChecker,
+      );
+    }
+    return createNotificationUseCase;
+  };
 
   const registry: Record<string, NotificationChannelDeliverer> = {
     ...(deps?.delivererRegistry ?? {}),
@@ -610,6 +645,120 @@ export function createNotificationRuntimeContribution(
     }
   };
 
+  const markSharedFailed = async (
+    sharedMsg: NotificationSharedOutboxMessageRow,
+    leaseContext: {
+      ownerToken: string;
+      fencingToken: number;
+      claimId: string;
+    },
+    error: unknown,
+  ): Promise<void> => {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    const isDeadLetter = sharedMsg.attempts >= deadLetterThreshold;
+    if (isDeadLetter) {
+      const res = await deps?.reliableAdapter?.updateSharedOutboxStatus(
+        sharedMsg.id,
+        'dead_letter',
+        errorMsg,
+        null,
+        leaseContext,
+      );
+      if (res === 'ok') {
+        // W7 互斥语义：dead-letter 是独立终态，不再累计 outbox.failed
+        metricsService.recordDeadLetter();
+      } else {
+        logger.warn('[NotificationRuntime] Shared outbox dead-letter returned conflict (stale owner ignored)', {
+          operationId: sharedMsg.id,
+        });
+      }
+      logger.error('[NotificationRuntime] Shared outbox reached dead-letter state', {
+        operationId: sharedMsg.id,
+        attempts: sharedMsg.attempts,
+        error: errorMsg,
+      });
+      return;
+    }
+    const backoffMs = backoffBaseMs * 2 ** Math.max(0, sharedMsg.attempts - 1);
+    const sharedReceipt = await deps?.reliableAdapter?.updateSharedOutboxStatus(
+      sharedMsg.id,
+      'retryable',
+      errorMsg,
+      new Date(Date.now() + backoffMs),
+      leaseContext,
+    );
+    if (sharedReceipt === 'ok') {
+      // W7 互斥语义：retryable 是独立状态，不再累计 outbox.failed
+      metricsService.recordRetry();
+      logger.warn('[NotificationRuntime] Shared outbox dispatch failed, scheduled retry', {
+        operationId: sharedMsg.id,
+        attempts: sharedMsg.attempts,
+        error: errorMsg,
+      });
+    } else {
+      logger.warn('[NotificationRuntime] Shared outbox failure update ignored (stale owner)', {
+        operationId: sharedMsg.id,
+      });
+    }
+  };
+
+  /**
+   * Priority 2: consume a `notification.requested` shared envelope.
+   *
+   * Reuses CreateNotificationUseCase so the Fact + DeliveryPlan + dispatch
+   * outboxes materialize in one transactional save(). The dispatch rows are
+   * picked up by the next tick's claimOutboxDispatch (Priority 1) or by the
+   * shared dispatch path — external channel delivery stays strictly out of this
+   * handler's critical path.
+   */
+  const processNotificationRequested = async (
+    sharedMsg: NotificationSharedOutboxMessageRow,
+  ): Promise<void> => {
+    if (!repository || !preferenceRepository) {
+      throw new Error(
+        '[FAIL-CLOSED] notification.requested consumer requires repository + preferenceRepository for policy evaluation.',
+      );
+    }
+    const useCase = getCreateNotificationUseCase();
+    let envelope: import('@memoflow/contracts/notification').NotificationRequested;
+    try {
+      envelope = NotificationRequestedSchema.parse(JSON.parse(sharedMsg.payloadJson));
+    } catch (cause) {
+      throw new Error(
+        `Invalid NotificationRequested envelope for '${sharedMsg.id}': ${cause instanceof Error ? cause.message : String(cause)}`,
+      );
+    }
+    const result = await useCase.execute({
+      identityId: envelope.identityId,
+      workflowKey: envelope.workflowKey,
+      topic: envelope.topic,
+      idempotencyKey: envelope.idempotencyKey,
+      title: envelope.content.title,
+      content: envelope.content.content,
+      type: envelope.content.type ?? 'Info',
+      category: envelope.content.category ?? 'Other',
+      importance: envelope.importance,
+      urgency: envelope.urgency,
+      relatedEntityType: envelope.relatedEntity?.type as import('@memoflow/contracts/notification').RelatedEntityType | undefined,
+      relatedEntityId: envelope.relatedEntity?.id ?? undefined,
+      navigationIntent: envelope.navigationIntent ?? null,
+      channels:
+        envelope.suggestedChannels && envelope.suggestedChannels.length > 0
+          ? [...new Set(envelope.suggestedChannels)]
+          : [ChannelTypeEnum.InApp],
+      expiresAt: envelope.expiresAt ?? null,
+      // Correlation/causation chain is carried durably on the shared-outbox row
+      // (writer resolves envelope -> input -> operationId and persists the
+      // winner). Prefer the durable values so caller-provided fallbacks survive
+      // consumer materialization, not just the envelope attributes.
+      correlationId: sharedMsg.correlationId ?? envelope.correlationId ?? null,
+      causationId: sharedMsg.causationId ?? envelope.causationId ?? null,
+    });
+    if (!result.ok) {
+      throw new Error(`NotificationRequested materialization failed: ${result.error.message}`);
+    }
+  };
+
   const tick = async (): Promise<void> => {
     if (!deps?.reliableAdapter) {
       throw new Error(
@@ -630,9 +779,10 @@ export function createNotificationRuntimeContribution(
         await processClaimedDispatch(entry);
       }
 
-      // Priority 2: Cross-module shared OutboxMessage (messageType: 'notification.dispatch') from W1.
-      // The durable idempotency fence (NotificationDispatchOutbox) is established BEFORE any
-      // external side effect, and the shared row's leaseExpiresAt deadline acts as a recoverable lease.
+      // Priority 2: Cross-module shared OutboxMessage from W1 — both
+      // 'notification.dispatch' (per-channel dispatch) and 'notification.requested'
+      // (durable integration envelope, NOTIF-3301). The shared row's leaseExpiresAt
+      // deadline acts as a recoverable lease for both.
       const sharedOutboxes = await deps.reliableAdapter.claimSharedOutboxIntents({
         ownerToken,
         leaseDurationMs,
@@ -655,6 +805,30 @@ export function createNotificationRuntimeContribution(
           fencingToken: sharedMsg.fencingToken!,
         };
         try {
+          if (sharedMsg.messageType === NOTIFICATION_REQUESTED_MESSAGE_TYPE) {
+            // 'notification.requested': materialize the Fact + DeliveryPlan +
+            // dispatch outboxes in one transaction; the shared row is marked
+            // succeeded immediately after materialization and the created dispatch
+            // outboxes are delivered by the next tick (Priority 1) / shared path.
+            await processNotificationRequested(sharedMsg);
+            const res = await deps.reliableAdapter.updateSharedOutboxStatus(
+              sharedMsg.id,
+              'succeeded',
+              null,
+              null,
+              leaseContext,
+            );
+            if (res === 'ok') {
+              metricsService.recordDelivered();
+            } else {
+              logger.warn(
+                '[NotificationRuntime] Shared outbox notification.requested completion returned conflict (stale owner ignored)',
+                { operationId: sharedMsg.id },
+              );
+            }
+            continue;
+          }
+
           const outerPayload = JSON.parse(sharedMsg.payloadJson);
           let innerPayload: Record<string, unknown> = {};
           try {
@@ -742,52 +916,7 @@ export function createNotificationRuntimeContribution(
 
           pendingSharedById.set(sharedMsg.id, { sharedMsg, notification, leaseContext });
         } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : String(error);
-          const isDeadLetter = sharedMsg.attempts >= deadLetterThreshold;
-          if (isDeadLetter) {
-            const res = await deps.reliableAdapter.updateSharedOutboxStatus(
-              sharedMsg.id,
-              'dead_letter',
-              errorMsg,
-              null,
-              leaseContext,
-            );
-            if (res === 'ok') {
-              // W7 互斥语义：dead-letter 是独立终态，不再累计 outbox.failed
-              metricsService.recordDeadLetter();
-            } else {
-              logger.warn('[NotificationRuntime] Shared outbox dead-letter returned conflict (stale owner ignored)', {
-                operationId: sharedMsg.id,
-              });
-            }
-            logger.error('[NotificationRuntime] Shared outbox reached dead-letter state', {
-              operationId: sharedMsg.id,
-              attempts: sharedMsg.attempts,
-              error: errorMsg,
-            });
-          } else {
-            const backoffMs = backoffBaseMs * 2 ** Math.max(0, sharedMsg.attempts - 1);
-            const res = await deps.reliableAdapter.updateSharedOutboxStatus(
-              sharedMsg.id,
-              'retryable',
-              errorMsg,
-              new Date(Date.now() + backoffMs),
-              leaseContext,
-            );
-            if (res === 'ok') {
-              // W7 互斥语义：retryable 是独立状态，不再累计 outbox.failed
-              metricsService.recordRetry();
-            } else {
-              logger.warn('[NotificationRuntime] Shared outbox retryable returned conflict (stale owner ignored)', {
-                operationId: sharedMsg.id,
-              });
-            }
-            logger.warn('[NotificationRuntime] Shared outbox dispatch failed, scheduled retry', {
-              operationId: sharedMsg.id,
-              attempts: sharedMsg.attempts,
-              error: errorMsg,
-            });
-          }
+          await markSharedFailed(sharedMsg, leaseContext, error);
         }
       }
 
@@ -1079,6 +1208,8 @@ export function createNotificationRuntimeContribution(
  */
 export function createNotificationDurableRuntime(deps: {
   readonly notificationRepository: INotificationRepository;
+  readonly preferenceRepository?: INotificationPreferenceRepository;
+  readonly closureChecker?: (identityId: string) => Promise<boolean>;
   readonly reliableAdapter: NotificationReliableOperationPort;
   readonly channelCapabilities: ChannelCapabilitySpec[];
   readonly transport?: unknown;
@@ -1094,6 +1225,8 @@ export function createNotificationDurableRuntime(deps: {
 
   return createNotificationRuntimeContribution({
     repository: deps.notificationRepository,
+    preferenceRepository: deps.preferenceRepository,
+    closureChecker: deps.closureChecker,
     reliableAdapter: deps.reliableAdapter,
     delivererRegistry: defaultDeliverers,
     channelCapabilities: deps.channelCapabilities,

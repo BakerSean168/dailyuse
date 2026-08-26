@@ -393,6 +393,7 @@ export function createNotificationPowerSyncModule(
 
   const repositories = createNotificationPowerSyncRepositories(db, metricsService);
   const notificationRepository = repositories.notificationRepository;
+  const closureChecker = createPowerSyncClosureChecker(db);
 
   if (!durableRuntime) {
     // Preserve the historical desktop default: InApp + Desktop capabilities
@@ -402,6 +403,8 @@ export function createNotificationPowerSyncModule(
     const desktopTransport = transport ?? createDefaultElectronDesktopTransport(db);
     durableRuntime = createNotificationDurableRuntime({
       notificationRepository,
+      preferenceRepository: repositories.notificationPreferenceRepository,
+      closureChecker,
       reliableAdapter: powerSyncReliableAdapter,
       channelCapabilities: channelCapabilities ?? [
         { channelType: 'InApp', status: 'available' },
@@ -411,8 +414,6 @@ export function createNotificationPowerSyncModule(
       metricsService,
     });
   }
-
-  const closureChecker = createPowerSyncClosureChecker(db);
 
   return createNotificationModule({
     notificationRepository,
