@@ -48,4 +48,11 @@ describe('notification API runtime composer surface', () => {
     expect(composer).toContain("from '@memoflow/notification/api'");
     expect(composer).not.toMatch(/@memoflow\/notification\/server/);
   });
+
+  it('composer exposes the durable NotificationRequested writer from the SAME repository set', () => {
+    expect(composer).toContain('requestedWriter: NotificationRequestedWriterPort');
+    expect(composer).toContain('requestedWriter: repositories.requestedWriter');
+    expect(composer).toContain('NotificationRequestedWriterPort');
+    expect(composer).toContain('from \'@memoflow/contracts/notification\'');
+  });
 });

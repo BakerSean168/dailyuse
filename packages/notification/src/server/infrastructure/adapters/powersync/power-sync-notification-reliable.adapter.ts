@@ -323,7 +323,7 @@ export class PowerSyncNotificationReliableAdapter implements NotificationReliabl
         last_error TEXT,
         next_retry_at TEXT,
         identity_id TEXT,
-        idempotency_key TEXT,
+        idempotency_key TEXT UNIQUE,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         correlation_id TEXT NOT NULL DEFAULT '',

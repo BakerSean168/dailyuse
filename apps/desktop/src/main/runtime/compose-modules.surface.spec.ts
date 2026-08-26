@@ -141,6 +141,12 @@ describe('desktop runtime composer surface (Batch Step D)', () => {
     expect(schedule).toContain('repositories.scheduleTaskRepository');
   });
 
+  it('notification composer exposes the durable NotificationRequested writer from the SAME repository set', () => {
+    const notification = readFileSync(resolve(composerDir, 'compose-notification.ts'), 'utf8');
+    expect(notification).toContain('requestedWriter: NotificationRequestedWriterPort');
+    expect(notification).toContain('requestedWriter: repositories.requestedWriter');
+  });
+
   it('dashboard-read-service no longer reads electron accessors', () => {
     const dashboard = readFileSync(
       resolve(mainDir, 'services/dashboard-read-service.ts'),

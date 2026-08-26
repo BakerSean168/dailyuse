@@ -70,7 +70,10 @@ import { createGoalPrismaScheduleProjectionSource } from '@memoflow/goal/schedul
 import { resolveRepositoryStorageBaseDir } from '@memoflow/repository';
 import { createSchedulePrismaRepositories } from '@memoflow/schedule';
 import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestration';
-import { createTaskPrismaScheduleExecutionSource } from '@memoflow/task/schedule-execution';
+import {
+  createTaskPrismaScheduleExecutionSource,
+  createTaskReminderScheduledHandlerRegistration,
+} from '@memoflow/task/schedule-execution';
 import { createTaskPrismaScheduleProjectionSource } from '@memoflow/task/schedule-projection';
 import { composeTask } from './runtime/compose-task';
 // 基础设施模块（直接在 API 内部定义）
@@ -247,6 +250,16 @@ async function bootstrap(): Promise<void> {
     runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
     goalProgressHandler: createGoalTaskProgressPrismaHandler(prisma),
   });
+  // Register the Task reminder fire handler so scheduled `task.reminder` work
+  // (e.g. a one-time task + relative reminder) is executed by the registry-based
+  // source executor instead of the legacy router fallback.
+  scheduleOrchestrationModule.handlerRegistry.register(
+    createTaskReminderScheduledHandlerRegistration({
+      taskInstanceRepository: taskComposed.taskInstanceRepository,
+      taskTemplateRepository: taskComposed.taskTemplateRepository,
+      notificationRequestedWriter: notificationApiModule.repositories.requestedWriter,
+    }),
+  );
   const goalComposed = composeGoal({
     db: prisma,
     taskBindingReadPort: new PrismaTaskBindingReadPort(prisma),

@@ -39,6 +39,7 @@
  */
 
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
+import type { NotificationRequestedWriterPort } from '@memoflow/contracts/notification';
 import {
   createDefaultElectronDesktopTransport,
   createNotificationDurableRuntime,
@@ -78,6 +79,8 @@ export interface ComposedNotificationDesktop {
   /** Repository view exposed to sibling modules (dashboard). 暴露给兄弟模块（dashboard）的仓储视图。 */
   readonly repositories: {
     readonly notificationRepository: INotificationRepository;
+    /** Durable NotificationRequested writer (NOTIF-3301) for business handlers. */
+    readonly requestedWriter: NotificationRequestedWriterPort;
   };
   /** Schedule notification port built from the SAME repository set. 从同一仓储集合构建的 schedule notification port。 */
   readonly scheduleNotificationPort: ScheduleNotificationPort;
@@ -156,6 +159,7 @@ export function composeNotification(
     module: createNotificationElectronModule({ instance }),
     repositories: {
       notificationRepository: repositories.notificationRepository,
+      requestedWriter: repositories.requestedWriter,
     },
     scheduleNotificationPort,
   };
