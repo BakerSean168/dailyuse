@@ -301,7 +301,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
               identityId: dto.identityId as string,
               title: kr.title,
               description: kr.description,
-              valueType: progress.valueType,
+              valueType: 'Incremental',
               aggregationMethod: progress.aggregationMethod,
               initialValue: progress.initialValue,
               targetValue: progress.targetValue,
@@ -313,7 +313,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
             update: {
               title: kr.title,
               description: kr.description,
-              valueType: progress.valueType,
+              valueType: 'Incremental',
               aggregationMethod: progress.aggregationMethod,
               initialValue: progress.initialValue,
               targetValue: progress.targetValue,

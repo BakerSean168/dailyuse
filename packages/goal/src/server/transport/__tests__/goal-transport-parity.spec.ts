@@ -106,6 +106,7 @@ function createPortStub(): GoalApplicationPort {
     updateReview: fn(okReceipt()),
     deleteReview: fn(okReceipt()),
     createRecord: fn(okReceipt()),
+    updateRecord: fn(okReceipt()),
     deleteRecord: fn(okReceipt()),
     getGoal: vi.fn(),
     listGoals: vi.fn(),
@@ -181,8 +182,9 @@ const malformedClone = { title: 'legacy' };
 const validAddKr = {
   goalId: GOAL_ID,
   title: 'KR',
-  valueType: 'Absolute',
   calculationMethod: 'Sum',
+  startingValue: 0,
+  currentValue: 0,
   targetValue: 10,
   weight: 3,
   expectedVersion: 1,
@@ -190,9 +192,8 @@ const validAddKr = {
 const malformedAddKr = {
   goalId: GOAL_ID,
   title: '',
-  valueType: 'Absolute',
   calculationMethod: 'Sum',
-  targetValue: -1,
+  targetValue: 10,
   weight: 3,
   expectedVersion: 1,
 };
@@ -201,7 +202,7 @@ const validUpdateKr = { title: 'KR2', expectedVersion: 1 };
 const malformedUpdateKr = { title: 'KR2', expectedVersion: 0 };
 
 const validProgress = { keyResultId: KR_ID, expectedVersion: 1, newValue: 5 };
-const malformedProgress = { keyResultId: KR_ID, expectedVersion: 1, newValue: -1 };
+const malformedProgress = { keyResultId: KR_ID, expectedVersion: 0, newValue: 5 };
 
 const validDeleteKr = { expectedVersion: 1 };
 const malformedDeleteKr = { expectedVersion: 0 };
@@ -225,7 +226,9 @@ const validUpdateReview = { title: 'R2', expectedVersion: 1 };
 const malformedUpdateReview = { title: 'R2', expectedVersion: 0 };
 
 const validCreateRecord = { keyResultId: KR_ID, expectedVersion: 1, value: 5 };
-const malformedCreateRecord = { keyResultId: KR_ID, expectedVersion: 1, value: -1 };
+const malformedCreateRecord = { keyResultId: KR_ID, expectedVersion: 0, value: 5 };
+const validUpdateRecord = { expectedVersion: 1, value: -2, note: 'corrected' };
+const malformedUpdateRecord = { expectedVersion: 0, value: 2 };
 
 describe('goal transport parity (Phase 4) — production registrations', () => {
   let instance: {
@@ -697,6 +700,36 @@ describe('goal transport parity (Phase 4) — production registrations', () => {
           for (const call of mock.mock.calls) {
             expect(call[0]).toBe(GOAL_ID);
             expect(call[1]).toBe(KR_ID);
+          }
+        },
+      },
+    ],
+    [
+      'record update',
+      {
+        httpKey: 'record PUT /:id/key-results/:krId/records/:recordId',
+        ipcChannel: GoalChannels.RECORD_UPDATE,
+        httpReq: {
+          params: { id: GOAL_ID, krId: KR_ID, recordId: RECORD_ID },
+          body: validUpdateRecord,
+        },
+        ipcArgs: [GOAL_ID, KR_ID, RECORD_ID, validUpdateRecord],
+        validInvocation: {
+          params: { id: GOAL_ID, krId: KR_ID, recordId: RECORD_ID },
+          body: validUpdateRecord,
+        },
+        malformedHttpReq: {
+          params: { id: GOAL_ID, krId: KR_ID, recordId: RECORD_ID },
+          body: malformedUpdateRecord,
+        },
+        malformedIpcArgs: [GOAL_ID, KR_ID, RECORD_ID, malformedUpdateRecord],
+        assertPort: (port) => {
+          const mock = port.updateRecord as ReturnType<typeof vi.fn>;
+          expect(mock).toHaveBeenCalledTimes(2);
+          for (const call of mock.mock.calls) {
+            expect(call[0]).toBe(GOAL_ID);
+            expect(call[1]).toBe(KR_ID);
+            expect(call[2]).toBe(RECORD_ID);
           }
         },
       },

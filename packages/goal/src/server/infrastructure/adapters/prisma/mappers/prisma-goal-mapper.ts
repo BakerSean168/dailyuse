@@ -86,10 +86,10 @@ export class PrismaGoalMapper {
       title: row.title,
       description: row.description ?? null,
       progress: {
-        initialValue: row.initialValue ?? 0,
+        startingValue: row.initialValue ?? 0,
+        progressBaselineValue: null,
         currentValue: row.currentValue ?? 0,
         targetValue: row.targetValue ?? 100,
-        valueType: row.valueType ?? 'Incremental',
         aggregationMethod: row.aggregationMethod ?? 'Last',
         unit: row.unit ?? null,
       },
@@ -172,9 +172,9 @@ export class PrismaGoalMapper {
    */
   static parseKeyResultProgress(kr: RawKeyResultData) {
     return {
-      valueType: kr.progress.valueType ?? 'Incremental',
+      valueType: 'Incremental', // temporary physical-schema seam; retired from domain
       aggregationMethod: kr.progress.aggregationMethod ?? 'Last',
-      initialValue: kr.progress.initialValue ?? 0,
+      initialValue: kr.progress.startingValue ?? 0,
       targetValue: kr.progress.targetValue ?? 100,
       currentValue: kr.progress.currentValue ?? 0,
       unit: kr.progress.unit ?? null,

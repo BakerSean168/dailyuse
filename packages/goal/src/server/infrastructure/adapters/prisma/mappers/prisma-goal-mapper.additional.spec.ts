@@ -167,9 +167,9 @@ describe('PrismaGoalMapper additional coverage', () => {
     } as any);
     const fromFull = PrismaGoalMapper.parseKeyResultProgress({
       progress: {
-        valueType: 'Absolute',
         aggregationMethod: 'Max',
-        initialValue: 2,
+        startingValue: 2,
+        progressBaselineValue: null,
         targetValue: 20,
         currentValue: 10,
         unit: 'pt',
@@ -185,7 +185,7 @@ describe('PrismaGoalMapper additional coverage', () => {
       unit: null,
     });
     expect(fromFull).toEqual({
-      valueType: 'Absolute',
+      valueType: 'Incremental',
       aggregationMethod: 'Max',
       initialValue: 2,
       targetValue: 20,

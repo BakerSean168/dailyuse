@@ -1,36 +1,13 @@
 import type { Instant } from '@memoflow/contracts/primitives';
-/**
- * KeyResult 实体实现
- *
- * 【规范说明：实体（Entity）】
- * 实体是有唯一标识符（ID/UUID）的领域对象：
- * - 有唯一标识：通过 UUID 区分，而非属性值
- * - 有生命周期：可以被创建、修改、删除
- * - 从属于聚合根：在本例中，KeyResult 从属于 Goal 聚合根
- * - 可变性：状态可以改变，但 UUID 不变
- *
- * 【实体 vs 聚合根】
- * - KeyResult（实体）：Goal 聚合内的子对象，不能独立存在
- * - Goal（聚合根）：聚合的顶级对象，对外代表整个聚合
- *
- * 【KeyResult 职责】
- * 管理关键结果的完整生命周期：
- * - 进度追踪（当前值、目标值、初始值）
- * - 权重管理（用于综合评分）
- *
- * 并发和删除由 Goal 聚合根统一管理；子实体仅保留审计时间。
- *
- * 【不变量（Invariants）】
- * 这些条件必须始终保持真：
- * - weight 在 1-5 之间（整数）
- * - title 不能为空
- */
-
+import type {
+  KeyResultCalculationMethod,
+  KeyResultClientDTO,
+  KeyResultServerDTO,
+} from '@memoflow/contracts/goal';
 import { Entity } from '@memoflow/utils/domain';
 import { KeyResultId } from '../../domain';
-import type { KeyResultServerDTO } from '@memoflow/contracts/goal';
+import { calculateKeyResultProgress } from '../services/key-result-progress-calculator';
 
-// 内部状态接口
 export interface KeyResultState {
   id: KeyResultId;
   title: string;
@@ -42,254 +19,153 @@ export interface KeyResultState {
   updatedAt: Instant;
 }
 
-/**
- * KeyResult 实体
- */
 export class KeyResult extends Entity<KeyResultId> {
-  // ================= 1. 内部状态 (Single Props Object) =================
   private _props: KeyResultState;
 
-  // ================= 2. 构造函数 (Private) =================
   private constructor(state: KeyResultState) {
     super(state.id);
-    this._props = { ...state };
+    this._props = { ...state, progress: { ...state.progress } };
   }
 
-  // ================= 3. 公共属性 (Getters) =================
   get title(): string {
     return this._props.title;
   }
-
   get description(): string | null {
     return this._props.description;
   }
-
   get progress(): KeyResultServerDTO['progress'] {
-    return this._props.progress;
+    return { ...this._props.progress };
   }
-
   get weight(): number {
     return this._props.weight;
   }
-
   get sortOrder(): number {
     return this._props.sortOrder;
   }
-
   get createdAt(): Instant {
-    const v = this._props.createdAt;
-    return v as Instant;
+    return this._props.createdAt;
   }
-
   get updatedAt(): Instant {
-    const v = this._props.updatedAt;
-    return v as Instant;
+    return this._props.updatedAt;
   }
 
-  // ================= 4. 工厂方法 (Factory Methods) =================
-
-  /**
-   * 🏭 恢复工厂：从状态恢复实体
-   */
   public static load(state: KeyResultState): KeyResult {
     return new KeyResult(state);
   }
 
-  /**
-   * 🏭 业务工厂：创建新的关键结果
-   *
-   * @param params.id 可选的 ID，支持前端生成。如果不提供则自动生成
-   */
   public static create(params: {
-    id?: KeyResultId; // 支持前端生成 ID
+    id?: KeyResultId;
     title: string;
     description?: string;
     progress: KeyResultServerDTO['progress'];
     weight?: number;
     sortOrder?: number;
   }): KeyResult {
-    // 验证业务规则
-    if (!params.title || params.title.trim().length === 0) {
-      throw new Error('Title is required');
+    if (!params.title?.trim()) throw new Error('Title is required');
+    calculateKeyResultProgress(params.progress);
+    const weight = params.weight ?? 3;
+    if (!Number.isInteger(weight) || weight < 1 || weight > 5) {
+      throw new Error('Weight must be an integer between 1 and 5');
     }
-
     const now = Date.now();
-    const id = params.id ?? KeyResultId.generate();
-
     return new KeyResult({
-      id,
+      id: params.id ?? KeyResultId.generate(),
       title: params.title.trim(),
       description: params.description?.trim() || null,
-      progress: params.progress,
-      weight: params.weight ?? 1,
+      progress: { ...params.progress },
+      weight,
       sortOrder: params.sortOrder ?? 0,
       createdAt: now,
       updatedAt: now,
     });
   }
 
-  // ================= 5. 业务行为 (Business Methods) =================
-
-  /**
-   * ✅ 更新标题
-   */
   public updateTitle(title: string): void {
     const trimmed = title.trim();
-    if (trimmed.length === 0) {
-      throw new Error('Title cannot be empty');
-    }
+    if (!trimmed) throw new Error('Title cannot be empty');
     this._props.title = trimmed;
-    this._props.updatedAt = Date.now();
+    this.touch();
   }
 
-  /**
-   * ✅ 更新描述
-   */
   public updateDescription(description: string): void {
     this._props.description = description.trim() || null;
-    this._props.updatedAt = Date.now();
+    this.touch();
   }
 
-  /**
-   * ✅ 更新权重
-   *
-   * 【业务规则】
-   * - 权重必须在 1-5 之间（整数）
-   */
   public updateWeight(weight: number): void {
     if (!Number.isInteger(weight) || weight < 1 || weight > 5) {
       throw new Error('Weight must be an integer between 1 and 5');
     }
     this._props.weight = weight;
-    this._props.updatedAt = Date.now();
+    this.touch();
   }
 
-  /**
-   * ✅ 更新起始值
-   */
-  public updateInitialValue(initialValue: number): void {
-    if (!Number.isFinite(initialValue)) {
-      throw new Error('Initial value must be a finite number');
-    }
-    this._props.progress = {
-      ...this._props.progress,
-      initialValue,
-    };
-    this._props.updatedAt = Date.now();
+  public updateStartingValue(startingValue: number): void {
+    this.replaceProgress({ startingValue });
   }
 
-  /**
-   * ✅ 更新目标值
-   */
   public updateTargetValue(targetValue: number): void {
-    if (!Number.isFinite(targetValue) || targetValue <= 0) {
-      throw new Error('Target value must be a positive number');
-    }
-    this._props.progress = {
-      ...this._props.progress,
-      targetValue,
-    };
-    this._props.updatedAt = Date.now();
+    this.replaceProgress({ targetValue });
   }
 
-  /**
-   * ✅ 更新单位
-   */
+  public updateProgressBaselineValue(progressBaselineValue: number | null): void {
+    this.replaceProgress({ progressBaselineValue });
+  }
+
   public updateUnit(unit?: string | null): void {
-    this._props.progress = {
-      ...this._props.progress,
-      unit: unit?.trim() || null,
-    };
-    this._props.updatedAt = Date.now();
+    const normalized = unit?.trim() || null;
+    if (normalized && normalized.length > 20) throw new Error('Unit too long (max 20 characters)');
+    this._props.progress = { ...this._props.progress, unit: normalized };
+    this.touch();
   }
 
-  /** Update the measurement semantics while preserving the entity identity and history. */
-  public updateMeasurement(params: {
-    valueType: KeyResultServerDTO['progress']['valueType'];
-    aggregationMethod: KeyResultServerDTO['progress']['aggregationMethod'];
-  }): void {
-    this._props.progress = {
-      ...this._props.progress,
-      valueType: params.valueType,
-      aggregationMethod: params.aggregationMethod,
-    };
-    this._props.updatedAt = Date.now();
+  public updateAggregationMethod(aggregationMethod: KeyResultCalculationMethod): void {
+    this.replaceProgress({ aggregationMethod });
   }
 
-  /**
-   * ✅ 添加进度记录并重新计算进度
-   */
-  public addRecord(recordData: { value: number }): void {
-    this._props.updatedAt = Date.now();
-    this.recalculateProgress(recordData.value);
+  /** Atomically updates KR Measurement V2 semantics so intermediate states cannot invalidate a valid patch. */
+  public updateMeasurement(
+    patch: Partial<
+      Pick<
+        KeyResultServerDTO['progress'],
+        | 'startingValue'
+        | 'currentValue'
+        | 'targetValue'
+        | 'progressBaselineValue'
+        | 'aggregationMethod'
+      >
+    >,
+  ): void {
+    this.replaceProgress(patch);
   }
 
-  /**
-   * 📊 根据聚合方式重新计算进度
-   */
   public recalculateProgress(value: number): void {
-    this._props.progress = {
-      ...this._props.progress,
-      currentValue: value,
-    };
-    this._props.updatedAt = Date.now();
+    this.replaceProgress({ currentValue: value });
   }
 
-  /**
-   * ✅ 更新进度值
-   */
   public updateProgress(value: number): void {
     this.recalculateProgress(value);
   }
 
-  /**
-   * 📊 计算完成百分比（0-100）
-   */
   public calculatePercentage(): number {
-    const start = this._props.progress.initialValue ?? 0;
-    const range = this._props.progress.targetValue - start;
-
-    if (this._props.progress.targetValue <= 0 || range <= 0) {
-      return 0;
-    }
-
-    const percentage = ((this._props.progress.currentValue - start) / range) * 100;
-    return Math.min(Math.max(percentage, 0), 100);
+    return calculateKeyResultProgress(this._props.progress).percentage;
   }
 
-  /**
-   * 📊 是否已完成
-   */
   public isCompleted(): boolean {
-    return this._props.progress.currentValue >= this._props.progress.targetValue;
+    return calculateKeyResultProgress(this._props.progress).isCompleted;
   }
 
-  /**
-   * ✅ 更新排序
-   */
   public updateSortOrder(sortOrder: number): void {
     this._props.sortOrder = sortOrder;
-    this._props.updatedAt = Date.now();
+    this.touch();
   }
 
-  /**
-   * 📊 获取所有记录的值
-   */
-  public getRecordValues(): number[] {
-    return [];
-  }
-
-  // ================= 6. 序列化 (Serialization) =================
-
-  /**
-   * 转换为 Server DTO
-   */
   public toServerDTO(): KeyResultServerDTO {
     return {
       id: this.id,
       title: this._props.title,
       description: this._props.description,
-      progress: this._props.progress,
+      progress: { ...this._props.progress },
       weight: this._props.weight,
       sortOrder: this._props.sortOrder,
       createdAt: this._props.createdAt,
@@ -297,19 +173,30 @@ export class KeyResult extends Entity<KeyResultId> {
     };
   }
 
-  /**
-   * 转换为 Client DTO
-   */
-  public toClientDTO(): import('@memoflow/contracts/goal').KeyResultClientDTO {
+  public toClientDTO(): KeyResultClientDTO {
+    const calculation = calculateKeyResultProgress(this._props.progress);
     return {
-      id: this.id as KeyResultId,
+      id: this.id,
       title: this._props.title,
       description: this._props.description,
-      progress: this._props.progress,
+      progress: { ...this._props.progress },
+      progressPercentage: calculation.percentage,
+      isCompleted: calculation.isCompleted,
       weight: this._props.weight,
       order: this._props.sortOrder,
       createdAt: this._props.createdAt,
       updatedAt: this._props.updatedAt,
     };
+  }
+
+  private replaceProgress(patch: Partial<KeyResultServerDTO['progress']>): void {
+    const next = { ...this._props.progress, ...patch };
+    calculateKeyResultProgress(next);
+    this._props.progress = next;
+    this.touch();
+  }
+
+  private touch(): void {
+    this._props.updatedAt = Date.now();
   }
 }

@@ -6,6 +6,7 @@ export * from './archive-goal.use-case';
 export * from './complete-goal.use-case';
 export * from './create-goal.use-case';
 export * from './create-goal-record.use-case';
+export * from './update-goal-record.use-case';
 export * from './remove-task-goal-contribution.use-case';
 export * from './delete-goal.use-case';
 export * from './delete-goal-key-result.use-case';

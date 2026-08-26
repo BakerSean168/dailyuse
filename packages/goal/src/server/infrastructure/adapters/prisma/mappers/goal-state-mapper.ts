@@ -8,7 +8,6 @@
 import type {
   ReviewType,
   KeyResultWeightSnapshotDTO,
-  KeyResultValueType,
   KeyResultCalculationMethod,
   GoalReminderConfigDTO,
   KeyResultSnapshotDTO,
@@ -58,10 +57,10 @@ export interface RawKeyResultData {
   title: string;
   description: string | null;
   progress: {
-    initialValue: number;
+    startingValue: number;
+    progressBaselineValue: number | null;
     currentValue: number;
     targetValue: number;
-    valueType: string;
     aggregationMethod: string;
     unit: string | null;
   };
@@ -101,10 +100,10 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
       title: kr.title,
       description: kr.description ?? null,
       progress: {
-        initialValue: kr.progress.initialValue ?? 0,
+        startingValue: kr.progress.startingValue ?? 0,
+        progressBaselineValue: kr.progress.progressBaselineValue ?? null,
         currentValue: kr.progress.currentValue ?? 0,
         targetValue: kr.progress.targetValue ?? 100,
-        valueType: (kr.progress.valueType ?? 'Incremental') as KeyResultValueType,
         aggregationMethod: (kr.progress.aggregationMethod ?? 'Last') as KeyResultCalculationMethod,
         unit: kr.progress.unit ?? null,
       },

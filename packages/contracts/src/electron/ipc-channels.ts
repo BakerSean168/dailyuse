@@ -55,6 +55,7 @@ export const GoalChannels = {
   REVIEW_UPDATE: 'goal:review:update',
   REVIEW_DELETE: 'goal:review:delete',
   RECORD_CREATE: 'goal:record:create',
+  RECORD_UPDATE: 'goal:record:update',
   RECORD_LIST_BY_KEY_RESULT: 'goal:record:listByKeyResult',
   RECORD_LIST_BY_GOAL: 'goal:record:listByGoal',
   RECORD_DELETE: 'goal:record:delete',

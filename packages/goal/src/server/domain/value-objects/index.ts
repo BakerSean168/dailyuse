@@ -12,7 +12,6 @@ export * from './key-result-weight-snapshot-id';
 
 // Value Objects (Enums & Types)
 export * from './goal-status';
-export * from './key-result-value-type';
 export * from './key-result-calculation-method';
 export * from './reminder-trigger-type';
 export * from './review-type';

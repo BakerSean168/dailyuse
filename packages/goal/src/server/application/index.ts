@@ -35,6 +35,7 @@ export {
   DeleteGoalReviewUseCase,
   // Record Services
   CreateGoalRecordUseCase,
+  UpdateGoalRecordUseCase,
   ListGoalRecordsUseCase,
   DeleteGoalRecordUseCase,
   // Workflow Services

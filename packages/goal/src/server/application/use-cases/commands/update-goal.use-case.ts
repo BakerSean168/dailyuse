@@ -90,11 +90,11 @@ export class UpdateGoalUseCase {
           goal.updateKeyResult(id, {
             title: keyResult.title,
             description: keyResult.description,
-            valueType: keyResult.valueType,
             aggregationMethod: keyResult.calculationMethod,
-            startValue: keyResult.startValue ?? 0,
-            currentValue: keyResult.currentValue ?? 0,
+            startingValue: keyResult.startingValue,
+            currentValue: keyResult.currentValue,
             targetValue: keyResult.targetValue,
+            progressBaselineValue: keyResult.progressBaselineValue,
             unit: keyResult.unit ?? null,
             weight: keyResult.weight,
           });
@@ -104,11 +104,11 @@ export class UpdateGoalUseCase {
         goal.createAndAddKeyResult({
           title: keyResult.title,
           description: keyResult.description,
-          valueType: keyResult.valueType,
           aggregationMethod: keyResult.calculationMethod,
-          startValue: keyResult.startValue,
+          startingValue: keyResult.startingValue,
           currentValue: keyResult.currentValue,
           targetValue: keyResult.targetValue,
+          progressBaselineValue: keyResult.progressBaselineValue,
           unit: keyResult.unit,
           weight: keyResult.weight,
         });

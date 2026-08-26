@@ -20,13 +20,13 @@ export class AddGoalKeyResultUseCase {
     identityId: string,
     keyResult: {
       title: string;
-      valueType: string;
-      aggregationMethod?: string;
-      startValue?: number;
+      aggregationMethod?: import('@memoflow/contracts/goal').KeyResultCalculationMethod;
+      startingValue?: number;
       targetValue: number;
       currentValue?: number;
-      unit?: string;
-      weight: number;
+      progressBaselineValue?: number | null;
+      unit?: string | null;
+      weight?: number;
       expectedVersion: number;
     },
   ): Promise<Result<GoalMutationReceipt>> {

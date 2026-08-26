@@ -19,6 +19,7 @@ import type {
   UpdateKeyResultReq,
   DeleteKeyResultReq,
   CreateGoalRecordReq,
+  UpdateGoalRecordReq,
   DeleteGoalRecordReq,
   CreateGoalReviewReq,
   UpdateGoalReviewReq,
@@ -85,6 +86,8 @@ function keyResultFromDTO(dto: KeyResultClientDTO): KeyResult {
     title: dto.title,
     description: dto.description,
     progress: dto.progress,
+    progressPercentage: dto.progressPercentage,
+    isCompleted: dto.isCompleted,
     weight: dto.weight,
     order: dto.order,
     createdAt: dto.createdAt,
@@ -179,6 +182,12 @@ export interface GoalClientPort {
     keyResultId: string,
     request: Pick<CreateGoalRecordReq, 'value' | 'note' | 'expectedVersion'>,
   ): Promise<Result<GoalMutationReceipt>>;
+  updateGoalRecord(
+    goalId: string,
+    keyResultId: string,
+    recordId: string,
+    request: UpdateGoalRecordReq,
+  ): Promise<Result<GoalMutationReceipt>>;
   getGoalRecordsByKeyResult(
     goalId: string,
     krId: string,
@@ -232,6 +241,7 @@ export class GoalClientService implements GoalClientPort {
     this.batchUpdateKeyResultWeights = this.batchUpdateKeyResultWeights.bind(this);
     this.getProgressBreakdown = this.getProgressBreakdown.bind(this);
     this.createGoalRecord = this.createGoalRecord.bind(this);
+    this.updateGoalRecord = this.updateGoalRecord.bind(this);
     this.getGoalRecordsByKeyResult = this.getGoalRecordsByKeyResult.bind(this);
     this.getGoalRecordsByGoal = this.getGoalRecordsByGoal.bind(this);
     this.deleteGoalRecord = this.deleteGoalRecord.bind(this);
@@ -382,6 +392,15 @@ export class GoalClientService implements GoalClientPort {
     request: Pick<CreateGoalRecordReq, 'value' | 'note' | 'expectedVersion'>,
   ): Promise<Result<GoalMutationReceipt>> {
     return this.goalApi.createGoalRecord(goalId, keyResultId, request);
+  }
+
+  async updateGoalRecord(
+    goalId: string,
+    keyResultId: string,
+    recordId: string,
+    request: UpdateGoalRecordReq,
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.goalApi.updateGoalRecord(goalId, keyResultId, recordId, request);
   }
 
   async getGoalRecordsByKeyResult(

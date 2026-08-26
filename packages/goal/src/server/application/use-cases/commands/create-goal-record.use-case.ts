@@ -15,9 +15,7 @@ import type { GoalMutationReceipt, GoalRecordSource } from '@memoflow/contracts/
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
 import type { IdentityId, KeyResultId } from '@memoflow/contracts/primitives';
-import {
-  type GoalWriteTransactionRunner,
-} from './goal-write-support';
+import { type GoalWriteTransactionRunner } from './goal-write-support';
 import { createGoalMutationReceipt } from './goal-mutation-receipt';
 
 export class CreateGoalRecordUseCase {
@@ -106,14 +104,11 @@ export class CreateGoalRecordUseCase {
         // 4. 持久化
         await goalRecordRepository.save(record);
 
-        // 5. 追加 record 时，基于当前值和既有历史保持隐式基线一致。
-        // 这可以避免「手工 currentValue 已有进度，但尚未生成历史 record」时
-        // 第一次新增 record 把当前值重置回仅由 history 推导的结果。
-        const nextValue = calculateNextValueOnRecordCreate(
-          KeyResultProgress.fromDTO(keyResult.progress),
-          historyBefore.map((item) => item.value),
+        // 5. KR currentValue is always derived from the complete authoritative record history.
+        const nextValue = KeyResultProgress.fromDTO(keyResult.progress).recalculateFromHistory([
+          ...historyBefore.map((item) => item.value),
           params.value,
-        );
+        ]).currentValue;
 
         if (nextValue !== keyResult.progress.currentValue) {
           goal.updateKeyResultProgress(keyResultId, nextValue);
@@ -140,16 +135,4 @@ export class CreateGoalRecordUseCase {
       throw cause;
     }
   }
-}
-
-function calculateNextValueOnRecordCreate(
-  progress: KeyResultProgress,
-  historyBefore: number[],
-  addedValue: number,
-): number {
-  if (progress.aggregationMethod === 'Sum') {
-    return progress.currentValue + addedValue;
-  }
-
-  return progress.recalculateFromHistory([...historyBefore, addedValue]).currentValue;
 }

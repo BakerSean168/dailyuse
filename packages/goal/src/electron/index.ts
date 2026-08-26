@@ -93,6 +93,7 @@ import {
   UpdateGoalInvocationSchema,
   UpdateKeyResultInvocationSchema,
   UpdateReviewInvocationSchema,
+  UpdateRecordInvocationSchema,
 } from '@memoflow/contracts/goal';
 
 const logger = createLogger('GoalElectron');
@@ -444,6 +445,24 @@ export function createGoalElectronModule(
           }),
         );
         installed.push(GoalChannels.RECORD_CREATE);
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.RECORD_UPDATE,
+          UpdateRecordInvocationSchema,
+          (data, requestContext) =>
+            goalController.updateRecord(
+              data.params.id,
+              data.params.krId,
+              data.params.recordId,
+              data.body,
+              requestContext,
+            ),
+          (args) => ({
+            params: { id: args[0], krId: args[1], recordId: args[2] },
+            body: args[3],
+          }),
+        );
+        installed.push(GoalChannels.RECORD_UPDATE);
         ipcMain.handle(
           GoalChannels.RECORD_LIST_BY_KEY_RESULT,
           async (_, goalId, keyResultId, params) =>

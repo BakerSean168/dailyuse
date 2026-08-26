@@ -5,6 +5,7 @@
  */
 
 import { z } from 'zod';
+import { KeyResultCalculationMethod } from '../value-objects/key-result-calculation-method';
 import { brandedId } from '../../../primitives';
 import type { GoalId, KeyResultId } from '../../../primitives';
 import type { KeyResultClientDTO } from '../entities/key-result-client';
@@ -38,7 +39,9 @@ export const UpdateKeyResultSchema = z.object({
   expectedVersion: z.number().int().min(1),
   title: z.string().min(1).max(256).optional(),
   description: z.string().max(2000).nullable().optional(),
-  startValue: z.number().optional(),
+  startingValue: z.number().optional(),
+  progressBaselineValue: z.number().nullable().optional(),
+  calculationMethod: z.enum(KeyResultCalculationMethod).optional(),
   currentValue: z.number().optional(),
   targetValue: z.number().optional(),
   unit: z.string().max(50).nullable().optional(),
@@ -70,7 +73,7 @@ export type GetKeyResultsRes = z.infer<typeof KeyResultListResSchema>;
 export const UpdateKeyResultProgressSchema = z.object({
   keyResultId: brandedId<KeyResultId>(),
   expectedVersion: z.number().int().min(1),
-  newValue: z.number().min(0, '新值不能为负数'),
+  newValue: z.number(),
   note: z.string().max(500).optional(),
 });
 

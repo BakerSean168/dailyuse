@@ -30,6 +30,7 @@ import type {
   UpdateKeyResultInvocation,
   UpdateKeyResultProgressInvocation,
   UpdateReviewInvocation,
+  UpdateRecordInvocation,
 } from '../api/goal-invocation.schemas';
 
 /**
@@ -75,5 +76,6 @@ export type GoalRpcMap = {
 
   // Record Operations
   'goal:record:create': [CreateRecordInvocation, GoalMutationReceipt];
+  'goal:record:update': [UpdateRecordInvocation, GoalMutationReceipt];
   'goal:record:delete': [DeleteRecordInvocation, GoalMutationReceipt];
 };

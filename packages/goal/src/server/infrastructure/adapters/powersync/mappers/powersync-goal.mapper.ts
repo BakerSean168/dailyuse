@@ -64,10 +64,10 @@ export class PowerSyncGoalMapper {
       title: String(row.title),
       description: row.description ? String(row.description) : null,
       progress: {
-        initialValue: Number(row.initial_value ?? 0),
+        startingValue: Number(row.initial_value ?? 0),
+        progressBaselineValue: null,
         currentValue: Number(row.current_value ?? 0),
         targetValue: Number(row.target_value ?? 100),
-        valueType: row.value_type ? String(row.value_type) : 'Incremental',
         aggregationMethod: row.aggregation_method ? String(row.aggregation_method) : 'Last',
         unit: row.unit ? String(row.unit) : null,
       },

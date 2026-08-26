@@ -587,48 +587,42 @@ export class Goal extends AggregateRoot<GoalId> {
     id?: KeyResultId;
     title: string;
     description?: string | null;
-    valueType: string;
-    aggregationMethod?: string;
-    startValue?: number;
-    targetValue: number;
+    aggregationMethod?: KeyResultServerDTO['progress']['aggregationMethod'];
+    startingValue?: number;
     currentValue?: number;
-    unit?: string;
-    weight: number;
+    targetValue: number;
+    progressBaselineValue?: number | null;
+    unit?: string | null;
+    weight?: number;
   }): KeyResult {
-    // Guard: 确保可修改
     this.ensureModifiable();
-
-    // 验证权重范围
-    Goal.validateKeyResultWeight(params.weight);
-
-    // 创建关键结果
+    const weight = params.weight ?? 3;
+    Goal.validateKeyResultWeight(weight);
+    const currentValue = params.currentValue ?? params.startingValue ?? 0;
+    const startingValue = params.startingValue ?? currentValue;
     const keyResult = KeyResult.create({
       id: params.id,
       title: params.title,
       description: params.description ?? undefined,
       progress: {
-        initialValue: params.startValue ?? 0,
-        currentValue: params.currentValue ?? 0,
+        startingValue,
+        currentValue,
         targetValue: params.targetValue,
-        valueType: params.valueType as KeyResultServerDTO['progress']['valueType'],
-        aggregationMethod: (params.aggregationMethod ||
-          'Last') as KeyResultServerDTO['progress']['aggregationMethod'],
-        unit: params.unit ?? null,
+        progressBaselineValue: params.progressBaselineValue ?? null,
+        aggregationMethod: params.aggregationMethod ?? 'Sum',
+        unit: params.unit?.trim() || null,
       },
-      weight: params.weight,
+      weight,
       sortOrder: this._props.keyResults.length,
     });
 
-    // 添加到集合
     this._props.keyResults.push(keyResult);
     this._props.updatedAt = Date.now();
-
     this.addDomainEvent<GoalEventMap['goal:key-result-added']>('goal:key-result-added', {
       identityId: this._props.identityId,
       goal: this.toServerDTO(true),
       keyResult: keyResult.toServerDTO(),
     });
-
     return keyResult;
   }
 
@@ -643,54 +637,42 @@ export class Goal extends AggregateRoot<GoalId> {
       title?: string;
       description?: string | null;
       weight?: number;
-      startValue?: number;
+      startingValue?: number;
       currentValue?: number;
       targetValue?: number;
+      progressBaselineValue?: number | null;
       unit?: string | null;
-      valueType?: KeyResultServerDTO['progress']['valueType'];
       aggregationMethod?: KeyResultServerDTO['progress']['aggregationMethod'];
     },
   ): void {
     this.ensureModifiable();
-
     const keyResult = this._props.keyResults.find((kr) => kr.id === keyResultId);
-    if (!keyResult) {
-      throw new GoalKeyResultNotFoundError(keyResultId);
-    }
+    if (!keyResult) throw new GoalKeyResultNotFoundError(keyResultId);
 
     const previousValue =
       updates.currentValue === undefined ? null : keyResult.progress.currentValue;
     const changeKeys = Object.keys(updates);
-
-    if (updates.title) keyResult.updateTitle(updates.title);
-    if (updates.description !== undefined) {
-      keyResult.updateDescription(updates.description || '');
-    }
+    if (updates.title !== undefined) keyResult.updateTitle(updates.title);
+    if (updates.description !== undefined) keyResult.updateDescription(updates.description || '');
     if (updates.weight !== undefined) {
       Goal.validateKeyResultWeight(updates.weight);
       keyResult.updateWeight(updates.weight);
     }
-    if (updates.startValue !== undefined) {
-      keyResult.updateInitialValue(updates.startValue);
-    }
-    if (updates.currentValue !== undefined) {
-      keyResult.updateProgress(updates.currentValue);
-    }
-    if (updates.targetValue !== undefined) {
-      keyResult.updateTargetValue(updates.targetValue);
-    }
-    if (updates.unit !== undefined) {
-      keyResult.updateUnit(updates.unit);
-    }
-    if (updates.valueType !== undefined || updates.aggregationMethod !== undefined) {
-      keyResult.updateMeasurement({
-        valueType: updates.valueType ?? keyResult.progress.valueType,
-        aggregationMethod: updates.aggregationMethod ?? keyResult.progress.aggregationMethod,
-      });
-    }
+    const measurementPatch = {
+      ...(updates.startingValue !== undefined ? { startingValue: updates.startingValue } : {}),
+      ...(updates.currentValue !== undefined ? { currentValue: updates.currentValue } : {}),
+      ...(updates.targetValue !== undefined ? { targetValue: updates.targetValue } : {}),
+      ...(updates.progressBaselineValue !== undefined
+        ? { progressBaselineValue: updates.progressBaselineValue }
+        : {}),
+      ...(updates.aggregationMethod !== undefined
+        ? { aggregationMethod: updates.aggregationMethod }
+        : {}),
+    };
+    if (Object.keys(measurementPatch).length > 0) keyResult.updateMeasurement(measurementPatch);
+    if (updates.unit !== undefined) keyResult.updateUnit(updates.unit);
 
     this._props.updatedAt = Date.now();
-
     this.addDomainEvent<GoalEventMap['goal:key-result-updated']>('goal:key-result-updated', {
       identityId: this._props.identityId,
       goal: this.toServerDTO(true),
@@ -955,8 +937,11 @@ export class Goal extends AggregateRoot<GoalId> {
     const keyResultSnapshots: KeyResultSnapshotDTO[] = this._props.keyResults.map((kr) => ({
       keyResultId: kr.id,
       title: kr.title,
-      targetValue: kr.progress.targetValue,
       currentValue: kr.progress.currentValue,
+      targetValue: kr.progress.targetValue,
+      progressBaselineValue: kr.progress.progressBaselineValue,
+      aggregationMethod: kr.progress.aggregationMethod,
+      weight: kr.weight,
       progressPercentage: kr.calculatePercentage(),
     }));
 

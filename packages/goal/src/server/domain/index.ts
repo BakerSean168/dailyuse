@@ -60,7 +60,7 @@ export {
 export type { IWalletRepository, WalletAccountDTO, WalletTransactionDTO } from './repositories';
 
 // 领域服务（只保留真正的领域服务）
-export { GoalPolicy, GoalProgressCalculator } from './services';
+export { GoalPolicy, GoalProgressCalculator, calculateKeyResultProgress } from './services';
 
 // 导出仓储接口类型
 export type { IGoalRecordRepository, GoalRecordQueryOptions } from './repositories';

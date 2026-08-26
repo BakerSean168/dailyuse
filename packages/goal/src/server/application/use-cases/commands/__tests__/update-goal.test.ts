@@ -104,7 +104,6 @@ describe('UpdateGoalUseCase', () => {
     const goal = createTestGoal();
     const existing = goal.createAndAddKeyResult({
       title: 'Old KR',
-      valueType: 'Incremental',
       aggregationMethod: 'Sum',
       targetValue: 10,
       weight: 1,
@@ -119,16 +118,15 @@ describe('UpdateGoalUseCase', () => {
         {
           id: existing.id,
           title: 'Updated KR',
-          valueType: 'Percentage',
           calculationMethod: 'Last',
-          startValue: 0,
+          startingValue: 0,
+          progressBaselineValue: null,
           currentValue: 25,
           targetValue: 100,
           weight: 3,
         },
         {
           title: 'New KR',
-          valueType: 'Binary',
           calculationMethod: 'Last',
           targetValue: 1,
           weight: 2,
@@ -140,7 +138,13 @@ describe('UpdateGoalUseCase', () => {
     expect(goal.name).toBe('Updated goal and KRs');
     expect(goal.getAllKeyResults()).toHaveLength(2);
     expect(goal.getKeyResult(String(existing.id))?.title).toBe('Updated KR');
-    expect(goal.getKeyResult(String(existing.id))?.progress.valueType).toBe('Percentage');
+    expect(goal.getKeyResult(String(existing.id))?.progress).toMatchObject({
+      startingValue: 0,
+      currentValue: 25,
+      targetValue: 100,
+      progressBaselineValue: null,
+      aggregationMethod: 'Last',
+    });
     expect(goalRepo.saveRootWithExpectedVersion).toHaveBeenCalledOnce();
     expect(goalRepo.saveRootWithExpectedVersion).toHaveBeenCalledWith(goal, 2);
   });
@@ -155,7 +159,6 @@ describe('UpdateGoalUseCase', () => {
         {
           id: 'foreign-kr' as any,
           title: 'Foreign',
-          valueType: 'Incremental',
           calculationMethod: 'Sum',
           targetValue: 10,
           weight: 1,

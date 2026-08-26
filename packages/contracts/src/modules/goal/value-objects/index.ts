@@ -34,8 +34,6 @@ export { GoalStatus } from './goal-status';
 
 export { GoalSystemView } from './goal-system-view';
 
-export { KeyResultValueType } from './key-result-value-type';
-
 export { KeyResultCalculationMethod } from './key-result-calculation-method';
 
 export { ReminderTriggerType } from './reminder-trigger-type';

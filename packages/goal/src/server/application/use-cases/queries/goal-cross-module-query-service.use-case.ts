@@ -5,7 +5,7 @@
  * 依赖注入模式：通过构造函数注入 Goal Repository
  */
 
-import type { IGoalRepository } from '../../../domain';
+import { calculateKeyResultProgress, type IGoalRepository } from '../../../domain';
 import type { Goal } from '../../../domain';
 import type { GoalStatus } from '@memoflow/contracts/goal';
 import { createLogger } from '@memoflow/utils/logger';
@@ -100,10 +100,7 @@ export class GoalCrossModuleQueryServiceUseCase {
         progress: {
           current: kr.progress.currentValue,
           target: kr.progress.targetValue,
-          percentage:
-            kr.progress.targetValue === 0
-              ? 0
-              : Math.round((kr.progress.currentValue / kr.progress.targetValue) * 100),
+          percentage: calculateKeyResultProgress(kr.progress).percentage,
         },
         weight: kr.weight,
       })),

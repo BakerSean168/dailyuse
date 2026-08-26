@@ -55,8 +55,12 @@ function createKeyResultFixture(overrides?: Record<string, any>) {
     title: overrides?.title ?? 'Key Result 1',
     description: overrides?.description ?? 'KR description',
     progress: overrides?.progress ?? {
+      aggregationMethod: 'Last',
+      startingValue: 0,
       currentValue: 30,
       targetValue: 100,
+      progressBaselineValue: null,
+      unit: null,
     },
     weight: overrides?.weight ?? 1,
     ...overrides,
@@ -198,7 +202,14 @@ describe('GoalCrossModuleQueryServiceUseCase', () => {
         id: 'kr-1',
         title: 'KR Title',
         description: 'KR Desc',
-        progress: { currentValue: 50, targetValue: 200 },
+        progress: {
+          aggregationMethod: 'Last',
+          startingValue: 0,
+          currentValue: 50,
+          targetValue: 200,
+          progressBaselineValue: null,
+          unit: null,
+        },
         weight: 2,
       });
       const goal = createGoalFixture({ id: 'goal-1', keyResults: [kr] });

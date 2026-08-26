@@ -26,6 +26,7 @@ import type {
   DeleteGoalReviewReq,
   GetGoalReviewsRes,
   CreateGoalRecordReq,
+  UpdateGoalRecordReq,
   DeleteGoalRecordReq,
   GetGoalRecordsRes,
   GetGoalAggregateRes,
@@ -188,6 +189,18 @@ export class GoalHttpAdapter implements IGoalApiClient {
   ): Promise<Result<GoalMutationReceipt>> {
     return this.httpClient.post(
       `${this.baseUrl}/${goalId}/key-results/${keyResultId}/records`,
+      request,
+    );
+  }
+
+  async updateGoalRecord(
+    goalId: string,
+    keyResultId: string,
+    recordId: string,
+    request: UpdateGoalRecordReq,
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.httpClient.put(
+      `${this.baseUrl}/${goalId}/key-results/${keyResultId}/records/${recordId}`,
       request,
     );
   }

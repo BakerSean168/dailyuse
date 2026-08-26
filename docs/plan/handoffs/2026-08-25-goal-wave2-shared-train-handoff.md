@@ -97,3 +97,47 @@ currently asserts that the Goal legacy schedule projection imports/calls
 as a compile-safe bridge until the authorized Wave 3 scheduling projector migration.
 This Schedule-owned cross-domain surface test must be reconciled by the Scheduling/Shared
 Train owner; the Goal lane does not modify Schedule contracts/tests in Wave 2.
+
+## GOAL-2102 shared consumers / schema train
+
+### AI contract consumer (out of Goal Wave 2 scope)
+
+`packages/contracts/src/modules/ai/api/ai-goal-create-workflow.dto.ts` currently imports
+`../../goal/value-objects/key-result-value-type` and therefore blocks the monorepo
+`contracts:build` once GOAL-2102 removes `KeyResultValueType`.
+
+The AI lane must migrate that Goal-create KR payload to the canonical Goal KR V2 input:
+
+- remove `valueType` / `KeyResultValueType`;
+- use `calculationMethod` (`Sum | Average | Max | Min | Last`);
+- use `startingValue`, `currentValue`, `targetValue`;
+- add nullable `progressBaselineValue` when the metric has no natural zero / decreases;
+- preserve `unit` and `weight`.
+
+The Goal lane intentionally does not edit AI contracts, per the Wave 2 authorization boundary.
+
+### KeyResult central schema
+
+Prisma `KeyResult` must converge to:
+
+- remove `valueType`;
+- rename `initialValue` -> `startingValue`;
+- retain `currentValue`, `targetValue`, `unit`, `aggregationMethod`, `weight`, `sortOrder`;
+- add `progressBaselineValue Float?` (nullable, no implicit default).
+
+PowerSync `key_results` must converge equivalently:
+
+- remove `value_type`;
+- rename `initial_value` -> `starting_value`;
+- add nullable `progress_baseline_value REAL`;
+- retain current/target/unit/aggregation/weight/order.
+
+Until this central destructive schema train is applied, Goal adapters intentionally use a narrow
+physical compatibility seam: old `initialValue` stores canonical `startingValue`, old
+`valueType` is written as neutral `Incremental`, and reads ignore it. **No baseline is encoded
+into an unrelated legacy column.** Consequently non-null `progressBaselineValue` cannot survive
+a persistence round trip until the shared schema train lands; this is the remaining schema-level
+blocker for fully durable decreasing-metric KRs.
+
+After the train: regenerate Prisma client, reconcile PowerSync schema, remove the neutral
+`valueType` writes and `progressBaselineValue: null` adapter fallbacks, then rerun Goal integration.

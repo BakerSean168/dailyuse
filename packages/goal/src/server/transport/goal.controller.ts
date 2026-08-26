@@ -19,6 +19,7 @@ import type {
   BatchUpdateKeyResultWeightsReq,
   CloneGoalReq,
   CreateGoalRecordReq,
+  UpdateGoalRecordReq,
   CreateGoalReviewReq,
   CreateGoalReq,
   DeleteGoalRecordReq,
@@ -55,6 +56,7 @@ import type {
   UpdateGoalReviewUseCase,
   DeleteGoalReviewUseCase,
   CreateGoalRecordUseCase,
+  UpdateGoalRecordUseCase,
   ListGoalRecordsUseCase,
   DeleteGoalRecordUseCase,
   CompleteGoalUseCase,
@@ -86,6 +88,7 @@ export interface GoalUseCases {
   updateReview: UpdateGoalReviewUseCase['execute'];
   deleteReview: DeleteGoalReviewUseCase['execute'];
   createRecord: CreateGoalRecordUseCase['execute'];
+  updateRecord: UpdateGoalRecordUseCase['execute'];
   listRecords: ListGoalRecordsUseCase['execute'];
   deleteRecord: DeleteGoalRecordUseCase['execute'];
   getGoalAggregate: GetGoalAggregateUseCase['execute'];
@@ -233,11 +236,11 @@ export class GoalController {
   ): Promise<Result<unknown>> {
     return this.useCases.addKeyResult(goalId, cx.identityId, {
       title: input.title,
-      valueType: input.valueType,
       aggregationMethod: input.calculationMethod,
-      startValue: input.startValue,
+      startingValue: input.startingValue,
       targetValue: input.targetValue,
       currentValue: input.currentValue,
+      progressBaselineValue: input.progressBaselineValue,
       unit: input.unit,
       weight: input.weight,
       expectedVersion: input.expectedVersion,
@@ -254,9 +257,11 @@ export class GoalController {
       title: input.title,
       description: input.description ?? undefined,
       weight: input.weight,
-      startValue: input.startValue,
+      startingValue: input.startingValue,
       currentValue: input.currentValue,
       targetValue: input.targetValue,
+      progressBaselineValue: input.progressBaselineValue,
+      aggregationMethod: input.calculationMethod,
       unit: input.unit ?? undefined,
       expectedVersion: input.expectedVersion,
     });
@@ -356,6 +361,16 @@ export class GoalController {
       },
       cx.identityId,
     );
+  }
+
+  async updateRecord(
+    goalId: string,
+    keyResultId: string,
+    recordId: string,
+    input: UpdateGoalRecordReq,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
+    return this.useCases.updateRecord(goalId, keyResultId, recordId, input, cx.identityId);
   }
 
   async listRecordsByGoal(

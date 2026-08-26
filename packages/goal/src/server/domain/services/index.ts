@@ -14,3 +14,5 @@
 
 export * from './goal-policy.service';
 export * from './goal-progress-calculator';
+
+export * from './key-result-progress-calculator';

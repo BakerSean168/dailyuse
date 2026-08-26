@@ -42,6 +42,7 @@ import {
   UpdateGoalReviewUseCase,
   DeleteGoalReviewUseCase,
   CreateGoalRecordUseCase,
+  UpdateGoalRecordUseCase,
   ListGoalRecordsUseCase,
   DeleteGoalRecordUseCase,
   PermanentlyDeleteGoalUseCase,
@@ -168,6 +169,7 @@ export interface GoalModuleUseCases {
 
   // Record / 进度记录
   readonly createRecord: CreateGoalRecordUseCase;
+  readonly updateRecord: UpdateGoalRecordUseCase;
   readonly listRecords: ListGoalRecordsUseCase;
   readonly deleteRecord: DeleteGoalRecordUseCase;
 
@@ -282,6 +284,11 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
 
     // Record / 进度记录
     createRecord: new CreateGoalRecordUseCase(
+      goalRepository,
+      goalRecordRepository,
+      goalWriteTransactionRunner,
+    ),
+    updateRecord: new UpdateGoalRecordUseCase(
       goalRepository,
       goalRecordRepository,
       goalWriteTransactionRunner,
@@ -418,6 +425,8 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
     // Record / 进度记录
     createRecord: (goalId, keyResultId, params, identityId) =>
       useCases.createRecord.execute(goalId, keyResultId, params, identityId),
+    updateRecord: (goalId, keyResultId, recordId, params, identityId) =>
+      useCases.updateRecord.execute(goalId, keyResultId, recordId, params, identityId),
     listRecords: (params) => useCases.listRecords.execute(params),
     deleteRecord: (goalId, keyResultId, recordId, identityId, expectedVersion) =>
       useCases.deleteRecord.execute(goalId, keyResultId, recordId, identityId, expectedVersion),

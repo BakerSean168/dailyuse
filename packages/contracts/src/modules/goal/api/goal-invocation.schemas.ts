@@ -32,7 +32,11 @@ import {
   DeleteGoalReviewSchema,
   UpdateGoalReviewSchema,
 } from './goal-review.dto';
-import { CreateGoalRecordSchema, DeleteGoalRecordSchema } from './goal-record.dto';
+import {
+  CreateGoalRecordSchema,
+  DeleteGoalRecordSchema,
+  UpdateGoalRecordSchema,
+} from './goal-record.dto';
 import { BatchUpdateKeyResultWeightsReqSchema } from './response-schemas';
 
 // ============================================================================
@@ -173,6 +177,13 @@ export const CreateRecordInvocationSchema = z.object({
   body: CreateGoalRecordSchema,
 });
 export type CreateRecordInvocation = z.infer<typeof CreateRecordInvocationSchema>;
+
+/** PUT /:id/key-results/:krId/records/:recordId — edit a user-owned record. */
+export const UpdateRecordInvocationSchema = z.object({
+  params: RecordRouteParamsSchema,
+  body: UpdateGoalRecordSchema,
+});
+export type UpdateRecordInvocation = z.infer<typeof UpdateRecordInvocationSchema>;
 
 /** DELETE /:id/key-results/:krId/records/:recordId — delete a record. 删除进度记录。 */
 export const DeleteRecordInvocationSchema = z.object({

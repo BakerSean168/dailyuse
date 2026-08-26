@@ -19,11 +19,27 @@ import { GoalRecordListResSchema } from './response-schemas';
 export const CreateGoalRecordSchema = z.object({
   expectedVersion: z.number().int().min(1),
   keyResultId: brandedId<KeyResultId>(),
-  value: z.number().min(0, '记录值不能为负数'),
+  value: z.number(),
   note: z.string().max(500).optional(),
 });
 
 export type CreateGoalRecordReq = z.infer<typeof CreateGoalRecordSchema>;
+
+// ============================================================================
+// UPDATE Goal Record
+// ============================================================================
+
+export const UpdateGoalRecordSchema = z
+  .object({
+    expectedVersion: z.number().int().min(1),
+    value: z.number().optional(),
+    note: z.string().max(500).nullable().optional(),
+  })
+  .refine((input) => input.value !== undefined || input.note !== undefined, {
+    message: 'At least one editable GoalRecord field is required',
+  });
+
+export type UpdateGoalRecordReq = z.infer<typeof UpdateGoalRecordSchema>;
 
 // ============================================================================
 // GET Goal Records

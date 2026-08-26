@@ -65,13 +65,13 @@ export interface GoalApplicationPort {
     identityId: string,
     keyResult: {
       title: string;
-      valueType: string;
-      aggregationMethod?: string;
-      startValue?: number;
+      aggregationMethod?: import('@memoflow/contracts/goal').KeyResultCalculationMethod;
+      startingValue?: number;
       targetValue: number;
       currentValue?: number;
-      unit?: string;
-      weight: number;
+      progressBaselineValue?: number | null;
+      unit?: string | null;
+      weight?: number;
       expectedVersion: number;
     },
   ): Promise<Result<GoalMutationReceipt>>;
@@ -83,7 +83,9 @@ export interface GoalApplicationPort {
       title?: string;
       description?: string;
       weight?: number;
-      startValue?: number;
+      startingValue?: number;
+      progressBaselineValue?: number | null;
+      aggregationMethod?: import('@memoflow/contracts/goal').KeyResultCalculationMethod;
       currentValue?: number;
       targetValue?: number;
       unit?: string;
@@ -145,6 +147,13 @@ export interface GoalApplicationPort {
     goalId: string,
     keyResultId: string,
     params: { value: number; note?: string; expectedVersion: number },
+    identityId: string,
+  ): Promise<Result<GoalMutationReceipt>>;
+  updateRecord(
+    goalId: string,
+    keyResultId: string,
+    recordId: string,
+    params: { value?: number; note?: string | null; expectedVersion: number },
     identityId: string,
   ): Promise<Result<GoalMutationReceipt>>;
   listRecords(params: ListGoalRecordsParams): Promise<Result<ListGoalRecordsResult>>;

@@ -27,6 +27,7 @@ import type {
   DeleteGoalReviewReq,
   GetGoalReviewsRes,
   CreateGoalRecordReq,
+  UpdateGoalRecordReq,
   DeleteGoalRecordReq,
   GetGoalRecordsRes,
   GetGoalAggregateRes,
@@ -177,6 +178,21 @@ export class GoalIpcAdapter implements IGoalApiClient {
     request: Pick<CreateGoalRecordReq, 'value' | 'note' | 'expectedVersion'>,
   ): Promise<Result<GoalMutationReceipt>> {
     return this.ipcClient.invoke(GoalChannels.RECORD_CREATE, goalId, keyResultId, request);
+  }
+
+  async updateGoalRecord(
+    goalId: string,
+    keyResultId: string,
+    recordId: string,
+    request: UpdateGoalRecordReq,
+  ): Promise<Result<GoalMutationReceipt>> {
+    return this.ipcClient.invoke(
+      GoalChannels.RECORD_UPDATE,
+      goalId,
+      keyResultId,
+      recordId,
+      request,
+    );
   }
 
   async getGoalRecordsByKeyResult(

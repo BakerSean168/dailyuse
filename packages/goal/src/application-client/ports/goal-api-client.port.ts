@@ -28,6 +28,7 @@ import type {
   DeleteGoalReviewReq,
   GetGoalReviewsRes,
   CreateGoalRecordReq,
+  UpdateGoalRecordReq,
   DeleteGoalRecordReq,
   GetGoalRecordsRes,
   GetGoalAggregateRes,
@@ -113,6 +114,12 @@ export interface IGoalApiClient {
     goalId: string,
     keyResultId: string,
     request: Pick<CreateGoalRecordReq, 'value' | 'note' | 'expectedVersion'>,
+  ): Promise<Result<GoalMutationReceipt>>;
+  updateGoalRecord(
+    goalId: string,
+    keyResultId: string,
+    recordId: string,
+    request: UpdateGoalRecordReq,
   ): Promise<Result<GoalMutationReceipt>>;
   getGoalRecordsByKeyResult(
     goalId: string,
