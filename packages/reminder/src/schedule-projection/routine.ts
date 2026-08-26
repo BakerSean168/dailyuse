@@ -19,6 +19,7 @@ export {
 } from '../server/infrastructure/routine-schedule/routine-schedule-state-reader.prisma';
 export type {
   RoutineOccurrenceCommittedEvent,
+  RoutineOverrideChangedEvent,
   RoutineScheduleProjectionEventMap,
   RoutineScheduleProjectionHandlers,
   RoutineScheduleProjectionPlan,

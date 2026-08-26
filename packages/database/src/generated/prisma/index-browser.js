@@ -1013,6 +1013,14 @@ exports.Prisma.RoutineOccurrenceScalarFieldEnum = {
   finishedAt: 'finishedAt'
 };
 
+exports.Prisma.RoutineTemporaryOverrideScalarFieldEnum = {
+  identityId: 'identityId',
+  routineId: 'routineId',
+  overrideJson: 'overrideJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.RepositoryScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -1677,6 +1685,7 @@ exports.Prisma.ModelName = {
   RoutineProtocolDefinition: 'RoutineProtocolDefinition',
   RoutineProtocolSession: 'RoutineProtocolSession',
   RoutineOccurrence: 'RoutineOccurrence',
+  RoutineTemporaryOverride: 'RoutineTemporaryOverride',
   Repository: 'Repository',
   Folder: 'Folder',
   Resource: 'Resource',

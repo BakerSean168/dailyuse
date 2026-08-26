@@ -8,6 +8,7 @@ import {
 } from '../../domain/routine';
 import type { RoutineOccurrenceNotificationWriterPort } from '../../domain/ports/routine-occurrence-notification-writer.port';
 import type { RoutineOccurrenceStore } from '../../domain/ports/routine-occurrence-store.port';
+import type { RoutineTemporaryOverrideStore } from '../../domain/ports/routine-temporary-override-store.port';
 import type { RoutineOccurrenceCommittedEvent, RoutineScheduleStateReader } from './routine-schedule-projection-source';
 
 export const ROUTINE_OCCURRENCE_LEASE_MS = 30_000;
@@ -50,6 +51,8 @@ export interface RoutineScheduleExecutionDeps {
   readonly notificationWriter: RoutineOccurrenceNotificationWriterPort;
   readonly recurrenceEngine: RecurrenceEnginePort;
   readonly now?: () => number;
+  /** Durable snooze/suppress store consumed by the Routine projection runtime. */
+  readonly temporaryOverrideStore?: RoutineTemporaryOverrideStore;
   /** Durable post-commit signal consumed by the Routine projection runtime. */
   readonly publishOccurrenceCommitted?: (event: RoutineOccurrenceCommittedEvent) => void;
 }

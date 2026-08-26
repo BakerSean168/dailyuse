@@ -5,6 +5,7 @@ import { PrismaRoutineOccurrenceStore } from './routine-occurrence-store.prisma'
 import type { RoutineScheduleExecutionDeps } from './routine-schedule-execution-source';
 import type { RoutineOccurrenceCommittedEvent } from './routine-schedule-projection-source';
 import { createPrismaRoutineScheduleStateReader } from './routine-schedule-state-reader.prisma';
+import { PrismaRoutineTemporaryOverrideStore } from './routine-temporary-override-store.prisma';
 
 /**
  * Production Routine execution deps factory (Prisma host).
@@ -27,6 +28,7 @@ export function createRoutinePrismaScheduleExecutionDeps(
     reader: createPrismaRoutineScheduleStateReader(prisma),
     occurrenceStore: new PrismaRoutineOccurrenceStore(prisma),
     notificationWriter: new PrismaRoutineOccurrenceNotificationWriter(prisma),
+    temporaryOverrideStore: new PrismaRoutineTemporaryOverrideStore(prisma),
     recurrenceEngine: options?.recurrenceEngine ?? createRecurrenceEngine(),
     now: options?.now,
     publishOccurrenceCommitted: options?.publishOccurrenceCommitted,

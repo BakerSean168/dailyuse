@@ -17,7 +17,7 @@ import {
 /** Runtime snapshot consumed by the durable projection lane. */
 export interface RoutineScheduleSnapshot {
   readonly definition: RoutineDefinition;
-  /** W4 runtime state; production has no writer yet, tests inject it. */
+  /** Durable snooze/suppress runtime state served by the state reader. */
   readonly temporaryOverride?: RoutineTemporaryOverride | null;
 }
 

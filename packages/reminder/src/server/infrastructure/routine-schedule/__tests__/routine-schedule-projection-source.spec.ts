@@ -3,6 +3,7 @@ import { createRecurrenceEngine } from '@memoflow/time';
 import {
   createRoutineScheduleProjectionSource,
   type RoutineScheduleProjectionSource,
+  type RoutineScheduleSnapshot,
   type RoutineScheduleStateReader,
 } from '../routine-schedule-projection-source';
 import {
@@ -11,7 +12,11 @@ import {
   ROUTINE_WALLCLOCK_PAYLOAD_VERSION,
   buildRoutineWallClockSchedulingKey,
 } from '../routine-schedule-contract';
-import { createElapsedTrigger } from '../../../domain/routine';
+import {
+  createElapsedTrigger,
+  createTemporaryOverride,
+  type RoutineTemporaryOverride,
+} from '../../../domain/routine';
 import {
   FIXTURE_F,
   buildFixtureFRoutine,
@@ -20,13 +25,13 @@ import {
 } from './test-support';
 
 function createReader(options?: {
-  snapshot?: { definition: ReturnType<typeof buildFixtureFRoutine> } | null;
+  snapshot?: RoutineScheduleSnapshot | null;
 }): RoutineScheduleStateReader {
+  const snapshot: RoutineScheduleSnapshot | null =
+    options?.snapshot === undefined ? { definition: buildFixtureFRoutine() } : (options.snapshot ?? null);
   return {
     async readRoutineScheduleSnapshot() {
-      return options?.snapshot === undefined
-        ? { definition: buildFixtureFRoutine() }
-        : options.snapshot;
+      return snapshot;
     },
   };
 }
@@ -106,4 +111,76 @@ describe('createRoutineScheduleProjectionSource (ROUTINE-3401)', () => {
     const plan = await source.buildRoutinePlan(FIXTURE_F.routineId, FIXTURE_F.identityId);
     expect(plan.desired).toEqual([]);
   });
+
+  it('shifts the durable invocation past an active snooze to the next eligible occurrence', async () => {
+    const snooze = createSnoozeFixture();
+    const source = createSource(
+      createReader({
+        snapshot: { definition: buildFixtureFRoutine(), temporaryOverride: snooze },
+      }),
+    );
+
+    const plan = await source.buildRoutinePlan(FIXTURE_F.routineId, FIXTURE_F.identityId);
+
+    expect(plan.desired).toHaveLength(1);
+    expect(plan.desired[0]!.runAt).toBe(FIXTURE_F.nextOccurrenceAt);
+    expect(plan.desired[0]!.schedulingKey).toBe(
+      buildRoutineWallClockSchedulingKey(
+        FIXTURE_F.routineId,
+        `routine:${FIXTURE_F.routineId}:oc:${FIXTURE_F.nextOccurrenceAt}`,
+      ),
+    );
+  });
+
+  it('projects nothing while a suppress window covers every remaining candidate occurrence', async () => {
+    const source = createSource(
+      createReader({
+        snapshot: {
+          definition: buildFixtureFRoutine({ trigger: fixtureTrigger({ count: 3 }) }),
+          temporaryOverride: createTemporaryOverride({
+            suppressUntil: Date.parse('2026-08-28T00:00:00.000Z'),
+            expiresAt: Date.parse('2026-08-28T00:00:00.000Z'),
+            reason: 'user suppress',
+            source: 'user',
+          }),
+        },
+      }),
+    );
+
+    const plan = await source.buildRoutinePlan(FIXTURE_F.routineId, FIXTURE_F.identityId);
+    expect(plan.desired).toEqual([]);
+  });
+
+  it('treats an expired snooze as neutral and restores the canonical occurrence', async () => {
+    const source = createSource(
+      createReader({
+        snapshot: {
+          definition: buildFixtureFRoutine(),
+          temporaryOverride: createTemporaryOverride({
+            snoozeUntil: Date.parse('2026-08-24T16:00:00.000Z'),
+            expiresAt: Date.parse('2026-08-24T23:00:00.000Z'),
+            reason: 'expired snooze',
+            source: 'user',
+          }),
+        },
+      }),
+    );
+
+    const plan = await source.buildRoutinePlan(FIXTURE_F.routineId, FIXTURE_F.identityId);
+
+    expect(plan.desired).toHaveLength(1);
+    expect(plan.desired[0]!.runAt).toBe(FIXTURE_F.firstOccurrenceAt);
+    expect(plan.desired[0]!.schedulingKey).toBe(
+      buildRoutineWallClockSchedulingKey(FIXTURE_F.routineId, fixtureOccurrenceKey()),
+    );
+  });
 });
+
+function createSnoozeFixture(): RoutineTemporaryOverride {
+  return createTemporaryOverride({
+    snoozeUntil: Date.parse('2026-08-25T16:00:00.000Z'),
+    expiresAt: Date.parse('2026-08-25T16:00:00.000Z'),
+    reason: 'snoozed during evening wind-down',
+    source: 'user',
+  });
+}

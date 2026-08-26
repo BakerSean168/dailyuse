@@ -1,6 +1,9 @@
 import type { PrismaClient } from '@memoflow/database';
 import { requiresDurableScheduleProjection, RoutineDefinition } from '../../domain/routine';
-import { deserializeRoutineTrigger } from '../routine-vnext/trigger-persistence-parity';
+import {
+  deserializeRoutineTemporaryOverride,
+  deserializeRoutineTrigger,
+} from '../routine-vnext/trigger-persistence-parity';
 import type { RoutineScheduleSnapshot, RoutineScheduleStateReader } from './routine-schedule-projection-source';
 
 type PrismaRoutineDefinitionRow = NonNullable<
@@ -8,23 +11,31 @@ type PrismaRoutineDefinitionRow = NonNullable<
 >;
 
 /**
- * Prisma-backed RoutineScheduleStateReader (`routine_definitions`). The ROUTINE
- * schedule lane consumes the same Table/trigger codec the legacy powering
- * tables use (trigger-persistence-parity), so projection and execution agree on
- * canonical occurrence keys.
+ * Prisma-backed RoutineScheduleStateReader (`routine_definitions` +
+ * `routine_temporary_overrides`). The ROUTINE schedule lane consumes the same
+ * Table/trigger codec the legacy powering tables use
+ * (trigger-persistence-parity), so projection and execution agree on canonical
+ * occurrence keys.
  *
- * `temporaryOverride` is null: snooze is W4 runtime state with no durable
- * writer yet; tests inject overrides into the in-memory projection directly.
+ * `temporaryOverride` is decoded from the durable row written by
+ * `PrismaRoutineTemporaryOverrideStore`: a persisted snooze/suppress therefore
+ * shifts (or suppresses) the projected durable invocation in production instead
+ * of being test-only injected state.
  */
 export function createPrismaRoutineScheduleStateReader(
   prisma: PrismaClient,
 ): RoutineScheduleStateReader {
   return {
     async readRoutineScheduleSnapshot(routineId, identityId) {
-      const row = await prisma.routineDefinition.findUnique({
-        where: { identityId_id: { identityId, id: routineId } },
-      });
-      return row ? mapRowToSnapshot(row) : null;
+      const [row, temporaryOverrideRow] = await Promise.all([
+        prisma.routineDefinition.findUnique({
+          where: { identityId_id: { identityId, id: routineId } },
+        }),
+        prisma.routineTemporaryOverride.findUnique({
+          where: { identityId_routineId: { identityId, routineId } },
+        }),
+      ]);
+      return row ? mapRowToSnapshot(row, temporaryOverrideRow) : null;
     },
 
     async listRoutineRefs() {
@@ -39,7 +50,12 @@ export function createPrismaRoutineScheduleStateReader(
   };
 }
 
-function mapRowToSnapshot(row: PrismaRoutineDefinitionRow): RoutineScheduleSnapshot {
+function mapRowToSnapshot(
+  row: PrismaRoutineDefinitionRow,
+  temporaryOverrideRow: Awaited<
+    ReturnType<PrismaClient['routineTemporaryOverride']['findUnique']>
+  >,
+): RoutineScheduleSnapshot {
   const definition = RoutineDefinition.load({
     id: row.id,
     identityId: row.identityId,
@@ -51,5 +67,10 @@ function mapRowToSnapshot(row: PrismaRoutineDefinitionRow): RoutineScheduleSnaps
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   });
-  return { definition, temporaryOverride: null };
+  return {
+    definition,
+    temporaryOverride: temporaryOverrideRow
+      ? deserializeRoutineTemporaryOverride(temporaryOverrideRow.overrideJson)
+      : null,
+  };
 }

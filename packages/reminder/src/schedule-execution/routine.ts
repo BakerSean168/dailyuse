@@ -39,6 +39,9 @@ export {
   mapSharedOutboxRowToReceipt,
 } from '../server/infrastructure/routine-schedule/routine-occurrence-notification-writer.prisma';
 export {
+  PrismaRoutineTemporaryOverrideStore,
+} from '../server/infrastructure/routine-schedule/routine-temporary-override-store.prisma';
+export {
   createRoutinePrismaScheduleExecutionDeps,
 } from '../server/infrastructure/routine-schedule/routine-schedule-execution-source.prisma';
 export type {
@@ -54,3 +57,9 @@ export type {
   RoutineOccurrenceNotificationWriterPort,
   RoutineOccurrenceNotificationRequestInput,
 } from '../server/domain/ports/routine-occurrence-notification-writer.port';
+export type {
+  RoutineTemporaryOverrideStore,
+} from '../server/domain/ports/routine-temporary-override-store.port';
+export type {
+  RoutineTemporaryOverride,
+} from '../server/domain/routine';

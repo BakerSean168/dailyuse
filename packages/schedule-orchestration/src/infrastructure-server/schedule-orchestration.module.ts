@@ -27,6 +27,7 @@ import { createGoalProjectionRuntime } from '../runtime/goal-projection-runtime'
 import { createReminderProjectionRuntime } from '../runtime/reminder-projection-runtime';
 import { createRoutineProjectionRuntime } from '../runtime/routine-projection-runtime';
 import { createTaskProjectionRuntime } from '../runtime/task-projection-runtime';
+import { createRoutineOverrideChangedPublishingStore } from './routine-override-changing-store';
 
 export function createScheduleOrchestrationModule(
   options: CreateScheduleOrchestrationModuleOptions,
@@ -87,6 +88,21 @@ export function createScheduleOrchestrationModule(
     );
   }
 
+  // ROUTINE-3401: durable snooze/suppress store. Persisted writes converge the
+  // neutral Scheduler by publishing `routine:override-changed` on the shared
+  // bus (consumed by the routine projection runtime above). Hosts bind the
+  // returned store to their routine snooze/command surface.
+  const routineOverridePublisher =
+    createTypedEventPublisher<RoutineScheduleProjectionEventMap>(eventBus);
+  const routineOverrideStore = options.routineOverrideStore
+    ? createRoutineOverrideChangedPublishingStore({
+        store: options.routineOverrideStore,
+        publish: (event) => {
+          routineOverridePublisher.send('routine:override-changed', event);
+        },
+      })
+    : undefined;
+
   return {
     projectionRuntime: createCompositeRuntimeContribution(runtimeContributions),
     schedulingPort,
@@ -95,5 +111,6 @@ export function createScheduleOrchestrationModule(
       registry: handlerRegistry,
       legacyFallback: legacySourceExecutor,
     }),
+    ...(routineOverrideStore ? { routineOverrideStore } : {}),
   };
 }

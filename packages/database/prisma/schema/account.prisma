@@ -43,6 +43,7 @@ model Account {
   reminderInstances               ReminderInstance[]
   reminderStatistics              ReminderStatistic?
   routineDefinitions               RoutineDefinition[]
+  routineTemporaryOverrides          RoutineTemporaryOverride[]
   routineProfiles                  RoutineProfile[]
   routineProfileMemberships        RoutineProfileMembership[]
   routineProtocolDefinitions       RoutineProtocolDefinition[]

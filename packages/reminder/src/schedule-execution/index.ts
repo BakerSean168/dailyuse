@@ -76,6 +76,9 @@ export {
 export {
   createRoutinePrismaScheduleExecutionDeps,
 } from '../server/infrastructure/routine-schedule/routine-schedule-execution-source.prisma';
+export {
+  PrismaRoutineTemporaryOverrideStore,
+} from '../server/infrastructure/routine-schedule/routine-temporary-override-store.prisma';
 export type {
   RoutineOccurrenceClaimInput,
   RoutineOccurrenceCommitInput,
@@ -89,3 +92,6 @@ export type {
   RoutineOccurrenceNotificationWriterPort,
   RoutineOccurrenceNotificationRequestInput,
 } from '../server/domain/ports/routine-occurrence-notification-writer.port';
+export type {
+  RoutineTemporaryOverrideStore,
+} from '../server/domain/ports/routine-temporary-override-store.port';

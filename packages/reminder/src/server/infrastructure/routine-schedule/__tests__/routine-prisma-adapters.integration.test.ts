@@ -12,9 +12,12 @@ import {
   seedAccount,
 } from '../../../../__tests__/integration-helpers';
 import { serializeRoutineTrigger } from '../../routine-vnext/trigger-persistence-parity';
+import { createTemporaryOverride } from '../../../domain/routine';
 import { PrismaRoutineOccurrenceNotificationWriter } from '../routine-occurrence-notification-writer.prisma';
 import { PrismaRoutineOccurrenceStore } from '../routine-occurrence-store.prisma';
+import { createRoutinePrismaScheduleProjectionSource } from '../routine-schedule-projection-source.prisma';
 import { createPrismaRoutineScheduleStateReader } from '../routine-schedule-state-reader.prisma';
+import { PrismaRoutineTemporaryOverrideStore } from '../routine-temporary-override-store.prisma';
 import { FIXTURE_F, fixtureOccurrenceKey, fixtureTrigger } from './test-support';
 
 async function seedRoutineDefinition(prisma: Awaited<ReturnType<typeof getPrisma>>, identityId: string) {
@@ -262,5 +265,53 @@ describe('ROUTINE-3401 Prisma durable adapters integration', () => {
 
     const refs = await reader.listRoutineRefs();
     expect(refs).toContainEqual({ routineId: FIXTURE_F.routineId, identityId });
+  });
+
+  it('honors a durably persisted snooze in the production projection (Fixture F)', async () => {
+    const prisma = await getPrisma();
+    const identityId = IdentityId.generate();
+    await seedAccount({ id: identityId });
+    await seedRoutineDefinition(prisma, identityId);
+
+    const store = new PrismaRoutineTemporaryOverrideStore(prisma);
+    const reader = createPrismaRoutineScheduleStateReader(prisma);
+    const snoozeThrough = Date.parse('2026-08-25T16:00:00.000Z');
+    await store.setRoutineTemporaryOverride({
+      identityId,
+      routineId: FIXTURE_F.routineId,
+      override: createTemporaryOverride({
+        snoozeUntil: snoozeThrough,
+        expiresAt: snoozeThrough,
+        reason: 'user snooze',
+        source: 'user',
+      }),
+    });
+
+    const snapshot = await reader.readRoutineScheduleSnapshot(FIXTURE_F.routineId, identityId);
+    expect(snapshot?.temporaryOverride).not.toBeNull();
+    expect(snapshot?.temporaryOverride?.snoozeUntil).toBe(snoozeThrough);
+
+    const projectedAt = Date.parse('2026-08-25T07:00:00.000Z');
+    const source = createRoutinePrismaScheduleProjectionSource(prisma, {
+      now: () => projectedAt,
+    });
+
+    const whileSnoozed = await source.buildRoutinePlan(FIXTURE_F.routineId, identityId);
+    expect(whileSnoozed.desired).toHaveLength(1);
+    expect(whileSnoozed.desired[0]!.runAt).toBe(FIXTURE_F.nextOccurrenceAt);
+    expect(whileSnoozed.desired[0]!.payload.occurrenceKey).toBe(
+      `routine:${FIXTURE_F.routineId}:oc:${FIXTURE_F.nextOccurrenceAt}`,
+    );
+    expect(whileSnoozed.desired[0]!.payload.occurrenceKey).not.toBe(fixtureOccurrenceKey());
+
+    await store.clearRoutineTemporaryOverride({ identityId, routineId: FIXTURE_F.routineId });
+
+    const restored = await reader.readRoutineScheduleSnapshot(FIXTURE_F.routineId, identityId);
+    expect(restored?.temporaryOverride).toBeNull();
+
+    const afterClear = await source.buildRoutinePlan(FIXTURE_F.routineId, identityId);
+    expect(afterClear.desired).toHaveLength(1);
+    expect(afterClear.desired[0]!.runAt).toBe(FIXTURE_F.firstOccurrenceAt);
+    expect(afterClear.desired[0]!.payload.occurrenceKey).toBe(fixtureOccurrenceKey());
   });
 });

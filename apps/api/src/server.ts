@@ -221,6 +221,7 @@ async function bootstrap(): Promise<void> {
   const scheduleRepositorySet = createSchedulePrismaRepositories(prisma, {
     outboxWriter: new PrismaOutboxWriter(prisma),
   });
+  const routineExecutionDeps = createRoutinePrismaScheduleExecutionDeps(prisma);
   const scheduleOrchestrationModule = createScheduleOrchestrationModule({
     taskProjection: {
       source: createTaskPrismaScheduleProjectionSource(prisma),
@@ -236,11 +237,12 @@ async function bootstrap(): Promise<void> {
     routineProjection: {
       source: createRoutinePrismaScheduleProjectionSource(prisma),
     },
+    routineOverrideStore: routineExecutionDeps.temporaryOverrideStore,
     execution: {
       taskSource: createTaskPrismaScheduleExecutionSource(prisma),
       goalSource: createGoalPrismaScheduleExecutionSource(prisma),
       reminderSource: reminderComposed.scheduleExecutionSource,
-      routineSource: createRoutinePrismaScheduleExecutionDeps(prisma),
+      routineSource: routineExecutionDeps,
       notificationPort: notificationApiModule.scheduleNotificationPort,
     },
   });
