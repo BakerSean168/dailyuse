@@ -47,6 +47,13 @@ describe('task instance ownership surface', () => {
     ),
     'utf8',
   );
+  const outcomeReevaluation = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/commands/task-plan-outcome-reevaluation.ts',
+    ),
+    'utf8',
+  );
   const projection = readFileSync(
     resolve(__dirname, '../../../schedule-projection-source.ts'),
     'utf8',
@@ -96,8 +103,9 @@ describe('task instance ownership surface', () => {
     expect(prisma).toContain('where: { templateId, identityId, deletedAt: null }');
     expect(listByTemplate).toContain('findByTemplateId(templateId, identityId)');
     expect(getTemplate).toContain('findByTemplateId(id, identityId)');
-    expect(completeInstance).toContain('findByTemplateId(');
+    expect(completeInstance).toContain('reevaluateTaskPlanOutcome(');
     expect(completeInstance).toContain('identityId');
+    expect(outcomeReevaluation).toContain('findByTemplateId(templateId, identityId)');
     expect(projection).toContain('findByTemplateId(');
     expect(projection).toContain('String(templateDTO.identityId)');
   });

@@ -18,6 +18,7 @@ import { TaskType } from '../value-objects';
 import { TaskInstanceStatus, TaskTimeType as TimeType } from '../../domain/value-objects';
 import { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
 import { TaskTemplateId } from '../../domain/value-objects/task-template-id';
+import type { TaskInstanceId } from '../../domain/value-objects/task-instance-id';
 import { IdentityId } from '@memoflow/domain-shared';
 import type { Instant } from '@memoflow/contracts/primitives';
 import { createTimeFacade } from '@memoflow/time';
@@ -380,10 +381,28 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this.advanceVersion();
   }
 
-  /** Apply deterministic evaluator output; Abandoned is only changed explicitly. */
-  public applyPlanOutcome(outcome: typeof TaskPlanOutcome.Succeeded | typeof TaskPlanOutcome.Failed | typeof TaskPlanOutcome.Open): void {
+  /** Apply deterministic evaluator output and publish the authoritative plan-outcome fact. */
+  public applyPlanOutcome(
+    outcome: typeof TaskPlanOutcome.Succeeded | typeof TaskPlanOutcome.Failed | typeof TaskPlanOutcome.Open,
+    cause: { triggeringTaskInstanceId: TaskInstanceId },
+  ): void {
+    const previousOutcome = this._props.outcome;
     lifecyclePolicy.applyEvaluation(this, outcome);
     this.advanceVersion();
+
+    if (previousOutcome !== this._props.outcome) {
+      this.addDomainEvent<TaskEventMap['task:plan-outcome-changed']>('task:plan-outcome-changed', {
+        identityId: this._props.identityId,
+        taskTemplateId: this.id,
+        triggeringTaskInstanceId: cause.triggeringTaskInstanceId,
+        taskTitle: this._props.title,
+        goalBinding: this._props.goalBinding?.toDTO() ?? null,
+        previousOutcome,
+        nextOutcome: this._props.outcome,
+        planVersion: this.version,
+        changedAt: Number(this._props.updatedAt),
+      });
+    }
   }
 
   public softDelete(): void {
