@@ -113,7 +113,10 @@ describe('NotificationRequested durable envelope consumer (NOTIF-3301)', () => {
     });
     expect(fact.workflowKey).toBe(envelope.workflowKey);
     expect(fact.title).toBe('Durable notification');
-    expect(fact.correlationId).toBeNull();
+    // Correlation fallback is materialized from the durable shared-outbox value
+    // (writer resolves envelope -> input -> operationId), never dropped pre-Fact.
+    expect(fact.correlationId).toBe(opId);
+    expect(fact.causationId).toBeNull();
 
     const dispatchRows = await prisma.notificationDispatchOutbox.findMany({
       where: { notificationId: fact.id },
@@ -218,5 +221,77 @@ describe('NotificationRequested durable envelope consumer (NOTIF-3301)', () => {
     expect(
       await prisma.outboxMessage.count({ where: { id: opId } }),
     ).toBe(1);
+  });
+
+  it('6. Envelope-level idempotency: a retry with a NEW operationId reconciles to the durable row pinned by idempotencyKey', async () => {
+    const originalOpId = randomUUID();
+    const retryOpId = randomUUID();
+    const envelope = buildEnvelope();
+
+    const first = await writer.enqueueNotificationRequested({ operationId: originalOpId, envelope });
+    // Crash/replay retry that generated a fresh operationId for the SAME envelope.
+    const retried = await writer.enqueueNotificationRequested({ operationId: retryOpId, envelope });
+
+    expect(retried.operationId).toBe(first.operationId);
+    expect(retried.idempotencyKey).toBe(envelope.idempotencyKey);
+    expect(retried.status).toBe('pending');
+    // Exactly one durable row: the retry must not create a second row nor throw
+    // the unique-idempotencyKey violation.
+    expect(await prisma.outboxMessage.count({ where: { idempotencyKey: envelope.idempotencyKey } })).toBe(1);
+    expect(await prisma.outboxMessage.count({ where: { id: retryOpId } })).toBe(0);
+
+    // The re-claimed envelope still consumes into exactly one Fact + dispatch.
+    const runtime = buildRuntime();
+    await runtime.tick();
+    const facts = await prisma.notification.count({
+      where: { identityId, idempotencyKey: envelope.idempotencyKey },
+    });
+    expect(facts).toBe(1);
+    const shared = await prisma.outboxMessage.findUniqueOrThrow({ where: { id: first.operationId } });
+    expect(shared.status).toBe('succeeded');
+  });
+
+  it('7. Writer-level correlation/causation fallbacks flow into the Notification Fact at consumption', async () => {
+    const envelopeCorrelationId = `corr-${randomUUID()}`;
+    const envelopeCausationId = `cause-${randomUUID()}`;
+    const opId = randomUUID();
+    const envelope = buildEnvelope({
+      correlationId: envelopeCorrelationId,
+      causationId: envelopeCausationId,
+    });
+    await writer.enqueueNotificationRequested({ operationId: opId, envelope });
+    const runtime = buildRuntime();
+    await runtime.tick();
+
+    const fact = await prisma.notification.findFirstOrThrow({
+      where: { identityId, idempotencyKey: envelope.idempotencyKey },
+    });
+    expect(fact.correlationId).toBe(envelopeCorrelationId);
+    expect(fact.causationId).toBe(envelopeCausationId);
+
+    // Input-level fallback (envelope omits both) is durable on the shared row and
+    // materialized on the Fact.
+    const inputCorrelationId = `input-corr-${randomUUID()}`;
+    const inputCausationId = `input-cause-${randomUUID()}`;
+    const opId2 = randomUUID();
+    const envelope2 = buildEnvelope();
+    await writer.enqueueNotificationRequested({
+      operationId: opId2,
+      envelope: envelope2,
+      correlationId: inputCorrelationId,
+      causationId: inputCausationId,
+    });
+
+    const shared2 = await prisma.outboxMessage.findUniqueOrThrow({ where: { id: opId2 } });
+    expect(shared2.correlationId).toBe(inputCorrelationId);
+    expect(shared2.causationId).toBe(inputCausationId);
+
+    const runtime2 = buildRuntime();
+    await runtime2.tick();
+    const fact2 = await prisma.notification.findFirstOrThrow({
+      where: { identityId, idempotencyKey: envelope2.idempotencyKey },
+    });
+    expect(fact2.correlationId).toBe(inputCorrelationId);
+    expect(fact2.causationId).toBe(inputCausationId);
   });
 });

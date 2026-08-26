@@ -101,6 +101,19 @@ export class NotificationRequestedPrismaWriterAdapter implements NotificationReq
       return mapPrismaSharedOutboxToReceipt(existing);
     }
 
+    // Envelope-level idempotency: the canonical idempotencyKey (NOT the
+    // operationId) is the durable dedupe anchor. A crash/replay retry may carry
+    // a freshly generated operationId for the very same envelope, so reconcile
+    // to the existing outbox row pinned by the unique idempotencyKey.
+    if (envelope.idempotencyKey) {
+      const existingByIdempotencyKey = await client.outboxMessage.findUnique({
+        where: { idempotencyKey: envelope.idempotencyKey },
+      });
+      if (existingByIdempotencyKey) {
+        return mapPrismaSharedOutboxToReceipt(existingByIdempotencyKey);
+      }
+    }
+
     const correlationId = envelope.correlationId ?? validated.correlationId ?? validated.operationId;
     const causationId = envelope.causationId ?? validated.causationId ?? null;
 
@@ -124,9 +137,19 @@ export class NotificationRequestedPrismaWriterAdapter implements NotificationReq
 
       return mapPrismaSharedOutboxToReceipt(created);
     } catch (cause) {
-      const reFetched = await client.outboxMessage.findUnique({
-        where: { id: validated.operationId },
-      });
+      // A unique-constraint violation (P2002) here means a concurrent winner
+      // created the durable row first — either under our operationId or under
+      // the canonical idempotencyKey. Re-fetch by both anchors and return the
+      // stable receipt instead of failing the handler.
+      const reFetched =
+        (await client.outboxMessage.findUnique({
+          where: { id: validated.operationId },
+        })) ??
+        (envelope.idempotencyKey
+          ? await client.outboxMessage.findUnique({
+              where: { idempotencyKey: envelope.idempotencyKey },
+            })
+          : null);
       if (!reFetched) throw cause;
       return mapPrismaSharedOutboxToReceipt(reFetched);
     }

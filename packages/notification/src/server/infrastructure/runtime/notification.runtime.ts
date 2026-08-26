@@ -49,6 +49,8 @@ export interface NotificationSharedOutboxMessageRow {
   readonly identityId: string | null;
   readonly payloadJson: string;
   readonly idempotencyKey: string | null;
+  readonly correlationId: string | null;
+  readonly causationId: string | null;
   readonly ownerToken: string | null;
   readonly claimId: string | null;
   readonly fencingToken: number | null;
@@ -745,8 +747,12 @@ export function createNotificationRuntimeContribution(
           ? [...new Set(envelope.suggestedChannels)]
           : [ChannelTypeEnum.InApp],
       expiresAt: envelope.expiresAt ?? null,
-      correlationId: envelope.correlationId ?? null,
-      causationId: envelope.causationId ?? null,
+      // Correlation/causation chain is carried durably on the shared-outbox row
+      // (writer resolves envelope -> input -> operationId and persists the
+      // winner). Prefer the durable values so caller-provided fallbacks survive
+      // consumer materialization, not just the envelope attributes.
+      correlationId: sharedMsg.correlationId ?? envelope.correlationId ?? null,
+      causationId: sharedMsg.causationId ?? envelope.causationId ?? null,
     });
     if (!result.ok) {
       throw new Error(`NotificationRequested materialization failed: ${result.error.message}`);
