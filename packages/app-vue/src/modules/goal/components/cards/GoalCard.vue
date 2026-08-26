@@ -1,7 +1,7 @@
 <template>
-  <article class="group rounded-lg border bg-card p-4 shadow-sm transition hover:border-primary/30" data-testid="goal-card">
+  <article class="group rounded-lg border bg-card p-4 shadow-sm transition hover:border-primary/30" data-testid="goal-card" :data-goal-id="goal.id">
     <button type="button" class="w-full text-left" @click="emit('view')">
-      <div class="flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="truncate font-medium">{{ goal.name }}</h3><p v-if="goal.description" class="mt-1 line-clamp-2 text-sm text-muted-foreground">{{ goal.description }}</p></div><Badge variant="secondary">{{ goal.status }}</Badge></div>
+      <div class="flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="truncate font-medium" data-testid="goal-card-title">{{ goal.name }}</h3><p v-if="goal.description" class="mt-1 line-clamp-2 text-sm text-muted-foreground">{{ goal.description }}</p></div><Badge variant="secondary">{{ goal.status }}</Badge></div>
       <div class="mt-4"><div class="mb-1 flex justify-between text-xs text-muted-foreground"><span>Progress</span><span>{{ Math.round(goal.overallProgress) }}%</span></div><Progress :model-value="goal.overallProgress" /></div>
       <div class="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground"><span>{{ goal.completedKeyResults }}/{{ goal.totalKeyResults }} KR</span><template v-if="goal.dueDate"><span>·</span><span>Due {{ formatProductDate(goal.dueDate) }}</span></template><template v-if="goal.labels.length"><span>·</span><span>{{ goal.labels.map(label=>label.name).join(', ') }}</span></template></div>
     </button>

@@ -5,7 +5,7 @@
       <template #description>Direction first. Measurement can be added from the Goal detail page.</template>
       <form id="goal-form" class="space-y-4" @submit.prevent="save">
         <div class="space-y-2"><Label for="goal-name">{{ t('goal.dialog.goalTitle') }}</Label><Input id="goal-name" v-model="draft.name" data-testid="goal-name-input" maxlength="256" /></div>
-        <div class="space-y-2"><Label for="goal-description">{{ t('goal.dialog.description') }}</Label><Textarea id="goal-description" v-model="draft.description" class="min-h-24" maxlength="2000" /></div>
+        <div class="space-y-2"><Label for="goal-description">{{ t('goal.dialog.description') }}</Label><Textarea id="goal-description" v-model="draft.description" data-testid="goal-description-input" class="min-h-24" maxlength="2000" /></div>
         <div class="grid gap-4 sm:grid-cols-2">
           <div class="space-y-2"><Label>{{ t('goal.dialog.startDate') }}</Label><Input v-model="draft.startDate" type="date" /></div>
           <div class="space-y-2"><Label>Due date</Label><Input v-model="draft.dueDate" type="date" /></div>

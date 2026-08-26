@@ -1,5 +1,5 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
-import type { AIWorkflowRunView } from '@memoflow/contracts/ai';
+import type { AIWorkflowRunView, GoalPlanDraft } from '@memoflow/contracts/ai';
 import { createMockUserSetting } from '@memoflow/contracts/mocks';
 import { TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
 import { registerAndLogin } from '../helpers/testHelpers';
@@ -577,26 +577,6 @@ type GoalWorkflowMockTelemetry = {
   legacyEndpointCallCount: number;
 };
 
-type GoalPlanDraft = {
-  revision: number;
-  goal: {
-    name: string;
-    description: string;
-    category?: string;
-    importance: string;
-    motivation?: string;
-    feasibilityAnalysis?: string;
-    tags: string[];
-    startDate?: number | null;
-    targetDate?: number | null;
-  };
-  keyResults: Array<Record<string, unknown>>;
-  taskTemplates: Array<Record<string, unknown>>;
-  reminders: Array<Record<string, unknown>>;
-  rationale: string;
-  warnings: string[];
-};
-
 type GoalWorkflowExecutionFailure = {
   operation: 'goal' | 'task_template' | 'reminder';
   index?: number;
@@ -786,26 +766,24 @@ function createKnowledgeCaptureCancelledRun(mockRun: KnowledgeCaptureMockRun): A
 }
 
 function createRestoredGoalWorkflowDraft(): GoalPlanDraft {
+  const now = Date.now();
   return {
     revision: 1,
     goal: {
       name: 'Restored AI Agent workspace',
       description: 'A pending approval run restored from local workflow state.',
-      category: 'learning',
-      importance: 'Important',
       motivation: 'Restore the runtime-owned durable goal.create run after refresh.',
       feasibilityAnalysis: 'Scoped to goal and key result creation after confirmation.',
-      tags: ['ai', 'agent'],
-      startDate: Date.now(),
-      targetDate: Date.now() + 60 * 24 * 60 * 60 * 1000,
+      startDate: now,
+      dueDate: now + 60 * 24 * 60 * 60 * 1000,
     },
     keyResults: [
       {
         title: 'Complete the restored workflow approval',
         description: 'Confirm the pending workflow from the durable run.',
-        valueType: 'Incremental',
         calculationMethod: 'Sum',
-        startValue: 0,
+        startingValue: 0,
+        progressBaselineValue: null,
         currentValue: 0,
         targetValue: 1,
         unit: 'workflow',
@@ -819,11 +797,6 @@ function createRestoredGoalWorkflowDraft(): GoalPlanDraft {
   };
 }
 
-/**
- * Persisted workflow entry (AIWorkflowRunView-backed) that seeds a pending
- * goal.create approval run. `ai:conversation-workflow-map` now stores
- * `goalWorkflowRun` (the Mastra run view), never a legacy `goalAgentRun`.
- */
 function createPendingApprovalWorkflowEntry() {
   const now = Date.now();
   const draft = createRestoredGoalWorkflowDraft();
@@ -845,29 +818,19 @@ function createPendingApprovalWorkflowEntry() {
       createdAt: now,
       updatedAt: now,
     },
-    goalDraft: null,
-    goalClarification: null,
-    goalAutomationResult: null,
-    knowledgeQaAgentRun: null,
-    noteAgentRun: null,
-    taskAgentRun: null,
     knowledgeAnswer: null,
     clarificationAnswers: [],
     editableGoal: {
-      name: '',
-      description: '',
-      category: '',
-      importance: 'Moderate',
-      motivation: '',
-      feasibilityAnalysis: '',
-      tags: [],
-      startDate: null,
-      targetDate: null,
+      name: draft.goal.name,
+      description: draft.goal.description,
+      motivation: draft.goal.motivation ?? '',
+      feasibilityAnalysis: draft.goal.feasibilityAnalysis ?? '',
+      startDate: draft.goal.startDate,
+      dueDate: draft.goal.dueDate,
     },
     editableKeyResults: [],
     editableTaskTemplates: [],
     editableReminders: [],
-    noteSummary: null,
     showGoalDraftEditor: false,
   };
 }
@@ -890,13 +853,10 @@ function createPendingTaskApprovalWorkflowEntry() {
     editableGoal: {
       name: '',
       description: '',
-      category: '',
-      importance: 'Moderate',
       motivation: '',
       feasibilityAnalysis: '',
-      tags: [],
       startDate: null,
-      targetDate: null,
+      dueDate: null,
     },
     editableKeyResults: [],
     editableTaskTemplates: [],
@@ -912,21 +872,18 @@ function createGoalAgentWorkflowDraft(): GoalPlanDraft {
     goal: {
       name: 'Agent-created AI workflow',
       description: 'Create a structured goal through the Mastra Workflow runtime.',
-      category: 'learning',
-      importance: 'Important',
       motivation: 'Turn the Agent plan into tracked execution.',
       feasibilityAnalysis: 'The approved plan is scoped to goal and KR creation.',
-      tags: ['ai', 'agent'],
       startDate: now,
-      targetDate: now + 60 * 24 * 60 * 60 * 1000,
+      dueDate: now + 60 * 24 * 60 * 60 * 1000,
     },
     keyResults: [
       {
         title: 'Run the Goal Agent workflow end to end',
         description: 'Confirm Mastra Workflow execution through the controlled executor.',
-        valueType: 'Incremental',
         calculationMethod: 'Sum',
-        startValue: 0,
+        startingValue: 0,
+        progressBaselineValue: null,
         currentValue: 0,
         targetValue: 1,
         unit: 'workflow',
@@ -939,9 +896,11 @@ function createGoalAgentWorkflowDraft(): GoalPlanDraft {
         description: 'Check result and recovery.',
         importance: 'Moderate',
         cadence: 'weekly',
+        startDate: now,
         timeOfDay: '09:00',
         daysOfWeek: [1],
         occurrences: null,
+        keyResultIndex: 0,
         contributionValue: 1,
         tags: [],
       },
@@ -952,6 +911,7 @@ function createGoalAgentWorkflowDraft(): GoalPlanDraft {
         description: 'Review failed actions.',
         importance: 'Moderate',
         cadence: 'weekly',
+        scheduledAt: now,
         timeOfDay: '09:00',
         timezone: null,
         channels: ['InApp'],

@@ -7,7 +7,11 @@ import {
   TaskType,
   type TaskPlanOutcomeValue,
 } from '@memoflow/contracts/task';
-import type { TaskTemplate } from '../aggregates/task-template';
+import { TaskTemplate } from '../aggregates/task-template';
+import { TaskTemplateId } from '../value-objects/task-template-id';
+import { TaskTemplateStatus } from '../value-objects/task-template-status';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { createTaskRecurrenceDateAdapter } from '../aggregates/task-recurrence-date.adapter';
 import { TaskPlanOutcomeEvaluator } from '../services/task-plan-outcome-evaluator';
 import { RecurrenceRule, TaskTimeConfig } from '../value-objects';
@@ -23,17 +27,46 @@ describe('Task vNext performance budgets', () => {
   it('evaluates a 20k-occurrence finite plan without reintroducing query-time priority sorting', () => {
     const occurrenceCount = 20_000;
     const evaluator = new TaskPlanOutcomeEvaluator();
-    const template = {
-      outcome: TaskPlanOutcome.Open,
+    const now = Date.now();
+    const template = TaskTemplate.load({
+      id: TaskTemplateId.generate(),
+      identityId: IdentityId.generate(),
+      title: 'Performance benchmark template',
+      description: null,
       taskType: TaskType.Recurring,
+      importance: ImportanceLevel.Moderate,
+      tags: [],
+      color: null,
+      status: TaskTemplateStatus.Active,
+      outcome: TaskPlanOutcome.Open,
       completionPolicy: TaskPlanCompletionPolicy.AllowCorrection,
-      recurrenceRule: {
-        hasEndCondition: true,
-        occurrences: occurrenceCount,
+      closedAt: null,
+      archivedAt: null,
+      abandonedReason: null,
+      goalBinding: null,
+      checklist: [],
+      timeConfig: null,
+      recurrenceRule: RecurrenceRule.create({
+        frequency: 'Daily',
+        interval: 1,
+        daysOfWeek: [],
         endDate: null,
-      },
+        occurrences: occurrenceCount,
+      }),
+      reminderConfig: null,
       lastGeneratedDate: null,
-    } as unknown as TaskTemplate;
+      generateAheadDays: null,
+      startDate: null,
+      dueDate: null,
+      completedAt: null,
+      estimatedMinutes: null,
+      actualMinutes: null,
+      note: null,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      version: 1,
+    });
     const occurrences = Array.from({ length: occurrenceCount }, () => ({
       status: TaskInstanceStatus.Completed,
       deletedAt: null,

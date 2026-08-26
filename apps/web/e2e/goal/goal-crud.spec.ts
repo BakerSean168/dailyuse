@@ -31,10 +31,10 @@ test.describe('Goal CRUD', () => {
     await expect(goalCard).toContainText(goalDescription);
   });
 
-  test('[P0] edits a goal through the card action menu', async ({ page }) => {
+  test('[P0] edits a goal through the card action', async ({ page }) => {
     const originalName = `E2E Goal Edit ${Date.now()}`;
     const updatedName = `Updated Goal ${Date.now()}`;
-    const updatedDescription = 'Updated through the card action menu.';
+    const updatedDescription = 'Updated through the card action.';
 
     const createdCard = await createGoal(page, {
       name: originalName,
@@ -59,7 +59,7 @@ test.describe('Goal CRUD', () => {
     await expect(updatedCard).toContainText(updatedDescription);
   });
 
-  test('[P0] deletes a goal through the card action menu', async ({ page }) => {
+  test('[P0] deletes a goal through the card action', async ({ page }) => {
     const goalName = `E2E Goal Delete ${Date.now()}`;
 
     const createdCard = await createGoal(page, {
@@ -98,11 +98,11 @@ test.describe('Goal CRUD', () => {
     await page.waitForURL(new RegExp(`/goals/${goalId}$`), {
       timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
-    await expect(page.getByTestId('goal-detail')).toBeVisible({
+    await expect(page.getByTestId('goal-detail-view')).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
     await expect(page.getByTestId('goal-detail-title')).toHaveText(goalName);
-    await expect(page.getByTestId('goal-detail')).toContainText(goalDescription);
+    await expect(page.getByTestId('goal-detail-view')).toContainText(goalDescription);
   });
 
   test('[P0] keeps one primary create action and preserves toolbar state while resizing', async ({
@@ -238,8 +238,5 @@ async function openGoalAction(
 ): Promise<void> {
   const card = goalCardById(page, goalId);
   await expect(card).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-  await card.hover();
-
-  await page.getByTestId(`goal-card-menu-trigger-${goalId}`).click();
-  await page.getByTestId(`goal-card-${action}-action-${goalId}`).click();
+  await card.getByRole('button', { name: action === 'edit' ? /^(编辑|Edit)$/ : /^(删除|Delete)$/ }).click();
 }

@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { UserDataExportEnvelopeV2Schema } from '@memoflow/contracts/data-portability';
 import { API_CONFIG } from '../config';
 import { ensureUserSettingsRecord, registerAndLogin } from '../helpers/testHelpers';
 
@@ -125,9 +126,9 @@ test.describe('Data Portability', () => {
     expect(summary).toHaveProperty('warnings');
     expect(Array.isArray(summary.warnings)).toBe(true);
 
-    const envelope = JSON.parse(content);
+    const envelope = UserDataExportEnvelopeV2Schema.parse(JSON.parse(content));
     expect(envelope.kind).toBe('memoflow.user-data-export');
-    expect(envelope.schemaVersion).toBe(1);
+    expect(envelope.schemaVersion).toBe(2);
     expect(envelope).toHaveProperty('exportedAt');
     expect(envelope).toHaveProperty('data');
     expect(typeof envelope.data).toBe('object');

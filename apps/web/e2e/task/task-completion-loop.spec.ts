@@ -29,9 +29,8 @@ test.describe('Task completion closed loop', () => {
         data: {
           name: goalName,
           description: 'Verifies task-to-goal progress projection.',
-          importance: 'Moderate',
           startDate: Date.now(),
-          targetDate: Date.now() + 7 * 24 * 60 * 60 * 1000,
+          dueDate: Date.now() + 7 * 24 * 60 * 60 * 1000,
         },
       }),
     );
@@ -44,9 +43,8 @@ test.describe('Task completion closed loop', () => {
           goalId: goalReceipt.goalId,
           expectedVersion: goalReceipt.goalVersion,
           title: 'Complete linked work',
-          valueType: 'Incremental',
           calculationMethod: 'Sum',
-          startValue: 0,
+          startingValue: 0,
           currentValue: 0,
           targetValue: 10,
           unit: 'tasks',
