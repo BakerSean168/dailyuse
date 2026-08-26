@@ -24,8 +24,7 @@ export const TaskTemplateStatus = {
   
   Active: 'Active' as TaskTemplateStatus,
   Paused: 'Paused' as TaskTemplateStatus,
-  Archived: 'Archived' as TaskTemplateStatus,
-  Deleted: 'Deleted' as TaskTemplateStatus,
+  Closed: 'Closed' as TaskTemplateStatus,
 
   // ================= 工厂方法 =================
 
@@ -64,25 +63,14 @@ export const TaskTemplateStatus = {
     return value === 'Paused';
   },
 
-  /**
-   * 判断模板是否已归档
-   */
-  isArchived(value: TaskTemplateStatus): boolean {
-    return value === 'Archived';
+  /** 判断计划是否已关闭。 */
+  isClosed(value: TaskTemplateStatus): boolean {
+    return value === 'Closed';
   },
 
-  /**
-   * 判断模板是否已删除
-   */
-  isDeleted(value: TaskTemplateStatus): boolean {
-    return value === 'Deleted';
-  },
-
-  /**
-   * 判断模板是否可用（活跃或已归档）
-   */
+  /** Active / Paused are open lifecycle states. */
   isAvailable(value: TaskTemplateStatus): boolean {
-    return value === 'Active' || value === 'Archived';
+    return value === 'Active' || value === 'Paused';
   },
 
   /**

@@ -241,29 +241,20 @@ const focus_modes = new Table({
 // Task
 // ──────────────────────────────────────────────
 
-const task_folders = new Table({
-  identity_id: column.text,
-  name: column.text,
-  color: column.text,
-  icon: column.text,
-  order: column.integer,
-  version: column.integer,
-  created_at: column.text,
-  updated_at: column.text,
-  deleted_at: column.text,
-});
 
 const task_templates = new Table({
   identity_id: column.text,
   name: column.text,
   description: column.text,
   status: column.text,
+  outcome: column.text,
+  completion_policy: column.text,
+  closed_at: column.text,
+  archived_at: column.text,
+  abandoned_reason: column.text,
   importance: column.text,
-  priority: column.integer,
   color: column.text,
   tags: column.text, // JSON array
-  folder_id: column.text, // FK
-  parent_task_id: column.text, // FK (self)
   time_config_type: column.text,
   time_config_start_time: column.text,
   time_config_end_time: column.text,
@@ -274,8 +265,6 @@ const task_templates = new Table({
   recurrence_rule_type: column.text,
   recurrence_rule_interval: column.integer,
   recurrence_rule_days_of_week: column.text,
-  recurrence_rule_day_of_month: column.integer,
-  recurrence_rule_month_of_year: column.integer,
   recurrence_rule_end_date: column.text,
   recurrence_rule_count: column.integer,
   reminder_config_enabled: column.integer, // boolean
@@ -289,9 +278,6 @@ const task_templates = new Table({
   goal_record_value: column.real,
   goal_progress_trigger: column.text,
   checklist: column.text, // JSON
-  blocking_reason: column.text,
-  dependency_status: column.text,
-  is_blocked: column.integer, // boolean
   version: column.integer,
   created_at: column.text,
   updated_at: column.text,
@@ -302,9 +288,9 @@ const task_instances = new Table({
   template_id: column.text, // FK
   identity_id: column.text,
   instance_date: column.text, // DateTime
+  occurrence_key: column.text, // Task vNext deterministic templateId:localDate identity
   status: column.text,
   importance: column.text,
-  priority: column.integer,
   time_config: column.text, // JSON
   actual_start_time: column.text,
   actual_end_time: column.text,
@@ -315,17 +301,6 @@ const task_instances = new Table({
   deleted_at: column.text,
 });
 
-const task_dependencies = new Table({
-  identity_id: column.text,
-  predecessor_task_id: column.text, // FK
-  successor_task_id: column.text, // FK
-  dependency_type: column.text,
-  lag_days: column.integer,
-  version: column.integer,
-  created_at: column.text,
-  updated_at: column.text,
-  deleted_at: column.text,
-});
 
 const task_template_history = new Table({
   identity_id: column.text,
@@ -352,7 +327,7 @@ const task_statistics = new Table({
   instance_in_progress: column.integer,
   instance_completed: column.integer,
   instance_skipped: column.integer,
-  instance_expired: column.integer,
+  instance_missed: column.integer,
   completion_today: column.integer,
   completion_week: column.integer,
   completion_month: column.integer,
@@ -366,7 +341,6 @@ const task_statistics = new Table({
   time_upcoming: column.integer,
   distribution_by_importance: column.text, // JSON
   distribution_by_urgency: column.text, // JSON
-  distribution_by_folder: column.text, // JSON
   distribution_by_tag: column.text, // JSON
 });
 
@@ -1112,10 +1086,8 @@ export const PowerSyncAppSchema = new Schema({
   goal_labels,
   task_labels,
   // Task
-  task_folders,
   task_templates,
   task_instances,
-  task_dependencies,
   task_template_history,
   task_statistics,
   // Schedule

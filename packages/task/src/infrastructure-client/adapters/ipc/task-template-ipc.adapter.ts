@@ -16,7 +16,7 @@ import type {
   UpdateTaskTemplateReq,
   GenerateInstancesReq,
   BindToGoalReq,
-  QueryTaskTemplateGraphRes,
+  AbandonTaskPlanReq,
   TaskTemplateInstancesQuery,
 } from '@memoflow/contracts/task';
 
@@ -33,9 +33,6 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
     return this.ipcClient.invoke(TaskChannels.TEMPLATE_LIST, params);
   }
 
-  async getTaskGraph(params?: TaskTemplateListParams): Promise<Result<QueryTaskTemplateGraphRes>> {
-    return this.ipcClient.invoke(TaskChannels.TEMPLATE_GRAPH, params);
-  }
 
   async getTaskTemplateById(
     id: string,
@@ -55,14 +52,9 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
     return this.ipcClient.invoke(TaskChannels.TEMPLATE_DELETE, { id });
   }
 
-  async getTasksWithPrioritySorting(params?: {
-    limit?: number;
-  }): Promise<Result<TaskTemplateClientDTO[]>> {
-    return this.ipcClient.invoke(TaskChannels.TEMPLATE_GET_BY_PRIORITY, { params });
-  }
 
   async activateTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    return this.ipcClient.invoke(TaskChannels.TEMPLATE_RESTORE, { id });
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_ACTIVATE, { id });
   }
 
   async pauseTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
@@ -71,6 +63,10 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
 
   async archiveTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
     return this.ipcClient.invoke(TaskChannels.TEMPLATE_ARCHIVE, { id });
+  }
+
+  async abandonTaskPlan(id: string, request?: AbandonTaskPlanReq): Promise<Result<TaskTemplateClientDTO>> {
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_ABANDON, { id, request: request ?? {} });
   }
 
   async generateInstances(

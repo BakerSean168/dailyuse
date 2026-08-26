@@ -75,7 +75,7 @@ function createApiStub(): TaskApplicationPort {
     skipTaskInstance: instanceFn,
     startTaskInstance: instanceFn,
     deleteTaskInstance: instanceFn,
-    checkExpiredInstances: instanceFn,
+    markTaskInstanceMissed: instanceFn,
     getTaskInstance: instanceFn,
     listTaskInstancesByAccount: instanceFn,
     listTaskInstancesByTemplate: instanceFn,

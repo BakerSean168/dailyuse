@@ -17,9 +17,9 @@ function createMockUseCases(): TaskInstanceUseCases {
     getByDateRange: vi.fn(),
     complete: vi.fn(),
     skip: vi.fn(),
+    markMissed: vi.fn(),
     start: vi.fn(),
     deleteInstance: vi.fn(),
-    checkExpired: vi.fn(),
   } as unknown as TaskInstanceUseCases;
 }
 
@@ -34,6 +34,7 @@ const FAKE_INSTANCE_DTO: TaskInstanceClientDTO = {
   importance: 'Moderate',
   priority: 1,
   status: 'Pending',
+  isOverdue: false,
   actualStartTime: null,
   actualEndTime: null,
   comment: null,
@@ -366,6 +367,27 @@ describe('TaskInstanceController', () => {
       const result = await controller.skipInstance('inst_1', { reason: 'Too tired' }, ctx);
 
       expect(useCases.skip).toHaveBeenCalledOnce();
+      expect(isOk(result)).toBe(true);
+    });
+  });
+
+  describe('markMissedInstance', () => {
+    it('delegates the explicit fact command and unwraps the instance', async () => {
+      (useCases.markMissed as ReturnType<typeof vi.fn>).mockResolvedValue(
+        ok({ instance: { ...FAKE_INSTANCE_DTO, status: 'Missed' } }),
+      );
+
+      const result = await controller.markMissedInstance(
+        'inst_1',
+        { reason: 'No completion evidence' },
+        ctx,
+      );
+
+      expect(useCases.markMissed).toHaveBeenCalledWith(
+        'inst_1',
+        TEST_IDENTITY_ID,
+        { reason: 'No completion evidence' },
+      );
       expect(isOk(result)).toBe(true);
     });
   });

@@ -19,8 +19,6 @@ import {
 import {
   PowerSyncTaskTemplateRepository,
   PowerSyncTaskInstanceRepository,
-  PowerSyncTaskDependencyRepository,
-  PowerSyncTaskFolderRepository,
   PowerSyncTaskWriteTransactionRunner,
   PowerSyncTaskGoalOutboxDispatchStore,
 } from './adapters/powersync';
@@ -62,16 +60,12 @@ export function createTaskPowerSyncModule(
   const {
     taskTemplateRepository,
     taskInstanceRepository,
-    taskDependencyRepository,
-    taskFolderRepository,
     taskWriteTransactionRunner,
   } = createTaskPowerSyncRepositories(db);
 
   return createTaskModule({
     taskTemplateRepository,
     taskInstanceRepository,
-    taskDependencyRepository,
-    taskFolderRepository,
     taskWriteTransactionRunner,
     runtimeContributions,
   });
@@ -95,8 +89,6 @@ export function createTaskPowerSyncRepositories(db: IElectronDatabase): TaskRepo
   return {
     taskTemplateRepository: new PowerSyncTaskTemplateRepository(db),
     taskInstanceRepository: new PowerSyncTaskInstanceRepository(db),
-    taskDependencyRepository: new PowerSyncTaskDependencyRepository(db),
-    taskFolderRepository: new PowerSyncTaskFolderRepository(db),
     taskWriteTransactionRunner: new PowerSyncTaskWriteTransactionRunner(db),
   };
 }
@@ -152,6 +144,4 @@ export function createTaskPowerSyncScheduleExecutionSource(
 export {
   PowerSyncTaskTemplateRepository,
   PowerSyncTaskInstanceRepository,
-  PowerSyncTaskDependencyRepository,
-  PowerSyncTaskFolderRepository,
 };

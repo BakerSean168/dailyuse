@@ -85,15 +85,6 @@ export class CreateTaskTemplateUseCase {
             if (replay) return replay;
           }
 
-          if (request.parentTaskId) {
-            const parentTemplate = await templateRepository!.findByIdForIdentity(
-              request.identityId,
-              request.parentTaskId,
-            );
-            if (!parentTemplate) {
-              return error('BAD_REQUEST', `Parent task template ${request.parentTaskId} not found`);
-            }
-          }
 
           const timeConfig = TaskTimeConfig.fromDTO(request.timeConfig);
           const recurrenceRule = request.recurrenceRule
@@ -123,12 +114,9 @@ export class CreateTaskTemplateUseCase {
             recurrenceRule,
             reminderConfig,
             importance: request.importance,
-            parentTaskId: request.parentTaskId
-              ? TaskTemplateId.of(request.parentTaskId)
-              : undefined,
-            folderId: request.folderId ?? undefined,
             tags: request.tags,
             color: request.color ?? undefined,
+            completionPolicy: request.completionPolicy,
             goalBinding: request.goalBinding
               ? {
                   goalId: request.goalBinding.goalId,

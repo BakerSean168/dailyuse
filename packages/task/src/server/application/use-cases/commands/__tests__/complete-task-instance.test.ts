@@ -54,15 +54,28 @@ describe('CompleteTaskInstanceUseCase', () => {
     expect(instanceRepo.save).not.toHaveBeenCalled();
   });
 
-  it('should return VALIDATION_ERROR when a skipped instance cannot be completed', async () => {
+  it('allows a skipped waiver to be corrected by a later Completed fact', async () => {
     const instance = await aTaskInstance();
-    instance.skip();
+    instance.skip('not applicable');
     vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
 
     const result = await useCase.execute(instance.id, instance.identityId);
 
-    expect(result).toBeErrorWithCode('VALIDATION_ERROR');
-    expect(instanceRepo.save).not.toHaveBeenCalled();
+    expect(result).toBeOk();
+    expect(instance.status).toBe('Completed');
+    expect(instanceRepo.save).toHaveBeenCalledWith(instance);
+  });
+
+  it('allows an explicitly Missed occurrence to be corrected by late completion', async () => {
+    const instance = await aTaskInstance();
+    instance.markMissed('forgot yesterday');
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
+
+    const result = await useCase.execute(instance.id, instance.identityId);
+
+    expect(result).toBeOk();
+    expect(instance.status).toBe('Completed');
+    expect(instanceRepo.save).toHaveBeenCalledWith(instance);
   });
 
   it('treats an already completed instance as an idempotent success', async () => {

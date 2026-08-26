@@ -52,8 +52,15 @@ export class ActivateTaskTemplateUseCase {
 
         template.activate();
 
-        // R2-5a 乐观锁：模板只保存一次（generate 会更新 lastGeneratedDate）。
-        const instances = this.generationService.generateInstances(template);
+        // Rehydrate existing facts so recurrence filtering is domain-correct, then
+        // refill from the activation point. Pause intentionally may retain the old
+        // generation horizon after deleting future incomplete occurrences.
+        const existingInstances = await instanceRepository.findByTemplateId(id, identityId);
+        existingInstances.forEach((instance) => template.addInstance(instance));
+        const instances = this.generationService.generateInstances(template, {
+          forceGenerate: true,
+          fromDate: Date.now(),
+        });
         let instancesGenerated = 0;
 
         if (instances.length > 0) {

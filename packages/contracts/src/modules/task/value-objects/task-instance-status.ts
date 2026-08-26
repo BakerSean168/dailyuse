@@ -5,8 +5,8 @@ export const TaskInstanceStatus = {
   Pending: 'Pending', // 待处理
   InProgress: 'InProgress', // 进行中
   Completed: 'Completed', // 已完成
-  Skipped: 'Skipped', // 已跳过
-  Expired: 'Expired', // 已过期
+  Missed: 'Missed', // 明确记录的未完成事实
+  Skipped: 'Skipped', // 豁免 / 不适用
 } as const;
 
 export type TaskInstanceStatus = (typeof TaskInstanceStatus)[keyof typeof TaskInstanceStatus];

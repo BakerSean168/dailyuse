@@ -17,6 +17,7 @@ import {
   type TaskWriteRepositories,
   type TaskWriteTransactionRunner,
 } from './task-write-support';
+import { reevaluateTaskPlanOutcome } from './task-plan-outcome-reevaluation';
 
 /**
  * Complete Task Instance Service
@@ -91,6 +92,7 @@ export class CompleteTaskInstanceUseCase {
     // Mark as completed（goalContext 会被嵌入领域事件的 payload）
     instance.complete(request?.duration, request?.note, request?.rating, goalContext);
     await repositories.instanceRepository.save(instance);
+    await reevaluateTaskPlanOutcome(repositories, identityId, String(instance.templateId));
 
     return ok({
       instance: instance.toClientDTO(),

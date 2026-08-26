@@ -16,7 +16,6 @@ import {
 import {
   CreateTaskTemplateSchema,
   CreateTaskTemplateResponseSchema,
-  TaskTemplateGraphResponseSchema,
   TaskTemplateResponseSchema,
   TaskTemplateListResponseSchema,
   TaskInstanceResponseSchema,
@@ -24,6 +23,7 @@ import {
   TaskTemplateInstancesQuerySchema,
   UpdateTaskTemplateInvocationSchema,
   GenerateInstancesInvocationSchema,
+  AbandonTaskPlanInvocationSchema,
   BindTaskToGoalInvocationSchema,
   TaskTemplateIdCommandInvocationSchema,
 } from '@memoflow/contracts/task';
@@ -47,10 +47,6 @@ function parseTemplateFilters(query: Record<string, unknown> | undefined): ListT
     : typeof query?.status === 'string'
       ? [query!.status as string]
       : undefined;
-  const folderId =
-    typeof query?.folderId === 'string'
-      ? (query.folderId as ListTaskTemplateFilters['folderId'])
-      : undefined;
   const goalId =
     typeof query?.goalId === 'string'
       ? (query.goalId as ListTaskTemplateFilters['goalId'])
@@ -61,7 +57,7 @@ function parseTemplateFilters(query: Record<string, unknown> | undefined): ListT
       ? [query!.tags as string]
       : undefined;
 
-  return { status, folderId, goalId, tags };
+  return { status, goalId, tags };
 }
 
 function parseTemplateInstancesRange(query: Record<string, unknown> | undefined): {
@@ -131,43 +127,6 @@ export function registerTaskTemplateRoutes(
       controller.listTemplates(parseTemplateFilters(req.query as Record<string, unknown>), ctx),
   );
 
-  // GET /graph — List templates with dependency graph projection
-  r.route(
-    {
-      method: 'get',
-      path: '/graph',
-      summary: '获取任务模板图数据',
-      request: {
-        query: ListTaskTemplateFiltersSchema,
-      },
-      responses: {
-        200: successResponse(TaskTemplateGraphResponseSchema, '获取成功'),
-      },
-    },
-    [auth],
-    (req, ctx) =>
-      controller.getTaskGraph(parseTemplateFilters(req.query as Record<string, unknown>), ctx),
-  );
-
-  // GET /by-priority — List templates sorted by priority (must be before /:id)
-  r.route(
-    {
-      method: 'get',
-      path: '/by-priority',
-      summary: '按优先级获取任务模板',
-      request: {
-        query: z.object({
-          limit: z.string().optional(),
-        }),
-      },
-      responses: {
-        200: successResponse(z.array(TaskTemplateResponseSchema), '获取成功'),
-      },
-    },
-    [auth],
-    (req, ctx) =>
-      controller.listByPriority(ctx, req.query?.limit ? Number(req.query.limit) : undefined),
-  );
 
   // GET /:id — Get template by ID
   r.route(
@@ -278,6 +237,29 @@ export function registerTaskTemplateRoutes(
     },
     [auth],
     (data, ctx) => controller.activateTemplate(data.params.id, ctx),
+  );
+
+  // POST /:id/abandon — Explicitly close a plan as Abandoned
+  r.routeWithValidation(
+    {
+      method: 'post',
+      path: '/:id/abandon',
+      summary: '主动放弃任务计划',
+      request: {
+        params: AbandonTaskPlanInvocationSchema.shape.params,
+        body: { content: { 'application/json': { schema: AbandonTaskPlanInvocationSchema.shape.body } } },
+      },
+      responses: {
+        200: successResponse(TaskTemplateResponseSchema, '计划已放弃'),
+        404: errorResponse('模板不存在'),
+      },
+      validation: {
+        schema: AbandonTaskPlanInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
+    },
+    [auth],
+    (data, ctx) => controller.abandonPlan(data.params.id, data.body, ctx),
   );
 
   // POST /:id/pause — Pause template

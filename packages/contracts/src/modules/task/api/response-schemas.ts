@@ -7,14 +7,7 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type {
-  TaskTemplateId,
-  TaskInstanceId,
-  TaskDependencyId,
-  IdentityId,
-  TaskFolderId,
-  SubtaskId,
-} from '../../../primitives';
+import type { TaskTemplateId, TaskInstanceId, IdentityId } from '../../../primitives';
 import {
   TaskGoalBindingSchema,
   TaskReminderConfigSchema,
@@ -22,9 +15,10 @@ import {
   RecurrenceConfigSchema,
 } from './task-template.dto';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
-import { DependencyType } from '../value-objects/dependency-type';
 import { TaskInstanceStatus } from '../value-objects/task-instance-status';
 import { TaskTemplateStatus } from '../value-objects/task-template-status';
+import { TaskPlanOutcome } from '../value-objects/task-plan-outcome';
+import { TaskPlanCompletionPolicy } from '../value-objects/task-plan-completion-policy';
 
 // ============ TaskTemplate Response Schema ============
 
@@ -37,28 +31,27 @@ export const TaskTemplateResponseSchema = z.object({
   recurrenceRule: RecurrenceConfigSchema.nullable(),
   reminderConfig: TaskReminderConfigSchema.nullable(),
   importance: z.enum(ImportanceLevel),
-  priority: z.number().optional(),
   goalBinding: TaskGoalBindingSchema.nullable(),
-  folderId: brandedId<TaskFolderId>().nullable(),
   tags: z.array(z.string()),
   color: z.string().nullable(),
   status: z.enum(TaskTemplateStatus),
+  outcome: z.enum(TaskPlanOutcome),
+  completionPolicy: z.enum(TaskPlanCompletionPolicy),
+  closedAt: z.number().nullable(),
+  archivedAt: z.number().nullable(),
+  abandonedReason: z.string().nullable(),
   lastGeneratedDate: z.number().nullable(),
   generateAheadDays: z.number().nullable(),
   version: z.number(),
   createdAt: z.number(),
   updatedAt: z.number(),
   deletedAt: z.number().nullable(),
-  parentTaskId: brandedId<TaskTemplateId>().nullable(),
   startDate: z.number().nullable(),
   dueDate: z.number().nullable(),
   completedAt: z.number().nullable(),
   estimatedMinutes: z.number().nullable(),
   actualMinutes: z.number().nullable(),
   comment: z.string().nullable(),
-  dependencyStatus: z.string().optional(),
-  isBlocked: z.boolean().optional(),
-  blockingReason: z.string().nullable(),
   instanceCount: z.number(),
   completedInstanceCount: z.number(),
   pendingInstanceCount: z.number(),
@@ -81,48 +74,6 @@ export const TaskTemplateListResponseSchema = z.object({
   total: z.number(),
 });
 
-// ============ TaskDependency Response Schema ============
-// Residual 797: TaskGraphDependencyDTO dual retired — this schema is the sole graph-edge shape
-// (semantic TaskGraphDependencyDTO is z.infer alias).
-
-// Residual 831: TaskDependencyClientDTO dual retired — sole TaskDependencyResponseSchema + z.infer
-// (semantic type is z.infer alias in aggregates/task-dependency-client.ts).
-export const TaskDependencyResponseSchema = z.object({
-  id: brandedId<TaskDependencyId>(),
-  predecessorTaskId: brandedId<TaskTemplateId>(),
-  successorTaskId: brandedId<TaskTemplateId>(),
-  dependencyType: z.enum(DependencyType),
-  lagDays: z.number().optional(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-  predecessorTaskTitle: z.string().optional(),
-  successorTaskTitle: z.string().optional(),
-});
-
-export const DependencyChainResponseSchema = z.object({
-  taskId: brandedId<TaskTemplateId>(),
-  allPredecessors: z.array(brandedId<TaskTemplateId>()),
-  allSuccessors: z.array(brandedId<TaskTemplateId>()),
-  depth: z.number(),
-  isOnCriticalPath: z.boolean(),
-});
-
-// Residual 711: ValidateDependencyResponseSchema is the sole validate-dependency response shape
-// (ValidateDependencyResponse is a z.infer alias).
-export const ValidateDependencyResponseSchema = z.object({
-  isValid: z.boolean(),
-  errors: z.array(z.string()).optional(),
-  wouldCreateCycle: z.boolean().optional(),
-  cyclePath: z.array(brandedId<TaskTemplateId>()).optional(),
-  message: z.string().optional(),
-});
-
-export const TaskTemplateGraphResponseSchema = z.object({
-  templates: z.array(TaskTemplateResponseSchema),
-  dependencies: z.array(TaskDependencyResponseSchema),
-  total: z.number(),
-});
-
 // ============ TaskInstance Response Schema ============
 
 // Residual 831: TaskInstanceClientDTO dual retired — sole TaskInstanceResponseSchema + z.infer
@@ -134,8 +85,8 @@ export const TaskInstanceResponseSchema = z.object({
   instanceDate: z.number(),
   timeConfig: TaskTimeConfigSchema,
   importance: z.enum(ImportanceLevel).optional(),
-  priority: z.number().optional(),
   status: z.enum(TaskInstanceStatus),
+  isOverdue: z.boolean(),
   actualStartTime: z.number().nullable(),
   actualEndTime: z.number().nullable(),
   comment: z.string().nullable(),
@@ -145,42 +96,15 @@ export const TaskInstanceResponseSchema = z.object({
   deletedAt: z.number().nullable(),
 });
 
-// Residual 697: CheckExpiredTaskInstancesResponseSchema is the sole expired-list response shape
-// (CheckExpiredTaskInstancesRes is a z.infer alias).
-export const CheckExpiredTaskInstancesResponseSchema = z.object({
-  count: z.number(),
-  instances: z.array(TaskInstanceResponseSchema),
-});
-
 // ============ Inferred response aliases ============
 // ADR-047: the RPC map imports ONLY inferred types from `../api`; these aliases
 // are the type surface the protocol layer references (no `z.infer` in maps).
 // ADR-047：RPC map 只从 `../api` 导入推导类型；这些别名是 protocol 层引用的
 // 类型表面（map 内不再出现 `z.infer`）。
-// Note: CheckExpiredTaskInstancesRes and ValidateDependencyResponse live in
-// their respective dto files; they are not re-declared here.
-// 注意：CheckExpiredTaskInstancesRes 与 ValidateDependencyResponse 已定义在
-// 各自 dto 文件中，这里不重复声明。
 
 export type TaskTemplateResponse = z.infer<typeof TaskTemplateResponseSchema>;
 export type TaskInstanceResponse = z.infer<typeof TaskInstanceResponseSchema>;
-export type TaskDependencyResponse = z.infer<typeof TaskDependencyResponseSchema>;
 
-// Residual 837: TaskFolderClientDTO dual retired — sole TaskFolderResponseSchema + z.infer
-// (semantic type is z.infer alias in aggregates/task-folder-client.ts).
-// Residual 843: TaskFolderServerDTO also z.infer of this schema (client+server single-track).
-export const TaskFolderResponseSchema = z.object({
-  id: brandedId<TaskFolderId>(),
-  identityId: brandedId<IdentityId>(),
-  name: z.string(),
-  color: z.string().nullable(),
-  icon: z.string().nullable(),
-  order: z.number(),
-  version: z.number(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-  deletedAt: z.number().nullable(),
-});
 
 // Residual 837: TaskTemplateHistoryClientDTO dual retired — sole TaskTemplateHistoryResponseSchema + z.infer
 // (semantic type is z.infer alias in entities/task-template-history-client.ts).
@@ -191,17 +115,4 @@ export const TaskTemplateHistoryResponseSchema = z.object({
   action: z.string(),
   changes: z.unknown(),
   createdAt: z.number(),
-});
-
-// Residual 841: SubtaskClientDTO dual retired — sole SubtaskResponseSchema + z.infer
-// (semantic type is z.infer alias in entities/subtask-client.ts).
-export const SubtaskResponseSchema = z.object({
-  id: brandedId<SubtaskId>(),
-  name: z.string(),
-  isCompleted: z.boolean(),
-  order: z.number(),
-  version: z.number(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-  deletedAt: z.number().nullable(),
 });

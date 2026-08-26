@@ -17,10 +17,7 @@ import type { TaskTemplateStatus } from '@memoflow/contracts/task';
 export interface TaskFilters {
   status?: string;
   goalId?: string;
-  parentTaskId?: string;
-  isBlocked?: boolean;
   tags?: string[];
-  folderId?: string;
   dueDateFrom?: number;
   dueDateTo?: number;
   limit?: number;
@@ -42,7 +39,7 @@ export interface ITaskTemplateRepository {
   findByIdForIdentity(identityId: string, id: string): Promise<TaskTemplate | null>;
 
   /**
-   * 根据 ID + identity 查找任务模板（包含子实体：子任务、实例）
+   * 根据 ID + identity 查找任务模板（包含实例）
    */
   findByIdWithChildren(identityId: string, id: string): Promise<TaskTemplate | null>;
 
@@ -61,10 +58,6 @@ export interface ITaskTemplateRepository {
    */
   findActiveTemplates(identityId: string): Promise<TaskTemplate[]>;
 
-  /**
-   * 根据文件夹查找任务模板（identity-scoped）
-   */
-  findByFolderId(identityId: string, folderId: string): Promise<TaskTemplate[]>;
 
   /**
    * 根据目标查找任务模板（identity-scoped）
@@ -125,20 +118,8 @@ export interface ITaskTemplateRepository {
    */
   findByKeyResultId(identityId: string, keyResultId: string): Promise<TaskTemplate[]>;
 
-  /**
-   * 查找子任务（identity-scoped）
-   */
-  findSubtasks(identityId: string, parentTaskId: string): Promise<TaskTemplate[]>;
 
-  /**
-   * 查找被阻塞的任务
-   */
-  findBlockedTasks(identityId: string): Promise<TaskTemplate[]>;
 
-  /**
-   * 按优先级排序查找任务
-   */
-  findSortedByPriority(identityId: string, limit?: number): Promise<TaskTemplate[]>;
 
   /**
    * 查找即将到期的任务（未来N天内）

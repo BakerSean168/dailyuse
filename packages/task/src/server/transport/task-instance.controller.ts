@@ -14,11 +14,11 @@ import type { Result } from '@memoflow/contracts/result';
 import type { Context } from '@memoflow/contracts/shared';
 import { isOk, ok } from '@memoflow/contracts/result';
 import type {
-  CheckExpiredTaskInstancesRes,
   GetTaskInstancesByRangeReq,
   TaskInstanceClientDTO,
   TaskInstanceStatus,
   CompleteTaskInstanceReq,
+  MarkTaskInstanceMissedReq,
   SkipTaskInstanceReq,
 } from '@memoflow/contracts/task';
 import type { CompleteTaskInstanceUseCase } from '../application/use-cases/commands/complete-task-instance.use-case';
@@ -31,7 +31,7 @@ import type { ListTaskInstancesByStatusUseCase } from '../application/use-cases/
 import type { ListTaskInstancesByTemplateUseCase } from '../application/use-cases/queries/list-task-instances-by-template.use-case';
 import type { SkipTaskInstanceUseCase } from '../application/use-cases/commands/skip-task-instance.use-case';
 import type { StartTaskInstanceUseCase } from '../application/use-cases/commands/start-task-instance.use-case';
-import type { CheckExpiredInstancesUseCase } from '../application/use-cases/commands/check-expired-instances.use-case';
+import type { MarkTaskInstanceMissedUseCase } from '../application/use-cases/commands/mark-task-instance-missed.use-case';
 
 type TaskControllerFn<T extends (...args: never[]) => unknown> = (
   ...args: Parameters<T>
@@ -46,9 +46,9 @@ export interface TaskInstanceUseCases {
   complete: TaskControllerFn<CompleteTaskInstanceUseCase['execute']>;
   uncomplete: TaskControllerFn<UncompleteTaskInstanceUseCase['execute']>;
   skip: TaskControllerFn<SkipTaskInstanceUseCase['execute']>;
+  markMissed: TaskControllerFn<MarkTaskInstanceMissedUseCase['execute']>;
   start: TaskControllerFn<StartTaskInstanceUseCase['execute']>;
   deleteInstance: TaskControllerFn<DeleteTaskInstanceUseCase['execute']>;
-  checkExpired: TaskControllerFn<CheckExpiredInstancesUseCase['execute']>;
 }
 
 /**
@@ -147,6 +147,19 @@ export class TaskInstanceController {
     return ok(result.data.instance);
   }
 
+  /** Explicitly records a Missed fact; never called from a clock/maintenance path. */
+  async markMissedInstance(
+    id: string,
+    input: MarkTaskInstanceMissedReq,
+    ctx: Context,
+  ): Promise<Result<TaskInstanceClientDTO>> {
+    const result = await this.useCases.markMissed(id, ctx.identityId, input);
+    if (!isOk(result)) {
+      return result as Result<TaskInstanceClientDTO>;
+    }
+    return ok(result.data.instance);
+  }
+
   /**
    * Start instance
    */
@@ -166,19 +179,5 @@ export class TaskInstanceController {
     return ok(null);
   }
 
-  /**
-   * Check and mark expired instances
-   */
-  async checkExpired(identityId: string): Promise<Result<CheckExpiredTaskInstancesRes>> {
-    const result = await this.useCases.checkExpired(identityId);
 
-    if (!isOk(result)) {
-      return result as Result<CheckExpiredTaskInstancesRes>;
-    }
-
-    return ok({
-      count: result.data.length,
-      instances: result.data,
-    });
-  }
 }

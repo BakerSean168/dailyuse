@@ -1,3 +1,7 @@
+import { createTimeFacade } from '@memoflow/time';
+
+const taskTime = createTimeFacade();
+
 /**
  * TaskInstance occurrence key（R2-1 / P0-03）
  *
@@ -10,18 +14,12 @@
  */
 
 export function startOfLocalDay(value: number): number {
-  const d = new Date(value);
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
+  return taskTime.calendar.startOfDay(value);
 }
 
 /** 本地时区 YYYY-MM-DD（非 UTC）。 */
 export function toLocalDateKey(dayStartMs: number): string {
-  const d = new Date(dayStartMs);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return taskTime.calendar.toYmd(dayStartMs);
 }
 
 export function buildTaskInstanceOccurrenceKey(

@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { createTimeFacade } from '@memoflow/time';
+
+const taskTime = createTimeFacade();
 import {
   buildTaskInstanceOccurrenceKey,
   startOfLocalDay,
@@ -16,7 +19,7 @@ describe('task instance occurrence key (R2-1)', () => {
 
   it('differs across templates and across days', () => {
     const day1 = startOfLocalDay(Date.now());
-    const day2 = startOfLocalDay(day1 + 86400000);
+    const day2 = startOfLocalDay(taskTime.calendar.addDays(day1, 1));
     expect(buildTaskInstanceOccurrenceKey('tpl-1', day1)).not.toBe(
       buildTaskInstanceOccurrenceKey('tpl-2', day1),
     );

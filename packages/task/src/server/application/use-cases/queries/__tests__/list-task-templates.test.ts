@@ -48,7 +48,6 @@ describe('ListTaskTemplatesUseCase', () => {
     templateRepo = createMockRepo<ITaskTemplateRepository>({
       findByIdentityId: vi.fn().mockResolvedValue([]),
       findByStatus: vi.fn().mockResolvedValue([]),
-      findByFolderId: vi.fn().mockResolvedValue([]),
       findByGoalId: vi.fn().mockResolvedValue([]),
       findByTags: vi.fn().mockResolvedValue([]),
       save: vi.fn().mockResolvedValue(undefined),
@@ -81,16 +80,8 @@ describe('ListTaskTemplatesUseCase', () => {
       }
     });
 
-    it('should filter by folderId when provided (and no status)', async () => {
-      await useCase.execute({
-        identityId: testIdentityId,
-        folderId: 'folder-1' as any,
-      });
 
-      expect(templateRepo.findByFolderId).toHaveBeenCalledWith(testIdentityId, 'folder-1');
-    });
-
-    it('should filter by goalId when provided (and no status/folderId)', async () => {
+    it('should filter by goalId when provided (and no status)', async () => {
       await useCase.execute({
         identityId: testIdentityId,
         goalId: 'goal-1' as any,
@@ -99,7 +90,7 @@ describe('ListTaskTemplatesUseCase', () => {
       expect(templateRepo.findByGoalId).toHaveBeenCalledWith(testIdentityId, 'goal-1');
     });
 
-    it('should filter by tags when provided (and no status/folderId/goalId)', async () => {
+    it('should filter by tags when provided (and no status/goalId)', async () => {
       await useCase.execute({
         identityId: testIdentityId,
         tags: ['work', 'urgent'],
@@ -116,16 +107,6 @@ describe('ListTaskTemplatesUseCase', () => {
       expect(templateRepo.findByIdentityId).toHaveBeenCalledWith(testIdentityId);
     });
 
-    it('should prioritize status over folderId', async () => {
-      await useCase.execute({
-        identityId: testIdentityId,
-        status: [TaskTemplateStatus.Active],
-        folderId: 'folder-1' as any,
-      });
-
-      expect(templateRepo.findByStatus).toHaveBeenCalled();
-      expect(templateRepo.findByFolderId).not.toHaveBeenCalled();
-    });
   });
 
   it('should return empty list when no templates found', async () => {

@@ -120,9 +120,9 @@ describe('PowerSync task template goal binding', () => {
     await repository.save(template);
 
     const [sql, parameters] = vi.mocked(db.execute).mock.calls[0];
-    expect(sql).toContain(
-      'goal_id, key_result_id, goal_record_value,\n          goal_progress_trigger',
-    );
+    for (const column of ['goal_id', 'key_result_id', 'goal_record_value', 'goal_progress_trigger']) {
+      expect(sql).toContain(column);
+    }
     expect(boundColumnParameters(sql, parameters ?? [])).toMatchObject({
       goal_id: goalId,
       key_result_id: keyResultId,

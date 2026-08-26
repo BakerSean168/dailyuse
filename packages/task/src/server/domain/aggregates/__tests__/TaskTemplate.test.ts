@@ -7,8 +7,7 @@
  * - Property updates (title, description, dates, tags, color, etc.)
  * - Instance generation (one-time, recurring daily/weekly)
  * - Goal binding / linking
- * - Dependency management (blocked/ready)
- * - Priority calculation
+ * - Explicit user importance updates
  * - DTO conversion (toServerDTO, toClientDTO)
  * - Domain events
  * - Edge cases & error handling
@@ -19,14 +18,14 @@ import { TaskTemplate } from '../task-template';
 import type { TaskTemplateState } from '../task-template.state';
 import { TaskTemplateStatus } from '../../../domain/value-objects/task-template-status';
 import { TaskTemplateId } from '../../../domain/value-objects/task-template-id';
-import { TaskFolderId } from '../../../domain/value-objects/task-folder-id';
 import { IdentityId } from '@memoflow/domain-shared';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
-import { PriorityLevel } from '@memoflow/contracts/shared';
 import {
   DayOfWeek,
   RecurrenceEndConditionType,
   TaskGoalBindingTrigger,
+  TaskPlanCompletionPolicy,
+  TaskPlanOutcome,
 } from '@memoflow/contracts/task';
 import { TaskType } from '../../value-objects';
 import {
@@ -35,11 +34,9 @@ import {
   TaskReminderConfig,
   TaskGoalBinding,
   ChecklistItemDefinition,
-  DependencyStatus,
 } from '../../value-objects';
 import {
   InvalidTaskTemplateStateError,
-  TaskTemplateArchivedError,
   InvalidGoalBindingError,
   InvalidDateRangeError,
 } from '../../value-objects/task-errors';
@@ -106,10 +103,13 @@ function makeState(overrides: Partial<TaskTemplateState> = {}): TaskTemplateStat
     tags: overrides.tags ?? [],
     color: overrides.color ?? null,
     status: overrides.status ?? TaskTemplateStatus.Active,
-    folderId: overrides.folderId ?? null,
+    outcome: overrides.outcome ?? TaskPlanOutcome.Open,
+    completionPolicy: overrides.completionPolicy ?? TaskPlanCompletionPolicy.AllowCorrection,
+    closedAt: overrides.closedAt ?? null,
+    archivedAt: overrides.archivedAt ?? null,
+    abandonedReason: overrides.abandonedReason ?? null,
     goalBinding: overrides.goalBinding ?? null,
     checklist: overrides.checklist ?? [],
-    parentTaskId: overrides.parentTaskId ?? null,
     timeConfig: overrides.timeConfig ?? null,
     recurrenceRule: overrides.recurrenceRule ?? null,
     reminderConfig: overrides.reminderConfig ?? null,
@@ -121,9 +121,6 @@ function makeState(overrides: Partial<TaskTemplateState> = {}): TaskTemplateStat
     estimatedMinutes: overrides.estimatedMinutes ?? null,
     actualMinutes: overrides.actualMinutes ?? null,
     note: overrides.note ?? null,
-    dependencyStatus: overrides.dependencyStatus ?? DependencyStatus.None,
-    isBlocked: overrides.isBlocked ?? false,
-    blockingReason: overrides.blockingReason ?? null,
     createdAt: overrides.createdAt ?? now,
     updatedAt: overrides.updatedAt ?? now,
     deletedAt: overrides.deletedAt ?? null,
@@ -156,7 +153,6 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.reminderConfig).toBeNull();
         expect(template.tags).toEqual([]);
         expect(template.color).toBeNull();
-        expect(template.folderId).toBeNull();
         expect(template.version).toBe(1);
       });
 
@@ -171,7 +167,6 @@ describe('TaskTemplate Aggregate', () => {
 
       it('should accept all optional params', () => {
         const identityId = makeIdentityId();
-        const folderId = TaskFolderId.generate();
         const startDate = new Date('2025-06-15');
         const dueDate = new Date('2025-06-20');
 
@@ -184,7 +179,6 @@ describe('TaskTemplate Aggregate', () => {
           dueDate,
           estimatedMinutes: 60,
           note: 'A note',
-          folderId,
           tags: ['work', 'urgent'],
           color: '#FF0000',
         });
@@ -195,7 +189,6 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.dueDate).toEqual(dueDate);
         expect(template.estimatedMinutes).toBe(60);
         expect(template.note).toBe('A note');
-        expect(template.folderId).toBe(folderId);
         expect(template.tags).toEqual(['work', 'urgent']);
         expect(template.color).toBe('#FF0000');
       });
@@ -276,16 +269,26 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.dueDate).toEqual(sameDate);
       });
 
-      it('should set dependencyStatus to "Pending" for one-time tasks', () => {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-        });
-        expect(template.dependencyStatus).toBe(DependencyStatus.Waiting);
-      });
     });
 
     describe('createRecurringTask()', () => {
+      it('rejects recurring plans without a date anchor', () => {
+        const unanchored = TaskTimeConfig.create({
+          timeType: 'AllDay',
+          startDate: null,
+          timePoint: null,
+          timeRange: null,
+        });
+        expect(() =>
+          TaskTemplate.createRecurringTask({
+            identityId: makeIdentityId(),
+            title: 'Unanchored recurring task',
+            timeConfig: unanchored,
+            recurrenceRule: makeDailyRule(),
+          }),
+        ).toThrow('Recurring Task requires a date');
+      });
+
       it('should create a valid recurring task', () => {
         const identityId = makeIdentityId();
         const timeConfig = makeAllDayTimeConfig();
@@ -303,7 +306,6 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.timeConfig).toBe(timeConfig);
         expect(template.recurrenceRule).toBe(recurrenceRule);
         expect(template.generateAheadDays).toBe(30);
-        expect(template.dependencyStatus).toBe(DependencyStatus.None);
       });
 
       it('should accept custom generateAheadDays', () => {
@@ -459,13 +461,11 @@ describe('TaskTemplate Aggregate', () => {
         const state = makeState({
           description: undefined as unknown as string | null,
           color: undefined as unknown as string | null,
-          folderId: undefined as unknown as any,
         });
         const template = TaskTemplate.load(state);
 
         expect(template.description).toBeNull();
         expect(template.color).toBeNull();
-        expect(template.folderId).toBeNull();
       });
     });
   });
@@ -504,9 +504,11 @@ describe('TaskTemplate Aggregate', () => {
         expect(() => template.pause()).toThrow(InvalidTaskTemplateStateError);
       });
 
-      it('should throw when pausing an archived template', () => {
+      it('archive metadata does not block pausing an active plan', () => {
         template.archive();
-        expect(() => template.pause()).toThrow(InvalidTaskTemplateStateError);
+        template.pause();
+        expect(template.status).toBe(TaskTemplateStatus.Paused);
+        expect(template.archivedAt).not.toBeNull();
       });
 
       it('should throw when pausing a deleted template', () => {
@@ -522,10 +524,12 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.status).toBe(TaskTemplateStatus.Active);
       });
 
-      it('should activate an archived template', () => {
+      it('archive metadata does not block resuming a paused plan', () => {
+        template.pause();
         template.archive();
         template.activate();
         expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.archivedAt).not.toBeNull();
       });
 
       it('should throw when activating an already active template', () => {
@@ -539,20 +543,22 @@ describe('TaskTemplate Aggregate', () => {
     });
 
     describe('archive()', () => {
-      it('should archive an active template', () => {
+      it('archives an active template without changing lifecycle', () => {
         template.archive();
-        expect(template.status).toBe(TaskTemplateStatus.Archived);
+        expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.archivedAt).not.toBeNull();
       });
 
-      it('should archive a paused template', () => {
+      it('archives a paused template without changing lifecycle', () => {
         template.pause();
         template.archive();
-        expect(template.status).toBe(TaskTemplateStatus.Archived);
+        expect(template.status).toBe(TaskTemplateStatus.Paused);
+        expect(template.archivedAt).not.toBeNull();
       });
 
-      it('should throw when archiving an already archived template', () => {
+      it('rejects duplicate archive metadata', () => {
         template.archive();
-        expect(() => template.archive()).toThrow(TaskTemplateArchivedError);
+        expect(() => template.archive()).toThrow(InvalidTaskTemplateStateError);
       });
 
       it('should throw when archiving a deleted template', () => {
@@ -562,9 +568,10 @@ describe('TaskTemplate Aggregate', () => {
     });
 
     describe('softDelete()', () => {
-      it('should soft-delete an active template', () => {
+      it('soft-delete marks mistaken creation without fabricating lifecycle/outcome', () => {
         template.softDelete();
-        expect(template.status).toBe(TaskTemplateStatus.Deleted);
+        expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.outcome).toBe(TaskPlanOutcome.Open);
         expect(template.deletedAt).not.toBeNull();
       });
 
@@ -581,24 +588,27 @@ describe('TaskTemplate Aggregate', () => {
         expect(() => template.softDelete()).toThrow(InvalidTaskTemplateStateError);
       });
 
-      it('should soft-delete a paused template', () => {
+      it('soft-delete preserves a paused lifecycle', () => {
         template.pause();
         template.softDelete();
-        expect(template.status).toBe(TaskTemplateStatus.Deleted);
+        expect(template.status).toBe(TaskTemplateStatus.Paused);
       });
 
-      it('should soft-delete an archived template', () => {
+      it('soft-delete preserves archive metadata separately', () => {
         template.archive();
         template.softDelete();
-        expect(template.status).toBe(TaskTemplateStatus.Deleted);
+        expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.archivedAt).not.toBeNull();
+        expect(template.deletedAt).not.toBeNull();
       });
     });
 
     describe('restore()', () => {
-      it('should restore a deleted template to Active', () => {
+      it('restores mistaken deletion without changing lifecycle', () => {
+        template.pause();
         template.softDelete();
         template.restore();
-        expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.status).toBe(TaskTemplateStatus.Paused);
         expect(template.deletedAt).toBeNull();
       });
 
@@ -612,21 +622,23 @@ describe('TaskTemplate Aggregate', () => {
       });
     });
 
-    describe('full lifecycle', () => {
-      it('Active → Paused → Active → Archived → Active → Deleted → Restored', () => {
+    describe('lifecycle vs metadata', () => {
+      it('keeps Active/Paused lifecycle independent from archive/delete metadata', () => {
         expect(template.status).toBe(TaskTemplateStatus.Active);
         template.pause();
         expect(template.status).toBe(TaskTemplateStatus.Paused);
         template.activate();
         expect(template.status).toBe(TaskTemplateStatus.Active);
         template.archive();
-        expect(template.status).toBe(TaskTemplateStatus.Archived);
-        template.activate();
         expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.archivedAt).not.toBeNull();
         template.softDelete();
-        expect(template.status).toBe(TaskTemplateStatus.Deleted);
+        expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.deletedAt).not.toBeNull();
         template.restore();
         expect(template.status).toBe(TaskTemplateStatus.Active);
+        expect(template.archivedAt).toBeNull();
+        expect(template.deletedAt).toBeNull();
       });
     });
   });
@@ -1105,18 +1117,18 @@ describe('TaskTemplate Aggregate', () => {
         expect(() => template.generateInstances(date + 1, date)).toThrow(InvalidDateRangeError);
       });
 
-      it('should throw for archived templates', () => {
+      it('should throw for closed plans', () => {
         const template = TaskTemplate.load(
           makeState({
             taskType: TaskType.Recurring,
-            status: TaskTemplateStatus.Archived,
+            status: TaskTemplateStatus.Closed,
+            outcome: TaskPlanOutcome.Succeeded,
             timeConfig: makeAllDayTimeConfig(),
             recurrenceRule: makeDailyRule(),
           }),
         );
-
         expect(() => template.generateInstances(Date.now(), Date.now() + 86400000)).toThrow(
-          TaskTemplateArchivedError,
+          InvalidTaskTemplateStateError,
         );
       });
 
@@ -1187,16 +1199,18 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.shouldGenerateInstance(Date.now())).toBe(false);
       });
 
-      it('should return true for daily recurrence on any day', () => {
+      it('should return true for daily recurrence on an anchored schedule day', () => {
+        const startDate = new Date(2026, 0, 1, 12, 0, 0);
         const template = TaskTemplate.load(
           makeState({
             taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
+            timeConfig: makeAllDayTimeConfig(startDate),
             recurrenceRule: makeDailyRule(),
           }),
         );
 
-        expect(template.shouldGenerateInstance(Date.now())).toBe(true);
+        expect(template.shouldGenerateInstance(new Date(2026, 0, 2, 12, 0, 0).getTime())).toBe(true);
       });
 
       it('should respect daily recurrence interval from start date', () => {
@@ -1337,27 +1351,14 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.instances.length).toBe(1);
       });
 
-      it('should throw for archived template', () => {
+      it('should throw for closed plan', () => {
         const template = TaskTemplate.load(
           makeState({
-            status: TaskTemplateStatus.Archived,
+            status: TaskTemplateStatus.Closed,
+            outcome: TaskPlanOutcome.Succeeded,
             timeConfig: makeAllDayTimeConfig(),
           }),
         );
-
-        expect(() => template.createInstance({ instanceDate: Date.now() })).toThrow(
-          TaskTemplateArchivedError,
-        );
-      });
-
-      it('should throw for deleted template', () => {
-        const template = TaskTemplate.load(
-          makeState({
-            status: TaskTemplateStatus.Deleted,
-            timeConfig: makeAllDayTimeConfig(),
-          }),
-        );
-
         expect(() => template.createInstance({ instanceDate: Date.now() })).toThrow(
           InvalidTaskTemplateStateError,
         );
@@ -1730,11 +1731,12 @@ describe('TaskTemplate Aggregate', () => {
         expect(() => template.bindToGoal('goal-789', 'kr-012', 5)).toThrow(InvalidGoalBindingError);
       });
 
-      it('should throw for archived template', () => {
-        const template = TaskTemplate.load(makeState({ status: TaskTemplateStatus.Archived }));
-
+      it('should throw for closed plan', () => {
+        const template = TaskTemplate.load(
+          makeState({ status: TaskTemplateStatus.Closed, outcome: TaskPlanOutcome.Succeeded }),
+        );
         expect(() => template.bindToGoal('goal-123', 'kr-456', 10)).toThrow(
-          TaskTemplateArchivedError,
+          InvalidGoalBindingError,
         );
       });
     });
@@ -1755,248 +1757,20 @@ describe('TaskTemplate Aggregate', () => {
         expect(() => template.unbindFromGoal()).toThrow(InvalidGoalBindingError);
       });
 
-      it('should throw for archived template', () => {
+      it('should throw for closed plan', () => {
         const binding = TaskGoalBinding.fromDTO({
-          goalId: 'goal-123',
-          keyResultId: 'kr-456',
-          goalRecordValue: 10,
+          goalId: 'goal-123', keyResultId: 'kr-456', goalRecordValue: 10,
           progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
         });
         const template = TaskTemplate.load(
-          makeState({
-            status: TaskTemplateStatus.Archived,
-            goalBinding: binding,
-          }),
+          makeState({ status: TaskTemplateStatus.Closed, outcome: TaskPlanOutcome.Succeeded, goalBinding: binding }),
         );
-
-        expect(() => template.unbindFromGoal()).toThrow(TaskTemplateArchivedError);
+        expect(() => template.unbindFromGoal()).toThrow(InvalidGoalBindingError);
       });
     });
 
   });
 
-  // ==================== Subtasks ====================
-  describe('Subtasks (ONE_TIME)', () => {
-    it('should add subtask to one-time task', () => {
-      const template = TaskTemplate.createOneTimeTask({
-        identityId: makeIdentityId(),
-        title: 'Parent',
-      });
-
-      template.addSubtask('child-123');
-      // Should not throw, history entry added
-      expect(template.history.length).toBeGreaterThan(1);
-    });
-
-    it('should throw when adding subtask to RECURRING task', () => {
-      const template = TaskTemplate.createRecurringTask({
-        identityId: makeIdentityId(),
-        title: 'Recurring',
-        timeConfig: makeAllDayTimeConfig(),
-        recurrenceRule: makeDailyRule(),
-      });
-
-      expect(() => template.addSubtask('child-123')).toThrow(InvalidTaskTemplateStateError);
-    });
-
-    it('should remove subtask from one-time task', () => {
-      const template = TaskTemplate.createOneTimeTask({
-        identityId: makeIdentityId(),
-        title: 'Parent',
-      });
-
-      template.removeSubtask('child-123');
-      expect(template.history.length).toBeGreaterThan(1);
-    });
-
-    it('should throw when removing subtask from RECURRING task', () => {
-      const template = TaskTemplate.createRecurringTask({
-        identityId: makeIdentityId(),
-        title: 'Recurring',
-        timeConfig: makeAllDayTimeConfig(),
-        recurrenceRule: makeDailyRule(),
-      });
-
-      expect(() => template.removeSubtask('child-123')).toThrow(InvalidTaskTemplateStateError);
-    });
-
-    it('should identify as subtask when parentTaskId is set', () => {
-      const parentId = TaskTemplateId.generate();
-      const template = TaskTemplate.load(makeState({ parentTaskId: parentId }));
-
-      expect(template.isSubtask()).toBe(true);
-      expect(template.getParentTaskId()).toBe(parentId);
-    });
-
-    it('should not be a subtask when parentTaskId is null', () => {
-      const template = TaskTemplate.load(makeState({ parentTaskId: null }));
-
-      expect(template.isSubtask()).toBe(false);
-      expect(template.getParentTaskId()).toBeNull();
-    });
-  });
-
-  // ==================== Dependency Management ====================
-  describe('Dependency Management (ONE_TIME)', () => {
-    describe('markAsBlocked()', () => {
-      it('should mark as blocked with reason', () => {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-        });
-
-        template.markAsBlocked('Waiting for prerequisite');
-        expect(template.isBlocked).toBe(true);
-        expect(template.blockingReason).toBe('Waiting for prerequisite');
-        expect(template.dependencyStatus).toBe(DependencyStatus.Blocked);
-      });
-
-      it('should throw for RECURRING tasks', () => {
-        const template = TaskTemplate.createRecurringTask({
-          identityId: makeIdentityId(),
-          title: 'Recurring',
-          timeConfig: makeAllDayTimeConfig(),
-          recurrenceRule: makeDailyRule(),
-        });
-
-        expect(() => template.markAsBlocked('reason')).toThrow(InvalidTaskTemplateStateError);
-      });
-    });
-
-    describe('markAsReady()', () => {
-      it('should mark as ready', () => {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-        });
-
-        template.markAsBlocked('reason');
-        template.markAsReady();
-        expect(template.isBlocked).toBe(false);
-        expect(template.blockingReason).toBeNull();
-        expect(template.dependencyStatus).toBe(DependencyStatus.Ready);
-      });
-
-      it('should throw for RECURRING tasks', () => {
-        const template = TaskTemplate.createRecurringTask({
-          identityId: makeIdentityId(),
-          title: 'Recurring',
-          timeConfig: makeAllDayTimeConfig(),
-          recurrenceRule: makeDailyRule(),
-        });
-
-        expect(() => template.markAsReady()).toThrow(InvalidTaskTemplateStateError);
-      });
-    });
-
-    describe('updateDependencyStatus()', () => {
-      it('should update dependency status', () => {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-        });
-
-        template.updateDependencyStatus(DependencyStatus.Ready);
-        expect(template.dependencyStatus).toBe(DependencyStatus.Ready);
-
-        template.updateDependencyStatus(DependencyStatus.Blocked);
-        expect(template.dependencyStatus).toBe(DependencyStatus.Blocked);
-
-        template.updateDependencyStatus(DependencyStatus.Waiting);
-        expect(template.dependencyStatus).toBe(DependencyStatus.Waiting);
-      });
-
-      it('should throw for RECURRING tasks', () => {
-        const template = TaskTemplate.createRecurringTask({
-          identityId: makeIdentityId(),
-          title: 'Recurring',
-          timeConfig: makeAllDayTimeConfig(),
-          recurrenceRule: makeDailyRule(),
-        });
-
-        expect(() => template.updateDependencyStatus(DependencyStatus.Ready)).toThrow(
-          InvalidTaskTemplateStateError,
-        );
-      });
-    });
-  });
-
-  // ==================== Priority Calculation ====================
-  describe('Priority Calculation (ONE_TIME)', () => {
-    it('should return priority for one-time task', () => {
-      const template = TaskTemplate.createOneTimeTask({
-        identityId: makeIdentityId(),
-        title: 'Task',
-        importance: ImportanceLevel.Vital,
-        dueDate: new Date(Date.now() + 86400000), // tomorrow
-      });
-
-      const priority = template.getPriority();
-      expect(priority).toHaveProperty('level');
-      expect(priority).toHaveProperty('score');
-      expect(priority.score).toBeGreaterThanOrEqual(0);
-      expect(priority.score).toBeLessThanOrEqual(100);
-    });
-
-    it('should return low priority for recurring tasks', () => {
-      const template = TaskTemplate.createRecurringTask({
-        identityId: makeIdentityId(),
-        title: 'Recurring',
-        timeConfig: makeAllDayTimeConfig(),
-        recurrenceRule: makeDailyRule(),
-      });
-
-      const priority = template.getPriority();
-      expect(priority.level).toBe(PriorityLevel.Low);
-      expect(priority.score).toBe(0);
-    });
-
-    it('should return getPriorityScore() matching getPriority().score', () => {
-      vi.useFakeTimers();
-      vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
-
-      try {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-          importance: ImportanceLevel.Important,
-          dueDate: new Date(Date.now() + 2 * 86400000),
-        });
-
-        expect(template.getPriorityScore()).toBe(template.getPriority().score);
-      } finally {
-        vi.useRealTimers();
-      }
-    });
-
-    it('should return getPriorityLevel() matching getPriority().level', () => {
-      const template = TaskTemplate.createOneTimeTask({
-        identityId: makeIdentityId(),
-        title: 'Task',
-        importance: ImportanceLevel.Moderate,
-      });
-
-      expect(template.getPriorityLevel()).toBe(template.getPriority().level);
-    });
-
-    it('should increase priority as due date approaches', () => {
-      const farTemplate = TaskTemplate.createOneTimeTask({
-        identityId: makeIdentityId(),
-        title: 'Far',
-        importance: ImportanceLevel.Moderate,
-        dueDate: new Date(Date.now() + 30 * 86400000),
-      });
-
-      const nearTemplate = TaskTemplate.createOneTimeTask({
-        identityId: makeIdentityId(),
-        title: 'Near',
-        importance: ImportanceLevel.Moderate,
-        dueDate: new Date(Date.now() + 1 * 86400000),
-      });
-
-      expect(nearTemplate.getPriorityScore()).toBeGreaterThan(farTemplate.getPriorityScore());
-    });
-  });
 
   // ==================== History ====================
   describe('History', () => {
@@ -2067,28 +1841,7 @@ describe('TaskTemplate Aggregate', () => {
         expect(dto.instances!.length).toBe(1);
       });
 
-      it('should include priority for ONE_TIME tasks', () => {
-        const template = TaskTemplate.createOneTimeTask({
-          identityId: makeIdentityId(),
-          title: 'Task',
-          dueDate: new Date(Date.now() + 86400000),
-        });
 
-        const dto = template.toServerDTO();
-        expect(dto.priority).toBeTypeOf('number');
-      });
-
-      it('should have undefined priority for RECURRING tasks', () => {
-        const template = TaskTemplate.createRecurringTask({
-          identityId: makeIdentityId(),
-          title: 'Recurring',
-          timeConfig: makeAllDayTimeConfig(),
-          recurrenceRule: makeDailyRule(),
-        });
-
-        const dto = template.toServerDTO();
-        expect(dto.priority).toBeUndefined();
-      });
     });
 
     describe('toClientDTO()', () => {
@@ -2264,7 +2017,7 @@ describe('TaskTemplate Aggregate', () => {
       const deletedAt = new Date('2025-01-01');
       const template = TaskTemplate.load(
         makeState({
-          status: TaskTemplateStatus.Deleted,
+          status: TaskTemplateStatus.Active,
           deletedAt,
         }),
       );

@@ -8,13 +8,18 @@
 import type { TaskTemplate as PrismaTaskTemplate } from '@memoflow/database';
 import { toDateOrNull } from '@memoflow/utils/shared';
 import { TaskTemplate } from '../../../../domain/aggregates/task-template';
-import { RecurrenceFrequency } from '@memoflow/contracts/task';
+import {
+  RecurrenceFrequency,
+  TaskPlanCompletionPolicy,
+  TaskPlanOutcome,
+  type TaskPlanCompletionPolicyValue,
+  type TaskPlanOutcomeValue,
+} from '@memoflow/contracts/task';
 import { TaskType } from '@memoflow/contracts/task';
 import type { TaskTimeType } from '@memoflow/contracts/task';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { ReminderTimeUnit } from '@memoflow/contracts/task';
 import { TaskTemplateId } from '../../../../domain/value-objects/task-template-id';
-import { TaskFolderId } from '../../../../domain/value-objects/task-folder-id';
 import { IdentityId } from '@memoflow/domain-shared';
 import { TaskTemplateStatus } from '../../../../domain/value-objects/task-template-status';
 import {
@@ -24,7 +29,14 @@ import {
   TaskGoalBinding,
   ChecklistItemDefinition,
 } from '../../../../domain/value-objects';
-import { toDependencyStatus } from './task-row.mapper';
+
+type PrismaTaskTemplateVNext = PrismaTaskTemplate & {
+  outcome?: string;
+  completionPolicy?: string;
+  closedAt?: Date | null;
+  archivedAt?: Date | null;
+  abandonedReason?: string | null;
+};
 
 /** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
 function requiredInstant(value: Date | string | number | null | undefined): number {
@@ -47,6 +59,7 @@ export class PrismaTaskTemplateMapper {
    * Prisma record → TaskTemplate aggregate root
    */
   static toDomain(data: PrismaTaskTemplate): TaskTemplate {
+    const vnext = data as PrismaTaskTemplateVNext;
     let timeConfig = null;
     if (data.timeConfigType) {
       timeConfig = TaskTimeConfig.create({
@@ -121,16 +134,16 @@ export class PrismaTaskTemplateMapper {
       importance: data.importance as ImportanceLevel,
       goalBinding,
       checklist,
-      folderId: data.folderId ? TaskFolderId.of(data.folderId) : null,
       tags,
       color: data.color,
       status: data.status as TaskTemplateStatus,
+      outcome: (vnext.outcome ?? TaskPlanOutcome.Open) as TaskPlanOutcomeValue,
+      completionPolicy: (vnext.completionPolicy ?? TaskPlanCompletionPolicy.AllowCorrection) as TaskPlanCompletionPolicyValue,
+      closedAt: optionalInstant(vnext.closedAt),
+      archivedAt: optionalInstant(vnext.archivedAt),
+      abandonedReason: vnext.abandonedReason ?? null,
       lastGeneratedDate: optionalInstant(data.lastGeneratedDate),
       generateAheadDays: data.generateAheadDays,
-      parentTaskId: data.parentTaskId ? TaskTemplateId.of(data.parentTaskId) : null,
-      dependencyStatus: toDependencyStatus(data.dependencyStatus),
-      isBlocked: data.isBlocked ?? false,
-      blockingReason: data.blockingReason,
       startDate: null,
       dueDate: null,
       completedAt: null,
@@ -182,12 +195,14 @@ export class PrismaTaskTemplateMapper {
       name: dto.name,
       description: dto.description,
       status: dto.status,
+      outcome: dto.outcome,
+      completionPolicy: dto.completionPolicy,
+      closedAt: toDateOrNull(dto.closedAt),
+      archivedAt: toDateOrNull(dto.archivedAt),
+      abandonedReason: dto.abandonedReason,
       importance: dto.importance,
       color: dto.color,
       tags: typeof dto.tags === 'string' ? dto.tags : JSON.stringify(dto.tags),
-      // Empty strings must become null; Prisma FK columns reject '' as invalid UUID refs.
-      folderId: dto.folderId ? dto.folderId : null,
-      parentTaskId: dto.parentTaskId ? dto.parentTaskId : null,
       timeConfigType,
       timeConfigStartTime,
       timeConfigEndTime,
@@ -198,8 +213,6 @@ export class PrismaTaskTemplateMapper {
       recurrenceRuleType,
       recurrenceRuleInterval,
       recurrenceRuleDaysOfWeek,
-      recurrenceRuleDayOfMonth: null,
-      recurrenceRuleMonthOfYear: null,
       recurrenceRuleEndDate,
       recurrenceRuleCount,
       reminderConfigEnabled,
@@ -213,9 +226,6 @@ export class PrismaTaskTemplateMapper {
       goalRecordValue: dto.goalBinding?.goalRecordValue ?? null,
       goalProgressTrigger: dto.goalBinding?.progressTrigger ?? null,
       checklist: dto.checklist?.length ? JSON.stringify(dto.checklist) : null,
-      dependencyStatus: dto.dependencyStatus ?? 'NONE',
-      isBlocked: dto.isBlocked ?? false,
-      blockingReason: dto.blockingReason,
       version: dto.version,
       deletedAt: toDateOrNull(dto.deletedAt),
     };

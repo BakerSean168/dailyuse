@@ -13,8 +13,6 @@ import {
 } from './task.module';
 import {
   PrismaTaskWriteTransactionRunner,
-  TaskDependencyPrismaRepository,
-  TaskFolderPrismaRepository,
   TaskInstancePrismaRepository,
   TaskTemplatePrismaRepository,
 } from './adapters/prisma';
@@ -28,8 +26,6 @@ import { createTaskScheduleExecutionSource } from './schedule-execution-source';
 import { createTaskScheduleProjectionSource } from './schedule-projection-source';
 import type { TaskScheduleExecutionSource } from '../../schedule-execution';
 import type { TaskScheduleProjectionSource } from '../../schedule-projection';
-import type { ITaskDependencyRepository } from '../domain/repositories/i-task-dependency-repository';
-import type { ITaskFolderRepository } from '../domain/repositories/i-task-folder-repository';
 import type { ITaskInstanceRepository } from '../domain/repositories/i-task-instance-repository';
 import type { ITaskTemplateRepository } from '../domain/repositories/i-task-template-repository';
 import type { TaskWriteTransactionRunner } from '../application/use-cases/commands/task-write-support';
@@ -51,17 +47,10 @@ export interface CreateTaskPrismaModuleOptions {
  * 表示持久化适配器必须满足的仓储 Port。
  * 具体适配器类从不越过该 seam——宿主只能通过这些接口使用仓储。
  *
- * `taskFolderRepository` is required in the set because both the Prisma and
- * PowerSync factories always supply it; `TaskModuleDependencies` keeps it
- * optional so the module tolerates its absence.
- * `taskFolderRepository` 在集合中为必需，因为 Prisma 与 PowerSync 两个工厂都会提供它；
- * `TaskModuleDependencies` 仍保持可选，以便模块容忍其缺失。
  */
 export interface TaskRepositorySet {
   readonly taskTemplateRepository: ITaskTemplateRepository;
   readonly taskInstanceRepository: ITaskInstanceRepository;
-  readonly taskDependencyRepository: ITaskDependencyRepository;
-  readonly taskFolderRepository: ITaskFolderRepository;
   readonly taskWriteTransactionRunner: TaskWriteTransactionRunner;
 }
 
@@ -87,16 +76,12 @@ export function createTaskPrismaModule(
   const {
     taskTemplateRepository,
     taskInstanceRepository,
-    taskDependencyRepository,
-    taskFolderRepository,
     taskWriteTransactionRunner,
   } = createTaskPrismaRepositories(db);
 
   return createTaskModule({
     taskTemplateRepository,
     taskInstanceRepository,
-    taskDependencyRepository,
-    taskFolderRepository,
     taskWriteTransactionRunner,
     runtimeContributions: options.runtimeContributions,
   });
@@ -120,8 +105,6 @@ export function createTaskPrismaRepositories(db: PrismaClient): TaskRepositorySe
   return {
     taskTemplateRepository: new TaskTemplatePrismaRepository(db),
     taskInstanceRepository: new TaskInstancePrismaRepository(db),
-    taskDependencyRepository: new TaskDependencyPrismaRepository(db),
-    taskFolderRepository: new TaskFolderPrismaRepository(db),
     taskWriteTransactionRunner: new PrismaTaskWriteTransactionRunner(db),
   };
 }

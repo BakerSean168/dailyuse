@@ -26,7 +26,8 @@ const TASK_LEDGER = [
   ['task:template:create', 'CreateTaskTemplateSchema', 'TaskTemplateClientDTO'],
   ['task:template:update', 'UpdateTaskTemplateSchema', 'TaskTemplateClientDTO'],
   ['task:template:delete', 'void', 'null'],
-  ['task:template:restore', 'void', 'TaskTemplateClientDTO'],
+  ['task:template:activate', 'void', 'TaskTemplateClientDTO'],
+  ['task:template:abandon', 'AbandonTaskPlanSchema', 'TaskTemplateClientDTO'],
   ['task:template:pause', 'void', 'TaskTemplateClientDTO'],
   ['task:template:archive', 'void', 'TaskTemplateClientDTO'],
   ['task:template:generate-instances', 'GenerateInstancesSchema', 'TaskInstanceClientDTO'],
@@ -37,17 +38,12 @@ const TASK_LEDGER = [
   ['task:instance:complete', 'CompleteTaskInstanceSchema', 'TaskInstanceClientDTO'],
   ['task:instance:uncomplete', 'void', 'TaskInstanceClientDTO'],
   ['task:instance:skip', 'SkipTaskInstanceSchema', 'TaskInstanceClientDTO'],
-  ['task:instance:check-expired', 'void', 'CheckExpiredTaskInstancesRes'],
-  ['task:dependency:create', 'CreateDependencyBodySchema', 'TaskDependencyClientDTO'],
-  ['task:dependency:update', 'UpdateDependencyBodySchema', 'TaskDependencyClientDTO'],
-  ['task:dependency:delete', 'void', 'null'],
-  ['task:dependency:validate', 'ValidateDependencyBodySchema', 'ValidateDependencyResponse'],
+  ['task:instance:mark-missed', 'MarkTaskInstanceMissedSchema', 'TaskInstanceClientDTO'],
 ] as const;
 
 const API_DTO_FILES = [
   'task-template.dto.ts',
   'task-instance.dto.ts',
-  'task-dependency.dto.ts',
   'task-schedule.dto.ts',
   'response-schemas.ts',
 ] as const;
@@ -93,9 +89,6 @@ describe('task RPC map surface (Phase 4 ledger)', () => {
     const responseSchemas = readApiFile('response-schemas.ts');
     expect(responseSchemas).toContain('export const TaskTemplateResponseSchema');
     expect(responseSchemas).toContain('export const TaskInstanceResponseSchema');
-    expect(responseSchemas).toContain('export const TaskDependencyResponseSchema');
-    expect(responseSchemas).toContain('export const ValidateDependencyResponseSchema');
-    expect(responseSchemas).toContain('export const CheckExpiredTaskInstancesResponseSchema');
     expect(readApiFile('task-instance.dto.ts')).toContain('export type TaskInstanceOperationRes =');
   });
 

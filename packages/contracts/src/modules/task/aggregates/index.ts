@@ -17,24 +17,3 @@ export type {
 export type {
   TaskTemplateClientDTO,
 } from './task-template-client';
-
-export type {
-  TaskFolderClientDTO,
-} from './task-folder-client';
-
-export type {
-  TaskFolderServerDTO,
-} from './task-folder-server';
-
-// TaskDependency
-export type {
-  TaskDependencyServerDTO,
-  CircularDependencyValidationResult,
-} from './task-dependency-server';
-
-export type {
-  TaskDependencyClientDTO,
-  DependencyChainClientDTO,
-} from './task-dependency-client';
-
-export { dependencyServerToClientDTO } from './task-dependency-client';

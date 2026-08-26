@@ -14,16 +14,11 @@ import type {
   UpdateTaskTemplateReq,
   GenerateInstancesReq,
   BindToGoalReq,
+  AbandonTaskPlanReq,
   CompleteTaskInstanceReq,
+  MarkTaskInstanceMissedReq,
   SkipTaskInstanceReq,
-  CreateTaskDependencyBody,
   GetTaskInstancesByRangeReq,
-  UpdateTaskDependencyBody,
-  ValidateDependencyBody,
-  ValidateDependencyResponse,
-  TaskDependencyClientDTO,
-  TaskGraphDependencyDTO,
-  DependencyChainClientDTO,
   TaskInstanceClientDTO,
   TaskTemplateClientDTO,
   TaskTimeConfig,
@@ -34,13 +29,11 @@ import type {
   TaskGoalBinding,
   TaskGoalBindingDTO,
 } from '@memoflow/contracts/task';
-import type { TaskFolderId } from '@memoflow/contracts/primitives';
 import type {
   ITaskTemplateApiClient,
   TaskTemplateListParams,
 } from './ports/task-template-api-client.port';
 import type { ITaskInstanceApiClient } from './ports/task-instance-api-client.port';
-import type { ITaskDependencyApiClient } from './ports/task-dependency-api-client.port';
 import { TaskTemplate } from '../domain-client/aggregates/task-template';
 import { TaskInstance } from '../domain-client/aggregates/task-instance';
 import { TaskTemplateId } from '../server/domain/value-objects/task-template-id';
@@ -59,28 +52,27 @@ function taskTemplateFromDTO(dto: TaskTemplateClientDTO): TaskTemplate {
     recurrenceRule: dto.recurrenceRule ? parseRecurrenceRule(dto.recurrenceRule) : null,
     reminderConfig: dto.reminderConfig as TaskReminderConfig | null,
     importance: dto.importance,
-    priority: dto.priority,
     goalBinding: dto.goalBinding ? parseGoalBinding(dto.goalBinding) : null,
-    folderId: dto.folderId ? (dto.folderId as TaskFolderId) : null,
     tags: dto.tags ?? [],
     color: dto.color,
     status: dto.status,
+    outcome: dto.outcome,
+    completionPolicy: dto.completionPolicy,
+    closedAt: dto.closedAt,
+    archivedAt: dto.archivedAt,
+    abandonedReason: dto.abandonedReason,
     lastGeneratedDate: dto.lastGeneratedDate ?? null,
     generateAheadDays: dto.generateAheadDays,
     version: dto.version,
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,
     deletedAt: dto.deletedAt ? dto.deletedAt : null,
-    parentTaskId: dto.parentTaskId ? TaskTemplateId.of(dto.parentTaskId) : null,
     startDate: dto.startDate ? dto.startDate : null,
     dueDate: dto.dueDate ?? null,
     completedAt: dto.completedAt ? dto.completedAt : null,
     estimatedMinutes: dto.estimatedMinutes,
     actualMinutes: dto.actualMinutes,
     comment: dto.comment,
-    dependencyStatus: dto.dependencyStatus,
-    isBlocked: dto.isBlocked,
-    blockingReason: dto.blockingReason,
     instanceCount: dto.instanceCount,
     completedInstanceCount: dto.completedInstanceCount,
     pendingInstanceCount: dto.pendingInstanceCount,
@@ -103,8 +95,8 @@ function taskInstanceFromDTO(dto: TaskInstanceClientDTO): TaskInstance {
     instanceDate: dto.instanceDate,
     timeConfig: parseTimeConfig(dto.timeConfig),
     importance: dto.importance,
-    priority: dto.priority,
     status: dto.status,
+    isOverdue: dto.isOverdue,
     actualStartTime: dto.actualStartTime ? dto.actualStartTime : null,
     actualEndTime: dto.actualEndTime ? dto.actualEndTime : null,
     comment: dto.comment,
@@ -149,18 +141,16 @@ export class TaskClientService implements TaskClientPort {
   constructor(
     private readonly templateApi: ITaskTemplateApiClient,
     private readonly instanceApi: ITaskInstanceApiClient,
-    private readonly dependencyApi: ITaskDependencyApiClient,
   ) {
     this.createTemplate = this.createTemplate.bind(this);
     this.listTemplates = this.listTemplates.bind(this);
-    this.getTaskGraph = this.getTaskGraph.bind(this);
     this.getTemplate = this.getTemplate.bind(this);
     this.updateTemplate = this.updateTemplate.bind(this);
     this.deleteTemplate = this.deleteTemplate.bind(this);
-    this.getTemplatesWithPrioritySorting = this.getTemplatesWithPrioritySorting.bind(this);
     this.activateTemplate = this.activateTemplate.bind(this);
     this.pauseTemplate = this.pauseTemplate.bind(this);
     this.archiveTemplate = this.archiveTemplate.bind(this);
+    this.abandonPlan = this.abandonPlan.bind(this);
     this.generateInstances = this.generateInstances.bind(this);
     this.getInstancesByDateRange = this.getInstancesByDateRange.bind(this);
     this.bindToGoal = this.bindToGoal.bind(this);
@@ -171,14 +161,7 @@ export class TaskClientService implements TaskClientPort {
     this.startInstance = this.startInstance.bind(this);
     this.completeInstance = this.completeInstance.bind(this);
     this.skipInstance = this.skipInstance.bind(this);
-    this.checkExpiredInstances = this.checkExpiredInstances.bind(this);
-    this.createDependency = this.createDependency.bind(this);
-    this.getDependencies = this.getDependencies.bind(this);
-    this.getDependents = this.getDependents.bind(this);
-    this.getDependencyChain = this.getDependencyChain.bind(this);
-    this.validateDependency = this.validateDependency.bind(this);
-    this.updateDependency = this.updateDependency.bind(this);
-    this.deleteDependency = this.deleteDependency.bind(this);
+    this.markInstanceMissed = this.markInstanceMissed.bind(this);
   }
 
   // ===== Task Template Operations =====
@@ -210,18 +193,6 @@ export class TaskClientService implements TaskClientPort {
     });
   }
 
-  async getTaskGraph(
-    params?: TaskTemplateListParams,
-  ): Promise<
-    Result<{ templates: TaskTemplate[]; dependencies: TaskGraphDependencyDTO[]; total: number }>
-  > {
-    const result = await this.templateApi.getTaskGraph(params);
-    return mapResult(result, (data) => ({
-      templates: (data.templates ?? []).map((dto) => taskTemplateFromDTO(dto)),
-      dependencies: data.dependencies ?? [],
-      total: data.total ?? data.templates.length,
-    }));
-  }
 
   async getTemplate(id: string): Promise<Result<TaskTemplate>> {
     const result = await this.templateApi.getTaskTemplateById(id);
@@ -237,12 +208,6 @@ export class TaskClientService implements TaskClientPort {
     return this.templateApi.deleteTaskTemplate(id);
   }
 
-  async getTemplatesWithPrioritySorting(params?: {
-    limit?: number;
-  }): Promise<Result<TaskTemplate[]>> {
-    const result = await this.templateApi.getTasksWithPrioritySorting(params);
-    return mapResult(result, (dtos) => dtos.map((dto) => taskTemplateFromDTO(dto)));
-  }
 
   async activateTemplate(id: string): Promise<Result<TaskTemplate>> {
     const result = await this.templateApi.activateTaskTemplate(id);
@@ -256,6 +221,11 @@ export class TaskClientService implements TaskClientPort {
 
   async archiveTemplate(id: string): Promise<Result<TaskTemplate>> {
     const result = await this.templateApi.archiveTaskTemplate(id);
+    return mapResult(result, (dto) => taskTemplateFromDTO(dto));
+  }
+
+  async abandonPlan(id: string, request?: AbandonTaskPlanReq): Promise<Result<TaskTemplate>> {
+    const result = await this.templateApi.abandonTaskPlan(id, request);
     return mapResult(result, (dto) => taskTemplateFromDTO(dto));
   }
 
@@ -343,51 +313,14 @@ export class TaskClientService implements TaskClientPort {
     return mapResult(result, (dto) => taskInstanceFromDTO(dto));
   }
 
-  async checkExpiredInstances(): Promise<Result<{ count: number; instances: TaskInstance[] }>> {
-    const result = await this.instanceApi.checkExpiredInstances();
-    return mapResult(result, (data) => ({
-      count: data.count,
-      instances: data.instances.map((dto) => taskInstanceFromDTO(dto)),
-    }));
-  }
-
-  // ===== Task Dependency Operations =====
-
-  async createDependency(
-    taskId: string,
-    request: CreateTaskDependencyBody,
-  ): Promise<Result<TaskDependencyClientDTO>> {
-    return this.dependencyApi.createDependency(taskId, request);
-  }
-
-  async getDependencies(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
-    return this.dependencyApi.getDependencies(taskId);
-  }
-
-  async getDependents(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
-    return this.dependencyApi.getDependents(taskId);
-  }
-
-  async getDependencyChain(taskId: string): Promise<Result<DependencyChainClientDTO>> {
-    return this.dependencyApi.getDependencyChain(taskId);
-  }
-
-  async validateDependency(
-    request: ValidateDependencyBody,
-  ): Promise<Result<ValidateDependencyResponse>> {
-    return this.dependencyApi.validateDependency(request);
-  }
-
-  async updateDependency(
+  async markInstanceMissed(
     id: string,
-    request: UpdateTaskDependencyBody,
-  ): Promise<Result<TaskDependencyClientDTO>> {
-    return this.dependencyApi.updateDependency(id, request);
+    request?: MarkTaskInstanceMissedReq,
+  ): Promise<Result<TaskInstance>> {
+    const result = await this.instanceApi.markTaskInstanceMissed(id, request);
+    return mapResult(result, (dto) => taskInstanceFromDTO(dto));
   }
 
-  async deleteDependency(id: string): Promise<Result<void>> {
-    return this.dependencyApi.deleteDependency(id);
-  }
 }
 
 // ===== Factory =====
@@ -395,7 +328,6 @@ export class TaskClientService implements TaskClientPort {
 export function createTaskClientService(
   templateApi: ITaskTemplateApiClient,
   instanceApi: ITaskInstanceApiClient,
-  dependencyApi: ITaskDependencyApiClient,
 ): TaskClientService {
-  return new TaskClientService(templateApi, instanceApi, dependencyApi);
+  return new TaskClientService(templateApi, instanceApi);
 }

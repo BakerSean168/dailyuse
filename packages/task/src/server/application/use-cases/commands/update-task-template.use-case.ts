@@ -7,7 +7,6 @@ import type { ITaskInstanceRepository } from '../../../domain/repositories/i-tas
 import { RecurrenceRule } from '../../../domain/value-objects/recurrence-rule';
 import { TaskTimeConfig } from '../../../domain/value-objects/task-time-config';
 import { TaskReminderConfig } from '../../../domain/value-objects/task-reminder-config';
-import { TaskTemplateId } from '../../../domain/value-objects/task-template-id';
 import {
   TaskGoalBindingTrigger,
   TaskInstanceStatus,
@@ -139,17 +138,6 @@ export class UpdateTaskTemplateUseCase {
           );
         }
 
-        if (request.parentTaskId !== undefined) {
-          const parentValidation = await this.validateParentTask(
-            templateRepository!,
-            id,
-            identityId,
-            request.parentTaskId ?? null,
-          );
-          if (!parentValidation.ok) {
-            return parentValidation;
-          }
-        }
 
         const effectiveFrom = this.now();
         const instances =
@@ -175,11 +163,6 @@ export class UpdateTaskTemplateUseCase {
         if (importanceChanged && request.importance !== undefined) {
           template.updatePriority(request.importance);
         }
-        if (request.parentTaskId !== undefined) {
-          template.updateParentTaskId(
-            request.parentTaskId ? TaskTemplateId.of(request.parentTaskId) : null,
-          );
-        }
         if (request.tags !== undefined) {
           template.updateTags(request.tags);
         }
@@ -194,6 +177,9 @@ export class UpdateTaskTemplateUseCase {
             ? TaskReminderConfig.fromDTO(request.reminderConfig)
             : null;
           template.updateReminderConfig(nextReminderConfig);
+        }
+        if (request.completionPolicy !== undefined && request.completionPolicy !== template.completionPolicy) {
+          template.updateCompletionPolicy(request.completionPolicy);
         }
         if (request.goalBinding !== undefined) {
           if (template.goalBinding) {
@@ -257,42 +243,4 @@ export class UpdateTaskTemplateUseCase {
     }
   }
 
-  private async validateParentTask(
-    templateRepository: ITaskTemplateRepository,
-    templateId: string,
-    identityId: string,
-    parentTaskId: string | null,
-  ): Promise<Result<void>> {
-    if (!parentTaskId) {
-      return ok(undefined);
-    }
-
-    if (parentTaskId === templateId) {
-      return error('BAD_REQUEST', 'Task cannot be its own parent');
-    }
-
-    const visited = new Set<string>();
-    let currentParentId: string | null = parentTaskId;
-
-    while (currentParentId) {
-      if (currentParentId === templateId) {
-        return error('BAD_REQUEST', 'Parent task would create a hierarchy cycle');
-      }
-      if (visited.has(currentParentId)) {
-        return error('BAD_REQUEST', 'Detected an existing hierarchy cycle in parent tasks');
-      }
-
-      visited.add(currentParentId);
-      const parentTemplate = await templateRepository.findByIdForIdentity(
-        identityId,
-        currentParentId,
-      );
-      if (!parentTemplate) {
-        return error('BAD_REQUEST', `Parent task template ${currentParentId} not found`);
-      }
-      currentParentId = parentTemplate.parentTaskId ? String(parentTemplate.parentTaskId) : null;
-    }
-
-    return ok(undefined);
-  }
 }

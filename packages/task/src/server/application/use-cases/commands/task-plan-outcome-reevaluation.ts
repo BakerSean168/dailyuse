@@ -1,0 +1,30 @@
+import { TaskPlanOutcome, TaskTemplateStatus } from '@memoflow/contracts/task';
+import { TaskPlanOutcomeEvaluator } from '../../../domain/services/task-plan-outcome-evaluator';
+import type { TaskWriteRepositories } from './task-write-support';
+
+const evaluator = new TaskPlanOutcomeEvaluator();
+
+/**
+ * Re-evaluate the finite Task plan inside the same write transaction as the
+ * occurrence fact. Returns false when no Task plan persistence changed.
+ */
+export async function reevaluateTaskPlanOutcome(
+  repositories: TaskWriteRepositories,
+  identityId: string,
+  templateId: string,
+): Promise<boolean> {
+  if (!repositories.templateRepository) return false;
+  const template = await repositories.templateRepository.findByIdForIdentity(identityId, templateId);
+  if (!template || template.outcome === TaskPlanOutcome.Abandoned) return false;
+
+  const instances = await repositories.instanceRepository.findByTemplateId(templateId, identityId);
+  const next = evaluator.evaluate(template, instances);
+  const needsLifecycleRepair =
+    (next === TaskPlanOutcome.Open && template.status === TaskTemplateStatus.Closed) ||
+    (next !== TaskPlanOutcome.Open && template.status !== TaskTemplateStatus.Closed);
+  if (next === template.outcome && !needsLifecycleRepair) return false;
+
+  template.applyPlanOutcome(next as typeof TaskPlanOutcome.Open | typeof TaskPlanOutcome.Succeeded | typeof TaskPlanOutcome.Failed);
+  await repositories.templateRepository.save(template);
+  return true;
+}

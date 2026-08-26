@@ -17,9 +17,8 @@ describe('GetTaskDashboardUseCase', () => {
     templateRepo = createMockRepo<ITaskTemplateRepository>({
       findTodayTasks: vi.fn().mockResolvedValue([]),
       findOverdueTasks: vi.fn().mockResolvedValue([]),
-      findBlockedTasks: vi.fn().mockResolvedValue([]),
+      findActiveTemplates: vi.fn().mockResolvedValue([]),
       findUpcomingTasks: vi.fn().mockResolvedValue([]),
-      findSortedByPriority: vi.fn().mockResolvedValue([]),
       findOneTimeTasks: vi.fn().mockResolvedValue([]),
       countTasks: vi.fn().mockResolvedValue(0),
     });
@@ -35,7 +34,6 @@ describe('GetTaskDashboardUseCase', () => {
       expect(result.data.overdueTasks).toEqual([]);
       expect(result.data.upcomingTasks).toEqual([]);
       expect(result.data.highPriorityTasks).toEqual([]);
-      expect(result.data.blockedTasks).toEqual([]);
       expect(result.data.summary.totalTasks).toBe(0);
     }
   });
@@ -45,11 +43,10 @@ describe('GetTaskDashboardUseCase', () => {
 
     expect(templateRepo.findTodayTasks).toHaveBeenCalledWith(testIdentityId);
     expect(templateRepo.findOverdueTasks).toHaveBeenCalledWith(testIdentityId);
-    expect(templateRepo.findBlockedTasks).toHaveBeenCalledWith(testIdentityId);
     expect(templateRepo.findUpcomingTasks).toHaveBeenCalledWith(testIdentityId, 7);
-    expect(templateRepo.findSortedByPriority).toHaveBeenCalledWith(testIdentityId, 5);
+    expect(templateRepo.findActiveTemplates).toHaveBeenCalledWith(testIdentityId);
     expect(templateRepo.findOneTimeTasks).toHaveBeenCalledWith(testIdentityId, {
-      status: TaskTemplateStatus.Archived,
+      status: TaskTemplateStatus.Closed,
     });
     expect(templateRepo.countTasks).toHaveBeenCalledTimes(2);
   });
@@ -82,7 +79,7 @@ describe('GetTaskDashboardUseCase', () => {
   it('should compute summary totals correctly', async () => {
     vi.mocked(templateRepo.countTasks)
       .mockResolvedValueOnce(10) // Active
-      .mockResolvedValueOnce(5); // Archived/Completed
+      .mockResolvedValueOnce(5); // Closed
 
     const result = await useCase.execute(testIdentityId);
 
@@ -96,12 +93,12 @@ describe('GetTaskDashboardUseCase', () => {
   it('should filter recent completed tasks by 7-day window', async () => {
     const now = Date.now();
     const recentTask = aLoadedTaskTemplate({
-      status: TaskTemplateStatus.Archived,
+      status: TaskTemplateStatus.Closed,
       taskType: TaskType.OneTime,
       updatedAt: new Date(now - 1 * 24 * 60 * 60 * 1000), // 1 day ago
     });
     const oldTask = aLoadedTaskTemplate({
-      status: TaskTemplateStatus.Archived,
+      status: TaskTemplateStatus.Closed,
       taskType: TaskType.OneTime,
       updatedAt: new Date(now - 10 * 24 * 60 * 60 * 1000), // 10 days ago
     });
@@ -114,15 +111,15 @@ describe('GetTaskDashboardUseCase', () => {
     // but the findOneTimeTasks was called
     expect(result).toBeOk();
     expect(templateRepo.findOneTimeTasks).toHaveBeenCalledWith(testIdentityId, {
-      status: TaskTemplateStatus.Archived,
+      status: TaskTemplateStatus.Closed,
     });
   });
 
   it('should return upcoming and high priority tasks', async () => {
     const upcomingTask = aOneTimeTask({ title: 'Upcoming' });
-    const priorityTask = aOneTimeTask({ title: 'Priority' });
+    const priorityTask = aOneTimeTask({ title: 'Priority', importance: 'Vital' });
     vi.mocked(templateRepo.findUpcomingTasks).mockResolvedValue([upcomingTask]);
-    vi.mocked(templateRepo.findSortedByPriority).mockResolvedValue([priorityTask]);
+    vi.mocked(templateRepo.findActiveTemplates).mockResolvedValue([priorityTask]);
 
     const result = await useCase.execute(testIdentityId);
 

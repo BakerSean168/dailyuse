@@ -10,17 +10,12 @@ import { describe, expect, it } from 'vitest';
 describe('task void success envelope surface', () => {
   const templateRoutes = readFileSync(resolve(__dirname, './task-template.routes.ts'), 'utf8');
   const instanceRoutes = readFileSync(resolve(__dirname, './task-instance.routes.ts'), 'utf8');
-  const dependencyRoutes = readFileSync(resolve(__dirname, './task-dependency.routes.ts'), 'utf8');
   const templateController = readFileSync(
     resolve(__dirname, '../../server/transport/task-template.controller.ts'),
     'utf8',
   );
   const instanceController = readFileSync(
     resolve(__dirname, '../../server/transport/task-instance.controller.ts'),
-    'utf8',
-  );
-  const dependencyController = readFileSync(
-    resolve(__dirname, '../../server/transport/task-dependency.controller.ts'),
     'utf8',
   );
   const electron = readFileSync(resolve(__dirname, '../../electron/index.ts'), 'utf8');
@@ -35,7 +30,6 @@ describe('task void success envelope surface', () => {
   it('OpenAPI void deletes use z.null()', () => {
     expect(templateRoutes).toContain("successResponse(z.null(), '删除成功')");
     expect(instanceRoutes).toContain("successResponse(z.null(), '删除成功')");
-    expect(dependencyRoutes).toContain("successResponse(z.null(), '删除成功')");
   });
 
   it('use case / controllers return void then ok(null) for deletes', () => {
@@ -44,16 +38,14 @@ describe('task void success envelope surface', () => {
     expect(deleteTemplateUseCase).not.toContain('success: true');
     expect(templateController).toMatch(/async deleteTemplate[\s\S]*?Promise<Result<null>>/);
     expect(instanceController).toMatch(/async deleteInstance[\s\S]*?Promise<Result<null>>/);
-    expect(dependencyController).toMatch(/async deleteDependency[\s\S]*?Promise<Result<null>>/);
     expect(templateController).toContain('return ok(null)');
     expect(instanceController).toContain('return ok(null)');
-    expect(dependencyController).toContain('return ok(null)');
   });
 
   it('Desktop IPC void delete handlers normalize to ok(null)', () => {
-    for (const channel of ['TEMPLATE_DELETE', 'INSTANCE_DELETE', 'DEPENDENCY_DELETE']) {
+    for (const channel of ['TEMPLATE_DELETE', 'INSTANCE_DELETE']) {
       expect(electron).toContain(`TaskChannels.${channel}`);
     }
-    expect(electron.match(/return ok\(null\)/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
+    expect(electron.match(/return ok\(null\)/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
   });
 });

@@ -10,6 +10,8 @@ import {
 } from './response-schemas';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { TaskTemplateStatus } from '../value-objects/task-template-status';
+import { TaskPlanOutcome } from '../value-objects/task-plan-outcome';
+import { TaskPlanCompletionPolicy } from '../value-objects/task-plan-completion-policy';
 import { TaskTimeType } from '../value-objects/task-time-type';
 import { TaskType } from '../value-objects/task-type';
 
@@ -33,8 +35,6 @@ function validCreatePayload() {
     recurrenceRule: null,
     reminderConfig: null,
     importance: ImportanceLevel.Moderate,
-    parentTaskId: null,
-    folderId: null,
     tags: ['planning'],
     color: null,
     goalBinding: null,
@@ -51,28 +51,27 @@ function validTemplateResponse() {
     recurrenceRule: null,
     reminderConfig: null,
     importance: ImportanceLevel.Moderate,
-    priority: 3,
     goalBinding: null,
-    folderId: null,
     tags: ['planning'],
     color: null,
     status: TaskTemplateStatus.Active,
+    outcome: TaskPlanOutcome.Open,
+    completionPolicy: TaskPlanCompletionPolicy.AllowCorrection,
+    closedAt: null,
+    archivedAt: null,
+    abandonedReason: null,
     lastGeneratedDate: null,
     generateAheadDays: null,
     version: 1,
     createdAt: 1,
     updatedAt: 1,
     deletedAt: null,
-    parentTaskId: null,
     startDate: null,
     dueDate: null,
     completedAt: null,
     estimatedMinutes: null,
     actualMinutes: null,
     comment: null,
-    dependencyStatus: 'None',
-    isBlocked: false,
-    blockingReason: null,
     instanceCount: 0,
     completedInstanceCount: 0,
     pendingInstanceCount: 0,

@@ -12,18 +12,8 @@
  * 【TaskInstanceGenerationService】
  * - 任务实例执行：根据任务模板生成具体任务实例
  * - 是弹是粘贴上一个骨架
- * 
- * 【TaskExpirationService】
- * - 任务过旧管理：判戵任务是否子上使消，服妡自处理
- * 
- * 【TaskDependencyPolicy】
- * - 依赖规则校验：循环依赖检测等
- *
- * 【calculateTaskPriority】
- * - 优先级计算：根据多个条件加算优先级
  */
 
 export { TaskInstanceGenerationService } from './task-instance-generation-service';
-export { TaskExpirationService } from './task-expiration-service';
-export { TaskDependencyPolicy } from './task-dependency-policy';
-export { calculateTaskPriority } from './priority-calculator.service';
+
+export { TaskPlanOutcomeEvaluator } from './task-plan-outcome-evaluator';

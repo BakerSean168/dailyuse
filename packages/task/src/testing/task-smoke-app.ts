@@ -18,7 +18,6 @@ import jwt, { type JwtPayload } from 'jsonwebtoken';
 import { vi } from 'vitest';
 import { TaskTemplateController } from '../server/transport/task-template.controller';
 import { TaskInstanceController } from '../server/transport/task-instance.controller';
-import { TaskDependencyController } from '../server/transport/task-dependency.controller';
 import {
   createTaskModule,
   type TaskModuleDependencies,
@@ -27,7 +26,6 @@ import { createTaskTransportHandlers } from '../server/transport';
 import { registerTaskRoutes } from '../api/routes';
 import type { ITaskTemplateRepository } from '../server/domain/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../server/domain/repositories/i-task-instance-repository';
-import type { ITaskDependencyRepository } from '../server/domain/repositories/i-task-dependency-repository';
 
 export const JWT_SECRET = 'smoke-test-jwt-secret-key-at-least-32-chars';
 export const TEST_IDENTITY_ID = 'IdentityId_550e8400-e29b-41d4-a716-446655440001';
@@ -36,7 +34,6 @@ export interface TaskSmokeApp {
   app: Express;
   templateRepo: ITaskTemplateRepository;
   instanceRepo: ITaskInstanceRepository;
-  dependencyRepo: ITaskDependencyRepository;
   token: string;
 }
 
@@ -48,7 +45,6 @@ export function createMockTemplateRepo(): ITaskTemplateRepository {
     findByIdentityId: vi.fn().mockResolvedValue([]),
     findByStatus: vi.fn().mockResolvedValue([]),
     findActiveTemplates: vi.fn().mockResolvedValue([]),
-    findByFolderId: vi.fn().mockResolvedValue([]),
     findByGoalId: vi.fn().mockResolvedValue([]),
     findByTags: vi.fn().mockResolvedValue([]),
     findNeedGenerateInstances: vi.fn().mockResolvedValue([]),
@@ -59,9 +55,6 @@ export function createMockTemplateRepo(): ITaskTemplateRepository {
     findRecurringTasks: vi.fn().mockResolvedValue([]),
     findOverdueTasks: vi.fn().mockResolvedValue([]),
     findByKeyResultId: vi.fn().mockResolvedValue([]),
-    findSubtasks: vi.fn().mockResolvedValue([]),
-    findBlockedTasks: vi.fn().mockResolvedValue([]),
-    findSortedByPriority: vi.fn().mockResolvedValue([]),
     findUpcomingTasks: vi.fn().mockResolvedValue([]),
     findTodayTasks: vi.fn().mockResolvedValue([]),
     countTasks: vi.fn().mockResolvedValue(0),
@@ -91,23 +84,6 @@ export function createMockInstanceRepo(): ITaskInstanceRepository {
   };
 }
 
-export function createMockDependencyRepo(): ITaskDependencyRepository {
-  return {
-    create: vi.fn().mockResolvedValue(null as never),
-    findByIdForIdentity: vi.fn().mockResolvedValue(null),
-    findBySuccessorId: vi.fn().mockResolvedValue([]),
-    findByPredecessorId: vi.fn().mockResolvedValue([]),
-    findByPredecessorAndSuccessorId: vi.fn().mockResolvedValue(null),
-    findAllPredecessorIds: vi.fn().mockResolvedValue([]),
-    findAllSuccessorIds: vi.fn().mockResolvedValue([]),
-    delete: vi.fn().mockResolvedValue(undefined),
-    deleteAggregate: vi.fn().mockResolvedValue(undefined),
-    findAggregateById: vi.fn().mockResolvedValue(null),
-    deleteByTaskId: vi.fn().mockResolvedValue(undefined),
-    update: vi.fn().mockResolvedValue(null as never),
-    findAllByIdentityId: vi.fn().mockResolvedValue([]),
-  };
-}
 
 export function createTestToken(identityId = TEST_IDENTITY_ID): string {
   return jwt.sign({ identityId }, JWT_SECRET, { expiresIn: '1h' });
@@ -132,11 +108,9 @@ const smokeAuthMiddleware: RequestHandler = (req: Request, res: Response, next: 
 export function createTaskSmokeApp(): TaskSmokeApp {
   const templateRepo = createMockTemplateRepo();
   const instanceRepo = createMockInstanceRepo();
-  const dependencyRepo = createMockDependencyRepo();
   const taskModule = createTaskModule({
     taskTemplateRepository: templateRepo,
     taskInstanceRepository: instanceRepo,
-    taskDependencyRepository: dependencyRepo,
     taskWriteTransactionRunner: {
       run: (work) => work({ templateRepository: templateRepo, instanceRepository: instanceRepo }),
     },
@@ -145,7 +119,6 @@ export function createTaskSmokeApp(): TaskSmokeApp {
 
   const templateController = new TaskTemplateController(handlers.template);
   const instanceController = new TaskInstanceController(handlers.instance);
-  const dependencyController = new TaskDependencyController(handlers.dependency);
 
   const app = express();
   app.use(express.json());
@@ -165,7 +138,7 @@ export function createTaskSmokeApp(): TaskSmokeApp {
 
   const rootRouter = Router();
   const taskRoutes = registerTaskRoutes(
-    { templateController, instanceController, dependencyController },
+    { templateController, instanceController },
     {
       auth: smokeAuthMiddleware,
       requireRole: (_roles: string[]) => smokeAuthMiddleware,
@@ -182,7 +155,6 @@ export function createTaskSmokeApp(): TaskSmokeApp {
     app,
     templateRepo,
     instanceRepo,
-    dependencyRepo,
     token: createTestToken(),
   };
 }
