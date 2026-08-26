@@ -6,7 +6,7 @@
  */
 
 import type { IGoalRepository } from '../../../domain';
-import { Goal, GoalId, GoalPolicy, GoalReminderConfig, KeyResultId } from '../../../domain';
+import { Goal, GoalId, GoalLabelOwnershipError, GoalPolicy, GoalReminderConfig, KeyResultId } from '../../../domain';
 import { IdentityId } from '@memoflow/domain-shared';
 import type { CreateGoalReq, GoalMutationReceipt } from '@memoflow/contracts/goal';
 import type { Result } from '@memoflow/contracts/result';
@@ -125,7 +125,7 @@ export class CreateGoalUseCase {
 
       this.logger.error('Failed to create goal', { error: caughtError });
       const message = caughtError instanceof Error ? caughtError.message : String(caughtError);
-      if (message.includes('labels do not belong')) return error('VALIDATION_ERROR', message);
+      if (caughtError instanceof GoalLabelOwnershipError) return error(caughtError.code, message);
       return error('INTERNAL_ERROR', message);
     }
   }

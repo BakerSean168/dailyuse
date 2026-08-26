@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@memoflow/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IGoalRepository } from '../../../../domain/repositories/i-goal-repository';
-import { Goal, GoalPolicy } from '../../../../domain';
+import { Goal, GoalLabelOwnershipError, GoalPolicy } from '../../../../domain';
 import { UpdateGoalUseCase } from '../update-goal.use-case';
 
 // ============================================================
@@ -98,6 +98,19 @@ describe('UpdateGoalUseCase', () => {
       'label-ai',
     ]);
     expect(result.ok && result.data.readModel.labels).toEqual(labels);
+  });
+
+  it('maps typed foreign-label ownership failures to VALIDATION_ERROR', async () => {
+    const goal = createTestGoal();
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
+    vi.mocked(goalRepo.replaceLabels).mockRejectedValue(new GoalLabelOwnershipError());
+
+    const result = await useCase.execute(goal.id, 'identity-1', {
+      labelIds: ['foreign-label'],
+      expectedVersion: 1,
+    });
+
+    expect(result).toBeErrorWithCode('VALIDATION_ERROR');
   });
 
   it('reconciles root and key-result edits in one aggregate save', async () => {

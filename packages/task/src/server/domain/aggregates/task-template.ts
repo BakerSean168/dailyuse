@@ -10,7 +10,6 @@ import type {
 } from '@memoflow/contracts/task';
 import {
   RecurrenceEndConditionType,
-  TaskGoalBindingTrigger,
   TaskPlanCompletionPolicy,
   TaskPlanOutcome,
 } from '@memoflow/contracts/task';

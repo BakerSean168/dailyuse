@@ -47,7 +47,6 @@ updated: 2026-08-26T00:00:00
 | [`apps/mobile/src/app/goals/key-result.tsx`](../../../apps/mobile/src/app/goals/key-result.tsx) | 移动端关键结果入口 |
 | [`apps/mobile/src/app/goals/review.tsx`](../../../apps/mobile/src/app/goals/review.tsx) | 移动端复盘入口 |
 | [`apps/mobile/src/app/goals/review-detail.tsx`](../../../apps/mobile/src/app/goals/review-detail.tsx) | 移动端复盘详情入口 |
-| [`apps/mobile/src/app/goals/compare.tsx`](../../../apps/mobile/src/app/goals/compare.tsx) | 移动端目标对比入口 |
 
 ## API、控制器与适配器
 

@@ -8,26 +8,22 @@ import { useGoalService } from './useGoalService';
 export type GoalReviewSummary = {
   id: string;
   goalId: string;
-  type: string;
-  rating: number;
-  summary: string;
-  achievements: string | null;
+  reflection: string;
   challenges: string | null;
-  improvements: string | null;
+  adjustments: string | null;
+  systemContext: GoalReviewClientDTO['systemContext'];
   reviewedAt: number;
   createdAt: number;
 };
 
-function mapReview(review: GoalReviewClientDTO): GoalReviewSummary {
+export function mapGoalReview(review: GoalReviewClientDTO): GoalReviewSummary {
   return {
     id: String(review.id),
     goalId: String(review.goalId),
-    type: review.type,
-    rating: review.rating,
-    summary: review.summary,
-    achievements: review.achievements,
+    reflection: review.reflection,
     challenges: review.challenges,
-    improvements: review.improvements,
+    adjustments: review.adjustments,
+    systemContext: review.systemContext,
     reviewedAt: review.reviewedAt,
     createdAt: review.createdAt,
   };
@@ -50,7 +46,6 @@ export function useGoalReviews(goalId: string | null) {
 
     setIsLoading(true);
     setError(null);
-
     const result = await service.getGoalAggregateView(goalId);
     if (!result.ok) {
       setReviews([]);
@@ -59,12 +54,7 @@ export function useGoalReviews(goalId: string | null) {
       return;
     }
 
-    const mapped = result.data.reviews
-      .map(mapReview)
-      .sort(
-        (left: GoalReviewSummary, right: GoalReviewSummary) => right.reviewedAt - left.reviewedAt,
-      );
-    setReviews(mapped);
+    setReviews(result.data.reviews.map(mapGoalReview).sort((a, b) => b.reviewedAt - a.reviewedAt));
     setIsLoading(false);
   }
 
@@ -72,14 +62,5 @@ export function useGoalReviews(goalId: string | null) {
     void load();
   }, [goalId, isRemoteAuthenticated]);
 
-  async function refresh() {
-    await load();
-  }
-
-  return {
-    error,
-    isLoading,
-    refresh,
-    reviews,
-  };
+  return { error, isLoading, refresh: load, reviews };
 }

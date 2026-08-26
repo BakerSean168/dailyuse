@@ -36,7 +36,7 @@ export class GoalTimeRange extends ValueObject<GoalTimeRangeDTO> implements IGoa
   }
 
   private static validate(props: GoalTimeRangeDTO): void {
-    const { startDate, dueDate, completedAt, archivedAt } = props;
+    const { startDate, dueDate } = props;
 
     if (startDate !== null && dueDate !== null && startDate > dueDate) {
       throw new Error('Start date must be before or equal to due date');

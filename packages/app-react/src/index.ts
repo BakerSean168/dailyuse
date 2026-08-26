@@ -21,7 +21,6 @@ export { AccountScreen } from './screens/AccountScreen';
 export { AIScreen } from './screens/AIScreen';
 export { AuthScreen } from './screens/AuthScreen';
 export { BootScreen } from './screens/BootScreen';
-export { GoalCompareScreen } from './screens/GoalCompareScreen';
 export { GoalDetailScreen } from './screens/GoalDetailScreen';
 export { GoalEditorScreen } from './screens/GoalEditorScreen';
 export { GoalKeyResultScreen } from './screens/GoalKeyResultScreen';

@@ -19,6 +19,15 @@ export class GoalVersionConflictError extends Error {
   }
 }
 
+
+export class GoalLabelOwnershipError extends Error {
+  readonly code = 'VALIDATION_ERROR' as const;
+  constructor() {
+    super('One or more labels do not belong to the identity.');
+    this.name = 'GoalLabelOwnershipError';
+  }
+}
+
 /**
  * IGoalRepository 仓储接口
  *

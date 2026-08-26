@@ -3,7 +3,7 @@ import '@memoflow/test-utils/helpers/result-matchers';
 import { anIdentityId } from '@memoflow/test-utils';
 import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IGoalRepository } from '../../../../domain/repositories/i-goal-repository';
-import { Goal, GoalId, GoalPolicy, KeyResultId } from '../../../../domain';
+import { Goal, GoalId, GoalLabelOwnershipError, GoalPolicy, KeyResultId } from '../../../../domain';
 import { CreateGoalUseCase } from '../create-goal.use-case';
 
 describe('CreateGoalUseCase', () => {
@@ -149,6 +149,14 @@ describe('CreateGoalUseCase', () => {
       'label-work',
     ]);
     expect(result.ok && result.data.readModel.labels).toEqual(labels);
+  });
+
+  it('maps typed foreign-label ownership failures to VALIDATION_ERROR', async () => {
+    vi.mocked(goalRepo.replaceLabels).mockRejectedValue(new GoalLabelOwnershipError());
+
+    const result = await useCase.execute(aCreateInput({ labelIds: ['foreign-label'] }), aContext());
+
+    expect(result).toBeErrorWithCode('VALIDATION_ERROR');
   });
 
   it('replays the same durable goal when a concurrent save hits the unique constraint and the goal was committed', async () => {

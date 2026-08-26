@@ -1,4 +1,4 @@
-import { GoalVersionConflictError, type IGoalRepository } from '../../../domain';
+import { GoalLabelOwnershipError, GoalVersionConflictError, type IGoalRepository } from '../../../domain';
 import { Goal } from '../../../domain';
 import type { GoalSystemView, KeyResultWeightSnapshotDTO } from '@memoflow/contracts/goal';
 import type { LabelDto } from '@memoflow/contracts/label';
@@ -78,7 +78,7 @@ export class GoalPowerSyncRepository
           'SELECT id FROM labels WHERE id = ? AND identity_id = ? LIMIT 1',
           [labelId, identityId],
         );
-        if (!label) throw new Error('One or more labels do not belong to the identity.');
+        if (!label) throw new GoalLabelOwnershipError();
       }
       await tx.execute('DELETE FROM goal_labels WHERE identity_id = ? AND goal_id = ?', [
         identityId,

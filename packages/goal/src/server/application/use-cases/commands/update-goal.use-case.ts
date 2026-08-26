@@ -5,7 +5,7 @@
  * 遵循 governance 模块 Result<T> 规范
  */
 
-import { GoalVersionConflictError, type IGoalRepository } from '../../../domain';
+import { GoalLabelOwnershipError, GoalVersionConflictError, type IGoalRepository } from '../../../domain';
 import { GoalPolicy } from '../../../domain';
 import type { UpdateGoalReq, UpdateGoalRes } from '@memoflow/contracts/goal';
 import type { Result } from '@memoflow/contracts/result';
@@ -144,8 +144,7 @@ export class UpdateGoalUseCase {
       if (cause instanceof GoalVersionConflictError) {
         return error('CONFLICT', cause.message);
       }
-      const message = cause instanceof Error ? cause.message : String(cause);
-      if (message.includes('labels do not belong')) return error('VALIDATION_ERROR', message);
+      if (cause instanceof GoalLabelOwnershipError) return error(cause.code, cause.message);
       throw cause;
     }
 

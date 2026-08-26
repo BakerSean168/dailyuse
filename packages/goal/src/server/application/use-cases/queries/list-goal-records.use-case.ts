@@ -121,7 +121,6 @@ export class ListGoalRecordsUseCase {
         (a, b) =>
           Number(a.createdAt) - Number(b.createdAt) || String(a.id).localeCompare(String(b.id)),
       );
-      const fullHistory = sorted.map((record) => record.value);
       for (const record of sorted) {
         history.push(record.value);
         const calculated = progressTemplate.recalculateFromHistory(history).currentValue;

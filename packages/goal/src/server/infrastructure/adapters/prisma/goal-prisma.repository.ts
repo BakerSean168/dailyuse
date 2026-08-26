@@ -12,7 +12,7 @@
  */
 
 import type { PrismaClient, Prisma } from '@memoflow/database';
-import { GoalVersionConflictError, type IGoalRepository } from '../../../domain';
+import { GoalLabelOwnershipError, GoalVersionConflictError, type IGoalRepository } from '../../../domain';
 import { Goal } from '../../../domain';
 import type { GoalSystemView, KeyResultServerDTO } from '@memoflow/contracts/goal';
 import type { LabelDto } from '@memoflow/contracts/label';
@@ -115,7 +115,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     if (uniqueIds.length > 0) {
       const count = await this.prisma.label.count({ where: { identityId, id: { in: uniqueIds } } });
       if (count !== uniqueIds.length)
-        throw new Error('One or more labels do not belong to the identity.');
+        throw new GoalLabelOwnershipError();
     }
     await this.prisma.goalLabel.deleteMany({ where: { identityId, goalId } });
     if (uniqueIds.length > 0) {

@@ -9,7 +9,7 @@
  * have a path, a request schema (params/query/body) and a response envelope /
  * data schema. This proves the schema objects referenced by OpenAPI and the
  * runtime validation adapters are the SAME registered objects (no duplicate
- * inline components), including Goal void mutations, Task check-expired and
+ * inline components), including Goal lifecycle mutations and
  * Notification read-all.
  *
  * OpenAPI 生成检查（Phase 4 Step 6）：通过生产组合根 seam
@@ -19,7 +19,7 @@
  * mutation 都断言有 path、request schema（params/query/body）与 response
  * envelope/data schema。这证明 OpenAPI 引用的 schema 与 runtime validation
  * adapter 是同一注册对象（无重复 inline component），包括 Goal void mutation、
- * Task check-expired 与 Notification read-all。
+ * Task explicit occurrence facts 与 Notification read-all。
  */
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { Router } from 'express';
@@ -147,14 +147,15 @@ const GOAL_LEDGER: LedgerRow[] = [
   {
     module: 'goal',
     method: 'post',
-    path: '/api/v1/goals/archive-expired',
+    path: '/api/v1/goals/{id}/archive',
     status: 200,
-    hasBody: false,
+    hasBody: true,
+    hasParams: true,
   },
   {
     module: 'goal',
     method: 'post',
-    path: '/api/v1/goals/{id}/archive',
+    path: '/api/v1/goals/{id}/abandon',
     status: 200,
     hasBody: true,
     hasParams: true,
@@ -266,44 +267,6 @@ const GOAL_LEDGER: LedgerRow[] = [
     hasParams: true,
     hasQuery: true,
   },
-  {
-    module: 'goal',
-    method: 'post',
-    path: '/api/v1/goals/focus-mode/activate',
-    status: 200,
-    hasBody: true,
-  },
-  {
-    module: 'goal',
-    method: 'post',
-    path: '/api/v1/goals/focus-mode/deactivate',
-    status: 200,
-    hasBody: false,
-  },
-  {
-    module: 'goal',
-    method: 'post',
-    path: '/api/v1/goals/focus-mode/extend',
-    status: 200,
-    hasBody: true,
-  },
-  { module: 'goal', method: 'post', path: '/api/v1/goal-folders', status: 201, hasBody: true },
-  {
-    module: 'goal',
-    method: 'put',
-    path: '/api/v1/goal-folders/{id}',
-    status: 200,
-    hasBody: true,
-    hasParams: true,
-  },
-  {
-    module: 'goal',
-    method: 'delete',
-    path: '/api/v1/goal-folders/{id}',
-    status: 200,
-    hasBody: false,
-    hasParams: true,
-  },
 ];
 
 const TASK_LEDGER: LedgerRow[] = [
@@ -330,6 +293,14 @@ const TASK_LEDGER: LedgerRow[] = [
     path: '/api/v1/task-templates/{id}/activate',
     status: 200,
     hasBody: false,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'post',
+    path: '/api/v1/task-templates/{id}/abandon',
+    status: 200,
+    hasBody: true,
     hasParams: true,
   },
   {
@@ -399,6 +370,14 @@ const TASK_LEDGER: LedgerRow[] = [
   {
     module: 'task',
     method: 'post',
+    path: '/api/v1/task-instances/{id}/missed',
+    status: 200,
+    hasBody: true,
+    hasParams: true,
+  },
+  {
+    module: 'task',
+    method: 'post',
     path: '/api/v1/task-instances/{id}/start',
     status: 200,
     hasBody: false,
@@ -411,44 +390,6 @@ const TASK_LEDGER: LedgerRow[] = [
     status: 200,
     hasBody: false,
     hasParams: true,
-  },
-  {
-    module: 'task',
-    method: 'post',
-    path: '/api/v1/task-instances/check-expired',
-    status: 200,
-    hasBody: false,
-  },
-  {
-    module: 'task',
-    method: 'post',
-    path: '/api/v1/tasks/{taskId}/dependencies',
-    status: 201,
-    hasBody: true,
-    hasParams: true,
-  },
-  {
-    module: 'task',
-    method: 'put',
-    path: '/api/v1/tasks/dependencies/{id}',
-    status: 200,
-    hasBody: true,
-    hasParams: true,
-  },
-  {
-    module: 'task',
-    method: 'delete',
-    path: '/api/v1/tasks/dependencies/{id}',
-    status: 200,
-    hasBody: false,
-    hasParams: true,
-  },
-  {
-    module: 'task',
-    method: 'post',
-    path: '/api/v1/tasks/dependencies/validate',
-    status: 200,
-    hasBody: true,
   },
 ];
 
@@ -594,16 +535,9 @@ describe('OpenAPI generator ledger coverage (Phase 4)', () => {
       (candidate) => candidate.method === 'post' && candidate.path === '/api/v1/goals',
     )!;
     const goalCreateBody = getBodySchema(goalCreate)!;
-    expect(goalCreateBody.safeParse({ name: 'Ship', importance: 'Moderate' }).success).toBe(true);
-    expect(goalCreateBody.safeParse({ name: '', importance: 'Moderate' }).success).toBe(false);
-
-    // Task check-expired is a void command: no body schema, only a response.
-    const taskCheckExpired = registry.rawPaths.find(
-      (candidate) =>
-        candidate.method === 'post' && candidate.path === '/api/v1/task-instances/check-expired',
-    )!;
-    expect(getBodySchema(taskCheckExpired)).toBeUndefined();
-    expect(getResponseSchema(taskCheckExpired, 200)).toBeDefined();
+    expect(goalCreateBody.safeParse({ name: 'Ship', dueDate: Date.now() }).success).toBe(true);
+    expect(goalCreateBody.safeParse({ name: '' }).success).toBe(false);
+    expect(goalCreateBody.safeParse({ name: 'Legacy', importance: 'Moderate' }).success).toBe(false);
 
     // Notification read-all is a void command with an unread-count envelope.
     const notifReadAll = registry.rawPaths.find(

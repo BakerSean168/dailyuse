@@ -1,13 +1,10 @@
 import { RefreshControl, StyleSheet, View } from 'react-native';
-
 import { useRouter } from 'expo-router';
-
 import { TaskTemplateStatus } from '@memoflow/contracts/task';
 
 import { TaskTemplateCard } from '../components/TaskTemplateCard';
 import { useAppSession } from '../hooks/useAppSession';
 import { useTaskTemplates, type TaskSortOption, type TaskStatusFilter } from '../hooks/useTaskTemplates';
-
 import {
   PageShell,
   PrimaryButton,
@@ -22,12 +19,11 @@ const FILTERS: Array<{ label: string; value: TaskStatusFilter }> = [
   { label: 'All', value: 'all' },
   { label: 'Active', value: TaskTemplateStatus.Active },
   { label: 'Paused', value: TaskTemplateStatus.Paused },
-  { label: 'Archived', value: TaskTemplateStatus.Archived },
+  { label: 'Closed', value: TaskTemplateStatus.Closed },
 ];
 
 const SORTS: Array<{ label: string; value: TaskSortOption }> = [
   { label: 'Updated', value: 'updated' },
-  { label: 'Priority', value: 'priority' },
   { label: 'Pending', value: 'pending' },
   { label: 'Completion', value: 'completion' },
 ];
@@ -36,14 +32,12 @@ export function TasksScreen() {
   const router = useRouter();
   const { signOut } = useAppSession();
   const {
-    blockedOnly,
     error,
     filteredTemplates,
     isLoading,
     isRemoteAuthenticated,
     refresh,
     searchQuery,
-    setBlockedOnly,
     setSearchQuery,
     setSortBy,
     setStatusFilter,
@@ -53,16 +47,15 @@ export function TasksScreen() {
   } = useTaskTemplates();
 
   const activeCount = templates.filter((item) => item.status === TaskTemplateStatus.Active).length;
-  const blockedCount = templates.filter((item) => item.isBlocked).length;
   const totalPending = templates.reduce((sum, item) => sum + item.pendingInstanceCount, 0);
   const actionSections = [
     {
-      title: 'Workspace',
-      description: '列表级跳转和创建动作统一收进页面抽屉。',
+      title: 'Tasks',
+      description: 'Task = action + execution.',
       items: [
         {
           label: 'Create template',
-          description: '进入任务模板创建页。',
+          description: 'Create a one-time or recurring task plan.',
           onPress: () => router.push('./editor'),
         },
       ],
@@ -71,16 +64,15 @@ export function TasksScreen() {
 
   return (
     <PageShell
-      actionMenuSubtitle="任务页把高频入口收敛到左上角。"
+      actionMenuSubtitle="Task actions"
       actionSections={actionSections}
       eyebrow="Tasks"
       title="Task workspace"
-      subtitle="任务列表、筛选和模板管理。"
-      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}>
+      subtitle="Plans, occurrences, and execution outcomes."
+      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
+    >
       {!isRemoteAuthenticated ? (
-        <SectionCard
-          title="Sign in required"
-          description="登录后可查看任务数据。">
+        <SectionCard title="Sign in required" description="Sign in to view tasks.">
           <ThemedText type="small" themeColor="textSecondary">
             Sign in with a remote account to load tasks.
           </ThemedText>
@@ -88,27 +80,23 @@ export function TasksScreen() {
         </SectionCard>
       ) : (
         <>
-          <SectionCard
-            title="Summary"
-            description="模板数量、活跃状态和待办实例。">
+          <SectionCard title="Summary" description="Plans and pending occurrences.">
             <View style={styles.overviewRow}>
               <StatusPill label={`${templates.length} templates`} tone="tint" />
               <StatusPill label={`${activeCount} active`} tone="success" />
-              <StatusPill label={`${blockedCount} blocked`} tone={blockedCount > 0 ? 'warning' : 'textSecondary'} />
               <StatusPill label={`${totalPending} pending instances`} tone="textSecondary" />
             </View>
           </SectionCard>
 
-          <SectionCard title="Search and filters" description="按关键词、状态和排序筛选任务。">
+          <SectionCard title="Search and filters" description="Filter by plan lifecycle and execution facts.">
             <PrimaryTextField
               autoCapitalize="none"
               autoCorrect={false}
-              hint="Search by title, description, or tags."
+              hint="Search by name, description, or tags."
               onChangeText={setSearchQuery}
               placeholder="Search templates"
               value={searchQuery}
             />
-
             <View style={styles.filterRow}>
               {FILTERS.map((filter) => (
                 <PrimaryButton
@@ -119,7 +107,6 @@ export function TasksScreen() {
                 />
               ))}
             </View>
-
             <View style={styles.filterRow}>
               {SORTS.map((sort) => (
                 <PrimaryButton
@@ -129,10 +116,6 @@ export function TasksScreen() {
                   variant={sortBy === sort.value ? 'solid' : 'ghost'}
                 />
               ))}
-            </View>
-
-            <View style={styles.filterRow}>
-              <PrimaryButton label={blockedOnly ? 'Blocked only' : 'All blockers'} onPress={() => setBlockedOnly((current) => !current)} variant={blockedOnly ? 'solid' : 'ghost'} />
             </View>
           </SectionCard>
 
@@ -146,13 +129,10 @@ export function TasksScreen() {
           {!isLoading && filteredTemplates.length === 0 ? (
             <SectionCard
               title="No tasks matched"
-              description={
-                templates.length === 0
-                  ? '当前筛选下没有任务模板。后端有数据后这里会显示真实任务卡片。'
-                  : '换一个关键词、状态或排序条件试试。'
-              }>
+              description={templates.length === 0 ? 'No task templates yet.' : 'Try another filter.'}
+            >
               <ThemedText type="small" themeColor="textSecondary">
-                当前搜索词：{searchQuery.trim().length === 0 ? 'none' : searchQuery}
+                Search: {searchQuery.trim().length === 0 ? 'none' : searchQuery}
               </ThemedText>
             </SectionCard>
           ) : null}
@@ -174,17 +154,7 @@ export function TasksScreen() {
 }
 
 const styles = StyleSheet.create({
-  overviewRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.two,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.two,
-  },
-  listColumn: {
-    gap: Spacing.three,
-  },
+  overviewRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  listColumn: { gap: Spacing.three },
 });

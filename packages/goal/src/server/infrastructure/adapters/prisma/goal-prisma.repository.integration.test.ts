@@ -2,7 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { prisma } from '@memoflow/database';
 import { IdentityId } from '@memoflow/domain-shared';
 import { Goal } from '../../../domain/aggregates/goal';
-import { GoalReminderConfig } from '../../../domain';
+import { GoalLabelOwnershipError, GoalReminderConfig } from '../../../domain';
 import { GoalPrismaRepository } from './goal-prisma.repository';
 import {
   cleanAll,
@@ -172,7 +172,7 @@ describe('GoalPrismaRepository integration', () => {
 
     await expect(
       repository.replaceLabels(identityId, String(goal.id), [foreign.id]),
-    ).rejects.toThrow('labels do not belong to the identity');
+    ).rejects.toBeInstanceOf(GoalLabelOwnershipError);
   });
 
   it('lists goals by identity without leaking other accounts', async () => {

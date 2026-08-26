@@ -28,17 +28,14 @@ const draft = GoalPlanDraftContentSchema.parse({
   goal: {
     name: 'Ship the Mastra reference workflow',
     description: 'Make durable workflow semantics the production path.',
-    importance: 'Important',
-    tags: ['ai-vnext'],
     startDate: Date.UTC(2026, 7, 20),
-    targetDate: Date.UTC(2026, 8, 20),
+    dueDate: Date.UTC(2026, 8, 20),
   },
   keyResults: [
     {
       title: 'Pass the reference acceptance journey',
-      valueType: 'Incremental',
       calculationMethod: 'Sum',
-      startValue: 0,
+      startingValue: 0,
       currentValue: 0,
       targetValue: 1,
       unit: 'journey',
@@ -54,7 +51,6 @@ const draft = GoalPlanDraftContentSchema.parse({
 const taskDraft = TaskPlanDraftContentSchema.parse({
   task: {
     title: 'Prepare weekly report',
-    importance: 'Important',
     cadence: 'weekly',
     daysOfWeek: [1],
     startDate: Date.UTC(2026, 8, 1),

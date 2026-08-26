@@ -143,7 +143,6 @@ export function GoalDetailScreen() {
                       : 'textSecondary'
                 }
               />
-              <StatusPill label={goal.importance} tone="tint" />
               <StatusPill
                 label={`${goal.completedKeyResults}/${goal.totalKeyResults} KR`}
                 tone="textSecondary"
@@ -172,7 +171,7 @@ export function GoalDetailScreen() {
                   disabled={isMutating}
                 />
               ) : null}
-              {goal.status !== 'Archived' ? (
+              {goal.archivedAt === null ? (
                 <PrimaryButton
                   label={isMutating ? 'Archiving…' : 'Archive'}
                   onPress={handleArchive}
@@ -188,11 +187,14 @@ export function GoalDetailScreen() {
             ) : null}
           </SectionCard>
 
-          <SectionCard title="Goal timeline" description="日期和分类先收敛成移动端摘要。">
+          <SectionCard title="Goal timeline" description="Direction dates, motivation, and labels.">
             <MetaRow label="Start date" value={formatDate(goal.startDate)} />
-            <MetaRow label="Target date" value={formatDate(goal.targetDate)} />
-            <MetaRow label="Category" value={goal.category ?? 'Uncategorized'} />
+            <MetaRow label="Due date" value={formatDate(goal.dueDate)} />
             <MetaRow label="Motivation" value={goal.motivation ?? 'Not set'} />
+            <MetaRow
+              label="Labels"
+              value={goal.labels.length > 0 ? goal.labels.map((label) => label.name).join(', ') : 'None'}
+            />
           </SectionCard>
 
           <SectionCard
