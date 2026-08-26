@@ -118,9 +118,11 @@ The lane removed recurrence-adjacent fixed-24-hour calendar arithmetic where DST
 
 The remaining fixed-millisecond windows in dashboard/completion analytics are not recurrence date math and were intentionally left outside this ticket.
 
-## Shared/schema changes that integration must preserve
+## Shared Contract/Schema Train proposal
 
-Task Wave 2 intentionally changes shared surfaces needed to retire the old Task model:
+Task Wave 2 carries tested proposal deltas for shared surfaces needed to retire the old Task model. Per the orchestration single-writer rule, the Contract/Schema Trains own their canonical landing; the Task feature lane does not independently own those shared files. See `docs/plan/handoffs/2026-08-26-task-wave2-shared-train-handoff.md`.
+
+Proposal surfaces:
 
 ```text
 packages/contracts/src/modules/task/**
@@ -130,9 +132,9 @@ packages/database/prisma/schema/account.prisma
 packages/powersync-schema/src/index.ts
 ```
 
-Schema deletions are intentionally destructive for the current development dataset. Do not add compatibility columns/models for TaskFolder, TaskDependency, hierarchy, dynamic priority or obsolete Monthly/Yearly placeholder columns.
+Schema deletions are intentionally destructive for the current development dataset. Do not add compatibility columns/models for TaskFolder, TaskDependency, hierarchy, dynamic priority or obsolete Monthly/Yearly placeholder columns. Shared train integration must take the Task semantics, not blindly take the feature branch's whole shared file.
 
-Generated Prisma client files are not part of the Task branch commit and must be regenerated only by the integration/schema train when required.
+Generated Prisma client files are not part of the Task branch commit and must be regenerated only by the Schema Train when required.
 
 ## Validation evidence
 
@@ -154,10 +156,10 @@ Recurrence focused fixtures include Daily, Weekly, Monthly, Yearly, COUNT, inclu
 At handoff time current main is `543eb1b7f` (post-base infra port convergence).
 
 - post-base main files intersecting Task Wave 2 files: **none**;
-- `git merge-tree --write-tree main core-vnext/task-domain` succeeds and produced tree `9f5b9c43f086e1ea68d166d7bd5c7da8b054e311`;
-- therefore the current main-only port convergence change is not a Task merge blocker.
+- `git merge-tree --write-tree main core-vnext/task-domain` succeeds without a merge conflict in the current preflight;
+- therefore the current main-only port convergence change is not a Task merge blocker. This is only a Git preflight: Contract/Schema Train ownership still applies.
 
-The only currently observed overlap with the still-dirty Goal Wave 2 lane is:
+The only currently observed path overlap with the still-dirty Goal Wave 2 lane is:
 
 ```text
 packages/contracts/src/electron/ipc-channels.ts
