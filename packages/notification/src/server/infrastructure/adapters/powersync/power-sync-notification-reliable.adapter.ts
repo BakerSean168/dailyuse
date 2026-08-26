@@ -11,6 +11,7 @@ import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import {
   assertValidBusinessOperationReceipt,
   buildIdempotencyKeyString,
+  parseIdempotencyKeyString,
   type BusinessOperationReceipt,
   type DeliveryAttempt,
   type LeaseClaim,
@@ -19,6 +20,12 @@ import {
   NotificationOutboxDispatchInputSchema,
   type NotificationReliableOperationPort,
 } from '@memoflow/contracts/reliable-messaging';
+import {
+  NOTIFICATION_REQUESTED_MESSAGE_TYPE,
+  type NotificationRequestedOutboxInput,
+  NotificationRequestedOutboxInputSchema,
+  type NotificationRequestedWriterPort,
+} from '@memoflow/contracts/notification';
 import type { NotificationMetricsService } from '../../../domain/services/notification-metrics-service';
 
 export interface PowerSyncOutboxRow {
@@ -258,7 +265,86 @@ export function mapPowerSyncSharedOutboxToOutboxMessage(
   };
 }
 
-export class PowerSyncNotificationReliableAdapter implements NotificationReliableOperationPort {
+const SHARED_OUTBOX_STATUS_TO_RECEIPT_STATUS: Record<string, BusinessOperationReceipt['status']> = {
+  pending: 'pending',
+  running: 'running',
+  retryable: 'retryable',
+  succeeded: 'succeeded',
+  failed: 'failed',
+  dead_letter: 'dead_letter',
+};
+
+export function mapPowerSyncSharedOutboxToReceipt(
+  row: PowerSyncSharedOutboxRow,
+): BusinessOperationReceipt {
+  const parsedKey = parseIdempotencyKeyString(row.idempotency_key ?? '');
+  const identityId = row.identity_id ?? parsedKey?.identityId ?? '';
+  if (!identityId) {
+    throw new Error(
+      `[FAIL-FAST] Shared outbox row '${row.id}' carries no identityId and no parseable idempotencyKey.`,
+    );
+  }
+  const source = parsedKey?.source ?? 'notification';
+  const occurrenceKey = parsedKey?.occurrenceKey ?? row.id;
+  const status = SHARED_OUTBOX_STATUS_TO_RECEIPT_STATUS[row.status] ?? 'pending';
+
+  const lease: LeaseClaim | null =
+    status === 'running' && row.owner_token && row.claim_id && row.lease_expires_at
+      ? {
+          schemaVersion: 1,
+          resourceKey: `${source}:${identityId}:${occurrenceKey}`,
+          claimId: row.claim_id,
+          fencingToken: Number(row.fencing_token ?? 0),
+          ownerToken: row.owner_token,
+          expiresAt: new Date(row.lease_expires_at).toISOString(),
+          lastHeartbeatAt: row.last_heartbeat_at
+            ? new Date(row.last_heartbeat_at).toISOString()
+            : null,
+          heartbeatIntervalMs: null,
+        }
+      : null;
+
+  let finishedAt: string | null = null;
+  if (status === 'succeeded' || status === 'failed') {
+    finishedAt = new Date(row.dispatched_at ?? row.updated_at).toISOString();
+  }
+
+  return assertValidBusinessOperationReceipt({
+    schemaVersion: 1,
+    operationId: row.id,
+    identityId,
+    source,
+    occurrenceKey,
+    idempotencyKey:
+      row.idempotency_key ?? buildIdempotencyKeyString({ identityId, source, occurrenceKey }),
+    status,
+    attempt: Number(row.attempts ?? 0),
+    lease,
+    lastError:
+      row.last_error ??
+      (status === 'retryable' || status === 'dead_letter'
+        ? 'Recovered from durable shared outbox row.'
+        : null),
+    nextRetryAt:
+      status === 'retryable'
+        ? new Date(row.next_retry_at ?? row.updated_at).toISOString()
+        : null,
+    deadLetterAt:
+      status === 'dead_letter'
+        ? new Date(row.dispatched_at ?? row.updated_at).toISOString()
+        : null,
+    correlationId: row.correlation_id ? row.correlation_id : null,
+    causationId: row.causation_id ?? null,
+    attemptsHistory: [],
+    createdAt: new Date(row.created_at).toISOString(),
+    updatedAt: new Date(row.updated_at).toISOString(),
+    finishedAt,
+  });
+}
+
+export class PowerSyncNotificationReliableAdapter
+  implements NotificationReliableOperationPort, NotificationRequestedWriterPort
+{
   private tableInitialized = false;
 
   constructor(
@@ -411,6 +497,69 @@ export class PowerSyncNotificationReliableAdapter implements NotificationReliabl
       );
       if (!reFetched) throw err;
       return mapPowerSyncOutboxToReceipt(reFetched);
+    }
+  }
+
+  async enqueueNotificationRequested(
+    input: NotificationRequestedOutboxInput,
+  ): Promise<BusinessOperationReceipt> {
+    await this.ensureTablesExist();
+    const validated = NotificationRequestedOutboxInputSchema.parse(input);
+    const envelope = validated.envelope;
+    const nowIso = new Date().toISOString();
+
+    const reFetch = async (): Promise<BusinessOperationReceipt | null> => {
+      const byId = await this.db.getOptional<PowerSyncSharedOutboxRow>(
+        `SELECT * FROM outbox_messages WHERE id = ? LIMIT 1`,
+        [validated.operationId],
+      );
+      if (byId) return mapPowerSyncSharedOutboxToReceipt(byId);
+      if (envelope.idempotencyKey) {
+        const byKey = await this.db.getOptional<PowerSyncSharedOutboxRow>(
+          `SELECT * FROM outbox_messages WHERE idempotency_key = ? LIMIT 1`,
+          [envelope.idempotencyKey],
+        );
+        if (byKey) return mapPowerSyncSharedOutboxToReceipt(byKey);
+      }
+      return null;
+    };
+
+    const existing = await reFetch();
+    if (existing) {
+      return existing;
+    }
+
+    try {
+      await this.db.execute(
+        `INSERT INTO outbox_messages (
+          id, aggregate_type, aggregate_id, message_type, payload_json,
+          status, attempts, fencing_token, identity_id, idempotency_key,
+          correlation_id, causation_id, schema_version, created_at, updated_at
+        ) VALUES (?, 'shared', 'shared', ?, ?, 'pending', 0, 0, ?, ?, ?, ?, 1, ?, ?)`,
+        [
+          validated.operationId,
+          NOTIFICATION_REQUESTED_MESSAGE_TYPE,
+          JSON.stringify(envelope),
+          envelope.identityId,
+          envelope.idempotencyKey ?? null,
+          envelope.correlationId ?? '',
+          envelope.causationId ?? null,
+          nowIso,
+          nowIso,
+        ],
+      );
+
+      this.metricsService?.recordPersisted();
+
+      const created = await this.db.get<PowerSyncSharedOutboxRow>(
+        `SELECT * FROM outbox_messages WHERE id = ? LIMIT 1`,
+        [validated.operationId],
+      );
+      return mapPowerSyncSharedOutboxToReceipt(created);
+    } catch (err) {
+      const reFetched = await reFetch();
+      if (!reFetched) throw err;
+      return reFetched;
     }
   }
 

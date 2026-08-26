@@ -65,7 +65,10 @@ import {
 import { composeGoal } from './runtime/compose-goal';
 import { PrismaTaskBindingReadPort } from '@memoflow/task';
 import { createGoalTaskProgressPrismaHandler } from '@memoflow/goal';
-import { createGoalPrismaScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
+import {
+  createGoalPrismaReminderFireHandler,
+  createGoalPrismaScheduleExecutionSource,
+} from '@memoflow/goal/schedule-execution';
 import { createGoalPrismaScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
 import { resolveRepositoryStorageBaseDir } from '@memoflow/repository';
 import { createSchedulePrismaRepositories } from '@memoflow/schedule';
@@ -238,6 +241,9 @@ async function bootstrap(): Promise<void> {
       notificationPort: notificationApiModule.scheduleNotificationPort,
     },
   });
+  scheduleOrchestrationModule.handlerRegistry.register(
+    createGoalPrismaReminderFireHandler(prisma, notificationApiModule.requestedWriter),
+  );
   const scheduleApiModule = composeSchedule({
     repositories: scheduleRepositorySet,
     sourceExecutor: scheduleOrchestrationModule.sourceExecutor,

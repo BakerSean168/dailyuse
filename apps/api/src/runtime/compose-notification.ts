@@ -44,6 +44,7 @@ import {
   createNotificationScheduleNotificationPort,
   type ChannelCapabilitySpec,
   type INotificationRepository,
+  type NotificationRequestedWriterPort,
   type ScheduleNotificationPort,
 } from '@memoflow/notification';
 import {
@@ -73,6 +74,8 @@ export interface ComposedNotification {
   readonly module: NotificationApiModuleDef;
   /** Instance-bound repository view for sibling modules. 暴露给兄弟模块的 instance-bound 仓储视图。 */
   readonly repositories: { readonly notificationRepository: INotificationRepository };
+  /** Trusted writer for durable `notification.requested` envelopes (cross-module consumption). 可信的 durable `notification.requested` 信封写入器（跨模块消费）。 */
+  readonly requestedWriter: NotificationRequestedWriterPort;
   /** Schedule notification port built from the SAME repository set. 从同一仓储集合构建的 schedule notification port。 */
   readonly scheduleNotificationPort: ScheduleNotificationPort;
 }
@@ -148,6 +151,7 @@ export function composeNotification(
     repositories: {
       notificationRepository: repositories.notificationRepository,
     },
+    requestedWriter: repositories.requestedWriter,
     scheduleNotificationPort: createNotificationPort,
   };
 }

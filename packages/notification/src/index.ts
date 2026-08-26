@@ -36,6 +36,7 @@ export {
   type NotificationPrismaRepositorySet,
   type NotificationPowerSyncRepositorySet,
   type NotificationReliableOperationPort,
+  type NotificationRequestedWriterPort,
   type ChannelCapabilitySpec,
   type NotificationChannelDeliverer,
   type NotificationDurableRuntimePort,

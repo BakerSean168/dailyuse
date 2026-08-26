@@ -28,7 +28,10 @@ import { createGoalTaskProgressPowerSyncHandler } from '@memoflow/goal';
 import { createTaskPowerSyncScheduleExecutionSource } from '@memoflow/task/schedule-execution';
 import { createTaskPowerSyncScheduleProjectionSource } from '@memoflow/task/schedule-projection';
 import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestration';
-import { createGoalPowerSyncScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
+import {
+  createGoalPowerSyncReminderFireHandler,
+  createGoalPowerSyncScheduleExecutionSource,
+} from '@memoflow/goal/schedule-execution';
 import { createGoalPowerSyncScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
 import { createLocalVaultRuntime } from '@memoflow/repository/electron';
 import { createSchedulePowerSyncRepositories } from '@memoflow/schedule';
@@ -161,6 +164,9 @@ async function registerBusinessModules(
       notificationPort: notificationComposed.scheduleNotificationPort,
     },
   });
+  scheduleOrchestrationModule.handlerRegistry.register(
+    createGoalPowerSyncReminderFireHandler(db, notificationComposed.requestedWriter),
+  );
   const scheduleComposed = composeSchedule({
     repositories: scheduleRepositorySet,
     sourceExecutor: scheduleOrchestrationModule.sourceExecutor,

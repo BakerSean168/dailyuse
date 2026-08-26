@@ -30,6 +30,7 @@ import {
 import type { NotificationMetricsService } from '../domain/services/notification-metrics-service';
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type { INotificationRepository, INotificationPreferenceRepository, INotificationTemplateRepository } from '../domain/repositories';
+import type { NotificationRequestedWriterPort } from '@memoflow/contracts/notification';
 
 export interface CreateNotificationPowerSyncModuleOptions {
   readonly runtimeContributions?: NotificationRuntimeContributionsInput;
@@ -43,13 +44,19 @@ export interface CreateNotificationPowerSyncModuleOptions {
  * Host-facing notification repository set for the PowerSync lane.
  * 面向宿主暴露的 PowerSync lane 通知仓储集合。
  *
- * Contains the three domain repositories and the reliable-operation adapter
- * (the durable-runtime ingredient). `closureChecker` is intentionally NOT part
+ * Contains the three domain repositories, the reliable-operation adapter
+ * (the durable-runtime ingredient), and the `requestedWriter` port for durable
+ * `notification.requested` envelope enqueueing (notifications destined for
+ * cross-module consumption such as goal reminders).
+ *
+ * 包含三个领域仓储、可靠操作适配器（durable-runtime 原料）以及用于持久化入队
+ * `notification.requested` 信封（供跨模块消费，如目标提醒）的 `requestedWriter` Port。
+ *
+ * `closureChecker` is intentionally NOT part
  * of the set: it is a host-owned port that desktop composers build from the
  * profile DB via `createPowerSyncClosureChecker` and pass explicitly.
  *
- * 包含三个领域仓储与可靠操作适配器（durable-runtime 原料）。
- * `closureChecker` 刻意不在此列：它是宿主持有的 Port，桌面 composer 通过
+ *  `closureChecker` 刻意不在此列：它是宿主持有的 Port，桌面 composer 通过
  * `createPowerSyncClosureChecker` 基于 profile DB 构建后显式传入。
  */
 export interface NotificationPowerSyncRepositorySet {
@@ -57,6 +64,7 @@ export interface NotificationPowerSyncRepositorySet {
   readonly notificationPreferenceRepository: INotificationPreferenceRepository;
   readonly notificationTemplateRepository: INotificationTemplateRepository;
   readonly reliableAdapter: NotificationReliableOperationPort;
+  readonly requestedWriter: NotificationRequestedWriterPort;
 }
 
 /**
@@ -78,11 +86,13 @@ export function createNotificationPowerSyncRepositories(
   db: IElectronDatabase,
   metricsService?: NotificationMetricsService,
 ): NotificationPowerSyncRepositorySet {
+  const reliableAdapter = new PowerSyncNotificationReliableAdapter(db, metricsService);
   return {
     notificationRepository: new PowerSyncNotificationRepository(db, metricsService),
     notificationPreferenceRepository: new PowerSyncNotificationPreferenceRepository(db),
     notificationTemplateRepository: new PowerSyncNotificationTemplateRepository(db),
-    reliableAdapter: new PowerSyncNotificationReliableAdapter(db, metricsService),
+    reliableAdapter,
+    requestedWriter: reliableAdapter,
   };
 }
 
