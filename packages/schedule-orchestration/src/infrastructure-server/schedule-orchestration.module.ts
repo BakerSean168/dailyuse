@@ -38,6 +38,7 @@ export function createScheduleOrchestrationModule(
     );
   }
 
+  const schedulingPort = createScheduleTaskSchedulingPort(scheduleTaskRepository);
   const handlerRegistry = new ScheduledHandlerRegistry();
   const legacySourceExecutor = createScheduleExecutionRouter(options.execution);
 
@@ -45,9 +46,8 @@ export function createScheduleOrchestrationModule(
     projectionRuntime: createCompositeRuntimeContribution([
       createTaskProjectionRuntime({
         source: options.taskProjection.source,
-        scheduleTaskRepository: options.taskProjection.scheduleTaskRepository,
+        schedulingPort,
         taskEvents: createTypedEventSubscriber<TaskScheduleProjectionEventMap>(eventBus),
-        scheduleEvents,
       }),
       createGoalProjectionRuntime({
         source: options.goalProjection.source,
@@ -62,7 +62,7 @@ export function createScheduleOrchestrationModule(
         scheduleEvents,
       }),
     ]),
-    schedulingPort: createScheduleTaskSchedulingPort(scheduleTaskRepository),
+    schedulingPort,
     handlerRegistry,
     sourceExecutor: createHandlerRegistryScheduleTaskSourceExecutor({
       registry: handlerRegistry,
