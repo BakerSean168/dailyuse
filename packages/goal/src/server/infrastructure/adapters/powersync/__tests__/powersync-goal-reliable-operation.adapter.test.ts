@@ -161,20 +161,13 @@ describe('PowerSyncGoalWriteTransactionRunner receipt rollback (W4 P1-1)', () =>
     identity_id TEXT NOT NULL,
     name TEXT NOT NULL,
     description TEXT,
-    color TEXT,
     feasibility_analysis TEXT,
     motivation TEXT,
     status TEXT NOT NULL,
-    importance TEXT,
-    priority INTEGER,
-    category TEXT,
-    tags TEXT,
     start_date TEXT,
-    target_date TEXT,
+    due_date TEXT,
     completed_at TEXT,
     archived_at TEXT,
-    folder_id TEXT,
-    parent_goal_id TEXT,
     sort_order INTEGER,
     reminder_config TEXT,
     version INTEGER NOT NULL DEFAULT 1,
@@ -203,9 +196,9 @@ describe('PowerSyncGoalWriteTransactionRunner receipt rollback (W4 P1-1)', () =>
     const now = new Date().toISOString();
     await db.execute(
       `INSERT INTO goals (
-         id, identity_id, name, status, importance, priority, version, created_at, updated_at
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [goalId, identityId, 'Runner Rollback Goal', 'active', 'moderate', 0, 1, now, now],
+         id, identity_id, name, status, version, created_at, updated_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [goalId, identityId, 'Runner Rollback Goal', 'Active', 1, now, now],
     );
 
     // Now make the receipt write fail (RAISE trigger keeps the table but aborts inserts)
@@ -231,6 +224,6 @@ describe('PowerSyncGoalWriteTransactionRunner receipt rollback (W4 P1-1)', () =>
     // Goal CAS write rolled back: still version 1, still Active
     const saved = await repo.findByIdForIdentity(identityId, goalId);
     expect(saved?.version).toBe(1);
-    expect(saved?.status).toBe('active');
+    expect(saved?.status).toBe('Active');
   });
 });

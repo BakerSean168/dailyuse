@@ -79,7 +79,7 @@ import { ScheduleTask } from '@memoflow/test-utils';
   /**
    * Residual 1043: goal/schedule/reminder/task integration-helpers duals retired
    * onto test-utils setup sole (getPrisma/disconnectPrisma/cleanAll/seedAccount).
-   * Soft residual: task keeps local cleanTaskTables/seedFolder/seedTemplateRaw/seedInstanceRaw.
+   * Task keeps only canonical vNext cleanTaskTables; Folder/DAG seed helpers are retired.
    * Soft residual 1044: tip focused suite numbers track Residual 1044 evidence tip (312/1351).
    * Does not flip §13.2 checkboxes.
    */
@@ -107,7 +107,6 @@ import { ScheduleTask } from '@memoflow/test-utils';
           resolve(__dirname, `../../../${pkg}/src/__tests__/integration-helpers.ts`),
           'utf8',
         );
-        expect(source, pkg).toContain('Residual 1043');
         expect(source, pkg).toContain(
           "from '@memoflow/test-utils/setup/integration-helpers'",
         );
@@ -123,16 +122,22 @@ import { ScheduleTask } from '@memoflow/test-utils';
       }
     });
 
-    it('task keep-boundary retains task-only seed/cleanup helpers', () => {
+    it('task keep-boundary keeps canonical cleanup without resurrecting retired Folder/DAG seeds', () => {
       const task = readFileSync(
         resolve(__dirname, '../../../task/src/__tests__/integration-helpers.ts'),
         'utf8',
       );
       expect(task).toMatch(/export async function cleanTaskTables\b/);
-      expect(task).toMatch(/export async function seedFolder\b/);
-      expect(task).toMatch(/export async function seedTemplateRaw\b/);
-      expect(task).toMatch(/export async function seedInstanceRaw\b/);
-      expect(task).toContain('TaskFolderId');
+      expect(task).toContain('taskGoalOutbox.deleteMany');
+      expect(task).toContain('taskLabel.deleteMany');
+      expect(task).toContain('taskInstance.deleteMany');
+      expect(task).toContain('taskTemplate.deleteMany');
+      expect(task).not.toMatch(/export async function seedFolder\b/);
+      expect(task).not.toMatch(/export async function seedTemplateRaw\b/);
+      expect(task).not.toMatch(/export async function seedInstanceRaw\b/);
+      expect(task).not.toContain('TaskFolderId');
+      expect(task).not.toContain('taskDependency');
+      expect(task).not.toContain('taskFolder');
     });
 
     it('goal/schedule/reminder shims stay re-export-only (no task-only helpers)', () => {
