@@ -1,4 +1,8 @@
-import { GoalLabelOwnershipError, GoalVersionConflictError, type IGoalRepository } from '../../../domain';
+import {
+  GoalLabelOwnershipError,
+  GoalVersionConflictError,
+  type IGoalRepository,
+} from '../../../domain';
 import { Goal } from '../../../domain';
 import type { GoalSystemView, KeyResultWeightSnapshotDTO } from '@memoflow/contracts/goal';
 import type { LabelDto } from '@memoflow/contracts/label';
@@ -390,6 +394,11 @@ export class GoalPowerSyncRepository
 
   async exists(identityId: string, id: string): Promise<boolean> {
     return (await this.findByIdForIdentity(identityId, id)) !== null;
+  }
+
+  async findAllGoalRefs(): Promise<Array<{ id: string; identityId: string }>> {
+    // 本地 PowerSync 宿主不执行全量 reconcile（跨用户扫描需要服务端源）。
+    return [];
   }
 
   async batchUpdateStatus(identityId: string, ids: string[], status: string): Promise<void> {

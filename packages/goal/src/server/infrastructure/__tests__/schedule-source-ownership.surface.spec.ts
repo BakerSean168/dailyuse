@@ -3,19 +3,16 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Goal/reminder schedule source ownership (stage-6 residual 130/168):
- * projection requires identityId and loads only via findByIdForIdentity;
- * execution must load aggregates via findByIdForIdentity, not bare PKs.
+ * GOAL-3201 ownership boundary:
+ * Goal projection is an identity-scoped neutral ScheduledIntent source.
+ * Legacy ScheduleTask may remain only in the goal execution adapter.
  */
 describe('schedule source ownership surface', () => {
   const goalProjection = readFileSync(
     resolve(__dirname, '../schedule-projection-source.ts'),
     'utf8',
   );
-  const goalExecution = readFileSync(
-    resolve(__dirname, '../schedule-execution-source.ts'),
-    'utf8',
-  );
+  const goalExecution = readFileSync(resolve(__dirname, '../schedule-execution-source.ts'), 'utf8');
   const reminderProjection = readFileSync(
     resolve(
       __dirname,
@@ -31,15 +28,23 @@ describe('schedule source ownership surface', () => {
     'utf8',
   );
 
-  it('goal projection requires identityId and never bare findById (residual 168)', () => {
+  it('goal projection is identity-scoped and emits neutral SchedulingPort inputs (GOAL-3201)', () => {
     expect(goalProjection).toContain(
       'buildGoalPlan(goalId: string, identityId: string): Promise<GoalScheduleProjectionPlan>;',
     );
-    expect(goalProjection).toContain('readonly identityId: string;');
     expect(goalProjection).toContain(
-      'findByIdForIdentity(identityId, goalId, {\n        includeChildren: true,\n      })',
+      'buildGoalOwner(goalId: string, identityId: string): SchedulingOwner;',
     );
+    expect(goalProjection).toContain('ScheduledIntent<GoalReminderScheduledPayload>');
+    expect(goalProjection).toContain('SchedulingOwner');
+    expect(goalProjection).toContain("GOAL_REMINDER_HANDLER_KEY = 'goal.reminder.fire'");
+    expect(goalProjection).toContain('findByIdForIdentity(identityId, goalId, {');
     expect(goalProjection).not.toContain('findById(goalId, { includeChildren: true })');
+    expect(goalProjection).toContain('findAllGoalRefs(');
+    expect(goalProjection).toContain('String(goalDTO.identityId)');
+    expect(goalProjection).not.toContain('ScheduleTask');
+    expect(goalProjection).not.toContain('IScheduleTaskRepository');
+    expect(goalProjection).not.toContain('SourceModule');
   });
 
   it('goal execution loads via findByIdForIdentity(task.identityId)', () => {

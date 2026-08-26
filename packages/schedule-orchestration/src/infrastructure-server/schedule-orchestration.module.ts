@@ -25,14 +25,10 @@ import { createTaskProjectionRuntime } from '../runtime/task-projection-runtime'
 export function createScheduleOrchestrationModule(
   options: CreateScheduleOrchestrationModuleOptions,
 ): ScheduleOrchestrationModule {
-  const scheduleEvents = createTypedEventPublisher<Pick<ScheduleEventMap, 'schedule:task-deleted'>>(
-    eventBus,
-  );
+  const scheduleEvents =
+    createTypedEventPublisher<Pick<ScheduleEventMap, 'schedule:task-deleted'>>(eventBus);
   const scheduleTaskRepository = options.taskProjection.scheduleTaskRepository;
-  if (
-    options.goalProjection.scheduleTaskRepository !== scheduleTaskRepository ||
-    options.reminderProjection.scheduleTaskRepository !== scheduleTaskRepository
-  ) {
+  if (options.reminderProjection.scheduleTaskRepository !== scheduleTaskRepository) {
     throw new Error(
       'Schedule orchestration requires one shared ScheduleTask repository for projections and SchedulingPort.',
     );
@@ -51,9 +47,8 @@ export function createScheduleOrchestrationModule(
       }),
       createGoalProjectionRuntime({
         source: options.goalProjection.source,
-        scheduleTaskRepository: options.goalProjection.scheduleTaskRepository,
+        schedulingPort,
         goalEvents: createTypedEventSubscriber<GoalScheduleProjectionEventMap>(eventBus),
-        scheduleEvents,
       }),
       createReminderProjectionRuntime({
         source: options.reminderProjection.source,

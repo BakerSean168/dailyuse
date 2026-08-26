@@ -19,7 +19,6 @@ export class GoalVersionConflictError extends Error {
   }
 }
 
-
 export class GoalLabelOwnershipError extends Error {
   readonly code = 'VALIDATION_ERROR' as const;
   constructor() {
@@ -83,6 +82,12 @@ export interface IGoalRepository {
 
   /** Loads the owning goal aggregate for a key result within one identity. */
   findByKeyResultIdForIdentity(identityId: string, keyResultId: string): Promise<Goal | null>;
+
+  /**
+   * Lists identity-scoped goal references for schedule projection ownership
+   * enumeration. Prisma 跨身份扫描，PowerSync 本地宿主不执行全量 reconcile（返回空）。
+   */
+  findAllGoalRefs(): Promise<Array<{ id: string; identityId: string }>>;
 
   /**
    * 永久删除聚合根（物理删除，必须同时匹配 identity）

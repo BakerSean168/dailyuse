@@ -12,7 +12,11 @@
  */
 
 import type { PrismaClient, Prisma } from '@memoflow/database';
-import { GoalLabelOwnershipError, GoalVersionConflictError, type IGoalRepository } from '../../../domain';
+import {
+  GoalLabelOwnershipError,
+  GoalVersionConflictError,
+  type IGoalRepository,
+} from '../../../domain';
 import { Goal } from '../../../domain';
 import type { GoalSystemView, KeyResultServerDTO } from '@memoflow/contracts/goal';
 import type { LabelDto } from '@memoflow/contracts/label';
@@ -114,8 +118,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     const uniqueIds = [...new Set(labelIds)];
     if (uniqueIds.length > 0) {
       const count = await this.prisma.label.count({ where: { identityId, id: { in: uniqueIds } } });
-      if (count !== uniqueIds.length)
-        throw new GoalLabelOwnershipError();
+      if (count !== uniqueIds.length) throw new GoalLabelOwnershipError();
     }
     await this.prisma.goalLabel.deleteMany({ where: { identityId, goalId } });
     if (uniqueIds.length > 0) {
@@ -459,6 +462,13 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
   }
 
   // ================= Utility Operations =================
+
+  async findAllGoalRefs(): Promise<Array<{ id: string; identityId: string }>> {
+    const rows = await this.prisma.goal.findMany({
+      select: { id: true, identityId: true },
+    });
+    return rows.map((row) => ({ id: row.id, identityId: row.identityId }));
+  }
 
   async exists(identityId: string, id: string): Promise<boolean> {
     const count = await this.prisma.goal.count({ where: { id, identityId } });
