@@ -39,6 +39,7 @@ export function createGoalTransportHandlers(api: GoalApplicationPort): GoalUseCa
     deleteKeyResult: api.deleteKeyResult,
     addReview: api.addReview,
     listReviews: api.listReviews,
+    getReviewContext: api.getReviewContext,
     updateReview: api.updateReview,
     deleteReview: api.deleteReview,
     createRecord: api.createRecord,

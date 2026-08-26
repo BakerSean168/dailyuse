@@ -24,6 +24,7 @@ import type {
   DeleteKeyResultReq,
   GetKeyResultsRes,
   CreateGoalReviewReq,
+  GoalReviewSystemContext,
   UpdateGoalReviewReq,
   DeleteGoalReviewReq,
   GetGoalReviewsRes,
@@ -98,6 +99,7 @@ export interface IGoalApiClient {
     request: CreateGoalReviewReq,
   ): Promise<Result<GoalMutationReceipt>>;
   getGoalReviewsByGoal(goalId: string): Promise<Result<GetGoalReviewsRes>>;
+  getGoalReviewContext(goalId: string, windowDays?: number): Promise<Result<GoalReviewSystemContext>>;
   updateGoalReview(
     goalId: string,
     reviewId: string,

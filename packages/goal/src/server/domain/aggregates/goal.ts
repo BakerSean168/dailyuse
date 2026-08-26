@@ -34,13 +34,12 @@ import { IdentityId } from '@memoflow/domain-shared';
 import { GoalId, KeyResultWeightSnapshotId, KeyResultId } from '../value-objects';
 import type { GoalEventMap } from '@memoflow/contracts/goal';
 import { GoalStatus, ReminderTriggerType } from '@memoflow/contracts/goal';
-import type { SnapshotTrigger, GoalReminderConfigDTO, ReviewType } from '@memoflow/contracts/goal';
+import type { SnapshotTrigger, GoalReminderConfigDTO, GoalReviewSystemContext } from '@memoflow/contracts/goal';
 import type {
   GoalServerDTO,
   GoalReviewServerDTO,
   KeyResultServerDTO,
   ProgressBreakdown,
-  KeyResultSnapshotDTO,
   ReminderTrigger,
 } from '@memoflow/contracts/goal';
 import { KeyResult } from '../entities/key-result';
@@ -59,7 +58,6 @@ import {
   GoalArchivedError,
   GoalNameTooLongError,
   KeyResultWeightInvalidError,
-  GoalReviewRatingInvalidError,
 } from '../value-objects';
 
 // ================ 常量定义 ================
@@ -909,64 +907,29 @@ export class Goal extends AggregateRoot<GoalId> {
 
   // ================= 6. 回顾管理 (Review Management) =================
 
-  /**
-   * 🏭 创建并添加回顾
-   *
-   * 【DDD 设计】
-   * 便捷方法，结合创建和添加，并验证所有约束。
-   *
-   * @throws {GoalDeletedError} 当目标已删除时
-   * @throws {GoalReviewRatingInvalidError} 当评分不在0-10之间时
-   */
+  /** Creates a review from server-generated system facts plus user reflection. */
   public createAndAddReview(params: {
-    title: string;
-    content: string;
-    reviewType: string;
-    rating?: number;
-    achievements?: string;
-    challenges?: string;
-    nextActions?: string;
+    reflection: string;
+    challenges?: string | null;
+    adjustments?: string | null;
+    systemContext: GoalReviewSystemContext;
   }): GoalReview {
-    // Guard: 确保未删除
     this.ensureNotDeleted();
-
-    // 验证评分
-    Goal.validateReviewRating(params.rating);
-
-    // 创建关键结果快照
-    const keyResultSnapshots: KeyResultSnapshotDTO[] = this._props.keyResults.map((kr) => ({
-      keyResultId: kr.id,
-      title: kr.title,
-      currentValue: kr.progress.currentValue,
-      targetValue: kr.progress.targetValue,
-      progressBaselineValue: kr.progress.progressBaselineValue,
-      aggregationMethod: kr.progress.aggregationMethod,
-      weight: kr.weight,
-      progressPercentage: kr.calculatePercentage(),
-    }));
-
     const review = GoalReview.create({
       goalId: this.id,
-      type: params.reviewType as ReviewType,
-      title: params.title ?? null,
-      rating: params.rating || 3,
-      summary: params.content,
-      achievements: params.achievements,
+      reflection: params.reflection,
       challenges: params.challenges,
-      improvements: params.nextActions,
-      keyResultSnapshots,
+      adjustments: params.adjustments,
+      systemContext: params.systemContext,
+      reviewedAt: params.systemContext.windowEndAt,
     });
-
-    // 添加到集合
     this._props.goalReviews.push(review);
     this._props.updatedAt = Date.now();
-
     this.addDomainEvent<GoalEventMap['goal:review-added']>('goal:review-added', {
       identityId: this._props.identityId,
       goal: this.toServerDTO(true),
       review: review.toServerDTO() as GoalReviewServerDTO,
     });
-
     return review;
   }
 
@@ -978,36 +941,21 @@ export class Goal extends AggregateRoot<GoalId> {
     return this._props.goalReviews[this._props.goalReviews.length - 1];
   }
 
-  /**
-   * ✅ 更新回顾
-   * @throws {GoalDeletedError} 当目标已删除时
-   * @throws {GoalReviewNotFoundError} 当回顾不存在时
-   * @throws {GoalReviewRatingInvalidError} 当评分不在0-10之间时
-   */
+  /** Updates only user-authored reflection; the system snapshot is immutable. */
   public updateReview(
     reviewId: string,
     params: {
-      rating?: number;
-      summary?: string;
-      achievements?: string;
-      challenges?: string;
-      improvements?: string;
+      reflection?: string;
+      challenges?: string | null;
+      adjustments?: string | null;
     },
   ): void {
     this.ensureNotDeleted();
-    Goal.validateReviewRating(params.rating);
-
-    const review = this._props.goalReviews.find((r) => r.id === reviewId);
-    if (!review) {
-      throw new GoalReviewNotFoundError(reviewId);
-    }
-
-    if (params.rating !== undefined) review.updateRating(params.rating);
-    if (params.summary) review.updateSummary(params.summary);
-    if (params.achievements) review.addAchievement(params.achievements);
-    if (params.challenges) review.addChallenge(params.challenges);
-    if (params.improvements) review.addImprovement(params.improvements);
-
+    const review = this._props.goalReviews.find((item) => item.id === reviewId);
+    if (!review) throw new GoalReviewNotFoundError(reviewId);
+    if (params.reflection !== undefined) review.updateReflection(params.reflection);
+    if (params.challenges !== undefined) review.updateChallenges(params.challenges);
+    if (params.adjustments !== undefined) review.updateAdjustments(params.adjustments);
     this._props.updatedAt = Date.now();
   }
 
@@ -1188,16 +1136,6 @@ export class Goal extends AggregateRoot<GoalId> {
   public static validateKeyResultWeight(weight: number): void {
     if (!Number.isInteger(weight) || weight < 1 || weight > 5) {
       throw new KeyResultWeightInvalidError(weight);
-    }
-  }
-
-  /**
-   * 验证回顾评分
-   * @throws {GoalReviewRatingInvalidError} 当评分不在0-10之间时
-   */
-  public static validateReviewRating(rating?: number): void {
-    if (rating !== undefined && (rating < 1 || rating > 5)) {
-      throw new GoalReviewRatingInvalidError(rating);
     }
   }
 

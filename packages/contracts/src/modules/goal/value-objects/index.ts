@@ -38,4 +38,5 @@ export { KeyResultCalculationMethod } from './key-result-calculation-method';
 
 export { ReminderTriggerType } from './reminder-trigger-type';
 
-export { ReviewType } from './review-type';
+export { GoalReviewSystemContextSchema, GoalReviewKeyResultContextSchema, GoalReviewTrendPointSchema } from './goal-review-context';
+export type { GoalReviewSystemContext, GoalReviewKeyResultContext, GoalReviewTrendPoint } from './goal-review-context';

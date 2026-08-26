@@ -4,6 +4,7 @@ import type {
   GetGoalAggregateRes,
   GetGoalRes,
   GoalMutationReceipt,
+  GoalReviewSystemContext,
   ListGoalsQuery,
   ProgressBreakdown,
   QueryGoalsRes,
@@ -111,28 +112,27 @@ export interface GoalApplicationPort {
     goalId: string,
     identityId: string,
     params: {
-      title: string;
-      content: string;
-      reviewType: string;
-      rating?: number;
-      achievements?: string;
-      challenges?: string;
-      nextActions?: string;
+      reflection: string;
+      challenges?: string | null;
+      adjustments?: string | null;
+      windowDays?: number;
       expectedVersion: number;
     },
   ): Promise<Result<GoalMutationReceipt>>;
+  getReviewContext(
+    goalId: string,
+    identityId: string,
+    windowDays?: number,
+  ): Promise<Result<GoalReviewSystemContext>>;
   listReviews(goalId: string, identityId: string): Promise<Result<ListGoalReviewsResult>>;
   updateReview(
     goalId: string,
     identityId: string,
     reviewId: string,
     params: {
-      title?: string;
-      content?: string;
-      rating?: number | null;
-      achievements?: string | null;
+      reflection?: string;
       challenges?: string | null;
-      nextActions?: string | null;
+      adjustments?: string | null;
       expectedVersion: number;
     },
   ): Promise<Result<GoalMutationReceipt>>;

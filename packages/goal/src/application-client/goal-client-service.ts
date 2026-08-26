@@ -25,6 +25,7 @@ import type {
   UpdateGoalReviewReq,
   DeleteGoalReviewReq,
   GoalReviewClientDTO,
+  GoalReviewSystemContext,
   GoalClientDTO,
   GoalMutationReceipt,
   GoalSystemView,
@@ -99,13 +100,10 @@ function goalReviewFromDTO(dto: GoalReviewClientDTO): GoalReview {
   return GoalReview.load({
     id: GoalReviewId.of(dto.id),
     goalId: GoalId.of(dto.goalId),
-    type: dto.type,
-    rating: dto.rating,
-    summary: dto.summary,
-    achievements: dto.achievements,
+    reflection: dto.reflection,
     challenges: dto.challenges,
-    improvements: dto.improvements,
-    keyResultSnapshots: dto.keyResultSnapshots ?? [],
+    adjustments: dto.adjustments,
+    systemContext: dto.systemContext,
     reviewedAt: dto.reviewedAt,
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,
@@ -208,6 +206,7 @@ export interface GoalClientPort {
     request: CreateGoalReviewReq,
   ): Promise<Result<GoalMutationReceipt>>;
   getGoalReviews(goalId: string): Promise<Result<{ reviews: GoalReview[] }>>;
+  getGoalReviewContext(goalId: string, windowDays?: number): Promise<Result<GoalReviewSystemContext>>;
   updateGoalReview(
     goalId: string,
     reviewId: string,
@@ -449,6 +448,13 @@ export class GoalClientService implements GoalClientPort {
     return mapResult(result, (data: GetGoalReviewsRes) => ({
       reviews: data.data.map((dto) => goalReviewFromDTO(dto as GoalReviewClientDTO)),
     }));
+  }
+
+  async getGoalReviewContext(
+    goalId: string,
+    windowDays: number = 7,
+  ): Promise<Result<GoalReviewSystemContext>> {
+    return this.goalApi.getGoalReviewContext(goalId, windowDays);
   }
 
   async updateGoalReview(

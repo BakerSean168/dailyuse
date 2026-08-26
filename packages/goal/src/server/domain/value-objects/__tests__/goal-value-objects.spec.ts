@@ -7,9 +7,7 @@ import {
   KeyResultProgress,
   KeyResultSnapshot,
   KeyResultWeightSnapshot,
-  ReminderTriggerType,
-  ReviewType,
-} from '..';
+  ReminderTriggerType,} from '..';
 import { InvalidWeightError } from '../weight-errors';
 
 describe('goal shared value objects', () => {
@@ -32,11 +30,6 @@ describe('goal shared value objects', () => {
     expect(GoalStatus.isTerminal(GoalStatus.Completed)).toBe(true);
     expect(GoalStatus.isTerminal(GoalStatus.Abandoned)).toBe(true);
     expect(() => GoalStatus.of('Bad')).toThrow('Invalid GoalStatus');
-
-    expect(ReviewType.getAll()).toContain(ReviewType.Final);
-    expect(ReviewType.of('Weekly')).toBe(ReviewType.Weekly);
-    expect(ReviewType.isPeriodic(ReviewType.Monthly)).toBe(true);
-    expect(ReviewType.isFinal(ReviewType.Final)).toBe(true);
 
     expect(ReminderTriggerType.getAll()).toEqual([
       ReminderTriggerType.TimeProgressPercentage,

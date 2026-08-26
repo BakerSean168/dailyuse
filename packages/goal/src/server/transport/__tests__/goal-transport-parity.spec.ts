@@ -103,6 +103,12 @@ function createPortStub(): GoalApplicationPort {
     deleteKeyResult: fn(okReceipt()),
     batchUpdateKeyResultWeights: fn(okReceipt()),
     addReview: fn(okReceipt()),
+    getReviewContext: fn({
+      windowStartAt: 0, windowEndAt: 1,
+      overallProgress: { startPercentage: 0, endPercentage: 0, deltaPercentage: 0 },
+      keyResults: [],
+      summary: { recordCount: 0, manualRecordCount: 0, taskContributionCount: 0 },
+    }),
     updateReview: fn(okReceipt()),
     deleteReview: fn(okReceipt()),
     createRecord: fn(okReceipt()),
@@ -214,16 +220,15 @@ const validBatchWeights = {
 const malformedBatchWeights = { expectedVersion: 0, updates: [] };
 
 const validCreateReview = {
-  goalId: GOAL_ID,
   expectedVersion: 1,
-  title: 'Review',
-  content: 'Content',
-  reviewType: 'Weekly',
+  reflection: 'Content',
+  challenges: 'Challenge',
+  adjustments: 'Next',
 };
-const malformedCreateReview = { goalId: GOAL_ID, expectedVersion: 1, title: '', content: '' };
+const malformedCreateReview = { expectedVersion: 1, reflection: '' };
 
-const validUpdateReview = { title: 'R2', expectedVersion: 1 };
-const malformedUpdateReview = { title: 'R2', expectedVersion: 0 };
+const validUpdateReview = { reflection: 'R2', expectedVersion: 1 };
+const malformedUpdateReview = { reflection: 'R2', expectedVersion: 0 };
 
 const validCreateRecord = { keyResultId: KR_ID, expectedVersion: 1, value: 5 };
 const malformedCreateRecord = { keyResultId: KR_ID, expectedVersion: 0, value: 5 };
@@ -630,6 +635,27 @@ describe('goal transport parity (Phase 4) — production registrations', () => {
           expect(mock).toHaveBeenCalledTimes(2);
           for (const call of mock.mock.calls) {
             expect(call[0]).toBe(GOAL_ID);
+          }
+        },
+      },
+    ],
+    [
+      'review context',
+      {
+        httpKey: 'review GET /:id/reviews/context',
+        ipcChannel: GoalChannels.REVIEW_CONTEXT,
+        httpReq: { params: { id: GOAL_ID }, query: { windowDays: '7' } },
+        ipcArgs: [GOAL_ID, 7],
+        validInvocation: { params: { id: GOAL_ID }, query: { windowDays: 7 } },
+        malformedHttpReq: { params: { id: GOAL_ID }, query: { windowDays: 0 } },
+        malformedIpcArgs: [GOAL_ID, 0],
+        assertPort: (port) => {
+          const mock = port.getReviewContext as ReturnType<typeof vi.fn>;
+          expect(mock).toHaveBeenCalledTimes(2);
+          for (const call of mock.mock.calls) {
+            expect(call[0]).toBe(GOAL_ID);
+            expect(call[1]).toBe('identity-1');
+            expect(call[2]).toBe(7);
           }
         },
       },

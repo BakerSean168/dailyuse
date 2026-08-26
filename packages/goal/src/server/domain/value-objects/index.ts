@@ -14,7 +14,6 @@ export * from './key-result-weight-snapshot-id';
 export * from './goal-status';
 export * from './key-result-calculation-method';
 export * from './reminder-trigger-type';
-export * from './review-type';
 
 // Class Value Objects
 export * from './goal-reminder-config';

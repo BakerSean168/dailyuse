@@ -85,6 +85,7 @@ import {
   CreateGoalSchema,
   CreateRecordInvocationSchema,
   CreateReviewInvocationSchema,
+  ReviewContextInvocationSchema,
   DeleteGoalInvocationSchema,
   DeleteKeyResultInvocationSchema,
   DeleteRecordInvocationSchema,
@@ -394,6 +395,15 @@ export function createGoalElectronModule(
           }),
         );
         installed.push(GoalChannels.REVIEW_CREATE);
+        registerValidatedChannel(
+          ctx,
+          GoalChannels.REVIEW_CONTEXT,
+          ReviewContextInvocationSchema,
+          (data, requestContext) =>
+            goalController.getReviewContext(data.params.id, data.query.windowDays, requestContext),
+          (args) => ({ params: { id: args[0] }, query: { windowDays: args[1] } }),
+        );
+        installed.push(GoalChannels.REVIEW_CONTEXT);
         ipcMain.handle(GoalChannels.REVIEW_LIST, async (_, goalId) =>
           withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
             goalController.listReviews(goalId, requestContext),

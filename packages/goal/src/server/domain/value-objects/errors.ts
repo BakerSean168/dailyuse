@@ -167,18 +167,3 @@ export class KeyResultWeightExceededError extends ResultErrorException {
     );
   }
 }
-
-/**
- * 目标回顾评分无效错误
- */
-export class GoalReviewRatingInvalidError extends ResultErrorException {
-  constructor(rating: number) {
-    super(
-      `目标回顾评分 ${rating} 无效（必须在 1-5 之间）`,
-      'goal_review_rating_invalid',
-      undefined,
-      undefined,
-      400,
-    );
-  }
-}

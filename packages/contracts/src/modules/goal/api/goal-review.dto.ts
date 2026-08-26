@@ -1,83 +1,44 @@
-/**
- * Goal - Review Operations
- *
- * 目标复盘管理
- */
-
+/** Goal Review V2 request/query contracts. */
 import { z } from 'zod';
-import { brandedId } from '../../../primitives';
-import type { GoalId } from '../../../primitives';
-import { ReviewType } from '../value-objects/review-type';
 import { GoalIdParamsSchema } from './goal-crud.dto';
 import { GoalReviewListResSchema } from './response-schemas';
 
-// ============================================================================
-// CREATE Review
-// ============================================================================
+export const GoalReviewWindowQuerySchema = z.object({
+  windowDays: z.coerce.number().int().min(1).max(365).default(7).optional(),
+});
+export type GoalReviewWindowQuery = z.infer<typeof GoalReviewWindowQuerySchema>;
 
-/**
- * 创建复盘 Schema
- */
 export const CreateGoalReviewSchema = z.object({
   expectedVersion: z.number().int().min(1),
-  goalId: brandedId<GoalId>(),
-  title: z.string().min(1, '复盘标题不能为空').max(256),
-  content: z.string().min(1, '复盘内容不能为空').max(10000),
-  reviewType: z.enum(ReviewType),
-  rating: z.number().int().min(1).max(5).optional(),
-  achievements: z.string().max(2000).optional(),
-  challenges: z.string().max(2000).optional(),
-  nextActions: z.string().max(2000).optional(),
-  reviewedAt: z.number().int().optional(),
+  reflection: z.string().min(1, 'Reflection is required').max(10000),
+  challenges: z.string().max(4000).nullable().optional(),
+  adjustments: z.string().max(4000).nullable().optional(),
+  windowDays: z.number().int().min(1).max(365).default(7).optional(),
 });
-
 export type CreateGoalReviewReq = z.infer<typeof CreateGoalReviewSchema>;
 
-// ============================================================================
-// UPDATE Review
-// ============================================================================
-
-/**
- * 更新复盘 Schema
- */
-export const UpdateGoalReviewSchema = z.object({
-  expectedVersion: z.number().int().min(1),
-  title: z.string().min(1).max(256).optional(),
-  content: z.string().min(1).max(10000).optional(),
-  rating: z.number().int().min(1).max(5).nullable().optional(),
-  achievements: z.string().max(2000).nullable().optional(),
-  challenges: z.string().max(2000).nullable().optional(),
-  nextActions: z.string().max(2000).nullable().optional(),
-});
-
+export const UpdateGoalReviewSchema = z
+  .object({
+    expectedVersion: z.number().int().min(1),
+    reflection: z.string().min(1).max(10000).optional(),
+    challenges: z.string().max(4000).nullable().optional(),
+    adjustments: z.string().max(4000).nullable().optional(),
+  })
+  .refine(
+    (input) =>
+      input.reflection !== undefined ||
+      input.challenges !== undefined ||
+      input.adjustments !== undefined,
+    { message: 'At least one reflection field is required' },
+  );
 export type UpdateGoalReviewReq = z.infer<typeof UpdateGoalReviewSchema>;
 
-// ============================================================================
-// GET Review
-// ============================================================================
-
-/**
- * 获取复盘详情
- */
 export type GetGoalReviewReq = void;
 
-/**
- * 删除复盘
- */
 export const DeleteGoalReviewSchema = z.object({
   expectedVersion: z.number().int().min(1),
 });
 export type DeleteGoalReviewReq = z.infer<typeof DeleteGoalReviewSchema>;
 
-// ============================================================================
-// QUERY Reviews
-// ============================================================================
-
-/**
- * 查询复盘列表
- */
-// Residual 677: reuses shared GoalIdParamsSchema (no dual body).
 export type GetGoalReviewsReq = z.infer<typeof GoalIdParamsSchema>;
-
-// Residual 689: list response dual body retired — OpenAPI + transport use GoalReviewListResSchema (ClientDTO).
 export type GetGoalReviewsRes = z.infer<typeof GoalReviewListResSchema>;

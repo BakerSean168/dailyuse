@@ -32,7 +32,6 @@ function createIntegrationGoal(identityId: string) {
   const keyResult = goal.createAndAddKeyResult({
     title: 'Add first DB oracle',
     description: 'Persist repository state and relations',
-    valueType: 'NUMERIC',
     aggregationMethod: 'Last',
     targetValue: 10,
     currentValue: 4,
@@ -41,13 +40,16 @@ function createIntegrationGoal(identityId: string) {
   });
 
   goal.createAndAddReview({
-    title: 'Week 1',
-    content: 'The first persistence oracle is in place.',
-    reviewType: 'Weekly',
-    rating: 4,
-    achievements: 'Added repository integration coverage',
+    reflection: 'The first persistence oracle is in place.',
     challenges: 'Need more frontend oracle depth',
-    nextActions: 'Expand boundary tests',
+    adjustments: 'Expand boundary tests',
+    systemContext: {
+      windowStartAt: Date.UTC(2026, 3, 1),
+      windowEndAt: Date.UTC(2026, 3, 8),
+      overallProgress: { startPercentage: 20, endPercentage: 40, deltaPercentage: 20 },
+      keyResults: [],
+      summary: { recordCount: 1, manualRecordCount: 1, taskContributionCount: 0 },
+    },
   });
   goal.recordWeightSnapshot(String(keyResult.id), 2, 3, 'Manual', identityId, 'scope changed');
 
@@ -100,6 +102,8 @@ describe('GoalPrismaRepository integration', () => {
     expect(loaded?.reminderConfig?.triggers).toHaveLength(2);
     expect(loaded?.keyResults).toHaveLength(1);
     expect(loaded?.goalReviews).toHaveLength(1);
+    expect(loaded?.goalReviews[0]?.reflection).toBe('The first persistence oracle is in place.');
+    expect(loaded?.goalReviews[0]?.systemContext.overallProgress.endPercentage).toBe(40);
     expect(loaded?.weightSnapshots).toHaveLength(1);
     expect(loaded?.keyResults[0]?.progress.targetValue).toBe(10);
     expect(loaded?.calculateProgress()).toBe(40);

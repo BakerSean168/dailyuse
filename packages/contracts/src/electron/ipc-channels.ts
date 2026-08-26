@@ -52,6 +52,7 @@ export const GoalChannels = {
   KEY_RESULT_BATCH_UPDATE_WEIGHTS: 'goal:keyResult:batchUpdateWeights',
   REVIEW_CREATE: 'goal:review:create',
   REVIEW_LIST: 'goal:review:list',
+  REVIEW_CONTEXT: 'goal:review:context',
   REVIEW_UPDATE: 'goal:review:update',
   REVIEW_DELETE: 'goal:review:delete',
   RECORD_CREATE: 'goal:record:create',

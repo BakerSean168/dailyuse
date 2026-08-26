@@ -54,13 +54,16 @@ describe('rawDataToGoalState', () => {
         {
           id: REVIEW_ID_1,
           goalId: GOAL_ID_1,
-          type: 'Weekly',
-          rating: 4,
-          summary: 'ok',
-          achievements: null,
+          reflection: 'ok',
           challenges: null,
-          improvements: null,
-          keyResultSnapshots: [],
+          adjustments: null,
+          systemContext: {
+            windowStartAt: 1_000,
+            windowEndAt: 1_200,
+            overallProgress: { startPercentage: 0, endPercentage: 50, deltaPercentage: 50 },
+            keyResults: [],
+            summary: { recordCount: 0, manualRecordCount: 0, taskContributionCount: 0 },
+          },
           reviewedAt: new Date(1_200),
           version: 1,
           createdAt: new Date(1_200),
@@ -103,7 +106,8 @@ describe('rawDataToGoalState', () => {
     expect(state.keyResults[0].progress.aggregationMethod).toBe('Last');
     expect(state.keyResults[0].progress.currentValue).toBe(0);
     expect(state.goalReviews).toHaveLength(1);
-    expect(state.goalReviews[0].keyResultSnapshots).toHaveLength(0);
+    expect(state.goalReviews[0].reflection).toBe('ok');
+    expect(state.goalReviews[0].systemContext.overallProgress.endPercentage).toBe(50);
     expect(state.weightSnapshots).toHaveLength(1);
     expect(state.weightSnapshots[0].toDTO().id).toBe(SNAPSHOT_ID_1);
   });

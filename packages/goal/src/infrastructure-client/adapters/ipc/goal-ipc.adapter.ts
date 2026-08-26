@@ -23,6 +23,7 @@ import type {
   DeleteKeyResultReq,
   GetKeyResultsRes,
   CreateGoalReviewReq,
+  GoalReviewSystemContext,
   UpdateGoalReviewReq,
   DeleteGoalReviewReq,
   GetGoalReviewsRes,
@@ -152,6 +153,13 @@ export class GoalIpcAdapter implements IGoalApiClient {
 
   async getGoalReviewsByGoal(goalId: string): Promise<Result<GetGoalReviewsRes>> {
     return this.ipcClient.invoke(GoalChannels.REVIEW_LIST, goalId);
+  }
+
+  async getGoalReviewContext(
+    goalId: string,
+    windowDays: number = 7,
+  ): Promise<Result<GoalReviewSystemContext>> {
+    return this.ipcClient.invoke(GoalChannels.REVIEW_CONTEXT, goalId, windowDays);
   }
 
   async updateGoalReview(

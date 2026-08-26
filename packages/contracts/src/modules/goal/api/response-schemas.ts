@@ -15,7 +15,7 @@ import type {
   GoalRecordId,
 } from '../../../primitives';
 import { GoalStatus } from '../value-objects/goal-status';
-import { ReviewType } from '../value-objects/review-type';
+import { GoalReviewSystemContextSchema } from '../value-objects/goal-review-context';
 
 import { KeyResultProgressDTOSchema } from '../value-objects/key-result-progress';
 import { KeyResultSnapshotDTOSchema } from '../value-objects/key-result-snapshot';
@@ -63,13 +63,10 @@ export const KeyResultClientDTOSchema = z.object({
 export const GoalReviewClientDTOSchema = z.object({
   id: brandedId<GoalReviewId>(),
   goalId: brandedId<GoalId>(),
-  type: z.enum(ReviewType),
-  rating: z.number(),
-  summary: z.string(),
-  achievements: z.string().nullable(),
+  reflection: z.string(),
   challenges: z.string().nullable(),
-  improvements: z.string().nullable(),
-  keyResultSnapshots: z.array(KeyResultSnapshotDTOSchema),
+  adjustments: z.string().nullable(),
+  systemContext: GoalReviewSystemContextSchema,
   reviewedAt: z.number(),
   createdAt: z.number(),
   updatedAt: z.number(),

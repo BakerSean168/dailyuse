@@ -6,11 +6,10 @@
  */
 
 import type {
-  ReviewType,
   KeyResultWeightSnapshotDTO,
   KeyResultCalculationMethod,
   GoalReminderConfigDTO,
-  KeyResultSnapshotDTO,
+  GoalReviewSystemContext,
 } from '@memoflow/contracts/goal';
 import { GoalStatus } from '@memoflow/contracts/goal';
 import { IdentityId } from '@memoflow/domain-shared';
@@ -73,14 +72,10 @@ export interface RawKeyResultData {
 export interface RawGoalReviewData {
   id: string;
   goalId: string;
-  type: string;
-  title: string | null;
-  rating: number;
-  summary: string;
-  achievements: string | null;
+  reflection: string;
   challenges: string | null;
-  improvements: string | null;
-  keyResultSnapshots: unknown[];
+  adjustments: string | null;
+  systemContext: GoalReviewSystemContext;
   reviewedAt: number;
   createdAt: number;
   updatedAt: number;
@@ -118,14 +113,10 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
     GoalReview.load({
       id: GoalReviewId.of(r.id),
       goalId: GoalId.of(r.goalId),
-      type: r.type as ReviewType,
-      title: r.title ?? null,
-      rating: r.rating,
-      summary: r.summary,
-      achievements: r.achievements ?? null,
+      reflection: r.reflection,
       challenges: r.challenges ?? null,
-      improvements: r.improvements ?? null,
-      keyResultSnapshots: r.keyResultSnapshots as KeyResultSnapshotDTO[],
+      adjustments: r.adjustments ?? null,
+      systemContext: r.systemContext,
       reviewedAt: Number(r.reviewedAt),
       createdAt: Number(r.createdAt),
       updatedAt: Number(r.updatedAt),

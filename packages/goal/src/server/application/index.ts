@@ -31,6 +31,7 @@ export {
   // Review Services
   AddGoalReviewUseCase,
   ListGoalReviewsUseCase,
+  GetGoalReviewContextUseCase,
   UpdateGoalReviewUseCase,
   DeleteGoalReviewUseCase,
   // Record Services
@@ -66,3 +67,5 @@ export {
 export * from './errors/weight-snapshot-errors';
 
 export type { GoalApplicationPort } from './goal.application.port';
+
+export { GoalReviewContextBuilder } from './services/goal-review-context-builder';

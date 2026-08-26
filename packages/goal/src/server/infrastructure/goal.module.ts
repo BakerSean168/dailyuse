@@ -39,6 +39,7 @@ import {
   DeleteGoalKeyResultUseCase,
   AddGoalReviewUseCase,
   ListGoalReviewsUseCase,
+  GetGoalReviewContextUseCase,
   UpdateGoalReviewUseCase,
   DeleteGoalReviewUseCase,
   CreateGoalRecordUseCase,
@@ -52,6 +53,7 @@ import {
   BatchUpdateKeyResultWeightsUseCase,
 } from '../application';
 import type { GoalSystemView } from '@memoflow/contracts/goal';
+import { GoalReviewContextBuilder } from '../application';
 import { createLogger } from '@memoflow/utils/logger';
 import type { GoalApplicationPort } from '../application';
 import type { GoalDependencyReadPort } from '@memoflow/contracts/reliable-messaging';
@@ -164,6 +166,7 @@ export interface GoalModuleUseCases {
   // Review / 复盘
   readonly addReview: AddGoalReviewUseCase;
   readonly listReviews: ListGoalReviewsUseCase;
+  readonly getReviewContext: GetGoalReviewContextUseCase;
   readonly updateReview: UpdateGoalReviewUseCase;
   readonly deleteReview: DeleteGoalReviewUseCase;
 
@@ -277,8 +280,16 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
     deleteKeyResult: new DeleteGoalKeyResultUseCase(goalRepository, goalPolicy),
 
     // Review / 复盘
-    addReview: new AddGoalReviewUseCase(goalRepository, goalPolicy),
+    addReview: new AddGoalReviewUseCase(
+      goalRepository,
+      goalPolicy,
+      new GoalReviewContextBuilder(goalRecordRepository),
+    ),
     listReviews: new ListGoalReviewsUseCase(goalRepository),
+    getReviewContext: new GetGoalReviewContextUseCase(
+      goalRepository,
+      new GoalReviewContextBuilder(goalRecordRepository),
+    ),
     updateReview: new UpdateGoalReviewUseCase(goalRepository, goalPolicy),
     deleteReview: new DeleteGoalReviewUseCase(goalRepository, goalPolicy),
 
@@ -417,6 +428,8 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
     addReview: (goalId, identityId, params) =>
       useCases.addReview.execute(goalId, identityId, params),
     listReviews: (goalId, identityId) => useCases.listReviews.execute(goalId, identityId),
+    getReviewContext: (goalId, identityId, windowDays) =>
+      useCases.getReviewContext.execute(goalId, identityId, windowDays),
     updateReview: (goalId, identityId, reviewId, params) =>
       useCases.updateReview.execute(goalId, identityId, reviewId, params),
     deleteReview: (goalId, identityId, reviewId, expectedVersion) =>

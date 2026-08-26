@@ -28,7 +28,7 @@ describe('UpdateGoalReviewUseCase', () => {
 
     const result = await useCase.execute('goal-1', 'identity-1', 'review-1', {
       expectedVersion: 1,
-      content: 'Changed',
+      reflection: 'Changed',
     });
 
     expect(result).toBeOk();
@@ -56,7 +56,7 @@ describe('UpdateGoalReviewUseCase', () => {
 
     const result = await useCase.execute('goal-1', 'identity-1', 'review-1', {
       expectedVersion: 2,
-      content: 'Changed',
+      reflection: 'Changed',
     });
 
     expect(result).toBeErrorWithCode('CONFLICT');

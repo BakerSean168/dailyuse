@@ -186,75 +186,45 @@ describe('Goal aggregate management', () => {
     expect(() => goal.updateKeyResultProgress('missing', 1)).toThrow('关键结果未找到');
   });
 
-  it('manages reviews and serializes nested children', () => {
+  it('manages factual reviews and serializes nested children', () => {
     const goal = createGoal();
-    const kr = goal.createAndAddKeyResult({
-      title: 'KR1',
-      valueType: 'Incremental',
-      targetValue: 100,
-      currentValue: 50,
-      weight: 3,
-    });
-
+    goal.createAndAddKeyResult({ title: 'KR1', targetValue: 100, currentValue: 50, weight: 3 });
+    const systemContext = {
+      windowStartAt: 1000, windowEndAt: 2000,
+      overallProgress: { startPercentage: 40, endPercentage: 50, deltaPercentage: 10 },
+      keyResults: [],
+      summary: { recordCount: 2, manualRecordCount: 1, taskContributionCount: 1 },
+    };
     const review = goal.createAndAddReview({
-      title: 'Weekly',
-      content: 'steady',
-      reviewType: 'Weekly',
-      achievements: 'A1',
-      challenges: 'C1',
-      nextActions: 'N1',
+      reflection: 'steady', challenges: 'C1', adjustments: 'N1', systemContext,
     });
-    expect(review.rating).toBe(3);
+    expect(review.systemContext).toEqual(systemContext);
     expect(goal.getLatestReview()?.id).toBe(review.id);
 
     goal.updateReview(String(review.id), {
-      rating: 5,
-      summary: 'better',
-      achievements: 'A2',
-      challenges: 'C2',
-      improvements: 'N2',
+      reflection: 'better', challenges: 'C2', adjustments: 'N2',
     });
-    expect(goal.getLatestReview()?.rating).toBe(5);
-    expect(goal.getLatestReview()?.summary).toBe('better');
-    expect(goal.getLatestReview()?.achievements).toContain('A1');
-    expect(goal.getLatestReview()?.achievements).toContain('A2');
-    expect(goal.getLatestReview()?.challenges).toContain('C1');
-    expect(goal.getLatestReview()?.improvements).toContain('N2');
+    expect(goal.getLatestReview()?.reflection).toBe('better');
+    expect(goal.getLatestReview()?.challenges).toBe('C2');
+    expect(goal.getLatestReview()?.adjustments).toBe('N2');
+    expect(goal.getLatestReview()?.systemContext).toEqual(systemContext);
 
     const removed = goal.removeReview(String(review.id));
     expect(removed?.id).toBe(review.id);
     expect(goal.removeReview('missing')).toBeNull();
-    expect(() => goal.updateReview('missing', { rating: 3 })).toThrow('目标回顾未找到');
-    expect(() =>
-      goal.createAndAddReview({ title: 'Bad', content: 'x', reviewType: 'Weekly', rating: 0 }),
-    ).toThrow('目标回顾评分');
-    expect(() => Goal.validateReviewRating(6)).toThrow('目标回顾评分');
+    expect(() => goal.updateReview('missing', { reflection: 'x' })).toThrow('目标回顾未找到');
 
     const dtoGoal = createGoal();
-    dtoGoal.createAndAddKeyResult({
-      title: 'KR1',
-      valueType: 'Incremental',
-      targetValue: 10,
-      currentValue: 10,
-      weight: 2,
-    });
-    dtoGoal.createAndAddReview({
-      title: 'Final',
-      content: 'done',
-      reviewType: 'Final',
-      rating: 5,
-    });
+    dtoGoal.createAndAddKeyResult({ title: 'KR1', targetValue: 10, currentValue: 10, weight: 2 });
+    dtoGoal.createAndAddReview({ reflection: 'done', systemContext });
     dtoGoal.recordWeightSnapshot(String(dtoGoal.keyResults[0].id), 1, 2, 'Auto', 'IdentityId_1');
-
     expect(dtoGoal.toServerDTO(true)).toMatchObject({
       keyResults: [expect.objectContaining({ id: dtoGoal.keyResults[0].id })],
+      goalReviews: [expect.objectContaining({ reflection: 'done', systemContext })],
     });
     expect(dtoGoal.toClientDTO(true)).toMatchObject({
-      keyResults: [expect.any(Object)],
-      reviews: [expect.any(Object)],
-      totalKeyResults: 1,
-      completedKeyResults: 1,
-      overallProgress: 100,
+      keyResults: [expect.any(Object)], reviews: [expect.any(Object)],
+      totalKeyResults: 1, completedKeyResults: 1, overallProgress: 100,
     });
   });
 });

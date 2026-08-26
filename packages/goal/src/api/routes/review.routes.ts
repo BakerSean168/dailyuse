@@ -15,6 +15,8 @@ import {
 import {
   GoalMutationReceiptSchema,
   GoalReviewListResSchema,
+  GoalReviewSystemContextSchema,
+  ReviewContextInvocationSchema,
   CreateReviewInvocationSchema,
   UpdateReviewInvocationSchema,
   DeleteReviewInvocationSchema,
@@ -70,6 +72,29 @@ export function registerReviewRoutes(
     [auth],
     (data, ctx) => controller.addReview(data.params.id, data.body, ctx),
     { successStatus: 201 },
+  );
+
+  // GET /:id/reviews/context — review starts from server-computed facts
+  r.routeWithValidation(
+    {
+      method: 'get',
+      path: '/:id/reviews/context',
+      summary: '获取目标复盘上下文',
+      request: {
+        params: ReviewContextInvocationSchema.shape.params,
+        query: ReviewContextInvocationSchema.shape.query,
+      },
+      responses: {
+        200: successResponse(GoalReviewSystemContextSchema, '查询成功'),
+        404: errorResponse('目标不存在'),
+      },
+      validation: {
+        schema: ReviewContextInvocationSchema,
+        projectInput: (req) => ({ params: req.params, query: req.query }),
+      },
+    },
+    [auth],
+    (data, ctx) => controller.getReviewContext(data.params.id, data.query.windowDays, ctx),
   );
 
   // GET /:id/reviews — 获取目标复盘列表

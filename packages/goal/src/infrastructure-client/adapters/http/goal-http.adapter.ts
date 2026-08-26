@@ -22,6 +22,7 @@ import type {
   DeleteKeyResultReq,
   GetKeyResultsRes,
   CreateGoalReviewReq,
+  GoalReviewSystemContext,
   UpdateGoalReviewReq,
   DeleteGoalReviewReq,
   GetGoalReviewsRes,
@@ -160,6 +161,15 @@ export class GoalHttpAdapter implements IGoalApiClient {
 
   async getGoalReviewsByGoal(goalId: string): Promise<Result<GetGoalReviewsRes>> {
     return this.httpClient.get(`${this.baseUrl}/${goalId}/reviews`);
+  }
+
+  async getGoalReviewContext(
+    goalId: string,
+    windowDays: number = 7,
+  ): Promise<Result<GoalReviewSystemContext>> {
+    return this.httpClient.get(`${this.baseUrl}/${goalId}/reviews/context`, {
+      params: { windowDays },
+    });
   }
 
   async updateGoalReview(

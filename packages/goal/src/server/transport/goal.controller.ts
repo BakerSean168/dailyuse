@@ -53,6 +53,7 @@ import type {
   DeleteGoalKeyResultUseCase,
   AddGoalReviewUseCase,
   ListGoalReviewsUseCase,
+  GetGoalReviewContextUseCase,
   UpdateGoalReviewUseCase,
   DeleteGoalReviewUseCase,
   CreateGoalRecordUseCase,
@@ -85,6 +86,7 @@ export interface GoalUseCases {
   deleteKeyResult: DeleteGoalKeyResultUseCase['execute'];
   addReview: AddGoalReviewUseCase['execute'];
   listReviews: ListGoalReviewsUseCase['execute'];
+  getReviewContext: GetGoalReviewContextUseCase['execute'];
   updateReview: UpdateGoalReviewUseCase['execute'];
   deleteReview: DeleteGoalReviewUseCase['execute'];
   createRecord: CreateGoalRecordUseCase['execute'];
@@ -300,13 +302,10 @@ export class GoalController {
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
     return this.useCases.addReview(goalId, cx.identityId, {
-      title: input.title,
-      content: input.content,
-      reviewType: input.reviewType,
-      rating: input.rating,
-      achievements: input.achievements,
+      reflection: input.reflection,
       challenges: input.challenges,
-      nextActions: input.nextActions,
+      adjustments: input.adjustments,
+      windowDays: input.windowDays,
       expectedVersion: input.expectedVersion,
     });
   }
@@ -317,6 +316,14 @@ export class GoalController {
     return this.useCases.listReviews(goalId, cx.identityId);
   }
 
+  async getReviewContext(
+    goalId: string,
+    windowDays: number | undefined,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
+    return this.useCases.getReviewContext(goalId, cx.identityId, windowDays);
+  }
+
   async updateReview(
     goalId: string,
     reviewId: string,
@@ -324,12 +331,9 @@ export class GoalController {
     cx: ExecutionContext,
   ): Promise<Result<unknown>> {
     return this.useCases.updateReview(goalId, cx.identityId, reviewId, {
-      title: input.title,
-      content: input.content,
-      rating: input.rating,
-      achievements: input.achievements,
+      reflection: input.reflection,
       challenges: input.challenges,
-      nextActions: input.nextActions,
+      adjustments: input.adjustments,
       expectedVersion: input.expectedVersion,
     });
   }

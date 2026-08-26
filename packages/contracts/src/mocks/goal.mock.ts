@@ -22,7 +22,6 @@ import type {
   GoalMutationReceipt,
   QueryGoalsRes,
 } from '../modules/goal/api/response-schemas';
-import { ReviewType } from '../modules/goal/value-objects/review-type';
 import type { KeyResultId } from '../primitives';
 
 // ============================================================================
@@ -207,27 +206,22 @@ export function createMockGoalReview(
 ): GoalReviewClientDTO {
   const now = Date.now();
 
+  const start = now - 7 * 24 * 60 * 60 * 1000;
   return {
     id: `IGoalReviewId_${faker.string.uuid()}` as GoalReviewClientDTO['id'],
     goalId: `IGoalId_${faker.string.uuid()}` as GoalReviewClientDTO['goalId'],
-    type: faker.helpers.arrayElement(Object.values(ReviewType)) as GoalReviewClientDTO['type'],
-    rating: faker.number.int({ min: 1, max: 5 }),
-    summary: faker.lorem.sentence(),
-    achievements: faker.datatype.boolean() ? faker.lorem.sentence() : null,
+    reflection: faker.lorem.paragraph(),
     challenges: faker.datatype.boolean() ? faker.lorem.sentence() : null,
-    improvements: faker.datatype.boolean() ? faker.lorem.sentence() : null,
-    keyResultSnapshots: Array.from({ length: faker.number.int({ min: 0, max: 3 }) }, () => ({
-      keyResultId: `IKeyResultId_${faker.string.uuid()}` as unknown as KeyResultId,
-      title: faker.lorem.words({ min: 3, max: 6 }),
-      targetValue: 100,
-      currentValue: 25,
-      progressBaselineValue: null,
-      aggregationMethod: 'Sum',
-      weight: 3,
-      progressPercentage: 25,
-    })),
-    reviewedAt: now - faker.number.int({ min: 0, max: 14 * 24 * 60 * 60 * 1000 }),
-    createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
+    adjustments: faker.datatype.boolean() ? faker.lorem.sentence() : null,
+    systemContext: {
+      windowStartAt: start,
+      windowEndAt: now,
+      overallProgress: { startPercentage: 20, endPercentage: 30, deltaPercentage: 10 },
+      keyResults: [],
+      summary: { recordCount: 0, manualRecordCount: 0, taskContributionCount: 0 },
+    },
+    reviewedAt: now,
+    createdAt: now,
     updatedAt: now,
     ...overrides,
   };

@@ -8,7 +8,7 @@
  * - Domain Goal → RawGoalData → Prisma result
  * - KeyResult progress is stored as individual columns in Prisma,
  *   mapped through PrismaGoalMapper
- * - GoalReview maps reviewType→type, content→summary, lessonsLearned→improvements
+ * - GoalReview V2 temporarily maps reflection/context into legacy physical columns until Schema Train cutover
  */
 
 import type { PrismaClient, Prisma } from '@memoflow/database';
@@ -345,32 +345,26 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
               id: review.id as string,
               goalId: dto.id as string,
               identityId: dto.identityId as string,
-              reviewType: review.type,
-              title: review.title,
-              content: review.summary,
-              achievements: review.achievements,
+              reviewType: 'Adhoc',
+              title: null,
+              content: review.reflection,
+              achievements: null,
               challenges: review.challenges,
-              lessonsLearned: null,
-              nextSteps: review.improvements ?? null,
-              keyResultSnapshots:
-                review.keyResultSnapshots.length > 0
-                  ? JSON.stringify(review.keyResultSnapshots)
-                  : null,
-              rating: review.rating,
+              lessonsLearned: JSON.stringify(review.systemContext),
+              nextSteps: review.adjustments,
+              keyResultSnapshots: null,
+              rating: null,
             },
             update: {
-              reviewType: review.type,
-              title: review.title,
-              content: review.summary,
-              achievements: review.achievements,
+              reviewType: 'Adhoc',
+              title: null,
+              content: review.reflection,
+              achievements: null,
               challenges: review.challenges,
-              lessonsLearned: null,
-              nextSteps: review.improvements ?? null,
-              keyResultSnapshots:
-                review.keyResultSnapshots.length > 0
-                  ? JSON.stringify(review.keyResultSnapshots)
-                  : null,
-              rating: review.rating,
+              lessonsLearned: JSON.stringify(review.systemContext),
+              nextSteps: review.adjustments,
+              keyResultSnapshots: null,
+              rating: null,
               updatedAt: new Date(),
             },
           });

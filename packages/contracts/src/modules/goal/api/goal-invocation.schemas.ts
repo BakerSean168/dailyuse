@@ -29,6 +29,7 @@ import {
 } from './key-result.dto';
 import {
   CreateGoalReviewSchema,
+  GoalReviewWindowQuerySchema,
   DeleteGoalReviewSchema,
   UpdateGoalReviewSchema,
 } from './goal-review.dto';
@@ -152,6 +153,13 @@ export const CreateReviewInvocationSchema = z.object({
   body: CreateGoalReviewSchema,
 });
 export type CreateReviewInvocation = z.infer<typeof CreateReviewInvocationSchema>;
+
+/** GET /:id/reviews/context — server-generated facts for review composition. */
+export const ReviewContextInvocationSchema = z.object({
+  params: GoalRouteIdParamsSchema,
+  query: GoalReviewWindowQuerySchema,
+});
+export type ReviewContextInvocation = z.infer<typeof ReviewContextInvocationSchema>;
 
 /** PUT /:id/reviews/:reviewId — update a review. 更新复盘。 */
 export const UpdateReviewInvocationSchema = z.object({

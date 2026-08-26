@@ -15,12 +15,14 @@ import type {
 } from '../api/goal-crud.dto';
 import type { GetKeyResultsReq, GetKeyResultsRes } from '../api/key-result.dto';
 import type { GoalMutationReceipt, QueryGoalsRes } from '../api/response-schemas';
+import type { GoalReviewSystemContext } from '../value-objects/goal-review-context';
 import type {
   AddKeyResultInvocation,
   BatchKeyResultWeightsInvocation,
   CloneGoalInvocation,
   CreateRecordInvocation,
   CreateReviewInvocation,
+  ReviewContextInvocation,
   DeleteGoalInvocation,
   DeleteKeyResultInvocation,
   DeleteRecordInvocation,
@@ -71,6 +73,7 @@ export type GoalRpcMap = {
 
   // Review Operations
   'goal:review:create': [CreateReviewInvocation, GoalMutationReceipt];
+  'goal:review:context': [ReviewContextInvocation, GoalReviewSystemContext];
   'goal:review:update': [UpdateReviewInvocation, GoalMutationReceipt];
   'goal:review:delete': [DeleteReviewInvocation, GoalMutationReceipt];
 
