@@ -1,7 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { prisma } from '@memoflow/database';
 import { IdentityId } from '@memoflow/domain-shared';
-import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { Goal } from '../../../domain/aggregates/goal';
 import { GoalReminderConfig } from '../../../domain';
 import { GoalPrismaRepository } from './goal-prisma.repository';
@@ -17,16 +16,10 @@ function createIntegrationGoal(identityId: string) {
     identityId: identityId as IdentityId,
     name: 'Harden AI Oracle',
     description: 'Turn persistence tests into a reliable oracle',
-    color: '#0f766e',
     feasibilityAnalysis: null,
     motivation: 'Protect structural refactors',
-    importance: ImportanceLevel.Important,
-    category: 'engineering',
-    tags: ['testing', 'oracle'],
-    startDate: new Date('2026-04-01T00:00:00.000Z'),
-    targetDate: new Date('2026-05-01T00:00:00.000Z'),
-    folderId: null,
-    parentGoalId: null,
+    startDate: new Date('2026-04-01T00:00:00.000Z').getTime(),
+    dueDate: new Date('2026-05-01T00:00:00.000Z').getTime(),
     reminderConfig: GoalReminderConfig.create({
       enabled: true,
       triggers: [
@@ -39,7 +32,6 @@ function createIntegrationGoal(identityId: string) {
   const keyResult = goal.createAndAddKeyResult({
     title: 'Add first DB oracle',
     description: 'Persist repository state and relations',
-    valueType: 'NUMERIC',
     aggregationMethod: 'Last',
     targetValue: 10,
     currentValue: 4,
@@ -48,13 +40,16 @@ function createIntegrationGoal(identityId: string) {
   });
 
   goal.createAndAddReview({
-    title: 'Week 1',
-    content: 'The first persistence oracle is in place.',
-    reviewType: 'Weekly',
-    rating: 4,
-    achievements: 'Added repository integration coverage',
+    reflection: 'The first persistence oracle is in place.',
     challenges: 'Need more frontend oracle depth',
-    nextActions: 'Expand boundary tests',
+    adjustments: 'Expand boundary tests',
+    systemContext: {
+      windowStartAt: Date.UTC(2026, 3, 1),
+      windowEndAt: Date.UTC(2026, 3, 8),
+      overallProgress: { startPercentage: 20, endPercentage: 40, deltaPercentage: 20 },
+      keyResults: [],
+      summary: { recordCount: 1, manualRecordCount: 1, taskContributionCount: 0 },
+    },
   });
   goal.recordWeightSnapshot(String(keyResult.id), 2, 3, 'Manual', identityId, 'scope changed');
 
@@ -89,10 +84,11 @@ describe('GoalPrismaRepository integration', () => {
         keyResultWeightSnapshots: true,
       },
     });
-    const loaded = await repository.findByIdForIdentity(String(identityId), String(goal.id), { includeChildren: true });
+    const loaded = await repository.findByIdForIdentity(String(identityId), String(goal.id), {
+      includeChildren: true,
+    });
 
     expect(row).not.toBeNull();
-    expect(row?.folderId).toBeNull();
     expect(row?.reminderConfig).toContain('RemainingDays');
     expect(row?.keyResults).toHaveLength(1);
     expect(row?.reviews).toHaveLength(1);
@@ -100,14 +96,83 @@ describe('GoalPrismaRepository integration', () => {
 
     expect(loaded).not.toBeNull();
     expect(loaded?.identityId).toBe(identityId);
-    expect(loaded?.importance).toBe(ImportanceLevel.Important);
+    expect(loaded?.dueDate).toBe(new Date('2026-05-01T00:00:00.000Z').getTime());
+    expect('importance' in (loaded as object)).toBe(false);
     expect(loaded?.reminderConfig?.enabled).toBe(true);
     expect(loaded?.reminderConfig?.triggers).toHaveLength(2);
     expect(loaded?.keyResults).toHaveLength(1);
     expect(loaded?.goalReviews).toHaveLength(1);
+    expect(loaded?.goalReviews[0]?.reflection).toBe('The first persistence oracle is in place.');
+    expect(loaded?.goalReviews[0]?.systemContext.overallProgress.endPercentage).toBe(40);
     expect(loaded?.weightSnapshots).toHaveLength(1);
     expect(loaded?.keyResults[0]?.progress.targetValue).toBe(10);
     expect(loaded?.calculateProgress()).toBe(40);
+  });
+
+  it('persists shared Goal labels, returns labels[] and filters with strict AND + identity isolation', async () => {
+    const identityId = IdentityId.generate();
+    const otherIdentityId = IdentityId.generate();
+    await seedAccount({ id: identityId });
+    await seedAccount({ id: otherIdentityId });
+    const prisma = await getPrisma();
+    const repository = new GoalPrismaRepository(prisma);
+
+    const goal = createIntegrationGoal(identityId);
+    const second = Goal.create({
+      identityId: identityId as IdentityId,
+      name: 'Only work label',
+      description: null,
+      feasibilityAnalysis: null,
+      motivation: null,
+      startDate: null,
+      dueDate: null,
+      reminderConfig: null,
+    });
+    await repository.save(goal);
+    await repository.save(second);
+
+    const work = await prisma.label.create({
+      data: {
+        id: `label-work-${Date.now()}`,
+        identityId,
+        name: '#工作',
+        normalizedName: '#工作',
+      },
+    });
+    const ai = await prisma.label.create({
+      data: {
+        id: `label-ai-${Date.now()}`,
+        identityId,
+        name: '#AI',
+        normalizedName: '#ai',
+      },
+    });
+    const foreign = await prisma.label.create({
+      data: {
+        id: `label-foreign-${Date.now()}`,
+        identityId: otherIdentityId,
+        name: '#Foreign',
+        normalizedName: '#foreign',
+      },
+    });
+
+    await repository.replaceLabels(identityId, String(goal.id), [work.id, ai.id]);
+    await repository.replaceLabels(identityId, String(second.id), [work.id]);
+
+    const loaded = await repository.findByIdForIdentity(identityId, String(goal.id), {
+      includeChildren: true,
+    });
+    expect(loaded?.labels.map((label) => label.id).sort()).toEqual([ai.id, work.id].sort());
+
+    const both = await repository.findByIdentityId(identityId, {
+      includeChildren: false,
+      labelIdsAll: [work.id, ai.id],
+    });
+    expect(both.map((candidate) => String(candidate.id))).toEqual([String(goal.id)]);
+
+    await expect(
+      repository.replaceLabels(identityId, String(goal.id), [foreign.id]),
+    ).rejects.toThrow('labels do not belong to the identity');
   });
 
   it('lists goals by identity without leaking other accounts', async () => {
@@ -124,32 +189,20 @@ describe('GoalPrismaRepository integration', () => {
       identityId: identityId as IdentityId,
       name: 'Keep default E2E small',
       description: null,
-      color: '#1d4ed8',
       feasibilityAnalysis: null,
       motivation: null,
-      importance: ImportanceLevel.Moderate,
-      category: null,
-      tags: ['e2e'],
       startDate: null,
-      targetDate: null,
-      folderId: null,
-      parentGoalId: null,
+      dueDate: null,
       reminderConfig: null,
     });
     const foreignGoal = Goal.create({
       identityId: otherIdentityId as IdentityId,
       name: 'Foreign goal',
       description: null,
-      color: '#334155',
       feasibilityAnalysis: null,
       motivation: null,
-      importance: ImportanceLevel.Minor,
-      category: null,
-      tags: [],
       startDate: null,
-      targetDate: null,
-      folderId: null,
-      parentGoalId: null,
+      dueDate: null,
       reminderConfig: null,
     });
 
@@ -172,14 +225,16 @@ describe('Goal durable completion receipt idempotency (W4 P1-3)', () => {
   let goalId: string;
 
   beforeEach(async () => {
-    await prisma.cloudAuthUser.create({
-      data: {
-        id: identityId,
-        email: `${identityId}@example.com`,
-        name: 'Receipt Test User',
-        emailVerified: true,
-      },
-    }).catch(() => undefined);
+    await prisma.cloudAuthUser
+      .create({
+        data: {
+          id: identityId,
+          email: `${identityId}@example.com`,
+          name: 'Receipt Test User',
+          emailVerified: true,
+        },
+      })
+      .catch(() => undefined);
     await prisma.account.upsert({
       where: { id: identityId },
       update: {},
@@ -209,9 +264,11 @@ describe('Goal durable completion receipt idempotency (W4 P1-3)', () => {
   });
 
   it('repeat completion writes the durable receipt only once (idempotency key persisted)', async () => {
-    const { PrismaGoalWriteTransactionRunner } = await import('./prisma-goal-write-transaction-runner');
+    const { PrismaGoalWriteTransactionRunner } =
+      await import('./prisma-goal-write-transaction-runner');
     const { GoalPrismaRepository } = await import('./goal-prisma.repository');
-    const { CompleteGoalUseCase } = await import('../../../application/use-cases/commands/complete-goal.use-case');
+    const { CompleteGoalUseCase } =
+      await import('../../../application/use-cases/commands/complete-goal.use-case');
     const { GoalPolicy } = await import('../../../domain');
 
     const repository = new GoalPrismaRepository(prisma);
@@ -239,9 +296,11 @@ describe('Goal durable completion receipt idempotency (W4 P1-3)', () => {
   });
 
   it('repeat archiving writes the durable receipt only once (archive symmetric path)', async () => {
-    const { PrismaGoalWriteTransactionRunner } = await import('./prisma-goal-write-transaction-runner');
+    const { PrismaGoalWriteTransactionRunner } =
+      await import('./prisma-goal-write-transaction-runner');
     const { GoalPrismaRepository } = await import('./goal-prisma.repository');
-    const { ArchiveGoalUseCase } = await import('../../../application/use-cases/commands/archive-goal.use-case');
+    const { ArchiveGoalUseCase } =
+      await import('../../../application/use-cases/commands/archive-goal.use-case');
     const { GoalPolicy } = await import('../../../domain');
 
     const repository = new GoalPrismaRepository(prisma);
@@ -262,9 +321,11 @@ describe('Goal durable completion receipt idempotency (W4 P1-3)', () => {
   });
 
   it('receipt failure rolls back goal CAS save in transaction', async () => {
-    const { PrismaGoalWriteTransactionRunner } = await import('./prisma-goal-write-transaction-runner');
+    const { PrismaGoalWriteTransactionRunner } =
+      await import('./prisma-goal-write-transaction-runner');
     const { GoalPrismaRepository } = await import('./goal-prisma.repository');
-    const { CompleteGoalUseCase } = await import('../../../application/use-cases/commands/complete-goal.use-case');
+    const { CompleteGoalUseCase } =
+      await import('../../../application/use-cases/commands/complete-goal.use-case');
     const { GoalPolicy } = await import('../../../domain');
 
     const repository = new GoalPrismaRepository(prisma);
@@ -287,7 +348,9 @@ describe('Goal durable completion receipt idempotency (W4 P1-3)', () => {
 
     const failingUseCase = new CompleteGoalUseCase(repository, new GoalPolicy(), failingRunner);
 
-    await expect(failingUseCase.execute(goalId, identityId, 1)).rejects.toThrow('Simulated receipt write failure');
+    await expect(failingUseCase.execute(goalId, identityId, 1)).rejects.toThrow(
+      'Simulated receipt write failure',
+    );
 
     // Assert goal was NOT updated in DB (remains Active)
     const goalInDb = await prisma.goal.findUnique({ where: { id: goalId } });
@@ -302,10 +365,8 @@ describe('GoalApiModule.register() lifecycle (W4 P2-1)', () => {
     const { createGoalApiModule } = await import('../../../../api/module');
     const { createGoalPrismaRepositories } = await import('../../prisma');
     const { createGoalModule } = await import('../../goal.module');
-    const {
-      createGoalEventListenersRuntime,
-      createGoalRuntimeContribution,
-    } = await import('../../runtime');
+    const { createGoalEventListenersRuntime, createGoalRuntimeContribution } =
+      await import('../../runtime');
 
     const repositories = createGoalPrismaRepositories(prisma);
     const listenerRuntime = createGoalEventListenersRuntime({

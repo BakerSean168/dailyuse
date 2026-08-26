@@ -6,7 +6,7 @@
  * 管理用户目标（OKR）的客户端领域模型
  *
  * 【包含内容】
- * - 聚合根（Aggregates）：Goal, GoalFolder
+ * - 聚合根（Aggregates）：Goal
  * - 实体（Entities）：KeyResult, GoalReview, GoalRecord
  * - 值对象（Value Objects）：从 domain-shared 导入
  *
@@ -25,4 +25,3 @@ export * from './entities';
 
 // ===== Value Objects (re-export from server domain shared surface) =====
 export * from '../server/domain/value-objects';
-export * from '../server/domain/priority';

@@ -1,225 +1,84 @@
-/**
- * GoalPolicy Domain Service Tests
- *
- * Pure domain tests — no mocks needed.
- * Tests cross-aggregate validation rules for Goal workflows.
- */
-
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { Goal } from '../../aggregates/goal';
-import { GoalPolicy } from '../goal-policy.service';
 import { GoalArchivedError } from '../../value-objects';
+import { GoalPolicy } from '../goal-policy.service';
 
-// ============================================================
-// Helper: Create a Goal aggregate for testing
-// ============================================================
-
-function createTestGoal(opts?: { name?: string }): Goal {
+function createTestGoal(): Goal {
   return Goal.create({
-    identityId: 'test-identity-id' as any,
-    name: opts?.name ?? 'Test Goal',
+    identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440001' as any,
+    name: 'Test Goal',
     description: null,
-    color: '#3B82F6',
     feasibilityAnalysis: null,
     motivation: null,
-    importance: 'Moderate' as any,
-    category: null,
-    tags: [],
     startDate: null,
-    targetDate: null,
-    folderId: null,
-    parentGoalId: null,
+    dueDate: null,
     reminderConfig: null,
   });
 }
 
-function createArchivedGoal(): Goal {
-  const goal = createTestGoal({ name: 'Archived Goal' });
+function createCompletedGoal(): Goal {
+  const goal = createTestGoal();
   goal.markAsCompleted();
+  return goal;
+}
+
+function createArchivedGoal(): Goal {
+  const goal = createTestGoal();
   goal.archive();
   return goal;
 }
 
-function createCompletedGoal(): Goal {
-  const goal = createTestGoal({ name: 'Completed Goal' });
-  goal.markAsCompleted();
-  return goal;
-}
-
-describe('GoalPolicy', () => {
+describe('GoalPolicy vNext archive/status separation', () => {
   let policy: GoalPolicy;
 
   beforeEach(() => {
     policy = new GoalPolicy();
   });
 
-  // ============================================================
-  // ensureGoalCanBeModified
-  // ============================================================
+  it('allows modification for unarchived Active, Completed, and Abandoned goals', () => {
+    const active = createTestGoal();
+    const completed = createCompletedGoal();
+    const abandoned = createTestGoal();
+    abandoned.abandon();
 
-  describe('ensureGoalCanBeModified()', () => {
-    it('should pass for an active goal', () => {
-      const goal = createTestGoal();
-
-      expect(() => policy.ensureGoalCanBeModified(goal)).not.toThrow();
-    });
-
-    it('should treat completed goals as archived and reject modification', () => {
-      const goal = createCompletedGoal();
-
-      expect(() => policy.ensureGoalCanBeModified(goal)).toThrow(GoalArchivedError);
-    });
-
-    it('should throw GoalArchivedError when goal has archivedAt set', () => {
-      const goal = createArchivedGoal();
-
-      expect(() => policy.ensureGoalCanBeModified(goal)).toThrow(GoalArchivedError);
-    });
-
-    it('should throw GoalArchivedError when goal status is Archived', () => {
-      const goal = createArchivedGoal();
-      // After archive(), both archivedAt and status are set to Archived
-      expect(goal.status).toBe('Archived');
-
-      expect(() => policy.ensureGoalCanBeModified(goal)).toThrow(GoalArchivedError);
-    });
-
-    it('should include goal id in the error message', () => {
-      const goal = createArchivedGoal();
-
-      expect(() => policy.ensureGoalCanBeModified(goal)).toThrow(goal.id);
-    });
+    expect(() => policy.ensureGoalCanBeModified(active)).not.toThrow();
+    expect(() => policy.ensureGoalCanBeModified(completed)).not.toThrow();
+    expect(() => policy.ensureGoalCanBeModified(abandoned)).not.toThrow();
   });
 
-  // ============================================================
-  // ensureGoalCanBeArchived
-  // ============================================================
-
-  describe('ensureGoalCanBeArchived()', () => {
-    it('should reject a completed goal because it is already archived', () => {
-      const goal = createCompletedGoal();
-
-      expect(() => policy.ensureGoalCanBeArchived(goal)).toThrow(GoalArchivedError);
-    });
-
-    it('should throw GoalArchivedError if goal is already archived', () => {
-      const goal = createArchivedGoal();
-
-      expect(() => policy.ensureGoalCanBeArchived(goal)).toThrow(GoalArchivedError);
-    });
-
-    it('should allow active goals to be archived directly', () => {
-      const goal = createTestGoal();
-
-      expect(() => policy.ensureGoalCanBeArchived(goal)).not.toThrow();
-    });
-
-    it('should mark completed goal as archived immediately', () => {
-      const goal = createCompletedGoal();
-      expect(goal.archivedAt).not.toBeNull();
-
-      expect(() => policy.ensureGoalCanBeArchived(goal)).toThrow(GoalArchivedError);
-    });
+  it('blocks modification only when archivedAt is set', () => {
+    const goal = createArchivedGoal();
+    expect(() => policy.ensureGoalCanBeModified(goal)).toThrow(GoalArchivedError);
+    expect(() => policy.ensureGoalCanBeModified(goal)).toThrow(goal.id);
   });
 
-  // ============================================================
-  // ensureGoalCanBePermanentlyDeleted
-  // ============================================================
+  it('allows any unarchived business status to be archived exactly once', () => {
+    const completed = createCompletedGoal();
+    expect(completed.archivedAt).toBeNull();
+    expect(() => policy.ensureGoalCanBeArchived(completed)).not.toThrow();
 
-  describe('ensureGoalCanBePermanentlyDeleted()', () => {
-    it('should pass for an archived goal', () => {
-      const goal = createArchivedGoal();
-
-      expect(() => policy.ensureGoalCanBePermanentlyDeleted(goal)).not.toThrow();
-    });
-
-    it('should throw if goal is not archived (active)', () => {
-      const goal = createTestGoal();
-
-      expect(() => policy.ensureGoalCanBePermanentlyDeleted(goal)).toThrow(
-        'must be archived before it can be permanently deleted',
-      );
-    });
-
-    it('should pass for a completed goal because it is archived', () => {
-      const goal = createCompletedGoal();
-
-      expect(() => policy.ensureGoalCanBePermanentlyDeleted(goal)).not.toThrow();
-    });
-
-    it('should include goal id in the error message', () => {
-      const goal = createTestGoal();
-
-      expect(() => policy.ensureGoalCanBePermanentlyDeleted(goal)).toThrow(goal.id);
-    });
+    const archived = createArchivedGoal();
+    expect(() => policy.ensureGoalCanBeArchived(archived)).toThrow(GoalArchivedError);
   });
 
-  // ============================================================
-  // ensureGoalCanBeActivated
-  // ============================================================
+  it('requires explicit archive before permanent delete', () => {
+    const completed = createCompletedGoal();
+    expect(() => policy.ensureGoalCanBePermanentlyDeleted(completed)).toThrow(
+      'must be archived before it can be permanently deleted',
+    );
 
-  describe('ensureGoalCanBeActivated()', () => {
-    it('should pass for an active goal', () => {
-      const goal = createTestGoal();
-
-      expect(() => policy.ensureGoalCanBeActivated(goal)).not.toThrow();
-    });
-
-    it('should reject activating a completed goal because it is archived', () => {
-      const goal = createCompletedGoal();
-
-      expect(() => policy.ensureGoalCanBeActivated(goal)).toThrow(GoalArchivedError);
-    });
-
-    it('should throw GoalArchivedError if goal is archived', () => {
-      const goal = createArchivedGoal();
-
-      expect(() => policy.ensureGoalCanBeActivated(goal)).toThrow(GoalArchivedError);
-    });
-
-    it('should include goal id in the error message', () => {
-      const goal = createArchivedGoal();
-
-      expect(() => policy.ensureGoalCanBeActivated(goal)).toThrow(goal.id);
-    });
+    completed.archive();
+    expect(() => policy.ensureGoalCanBePermanentlyDeleted(completed)).not.toThrow();
   });
 
-  // ============================================================
-  // ensureParentGoalValid
-  // ============================================================
+  it('allows reactivation from Completed/Abandoned but not from archived display state', () => {
+    const completed = createCompletedGoal();
+    const abandoned = createTestGoal();
+    abandoned.abandon();
+    expect(() => policy.ensureGoalCanBeActivated(completed)).not.toThrow();
+    expect(() => policy.ensureGoalCanBeActivated(abandoned)).not.toThrow();
 
-  describe('ensureParentGoalValid()', () => {
-    it('should pass for null parent', () => {
-      expect(() => policy.ensureParentGoalValid(null)).not.toThrow();
-    });
-
-    it('should pass for undefined parent', () => {
-      expect(() => policy.ensureParentGoalValid(undefined)).not.toThrow();
-    });
-
-    it('should pass for an active parent goal', () => {
-      const parent = createTestGoal({ name: 'Parent Goal' });
-
-      expect(() => policy.ensureParentGoalValid(parent)).not.toThrow();
-    });
-
-    it('should reject a completed parent goal because it is archived', () => {
-      const parent = createCompletedGoal();
-
-      expect(() => policy.ensureParentGoalValid(parent)).toThrow(GoalArchivedError);
-    });
-
-    it('should throw GoalArchivedError if parent is archived (by archivedAt)', () => {
-      const parent = createArchivedGoal();
-
-      expect(() => policy.ensureParentGoalValid(parent)).toThrow(GoalArchivedError);
-    });
-
-    it('should throw GoalArchivedError if parent has Archived status', () => {
-      const parent = createArchivedGoal();
-      expect(parent.status).toBe('Archived');
-
-      expect(() => policy.ensureParentGoalValid(parent)).toThrow(GoalArchivedError);
-    });
+    const archived = createArchivedGoal();
+    expect(() => policy.ensureGoalCanBeActivated(archived)).toThrow(GoalArchivedError);
   });
 });

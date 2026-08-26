@@ -1,5 +1,4 @@
 import type { Goal } from '../aggregates/goal';
-import { GoalStatus } from '@memoflow/contracts/goal';
 import { GoalArchivedError } from '../value-objects';
 
 /**
@@ -10,9 +9,6 @@ import { GoalArchivedError } from '../value-objects';
 export class GoalPolicy {
   ensureGoalCanBeModified(goal: Goal): void {
     if (goal.archivedAt) {
-      throw new GoalArchivedError(goal.id);
-    }
-    if (goal.status === GoalStatus.Archived) {
       throw new GoalArchivedError(goal.id);
     }
   }
@@ -40,18 +36,6 @@ export class GoalPolicy {
   ensureGoalCanBeActivated(goal: Goal): void {
     if (goal.archivedAt) {
       throw new GoalArchivedError(goal.id);
-    }
-  }
-
-  ensureParentGoalValid(parentGoal?: Goal | null): void {
-    if (!parentGoal) {
-      return;
-    }
-    if (parentGoal.archivedAt) {
-      throw new GoalArchivedError(parentGoal.id);
-    }
-    if (parentGoal.status === GoalStatus.Archived) {
-      throw new GoalArchivedError(parentGoal.id);
     }
   }
 }

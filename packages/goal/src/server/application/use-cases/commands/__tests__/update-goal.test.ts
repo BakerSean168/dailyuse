@@ -14,16 +14,10 @@ function createTestGoal(name = 'Original Goal'): Goal {
     identityId: 'test-identity-id' as any,
     name,
     description: null,
-    color: '#3B82F6',
     feasibilityAnalysis: null,
     motivation: null,
-    importance: 'MEDIUM' as any,
-    category: null,
-    tags: [],
     startDate: null,
-    targetDate: null,
-    folderId: null,
-    parentGoalId: null,
+    dueDate: null,
     reminderConfig: null,
   });
 }
@@ -78,24 +72,38 @@ describe('UpdateGoalUseCase', () => {
     }
   });
 
-  it('should update tags when provided', async () => {
+  it('replaces shared labels while preserving Goal business state', async () => {
     const goal = createTestGoal();
+    const labels = [
+      {
+        id: 'label-ai',
+        identityId: 'identity-1',
+        name: '#AI',
+        normalizedName: '#ai',
+        color: null,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    ];
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
+    vi.mocked(goalRepo.replaceLabels).mockResolvedValue(labels);
 
     const result = await useCase.execute(goal.id, 'identity-1', {
-      tags: ['new-tag'],
+      labelIds: ['label-ai'],
       expectedVersion: 1,
     });
 
     expect(result).toBeOk();
-    expect(goal.tags).toEqual(['new-tag']);
+    expect(goalRepo.replaceLabels).toHaveBeenCalledWith('identity-1', String(goal.id), [
+      'label-ai',
+    ]);
+    expect(result.ok && result.data.readModel.labels).toEqual(labels);
   });
 
   it('reconciles root and key-result edits in one aggregate save', async () => {
     const goal = createTestGoal();
     const existing = goal.createAndAddKeyResult({
       title: 'Old KR',
-      valueType: 'Incremental',
       aggregationMethod: 'Sum',
       targetValue: 10,
       weight: 1,
@@ -110,16 +118,15 @@ describe('UpdateGoalUseCase', () => {
         {
           id: existing.id,
           title: 'Updated KR',
-          valueType: 'Percentage',
           calculationMethod: 'Last',
-          startValue: 0,
+          startingValue: 0,
+          progressBaselineValue: null,
           currentValue: 25,
           targetValue: 100,
           weight: 3,
         },
         {
           title: 'New KR',
-          valueType: 'Binary',
           calculationMethod: 'Last',
           targetValue: 1,
           weight: 2,
@@ -131,7 +138,13 @@ describe('UpdateGoalUseCase', () => {
     expect(goal.name).toBe('Updated goal and KRs');
     expect(goal.getAllKeyResults()).toHaveLength(2);
     expect(goal.getKeyResult(String(existing.id))?.title).toBe('Updated KR');
-    expect(goal.getKeyResult(String(existing.id))?.progress.valueType).toBe('Percentage');
+    expect(goal.getKeyResult(String(existing.id))?.progress).toMatchObject({
+      startingValue: 0,
+      currentValue: 25,
+      targetValue: 100,
+      progressBaselineValue: null,
+      aggregationMethod: 'Last',
+    });
     expect(goalRepo.saveRootWithExpectedVersion).toHaveBeenCalledOnce();
     expect(goalRepo.saveRootWithExpectedVersion).toHaveBeenCalledWith(goal, 2);
   });
@@ -146,7 +159,6 @@ describe('UpdateGoalUseCase', () => {
         {
           id: 'foreign-kr' as any,
           title: 'Foreign',
-          valueType: 'Incremental',
           calculationMethod: 'Sum',
           targetValue: 10,
           weight: 1,
@@ -161,59 +173,12 @@ describe('UpdateGoalUseCase', () => {
   it('should update time range when dates provided', async () => {
     const goal = createTestGoal();
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
-    const targetDate = Date.parse('2026-12-31T00:00:00.000Z');
+    const dueDate = Date.parse('2026-12-31T00:00:00.000Z');
 
-    const result = await useCase.execute(goal.id, 'identity-1', { targetDate, expectedVersion: 1 });
-
-    expect(result).toBeOk();
-    expect(goal.targetDate).toBeDefined();
-  });
-
-  it('should update folder when folderId provided', async () => {
-    const goal = createTestGoal();
-    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
-
-    const result = await useCase.execute(goal.id, 'identity-1', {
-      folderId: 'folder-123' as any,
-      expectedVersion: 1,
-    });
+    const result = await useCase.execute(goal.id, 'identity-1', { dueDate, expectedVersion: 1 });
 
     expect(result).toBeOk();
-  });
-
-  it('validates and updates the parent hierarchy in the same versioned write', async () => {
-    const goal = createTestGoal();
-    const parent = createTestGoal('Parent');
-    vi.mocked(goalRepo.findByIdForIdentity).mockImplementation(async (_identityId, id) =>
-      id === String(goal.id) ? goal : id === String(parent.id) ? parent : null,
-    );
-    vi.mocked(goalRepo.isAncestor).mockResolvedValue(false);
-
-    const result = await useCase.execute(goal.id, 'identity-1', {
-      parentGoalId: parent.id,
-      expectedVersion: 1,
-    });
-
-    expect(result).toBeOk();
-    expect(goal.parentGoalId).toBe(parent.id);
-    expect(goalRepo.saveRootWithExpectedVersion).toHaveBeenCalledWith(goal, 1);
-  });
-
-  it('rejects a parent that is already a descendant without writing', async () => {
-    const goal = createTestGoal();
-    const descendant = createTestGoal('Descendant');
-    vi.mocked(goalRepo.findByIdForIdentity).mockImplementation(async (_identityId, id) =>
-      id === String(goal.id) ? goal : descendant,
-    );
-    vi.mocked(goalRepo.isAncestor).mockResolvedValue(true);
-
-    const result = await useCase.execute(goal.id, 'identity-1', {
-      parentGoalId: descendant.id,
-      expectedVersion: 1,
-    });
-
-    expect(result).toBeErrorWithCode('VALIDATION_ERROR');
-    expect(goalRepo.saveRootWithExpectedVersion).not.toHaveBeenCalled();
+    expect(goal.dueDate).toBe(dueDate);
   });
 
   it('should throw when goal is archived', async () => {

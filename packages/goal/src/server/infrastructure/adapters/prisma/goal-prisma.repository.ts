@@ -8,13 +8,14 @@
  * - Domain Goal → RawGoalData → Prisma result
  * - KeyResult progress is stored as individual columns in Prisma,
  *   mapped through PrismaGoalMapper
- * - GoalReview maps reviewType→type, content→summary, lessonsLearned→improvements
+ * - GoalReview V2 temporarily maps reflection/context into legacy physical columns until Schema Train cutover
  */
 
 import type { PrismaClient, Prisma } from '@memoflow/database';
 import { GoalVersionConflictError, type IGoalRepository } from '../../../domain';
 import { Goal } from '../../../domain';
-import type { KeyResultServerDTO } from '@memoflow/contracts/goal';
+import type { GoalSystemView, KeyResultServerDTO } from '@memoflow/contracts/goal';
+import type { LabelDto } from '@memoflow/contracts/label';
 import {
   AggregateRepositoryBase,
   createEventBusAdapter,
@@ -57,6 +58,74 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     super(eventBus);
   }
 
+  private static labelDto(row: {
+    id: string;
+    identityId: string;
+    name: string;
+    normalizedName: string;
+    color: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }): LabelDto {
+    return {
+      id: row.id,
+      identityId: row.identityId,
+      name: row.name,
+      normalizedName: row.normalizedName,
+      color: row.color,
+      createdAt: row.createdAt.getTime(),
+      updatedAt: row.updatedAt.getTime(),
+    };
+  }
+
+  private async loadLabelMap(
+    identityId: string,
+    goalIds: readonly string[],
+  ): Promise<Map<string, LabelDto[]>> {
+    const ids = [...new Set(goalIds)];
+    const result = new Map(ids.map((id) => [id, [] as LabelDto[]]));
+    if (ids.length === 0) return result;
+    const links = await this.prisma.goalLabel.findMany({
+      where: { identityId, goalId: { in: ids } },
+      include: { label: true },
+      orderBy: [{ goalId: 'asc' }, { label: { name: 'asc' } }],
+    });
+    for (const { goalId, label } of links)
+      result.get(goalId)?.push(GoalPrismaRepository.labelDto(label));
+    return result;
+  }
+
+  private async hydrateGoalLabels(goal: Goal, identityId: string): Promise<Goal> {
+    const labels = await this.loadLabelMap(identityId, [String(goal.id)]);
+    goal.hydrateLabels(labels.get(String(goal.id)) ?? []);
+    return goal;
+  }
+
+  async replaceLabels(
+    identityId: string,
+    goalId: string,
+    labelIds: readonly string[],
+  ): Promise<LabelDto[]> {
+    const owner = await this.prisma.goal.findFirst({
+      where: { id: goalId, identityId },
+      select: { id: true },
+    });
+    if (!owner) throw new Error('Goal not found.');
+    const uniqueIds = [...new Set(labelIds)];
+    if (uniqueIds.length > 0) {
+      const count = await this.prisma.label.count({ where: { identityId, id: { in: uniqueIds } } });
+      if (count !== uniqueIds.length)
+        throw new Error('One or more labels do not belong to the identity.');
+    }
+    await this.prisma.goalLabel.deleteMany({ where: { identityId, goalId } });
+    if (uniqueIds.length > 0) {
+      await this.prisma.goalLabel.createMany({
+        data: uniqueIds.map((labelId) => ({ identityId, goalId, labelId })),
+      });
+    }
+    return (await this.loadLabelMap(identityId, [goalId])).get(goalId) ?? [];
+  }
+
   // ================= Read Operations =================
 
   async findByIdForIdentity(
@@ -71,7 +140,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     if (!row) return null;
 
     const dto = PrismaGoalMapper.toDomainDTO(row);
-    return Goal.load(rawDataToGoalState(dto));
+    return this.hydrateGoalLabels(Goal.load(rawDataToGoalState(dto)), identityId);
   }
 
   async findByIdentityId(
@@ -79,47 +148,68 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     options?: {
       includeChildren?: boolean;
       status?: string;
-      folderId?: string;
-      systemView?: 'active' | 'completed' | 'expired' | 'deleted';
+      systemView?: GoalSystemView;
+      labelIdsAll?: readonly string[];
     },
   ): Promise<Goal[]> {
     const where: Prisma.GoalWhereInput = {
       identityId,
+      deletedAt: null,
+      archivedAt: null,
       ...(options?.status && { status: options.status }),
-      ...(options?.folderId && { folderId: options.folderId }),
     };
 
     switch (options?.systemView) {
-      case 'completed':
-        where.archivedAt = { not: null };
-        where.completedAt = { not: null };
-        where.deletedAt = null;
-        break;
-      case 'expired':
-        where.archivedAt = { not: null };
-        where.completedAt = null;
-        where.deletedAt = null;
-        break;
-      case 'deleted':
-        where.deletedAt = { not: null };
-        break;
       case 'active':
-      default:
-        where.archivedAt = null;
-        where.deletedAt = null;
+        where.status = 'Active';
+        break;
+      case 'completed':
+        where.status = 'Completed';
+        break;
+      case 'abandoned':
+        where.status = 'Abandoned';
+        break;
+      case 'archived':
+        where.archivedAt = { not: null };
+        break;
+      case 'all':
+      case undefined:
         break;
     }
 
-    // List aggregates are always fully hydrated so counts/progress have one
-    // projector (Goal.toClientDTO) instead of persistence-injected overrides.
+    const requiredLabelIds = [...new Set(options?.labelIdsAll ?? [])];
+    if (requiredLabelIds.length > 0) {
+      const links = await this.prisma.goalLabel.findMany({
+        where: { identityId, labelId: { in: requiredLabelIds } },
+        select: { goalId: true, labelId: true },
+      });
+      const found = new Map<string, Set<string>>();
+      for (const link of links) {
+        const set = found.get(link.goalId) ?? new Set<string>();
+        set.add(link.labelId);
+        found.set(link.goalId, set);
+      }
+      const matchingGoalIds = [...found.entries()]
+        .filter(([, labels]) => requiredLabelIds.every((labelId) => labels.has(labelId)))
+        .map(([goalId]) => goalId);
+      if (matchingGoalIds.length === 0) return [];
+      where.id = { in: matchingGoalIds };
+    }
+
     const rows = await this.prisma.goal.findMany({
       where,
       include: GOAL_INCLUDE_ALL,
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map((row: PrismaGoalWithRelations) =>
-      Goal.load(rawDataToGoalState(PrismaGoalMapper.toDomainDTO(row))),
+    const labelMap = await this.loadLabelMap(
+      identityId,
+      rows.map((row) => row.id),
     );
+    return rows.map((row: PrismaGoalWithRelations) => {
+      const goal = Goal.load(rawDataToGoalState(PrismaGoalMapper.toDomainDTO(row)));
+      goal.hydrateLabels(labelMap.get(row.id) ?? []);
+      return goal;
+    });
   }
 
   async findByKeyResultIdForIdentity(
@@ -134,16 +224,9 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
       include: GOAL_INCLUDE_ALL,
     });
     if (!row) return null;
-    return Goal.load(rawDataToGoalState(PrismaGoalMapper.toDomainDTO(row)));
-  }
-
-  async findByFolderId(identityId: string, folderId: string): Promise<Goal[]> {
-    const rows = await this.prisma.goal.findMany({
-      where: { identityId, folderId, deletedAt: null, archivedAt: null },
-      orderBy: { createdAt: 'desc' },
-    });
-    return rows.map((row: PrismaGoalWithRelations) =>
+    return this.hydrateGoalLabels(
       Goal.load(rawDataToGoalState(PrismaGoalMapper.toDomainDTO(row))),
+      identityId,
     );
   }
 
@@ -165,20 +248,13 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
           identityId: dto.identityId as string,
           name: dto.name,
           description: dto.description,
-          color: dto.color,
           feasibilityAnalysis: dto.feasibilityAnalysis,
           motivation: dto.motivation,
           status: dto.status,
-          importance: dto.importance,
-          priority: dto.priority ?? 0,
-          category: dto.category,
-          tags: dto.tags,
           startDate: dto.startDate ? new Date(dto.startDate) : null,
-          targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
+          targetDate: dto.dueDate ? new Date(dto.dueDate) : null,
           completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
           archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
-          folderId: dto.folderId ? (dto.folderId as string) : null,
-          parentGoalId: dto.parentGoalId ? (dto.parentGoalId as string) : null,
           sortOrder: dto.sortOrder,
           reminderConfig: dto.reminderConfig ? JSON.stringify(dto.reminderConfig) : null,
           version: dto.version,
@@ -187,20 +263,13 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
         update: {
           name: dto.name,
           description: dto.description,
-          color: dto.color,
           feasibilityAnalysis: dto.feasibilityAnalysis,
           motivation: dto.motivation,
           status: dto.status,
-          importance: dto.importance,
-          priority: dto.priority ?? 0,
-          category: dto.category,
-          tags: dto.tags,
           startDate: dto.startDate ? new Date(dto.startDate) : null,
-          targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
+          targetDate: dto.dueDate ? new Date(dto.dueDate) : null,
           completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
           archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
-          folderId: dto.folderId ? (dto.folderId as string) : null,
-          parentGoalId: dto.parentGoalId ? (dto.parentGoalId as string) : null,
           sortOrder: dto.sortOrder,
           reminderConfig: dto.reminderConfig ? JSON.stringify(dto.reminderConfig) : null,
           version: dto.version,
@@ -232,7 +301,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
               identityId: dto.identityId as string,
               title: kr.title,
               description: kr.description,
-              valueType: progress.valueType,
+              valueType: 'Incremental',
               aggregationMethod: progress.aggregationMethod,
               initialValue: progress.initialValue,
               targetValue: progress.targetValue,
@@ -244,7 +313,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
             update: {
               title: kr.title,
               description: kr.description,
-              valueType: progress.valueType,
+              valueType: 'Incremental',
               aggregationMethod: progress.aggregationMethod,
               initialValue: progress.initialValue,
               targetValue: progress.targetValue,
@@ -276,30 +345,26 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
               id: review.id as string,
               goalId: dto.id as string,
               identityId: dto.identityId as string,
-              reviewType: review.type,
-              title: review.title,
-              content: review.summary,
-              achievements: review.achievements,
+              reviewType: 'Adhoc',
+              title: null,
+              content: review.reflection,
+              achievements: null,
               challenges: review.challenges,
-              lessonsLearned: null,
-              nextSteps: review.improvements ?? null,
-              keyResultSnapshots: review.keyResultSnapshots.length > 0
-                ? JSON.stringify(review.keyResultSnapshots)
-                : null,
-              rating: review.rating,
+              lessonsLearned: JSON.stringify(review.systemContext),
+              nextSteps: review.adjustments,
+              keyResultSnapshots: null,
+              rating: null,
             },
             update: {
-              reviewType: review.type,
-              title: review.title,
-              content: review.summary,
-              achievements: review.achievements,
+              reviewType: 'Adhoc',
+              title: null,
+              content: review.reflection,
+              achievements: null,
               challenges: review.challenges,
-              lessonsLearned: null,
-              nextSteps: review.improvements ?? null,
-              keyResultSnapshots: review.keyResultSnapshots.length > 0
-                ? JSON.stringify(review.keyResultSnapshots)
-                : null,
-              rating: review.rating,
+              lessonsLearned: JSON.stringify(review.systemContext),
+              nextSteps: review.adjustments,
+              keyResultSnapshots: null,
+              rating: null,
               updatedAt: new Date(),
             },
           });
@@ -363,18 +428,13 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
       data: {
         name: dto.name,
         description: dto.description,
-        color: dto.color,
         feasibilityAnalysis: dto.feasibilityAnalysis,
         motivation: dto.motivation,
         status: dto.status,
-        importance: dto.importance,
-        priority: dto.priority ?? 0,
-        category: dto.category,
-        tags: dto.tags,
         startDate: dto.startDate ? new Date(dto.startDate) : null,
-        targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
-        folderId: dto.folderId ? String(dto.folderId) : null,
-        parentGoalId: dto.parentGoalId ? String(dto.parentGoalId) : null,
+        targetDate: dto.dueDate ? new Date(dto.dueDate) : null,
+        completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
+        archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
         reminderConfig: dto.reminderConfig ? JSON.stringify(dto.reminderConfig) : null,
         version: dto.version,
         updatedAt: new Date(),
@@ -419,52 +479,5 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
       where: { id: { in: ids }, identityId },
       data: { status, updatedAt: new Date() },
     });
-  }
-
-  async batchMoveToFolder(
-    identityId: string,
-    ids: string[],
-    folderId: string | null,
-  ): Promise<void> {
-    if (ids.length === 0) return;
-    await this.prisma.goal.updateMany({
-      where: { id: { in: ids }, identityId },
-      data: { folderId, updatedAt: new Date() },
-    });
-  }
-
-  // ================= Hierarchy Operations =================
-
-  async isAncestor(
-    identityId: string,
-    potentialAncestorId: string,
-    potentialDescendantId: string,
-  ): Promise<boolean> {
-    let currentId: string | null = potentialDescendantId;
-    const visited = new Set<string>();
-
-    while (currentId) {
-      if (currentId === potentialAncestorId) return true;
-      if (visited.has(currentId)) break; // Circular reference guard
-      visited.add(currentId);
-
-      const parent: { parentGoalId: string | null } | null = await this.prisma.goal.findFirst({
-        where: { id: currentId, identityId },
-        select: { parentGoalId: true },
-      });
-      currentId = parent?.parentGoalId ?? null;
-    }
-    return false;
-  }
-
-  async findChildren(identityId: string, parentId: string): Promise<Goal[]> {
-    const rows = await this.prisma.goal.findMany({
-      where: { parentGoalId: parentId, identityId, deletedAt: null },
-      include: GOAL_INCLUDE_ALL,
-      orderBy: { sortOrder: 'asc' },
-    });
-    return rows.map((row: PrismaGoalWithRelations) =>
-      Goal.load(rawDataToGoalState(PrismaGoalMapper.toDomainDTO(row))),
-    );
   }
 }

@@ -3,9 +3,7 @@ import type { Result } from '@memoflow/contracts/result';
 import { error, ok } from '@memoflow/contracts/result';
 import type { IGoalRecordRepository, IGoalRepository } from '../../../domain';
 import { GoalVersionConflictError, KeyResultProgress } from '../../../domain';
-import {
-  type GoalWriteTransactionRunner,
-} from './goal-write-support';
+import { type GoalWriteTransactionRunner } from './goal-write-support';
 
 export class RemoveTaskGoalContributionUseCase {
   constructor(
@@ -36,18 +34,15 @@ export class RemoveTaskGoalContributionUseCase {
 
       const expectedVersion = goal.version;
       const progress = KeyResultProgress.fromDTO(keyResult.progress);
-      let nextValue: number;
-      if (progress.aggregationMethod === 'Sum') {
-        nextValue = progress.currentValue - record.value;
-      } else {
-        const records = await goalRecordRepository.findByKeyResultId(
-          identityId,
-          String(record.keyResultId),
-          { orderBy: 'asc' },
-        );
-        const remaining = records.filter((item) => String(item.id) !== String(record.id));
-        nextValue = progress.recalculateFromHistory(remaining.map((item) => item.value)).currentValue;
-      }
+      const records = await goalRecordRepository.findByKeyResultId(
+        identityId,
+        String(record.keyResultId),
+        { orderBy: 'asc' },
+      );
+      const remaining = records.filter((item) => String(item.id) !== String(record.id));
+      const nextValue = progress.recalculateFromHistory(
+        remaining.map((item) => item.value),
+      ).currentValue;
 
       if (nextValue !== progress.currentValue) {
         goal.updateKeyResultProgress(String(record.keyResultId), nextValue);

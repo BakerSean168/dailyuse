@@ -7,29 +7,21 @@ import { createInlineGoalWriteTransactionRunner } from '../goal-write-support';
 import { InMemoryGoalReliableOperationAdapter } from '../../../../infrastructure/adapters/in-memory/in-memory-goal-reliable-operation.adapter';
 
 describe('DeleteGoalRecordUseCase', () => {
-  it('atomically removes a record and preserves the implicit Sum baseline', async () => {
+  it('atomically removes a record and recalculates Sum from full history', async () => {
     const goal = Goal.create({
       identityId: 'identity-1' as any,
       name: 'Atomic record deletion',
       description: null,
-      color: '#3B82F6',
       feasibilityAnalysis: null,
       motivation: null,
-      importance: 'Moderate' as any,
-      category: null,
-      tags: [],
       startDate: null,
-      targetDate: null,
-      folderId: null,
-      parentGoalId: null,
       reminderConfig: null,
     });
     const keyResult = goal.createAndAddKeyResult({
       title: 'Points',
-      valueType: 'Incremental',
       aggregationMethod: 'Sum',
-      startValue: 0,
-      currentValue: 10,
+      startingValue: 0,
+      currentValue: 5,
       targetValue: 20,
       weight: 1,
       unit: 'points',
@@ -73,13 +65,13 @@ describe('DeleteGoalRecordUseCase', () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.goalVersion).toBe(2);
-      expect(result.data.readModel.keyResults?.[0]?.progress.currentValue).toBe(8);
+      expect(result.data.readModel.keyResults?.[0]?.progress.currentValue).toBe(3);
       expect(result.data.recordChanges).toEqual({
         upserted: [],
         removedIds: [deletedRecord.id],
       });
     }
-    expect(goal.getKeyResult(keyResult.id)?.progress.currentValue).toBe(8);
+    expect(goal.getKeyResult(keyResult.id)?.progress.currentValue).toBe(3);
     expect(recordRepository.delete).toHaveBeenCalledWith('identity-1', deletedRecord.id);
     expect(goalRepository.saveRootWithExpectedVersion).toHaveBeenCalledWith(goal, 1);
   });

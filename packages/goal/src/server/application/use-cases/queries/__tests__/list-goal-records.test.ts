@@ -139,9 +139,9 @@ describe('ListGoalRecordsUseCase', () => {
         {
           id: 'kr-1',
           progress: {
-            valueType: 'Incremental',
             aggregationMethod: 'Sum',
-            initialValue: 0,
+            startingValue: 0,
+            progressBaselineValue: null,
             targetValue: 100,
             currentValue: 0,
             unit: null,
@@ -166,7 +166,7 @@ describe('ListGoalRecordsUseCase', () => {
     expect(record.toClientDTO).toHaveBeenCalledWith('goal-1', 15);
   });
 
-  it('should calculate valueAfter using Sum aggregation with history offset', async () => {
+  it('should calculate valueAfter using startingValue plus authoritative Sum history', async () => {
     const recordA = createRecordFixture({
       id: 'record-a',
       value: 5,
@@ -185,11 +185,11 @@ describe('ListGoalRecordsUseCase', () => {
         {
           id: 'kr-1',
           progress: {
-            valueType: 'Incremental',
             aggregationMethod: 'Sum',
-            initialValue: 10,
+            startingValue: 10,
+            progressBaselineValue: null,
             targetValue: 200,
-            currentValue: 100,
+            currentValue: 22,
             unit: null,
           },
         },
@@ -209,11 +209,11 @@ describe('ListGoalRecordsUseCase', () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(recordA.toClientDTO).toHaveBeenCalledWith('goal-1', 93);
-    expect(recordB.toClientDTO).toHaveBeenCalledWith('goal-1', 100);
+    expect(recordA.toClientDTO).toHaveBeenCalledWith('goal-1', 15);
+    expect(recordB.toClientDTO).toHaveBeenCalledWith('goal-1', 22);
   });
 
-  it('should calculate valueAfter without offset for non-Sum aggregation', async () => {
+  it('should calculate valueAfter directly from sample aggregation history', async () => {
     const recordA = createRecordFixture({
       id: 'record-a',
       value: 10,
@@ -232,9 +232,9 @@ describe('ListGoalRecordsUseCase', () => {
         {
           id: 'kr-1',
           progress: {
-            valueType: 'Incremental',
             aggregationMethod: 'Average',
-            initialValue: 0,
+            startingValue: 0,
+            progressBaselineValue: null,
             targetValue: 100,
             currentValue: 999,
             unit: null,

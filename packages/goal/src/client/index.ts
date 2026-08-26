@@ -26,27 +26,18 @@ import {
   type GoalTemplate,
   type KeyResultTemplate,
 } from '../application-client';
-import { Goal, GoalFolder, GoalRecord, GoalReview, KeyResult } from '../domain-client';
+import { Goal, GoalRecord, GoalReview, KeyResult } from '../domain-client';
 import {
-  GoalFocusHttpAdapter,
-  GoalFolderHttpAdapter,
   GoalHttpAdapter,
   createGoalHttpAdapters,
   type GoalHttpAdapters,
 } from '../infrastructure-client/adapters/http';
 import {
-  GoalFocusIpcAdapter,
-  GoalFolderIpcAdapter,
   GoalIpcAdapter,
   createGoalIpcAdapters,
   type GoalIpcAdapters,
 } from '../infrastructure-client/adapters/ipc';
-import type {
-  IGoalApiClient,
-  IGoalFocusApiClient,
-  IGoalFolderApiClient,
-  IResultIpcClient,
-} from '../infrastructure-client/adapters/types';
+import type { IGoalApiClient, IResultIpcClient } from '../infrastructure-client/adapters/types';
 
 export type {
   GoalClientPort,
@@ -54,8 +45,6 @@ export type {
   GoalIpcAdapters,
   GoalTemplate,
   IGoalApiClient,
-  IGoalFocusApiClient,
-  IGoalFolderApiClient,
   IResultHttpClient,
   IResultIpcClient,
   KeyResultTemplate,
@@ -67,7 +56,7 @@ export function createGoalHttpClient(httpClient: IResultHttpClient): GoalClientP
 
 export function createGoalIpcClient(ipcClient: IResultIpcClient): GoalClientPort {
   const adapters = createGoalIpcAdapters(ipcClient);
-  return createGoalClientService(adapters.goal, adapters.folder, adapters.focus);
+  return createGoalClientService(adapters.goal);
 }
 
 export {
@@ -75,11 +64,6 @@ export {
   BUILT_IN_TEMPLATES,
   Goal,
   GoalClientService,
-  GoalFocusHttpAdapter,
-  GoalFocusIpcAdapter,
-  GoalFolder,
-  GoalFolderHttpAdapter,
-  GoalFolderIpcAdapter,
   GoalHttpAdapter,
   GoalIpcAdapter,
   GoalRecord,

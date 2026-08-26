@@ -19,6 +19,8 @@ export interface KeyResultState {
   title: string;
   description: string | null;
   progress: KeyResultProgress;
+  progressPercentage: number;
+  isCompleted: boolean;
   weight: number;
   order: number;
   createdAt: Instant;
@@ -67,9 +69,11 @@ export class KeyResult extends Entity<KeyResultId> {
   }
 
   get progressPercentage(): number {
-    const { initialValue, currentValue, targetValue } = this._props.progress;
-    if (targetValue === initialValue) return currentValue >= targetValue ? 100 : 0;
-    return Math.round(((currentValue - initialValue) / (targetValue - initialValue)) * 100);
+    return this._props.progressPercentage;
+  }
+
+  get isCompleted(): boolean {
+    return this._props.isCompleted;
   }
 
   // ================= 4. Factory Methods =================
@@ -84,6 +88,8 @@ export class KeyResult extends Entity<KeyResultId> {
       title: this._props.title,
       description: this._props.description,
       progress: { ...this._props.progress },
+      progressPercentage: this._props.progressPercentage,
+      isCompleted: this._props.isCompleted,
       weight: this._props.weight,
       order: this._props.order,
       createdAt: this._props.createdAt,

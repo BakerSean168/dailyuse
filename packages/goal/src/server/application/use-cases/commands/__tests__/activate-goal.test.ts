@@ -14,16 +14,10 @@ function createTestGoal(name = 'Test Goal'): Goal {
     identityId: 'test-identity-id' as any,
     name,
     description: null,
-    color: '#3B82F6',
     feasibilityAnalysis: null,
     motivation: null,
-    importance: 'MEDIUM' as any,
-    category: null,
-    tags: [],
     startDate: null,
-    targetDate: null,
-    folderId: null,
-    parentGoalId: null,
+    dueDate: null,
     reminderConfig: null,
   });
 }
@@ -51,15 +45,18 @@ describe('ActivateGoalUseCase', () => {
     expect(goalRepo.save).not.toHaveBeenCalled();
   });
 
-  it('should reject activating a completed goal', async () => {
+  it('should reactivate a completed goal and clear completedAt', async () => {
     const goal = createTestGoal();
     goal.markAsCompleted();
     vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
     const result = await useCase.execute(goal.id, 'identity-1', goal.version);
 
-    expect(result).toBeErrorWithCode('INVALID_STATE');
-    expect(goalRepo.save).not.toHaveBeenCalled();
+    expect(result).toBeOk();
+    expect(goal.status).toBe('Active');
+    expect(goal.completedAt).toBeNull();
+    expect(goal.archivedAt).toBeNull();
+    expect(goalRepo.saveRootWithExpectedVersion).toHaveBeenCalledWith(goal, 1);
   });
 
   it('should activate an already active goal (idempotent)', async () => {

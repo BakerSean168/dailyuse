@@ -5,5 +5,5 @@ import { GoalClientService, createGoalClientService } from './goal-client-servic
 
 export function createGoalServiceFromHttpClient(httpClient: IResultHttpClient): GoalClientService {
   const adapters = createGoalHttpAdapters(httpClient);
-  return createGoalClientService(adapters.goal, adapters.folder, adapters.focus);
+  return createGoalClientService(adapters.goal);
 }

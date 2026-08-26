@@ -22,16 +22,9 @@ function createTestGoal(opts?: { name?: string }): Goal {
     identityId: 'test-identity-id' as any,
     name: opts?.name ?? 'Test Goal',
     description: null,
-    color: '#3B82F6',
     feasibilityAnalysis: null,
     motivation: null,
-    importance: 'Moderate' as any,
-    category: null,
-    tags: [],
     startDate: null,
-    targetDate: null,
-    folderId: null,
-    parentGoalId: null,
     reminderConfig: null,
   });
 }
@@ -47,7 +40,7 @@ function addKeyResult(
 ): KeyResult {
   return goal.createAndAddKeyResult({
     title: params.title,
-    valueType: 'NUMERIC',
+    startingValue: 0,
     targetValue: params.targetValue,
     currentValue: params.currentValue ?? 0,
     weight: params.weight,
@@ -247,13 +240,15 @@ describe('Goal lifecycle guards', () => {
     }).toThrow();
   });
 
-  it('should not allow modifying after a completed goal has been auto-archived', () => {
+  it('keeps Completed distinct from archivedAt so completion can be rolled back or adjusted', () => {
     const goal = createTestGoal();
     goal.markAsCompleted();
 
+    expect(goal.status).toBe('Completed');
+    expect(goal.archivedAt).toBeNull();
     expect(() => {
       addKeyResult(goal, { title: 'KR1', targetValue: 100, weight: 3 });
-    }).toThrow();
+    }).not.toThrow();
   });
 });
 

@@ -34,7 +34,7 @@
  * -> `disposed`):
  * - register(): only allowed from `created`. Builds routes from `instance.api`,
  *   calls `instance.start()`, and ONLY THEN mounts them at `/goals` and
- *   `/goal-folders` — a failed start happens before any `router.use(...)` call,
+ *   `/goals` — a failed start happens before any `router.use(...)` call,
  *   so the host router never observes a route for a handle that did not start
  *   (no rollback/unmount is needed). A mid-mount failure truncates the router
  *   stack back to its pre-mount length so this call never leaves a partial
@@ -51,7 +51,7 @@
  * 每个 handle 的状态机（`created -> registered | failed`，之后任意状态 ->
  * `disposed`）：
  * - register()：仅允许从 `created` 进入。用 `instance.api` 构建路由、调用
- *   `instance.start()`，之后才挂载到 `/goals` 与 `/goal-folders`——start 失败
+ *   `instance.start()`，之后才挂载到 `/goals`——start 失败
  *   发生在任何 `router.use(...)` 之前，因此宿主 router 永远不会看到一个
  *   未启动成功 handle 的路由（无需回滚/卸载）。成功则进入 `registered`，
  *   重复 register() 抛错；任何失败先清理（best-effort dispose，
@@ -73,11 +73,8 @@
 import type { ServerModuleHandle, ServerTransportModuleContext } from '@memoflow/contracts/shared';
 import { createLogger } from '@memoflow/utils/logger';
 import type { GoalModuleInstance } from '../server/infrastructure';
-import {
-  createGoalFolderTransportHandlers,
-  createGoalTransportHandlers,
-} from '../server/transport';
-import { registerGoalFolderRoutes, registerGoalRoutes } from './routes';
+import { createGoalTransportHandlers } from '../server/transport';
+import { registerGoalRoutes } from './routes';
 
 const logger = createLogger('GoalApi');
 
@@ -148,12 +145,10 @@ export function createGoalApiModule(options: GoalApiModuleOptions): GoalApiModul
 
       try {
         const goalHandlers = createGoalTransportHandlers(options.instance.api);
-        const folderHandlers = createGoalFolderTransportHandlers(options.instance.api);
 
         // Build the routes BEFORE starting the instance and BEFORE mounting:
         // a failed start must not leave any route installed on the host router.
         const goalRoutes = registerGoalRoutes(goalHandlers, middleware, openApiRegistry);
-        const folderRoutes = registerGoalFolderRoutes(folderHandlers, middleware, openApiRegistry);
 
         options.instance.start();
 
@@ -168,7 +163,6 @@ export function createGoalApiModule(options: GoalApiModuleOptions): GoalApiModul
         const stackLen = router.stack.length;
         try {
           router.use('/goals', goalRoutes);
-          router.use('/goal-folders', folderRoutes);
         } catch (mountError) {
           router.stack.length = stackLen;
           throw mountError;

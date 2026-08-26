@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { GoalChannels } from './ipc-channels';
 
-/**
- * Goal IPC surface (stage-6 residual):
- * archiveExpired is a live GoalIpcAdapter channel and must stay on contracts.
- */
-describe('GoalChannels surface', () => {
-  it('exposes live archiveExpired and focus/folder channels', () => {
-    expect(GoalChannels.ARCHIVE_EXPIRED).toBe('goal:archiveExpired');
-    expect(GoalChannels.FOCUS_MODE_GET).toBe('goal:focus-mode:get');
-    expect(GoalChannels.FOLDER_LIST).toBe('goal:folder:list');
+describe('GoalChannels vNext surface', () => {
+  it('keeps canonical status commands and retires legacy folder/focus/auto-expiry channels', () => {
+    expect(GoalChannels.ARCHIVE).toBe('goal:archive');
+    expect(GoalChannels.ACTIVATE).toBe('goal:activate');
+    expect(GoalChannels.COMPLETE).toBe('goal:complete');
+    expect(GoalChannels.ABANDON).toBe('goal:abandon');
+    expect('ARCHIVE_EXPIRED' in GoalChannels).toBe(false);
+    expect('FOCUS_MODE_GET' in GoalChannels).toBe(false);
+    expect('FOLDER_LIST' in GoalChannels).toBe(false);
   });
 });

@@ -14,13 +14,12 @@ describe('createGoalScheduleProjectionSource', () => {
         id: 'GoalId_goal-1',
         identityId: 'IdentityId_goal-owner',
         name: 'Launch 1.0',
-        importance: 'Important',
         status: GoalStatus.Active,
         archivedAt: null,
         completedAt: null,
         deletedAt: null,
         startDate: new Date('2030-01-10T00:00:00.000Z').getTime(),
-        targetDate: new Date('2030-01-20T00:00:00.000Z').getTime(),
+        dueDate: new Date('2030-01-20T00:00:00.000Z').getTime(),
         reminderConfig: {
           enabled: true,
           triggers: [
@@ -43,11 +42,9 @@ describe('createGoalScheduleProjectionSource', () => {
 
     const plan = await source.buildGoalPlan('GoalId_goal-1', 'IdentityId_goal-owner');
 
-    expect(findByIdForIdentity).toHaveBeenCalledWith(
-      'IdentityId_goal-owner',
-      'GoalId_goal-1',
-      { includeChildren: true },
-    );
+    expect(findByIdForIdentity).toHaveBeenCalledWith('IdentityId_goal-owner', 'GoalId_goal-1', {
+      includeChildren: true,
+    });
     expect(plan.selection.sourceModule).toBe(SourceModule.Goal);
     expect(plan.selection.sourceEntityId).toBe('GoalId_goal-1');
     expect(plan.nextTasks).toHaveLength(1);
@@ -67,11 +64,9 @@ describe('createGoalScheduleProjectionSource', () => {
 
     const plan = await source.buildGoalPlan('GoalId_missing', 'IdentityId_goal-owner');
 
-    expect(findByIdForIdentity).toHaveBeenCalledWith(
-      'IdentityId_goal-owner',
-      'GoalId_missing',
-      { includeChildren: true },
-    );
+    expect(findByIdForIdentity).toHaveBeenCalledWith('IdentityId_goal-owner', 'GoalId_missing', {
+      includeChildren: true,
+    });
     expect(plan.nextTasks).toEqual([]);
     expect(plan.selection.identityId).toBe('IdentityId_goal-owner');
   });

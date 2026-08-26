@@ -14,38 +14,26 @@ import type {
   ListGoalFilters,
 } from '../api/goal-crud.dto';
 import type { GetKeyResultsReq, GetKeyResultsRes } from '../api/key-result.dto';
-import type {
-  CreateGoalFolderReq,
-  CreateGoalFolderRes,
-  ListGoalFolderFilters,
-  QueryGoalFoldersRes,
-  UpdateGoalFolderRes,
-} from '../api/goal-folder.dto';
-import type { GetFocusStatusReq, GetFocusStatusRes } from '../api/focus-session.dto';
-import type {
-  ArchiveExpiredRes,
-  GoalMutationReceipt,
-  QueryGoalsRes,
-} from '../api/response-schemas';
+import type { GoalMutationReceipt, QueryGoalsRes } from '../api/response-schemas';
+import type { GoalReviewSystemContext } from '../value-objects/goal-review-context';
 import type {
   AddKeyResultInvocation,
   BatchKeyResultWeightsInvocation,
   CloneGoalInvocation,
   CreateRecordInvocation,
   CreateReviewInvocation,
-  DeleteGoalFolderInvocation,
+  ReviewContextInvocation,
   DeleteGoalInvocation,
   DeleteKeyResultInvocation,
   DeleteRecordInvocation,
   DeleteReviewInvocation,
   GoalStatusCommandInvocation,
-  UpdateGoalFolderInvocation,
   UpdateGoalInvocation,
   UpdateKeyResultInvocation,
   UpdateKeyResultProgressInvocation,
   UpdateReviewInvocation,
+  UpdateRecordInvocation,
 } from '../api/goal-invocation.schemas';
-import type { ActivateFocusModeReq, ExtendFocusModeReq, FocusModeDTO } from '../api';
 
 /**
  * 定义 Goal 模块处理的 RPC 请求 [请求, 响应]
@@ -67,10 +55,10 @@ export type GoalRpcMap = {
   'goal:create': [CreateGoalReq, CreateGoalRes];
   'goal:update': [UpdateGoalInvocation, GoalMutationReceipt];
   'goal:delete': [DeleteGoalInvocation, GoalMutationReceipt];
-  'goal:archive-expired': [void, ArchiveExpiredRes];
   'goal:archive': [GoalStatusCommandInvocation, GoalMutationReceipt];
   'goal:activate': [GoalStatusCommandInvocation, GoalMutationReceipt];
   'goal:complete': [GoalStatusCommandInvocation, GoalMutationReceipt];
+  'goal:abandon': [GoalStatusCommandInvocation, GoalMutationReceipt];
   'goal:clone': [CloneGoalInvocation, GoalMutationReceipt];
   'goal:get': [GetGoalReq, GetGoalRes];
   'goal:list': [ListGoalFilters, QueryGoalsRes];
@@ -85,22 +73,12 @@ export type GoalRpcMap = {
 
   // Review Operations
   'goal:review:create': [CreateReviewInvocation, GoalMutationReceipt];
+  'goal:review:context': [ReviewContextInvocation, GoalReviewSystemContext];
   'goal:review:update': [UpdateReviewInvocation, GoalMutationReceipt];
   'goal:review:delete': [DeleteReviewInvocation, GoalMutationReceipt];
 
   // Record Operations
   'goal:record:create': [CreateRecordInvocation, GoalMutationReceipt];
+  'goal:record:update': [UpdateRecordInvocation, GoalMutationReceipt];
   'goal:record:delete': [DeleteRecordInvocation, GoalMutationReceipt];
-
-  // Goal Folder Operations
-  'goal-folder:create': [CreateGoalFolderReq, CreateGoalFolderRes];
-  'goal-folder:update': [UpdateGoalFolderInvocation, UpdateGoalFolderRes];
-  'goal-folder:delete': [DeleteGoalFolderInvocation, null];
-  'goal-folder:list': [ListGoalFolderFilters, QueryGoalFoldersRes];
-
-  // Focus Mode Operations
-  'focus:activate': [ActivateFocusModeReq, FocusModeDTO];
-  'focus:deactivate': [void, FocusModeDTO];
-  'focus:extend': [ExtendFocusModeReq, FocusModeDTO];
-  'focus:get-status': [GetFocusStatusReq, GetFocusStatusRes];
 };

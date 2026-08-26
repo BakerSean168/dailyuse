@@ -7,8 +7,6 @@
 
 // ===== Port Interfaces =====
 export type { IGoalApiClient } from './ports/goal-api-client.port';
-export type { IGoalFolderApiClient } from './ports/goal-folder-api-client.port';
-export type { IGoalFocusApiClient } from './ports/goal-focus-api-client.port';
 
 // ===== Data & Rules =====
 export {

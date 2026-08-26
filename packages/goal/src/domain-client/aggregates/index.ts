@@ -4,4 +4,3 @@
  */
 
 export { Goal, type GoalState } from './goal';
-export { GoalFolder, type GoalFolderState } from './goal-folder';

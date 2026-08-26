@@ -5,28 +5,10 @@
  */
 
 // Port Interfaces
-export type {
-  IGoalApiClient,
-  IGoalFolderApiClient,
-  IGoalFocusApiClient,
-  IResultHttpClient,
-  IResultIpcClient,
-} from './adapters/types';
+export type { IGoalApiClient, IResultHttpClient, IResultIpcClient } from './adapters/types';
 
 // HTTP Adapters
-export {
-  GoalHttpAdapter,
-  GoalFolderHttpAdapter,
-  GoalFocusHttpAdapter,
-  createGoalHttpAdapters,
-  type GoalHttpAdapters,
-} from './adapters/http';
+export { GoalHttpAdapter, createGoalHttpAdapters, type GoalHttpAdapters } from './adapters/http';
 
 // IPC Adapters
-export {
-  GoalIpcAdapter,
-  GoalFolderIpcAdapter,
-  GoalFocusIpcAdapter,
-  createGoalIpcAdapters,
-  type GoalIpcAdapters,
-} from './adapters/ipc';
+export { GoalIpcAdapter, createGoalIpcAdapters, type GoalIpcAdapters } from './adapters/ipc';

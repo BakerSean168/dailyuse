@@ -13,9 +13,7 @@ import {
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
 import type { GoalMutationReceipt } from '@memoflow/contracts/goal';
-import {
-  type GoalWriteTransactionRunner,
-} from './goal-write-support';
+import { type GoalWriteTransactionRunner } from './goal-write-support';
 import { createGoalMutationReceipt } from './goal-mutation-receipt';
 
 export class DeleteGoalRecordUseCase {
@@ -59,11 +57,9 @@ export class DeleteGoalRecordUseCase {
         );
         const historyAfter = historyBefore.filter((item) => item.id !== recordId);
         const currentProgress = KeyResultProgress.fromDTO(keyResult.progress);
-        const nextValue =
-          currentProgress.aggregationMethod === 'Sum'
-            ? currentProgress.currentValue - record.value
-            : currentProgress.recalculateFromHistory(historyAfter.map((item) => item.value))
-                .currentValue;
+        const nextValue = currentProgress.recalculateFromHistory(
+          historyAfter.map((item) => item.value),
+        ).currentValue;
 
         await goalRecordRepository.delete(identityId, recordId);
         if (nextValue !== currentProgress.currentValue) {

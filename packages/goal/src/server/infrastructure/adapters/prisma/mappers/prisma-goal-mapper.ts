@@ -30,7 +30,6 @@ function optionalInstant(value: Date | string | number | null | undefined): numb
   return Number.isFinite(n) ? n : null;
 }
 
-
 /**
  * Prisma Goal with eagerly loaded relations
  */
@@ -55,21 +54,13 @@ export class PrismaGoalMapper {
       identityId: row.identityId,
       name: row.name,
       description: row.description ?? null,
-      color: row.color ?? '#3B82F6',
       feasibilityAnalysis: row.feasibilityAnalysis ?? null,
       motivation: row.motivation ?? null,
       status: row.status,
-      importance: row.importance,
-      priority: row.priority ?? 0,
-      category: row.category ?? null,
-      tags: row.tags ?? [],
       startDate: optionalInstant(row.startDate),
-      targetDate: optionalInstant(row.targetDate),
+      dueDate: optionalInstant(row.targetDate),
       completedAt: optionalInstant(row.completedAt),
       archivedAt: optionalInstant(row.archivedAt),
-      folderId: row.folderId ?? null,
-      parentGoalId: row.parentGoalId ?? null,
-      rollupPolicy: row.rollupPolicy ?? 'kr',
       sortOrder: row.sortOrder ?? 0,
       reminderConfig: row.reminderConfig ? JSON.parse(row.reminderConfig) : null,
       keyResults: row.keyResults ? row.keyResults.map(PrismaGoalMapper.mapKeyResult) : null,
@@ -95,10 +86,10 @@ export class PrismaGoalMapper {
       title: row.title,
       description: row.description ?? null,
       progress: {
-        initialValue: row.initialValue ?? 0,
+        startingValue: row.initialValue ?? 0,
+        progressBaselineValue: null,
         currentValue: row.currentValue ?? 0,
         targetValue: row.targetValue ?? 100,
-        valueType: row.valueType ?? 'Incremental',
         aggregationMethod: row.aggregationMethod ?? 'Last',
         unit: row.unit ?? null,
       },
@@ -109,47 +100,38 @@ export class PrismaGoalMapper {
     };
   }
 
-  /**
-   * Map a Prisma GoalReview row to raw goal review data
-   */
-  /**
-   * R4：next_steps 列以 JSON 数组承载 next actions（向后兼容旧 lessonsLearned）。
-   */
-  static parseReviewImprovements(nextSteps: string | null): string | null {
-    if (nextSteps == null) return null;
-    try {
-      const parsed = JSON.parse(nextSteps);
-      if (Array.isArray(parsed)) return JSON.stringify(parsed);
-      return nextSteps;
-    } catch {
-      return nextSteps;
+  /** Goal Review V2 is temporarily encoded into legacy columns until the Schema Train lands. */
+  static parseReviewSystemContext(raw: string | null, at: number): import('@memoflow/contracts/goal').GoalReviewSystemContext {
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object' && 'overallProgress' in parsed) {
+          return parsed as import('@memoflow/contracts/goal').GoalReviewSystemContext;
+        }
+      } catch {
+        // destructive Wave 2 cutover: legacy prose is not authoritative system context
+      }
     }
-  }
-
-  static parseReviewKeyResultSnapshots(raw: string | null): KeyResultSnapshotDTO[] {
-    if (raw == null) return [];
-    try {
-      const parsed = JSON.parse(raw) as unknown;
-      return Array.isArray(parsed) ? (parsed as KeyResultSnapshotDTO[]) : [];
-    } catch {
-      return [];
-    }
+    return {
+      windowStartAt: at,
+      windowEndAt: at,
+      overallProgress: { startPercentage: 0, endPercentage: 0, deltaPercentage: 0 },
+      keyResults: [],
+      summary: { recordCount: 0, manualRecordCount: 0, taskContributionCount: 0 },
+    };
   }
 
   static mapGoalReview(row: PrismaGoalReview): RawGoalReviewData {
+    const at = requiredInstant(row.createdAt);
     return {
       id: row.id,
       goalId: row.goalId,
-      type: row.reviewType,
-      title: row.title ?? null,
-      rating: row.rating ?? 3,
-      summary: row.content,
-      achievements: row.achievements ?? null,
+      reflection: row.content,
       challenges: row.challenges ?? null,
-      improvements: PrismaGoalMapper.parseReviewImprovements(row.nextSteps) ?? row.lessonsLearned ?? null,
-      keyResultSnapshots: PrismaGoalMapper.parseReviewKeyResultSnapshots(row.keyResultSnapshots),
-      reviewedAt: requiredInstant(row.createdAt),
-      createdAt: requiredInstant(row.createdAt),
+      adjustments: row.nextSteps ?? null,
+      systemContext: PrismaGoalMapper.parseReviewSystemContext(row.lessonsLearned, at),
+      reviewedAt: at,
+      createdAt: at,
       updatedAt: requiredInstant(row.updatedAt),
     };
   }
@@ -180,9 +162,9 @@ export class PrismaGoalMapper {
    */
   static parseKeyResultProgress(kr: RawKeyResultData) {
     return {
-      valueType: kr.progress.valueType ?? 'Incremental',
+      valueType: 'Incremental', // temporary physical-schema seam; retired from domain
       aggregationMethod: kr.progress.aggregationMethod ?? 'Last',
-      initialValue: kr.progress.initialValue ?? 0,
+      initialValue: kr.progress.startingValue ?? 0,
       targetValue: kr.progress.targetValue ?? 100,
       currentValue: kr.progress.currentValue ?? 0,
       unit: kr.progress.unit ?? null,

@@ -24,39 +24,22 @@ import { describe, expect, it } from 'vitest';
         ['CreateGoalReviewRes', 'UpdateGoalReviewRes', 'GetGoalReviewRes', 'DeleteGoalReviewRes'],
       ],
       [resolve(goalApi, 'goal-record.dto.ts'), ['CreateGoalRecordRes', 'DeleteGoalRecordRes']],
-      [resolve(goalApi, 'focus-session.dto.ts'), ['StartFocusRes', 'StopFocusRes']],
-      [resolve(goalApi, 'goal-folder.dto.ts'), ['GetGoalFolderRes', 'DeleteGoalFolderRes']],
       [resolve(goalApi, 'key-result.dto.ts'), ['UpdateKeyResultRes', 'UpdateKeyResultProgressRes']],
-      [
-        resolve(modules, 'ai/api/ai-provider-config.dto.ts'),
-        ['RefreshAIProviderModelsRes'],
-      ],
+      [resolve(modules, 'ai/api/ai-provider-config.dto.ts'), ['RefreshAIProviderModelsRes']],
       [
         resolve(modules, 'repository/api/knowledge-repository-connection.dto.ts'),
         ['CreateKnowledgeRepositoryConnectionRes'],
       ],
-      [
-        resolve(modules, 'account/api/account-settings.dto.ts'),
-        ['GetAccountSettingsRes'],
-      ],
-      [
-        resolve(modules, 'task/api/task-schedule.dto.ts'),
-        ['ToggleTaskCompletionRes'],
-      ],
+      [resolve(modules, 'account/api/account-settings.dto.ts'), ['GetAccountSettingsRes']],
+      [resolve(modules, 'task/api/task-schedule.dto.ts'), ['ToggleTaskCompletionRes']],
       [resolve(modules, 'setting/api/sync.dto.ts'), ['SyncSettingsRes']],
-      [
-        resolve(modules, 'governance/api/rule-revisions.ts'),
-        ['GetRuleRevisionRes'],
-      ],
+      [resolve(modules, 'governance/api/rule-revisions.ts'), ['GetRuleRevisionRes']],
       // residual 290
       [
         resolve(goalApi, 'goal-crud.dto.ts'),
         ['BatchUpdateGoalStatusRes', 'BatchMoveGoalsRes', 'BatchDeleteGoalsRes'],
       ],
-      [
-        resolve(modules, 'repository/aggregates/local-vault-binding.ts'),
-        ['SelectLocalVaultRes'],
-      ],
+      [resolve(modules, 'repository/aggregates/local-vault-binding.ts'), ['SelectLocalVaultRes']],
     ];
 
     it('does not export dead *Res identity dual aliases', () => {
@@ -83,13 +66,9 @@ import { describe, expect, it } from 'vitest';
     it('owns export/import ResSchema and z.infer aliases', () => {
       expect(dto).toContain('Residual 791');
       expect(dto).toContain('export const ExportGoalsResSchema = z.object({');
-      expect(dto).toContain(
-        'export type ExportGoalsRes = z.infer<typeof ExportGoalsResSchema>',
-      );
+      expect(dto).toContain('export type ExportGoalsRes = z.infer<typeof ExportGoalsResSchema>');
       expect(dto).toContain('export const ImportGoalsResSchema = z.object({');
-      expect(dto).toContain(
-        'export type ImportGoalsRes = z.infer<typeof ImportGoalsResSchema>',
-      );
+      expect(dto).toContain('export type ImportGoalsRes = z.infer<typeof ImportGoalsResSchema>');
       expect(dto).not.toMatch(/export interface ExportGoalsRes\b/);
       expect(dto).not.toMatch(/export interface ImportGoalsRes\b/);
     });
@@ -106,216 +85,25 @@ import { describe, expect, it } from 'vitest';
   });
 }
 
-// --- merged from focus-mode-dual.surface.spec.ts ---
-{
-  /**
-   * Residual 745: goal focus-mode dual bodies retired.
-   * FocusModeDTO reuses FocusModeClientDTOSchema; request interfaces alias *Req.
-   */
-  describe('goal focus-mode dual retired (residual 745)', () => {
-    const apiDir = __dirname;
-    const vo = readFileSync(resolve(apiDir, '../value-objects/focus-mode.ts'), 'utf8');
-    const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
-
-    it('exports FocusModeClientDTOSchema as sole shape from VO module', () => {
-      expect(vo).toContain('Residual 745');
-      expect(vo).toContain('export const FocusModeClientDTOSchema = z.object({');
-    });
-
-    it('semantic DTO/request types are schema aliases without interface dual bodies', () => {
-      expect(vo).toContain(
-        'export type FocusModeDTO = z.infer<typeof FocusModeClientDTOSchema>',
-      );
-      expect(vo).not.toMatch(/export interface FocusModeDTO\b/);
-      expect(vo).toContain(
-        'export type ActivateFocusModeRequest = ActivateFocusModeReq',
-      );
-      expect(vo).toContain(
-        'export type ExtendFocusModeRequest = ExtendFocusModeReq',
-      );
-      expect(vo).not.toMatch(/export interface ActivateFocusModeRequest\b/);
-      expect(vo).not.toMatch(/export interface ExtendFocusModeRequest\b/);
-      expect(vo).toContain('export interface FocusMode {');
-    });
-
-    it('response-schemas re-exports VO-owned schema (no local dual body)', () => {
-      expect(responseSchemas).toContain('Residual 745');
-      expect(responseSchemas).toContain("from '../value-objects/focus-mode'");
-      expect(responseSchemas).toContain('export { FocusModeClientDTOSchema }');
-      expect(responseSchemas).not.toMatch(
-        /const FocusModeClientDTOSchema(?::[^=]+)? = z\.object\(\{/,
-      );
-    });
-  });
-}
-
-// --- merged from focus-session-client-dto-dual.surface.spec.ts ---
-{
-  /**
-   * Residual 813: FocusSessionClientDTO dual body retired.
-   * Sole FocusSessionClientDTOSchema + z.infer (optional UI remaining/progress/isActive fields).
-   */
-  describe('focus session client dto dual retired (residual 813)', () => {
-    const apiDir = __dirname;
-    const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
-    const aggregate = readFileSync(
-      resolve(apiDir, '../aggregates/focus-session-client.ts'),
-      'utf8',
-    );
-    const dto = readFileSync(resolve(apiDir, 'focus-session.dto.ts'), 'utf8');
-
-    it('owns FocusSessionClientDTO as z.infer of FocusSessionClientDTOSchema', () => {
-      expect(aggregate).toContain('Residual 813');
-      expect(aggregate).toContain("from '../api/response-schemas'");
-      expect(aggregate).toContain(
-        'export type FocusSessionClientDTO = z.infer<typeof FocusSessionClientDTOSchema>',
-      );
-      expect(aggregate).not.toMatch(/export interface FocusSessionClientDTO\b/);
-    });
-
-    it('FocusSessionClientDTOSchema owns transport + optional UI fields', () => {
-      expect(responseSchemas).toContain('Residual 813');
-      expect(responseSchemas).toContain(
-        'export const FocusSessionClientDTOSchema = z.object({',
-      );
-      expect(responseSchemas).toContain('durationMinutes: z.number()');
-      expect(responseSchemas).toContain('actualDurationMinutes: z.number()');
-      expect(responseSchemas).toContain('remainingMinutes: z.number().optional()');
-      expect(responseSchemas).toContain('progressPercentage: z.number().optional()');
-      expect(responseSchemas).toContain('isActive: z.boolean().optional()');
-    });
-
-    it('focus status/history Res nest FocusSessionClientDTOSchema', () => {
-      expect(dto).toContain('session: FocusSessionClientDTOSchema.nullable()');
-      expect(dto).toContain('data: z.array(FocusSessionClientDTOSchema)');
-      expect(dto).toContain("from './response-schemas'");
-    });
-  });
-}
-
-// --- merged from focus-session-res-dual.surface.spec.ts ---
-{
-  /**
-   * Residual 777: GetFocusStatisticsRes / GetPomodoroConfigRes dual bodies retired.
-   * Res types are z.infer aliases of sole *ResSchema shapes.
-   */
-  describe('focus session res duals retired (residual 777)', () => {
-    const dto = readFileSync(resolve(__dirname, 'focus-session.dto.ts'), 'utf8');
-
-    it('owns GetFocusStatisticsResSchema and z.infer alias', () => {
-      expect(dto).toContain('Residual 777');
-      expect(dto).toContain(
-        'export const GetFocusStatisticsResSchema = z.object({',
-      );
-      expect(dto).toContain(
-        'export type GetFocusStatisticsRes = z.infer<typeof GetFocusStatisticsResSchema>',
-      );
-      expect(dto).not.toMatch(/export interface GetFocusStatisticsRes\b/);
-    });
-
-    it('owns GetPomodoroConfigResSchema and z.infer alias', () => {
-      expect(dto).toContain(
-        'export const GetPomodoroConfigResSchema = z.object({',
-      );
-      expect(dto).toContain(
-        'export type GetPomodoroConfigRes = z.infer<typeof GetPomodoroConfigResSchema>',
-      );
-      expect(dto).not.toMatch(/export interface GetPomodoroConfigRes\b/);
-    });
-
-    it('schemas cover statistics and pomodoro field sets', () => {
-      expect(dto).toContain('todayDurationMinutes: z.number()');
-      expect(dto).toContain('focusDurationMinutes: z.number()');
-      expect(dto).toContain('autoStartBreaks: z.boolean()');
-    });
-  });
-}
-
-// --- merged from focus-status-history-res-dual.surface.spec.ts ---
-{
-  /**
-   * Residual 785: GetFocusStatusRes / GetFocusHistoryRes dual bodies retired.
-   * Sole ResSchema + z.infer nested FocusSessionClientDTOSchema.
-   * Soft residual 813: FocusSessionClientDTO dual retired via FocusSessionClientDTOSchema
-   * (see focus-session-client-dto-dual surface).
-   */
-  describe('focus status/history res duals retired (residual 785)', () => {
-    const apiDir = __dirname;
-    const dto = readFileSync(resolve(apiDir, 'focus-session.dto.ts'), 'utf8');
-    const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
-
-    it('dto owns status/history ResSchema and z.infer aliases', () => {
-      expect(dto).toContain('Residual 785');
-      expect(dto).toContain("from './response-schemas'");
-      expect(dto).toContain('export const GetFocusStatusResSchema = z.object({');
-      expect(dto).toContain(
-        'export type GetFocusStatusRes = z.infer<typeof GetFocusStatusResSchema>',
-      );
-      expect(dto).toContain('export const GetFocusHistoryResSchema = z.object({');
-      expect(dto).toContain(
-        'export type GetFocusHistoryRes = z.infer<typeof GetFocusHistoryResSchema>',
-      );
-      expect(dto).toContain('session: FocusSessionClientDTOSchema.nullable()');
-      expect(dto).toContain('data: z.array(FocusSessionClientDTOSchema)');
-      expect(dto).not.toMatch(/export interface GetFocusStatusRes\b/);
-      expect(dto).not.toMatch(/export interface GetFocusHistoryRes\b/);
-    });
-
-    it('nests FocusSessionClientDTOSchema from response-schemas', () => {
-      expect(responseSchemas).toContain(
-        'export const FocusSessionClientDTOSchema = z.object({',
-      );
-      expect(dto).toContain('FocusSessionClientDTOSchema');
-    });
-  });
-}
-
 // --- merged from goal-aggregate-client-dto-dual.surface.spec.ts ---
 {
-  /**
-   * Residual 819: GoalClientDTO / GoalFolderClientDTO dual bodies retired.
-   * Sole *ClientDTOSchema + z.infer (no ZodType<Interface> dual annotation).
-   */
-  describe('goal aggregate client dto duals retired (residual 819)', () => {
+  /** Residual 819: GoalClientDTO uses the sole GoalClientDTOSchema + z.infer. */
+  describe('goal aggregate client dto dual retired (residual 819)', () => {
     const apiDir = __dirname;
     const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
     const goal = readFileSync(resolve(apiDir, '../aggregates/goal-client.ts'), 'utf8');
-    const folder = readFileSync(resolve(apiDir, '../aggregates/goal-folder-client.ts'), 'utf8');
 
     it('owns GoalClientDTO as z.infer of GoalClientDTOSchema', () => {
       expect(goal).toContain('Residual 819');
       expect(goal).toContain("from '../api/response-schemas'");
-      expect(goal).toContain(
-        'export type GoalClientDTO = z.infer<typeof GoalClientDTOSchema>',
-      );
+      expect(goal).toContain('export type GoalClientDTO = z.infer<typeof GoalClientDTOSchema>');
       expect(goal).not.toMatch(/export interface GoalClientDTO\b/);
-      expect(responseSchemas).toContain('Residual 819');
-      expect(responseSchemas).toContain(
-        'export const GoalClientDTOSchema = z.object({',
-      );
-      expect(responseSchemas).not.toMatch(
-        /export const GoalClientDTOSchema:\s*z\.ZodType<GoalClientDTO>/,
-      );
+      expect(responseSchemas).toContain('export const GoalClientDTOSchema = z.object({');
+      expect(responseSchemas).toContain('labels: z.array(GoalLabelProjectionSchema)');
+      expect(responseSchemas).not.toContain('GoalFolderClientDTOSchema');
     });
 
-    it('owns GoalFolderClientDTO as z.infer of GoalFolderClientDTOSchema', () => {
-      expect(folder).toContain('Residual 819');
-      expect(folder).toContain("from '../api/response-schemas'");
-      expect(folder).toContain(
-        'export type GoalFolderClientDTO = z.infer<typeof GoalFolderClientDTOSchema>',
-      );
-      expect(folder).not.toMatch(/export interface GoalFolderClientDTO\b/);
-      expect(responseSchemas).toContain(
-        'export const GoalFolderClientDTOSchema = z.object({',
-      );
-      expect(responseSchemas).not.toMatch(
-        /export const GoalFolderClientDTOSchema:\s*z\.ZodType<GoalFolderClientDTO>/,
-      );
-      expect(responseSchemas).toContain('displayName: z.string()');
-      expect(responseSchemas).not.toContain('activeGoalCount: z.number()');
-    });
-
-    it('list envelopes nest Goal/GoalFolder ClientDTOSchema arrays', () => {
+    it('list and aggregate envelopes nest the canonical Goal read model', () => {
       expect(responseSchemas).toContain('data: z.array(GoalClientDTOSchema)');
       expect(responseSchemas).toContain('goal: GoalAggregateReadModelSchema');
       expect(responseSchemas).toContain('keyResults: z.array(KeyResultClientDTOSchema).nullable()');
@@ -343,9 +131,7 @@ import { describe, expect, it } from 'vitest';
       );
       expect(keyResult).not.toMatch(/export interface KeyResultClientDTO\b/);
       expect(responseSchemas).toContain('Residual 817');
-      expect(responseSchemas).toContain(
-        'export const KeyResultClientDTOSchema = z.object({',
-      );
+      expect(responseSchemas).toContain('export const KeyResultClientDTOSchema = z.object({');
       expect(responseSchemas).not.toMatch(
         /export const KeyResultClientDTOSchema:\s*z\.ZodType<KeyResultClientDTO>/,
       );
@@ -357,9 +143,7 @@ import { describe, expect, it } from 'vitest';
         'export type GoalReviewClientDTO = z.infer<typeof GoalReviewClientDTOSchema>',
       );
       expect(review).not.toMatch(/export interface GoalReviewClientDTO\b/);
-      expect(responseSchemas).toContain(
-        'export const GoalReviewClientDTOSchema = z.object({',
-      );
+      expect(responseSchemas).toContain('export const GoalReviewClientDTOSchema = z.object({');
       expect(responseSchemas).not.toMatch(
         /export const GoalReviewClientDTOSchema:\s*z\.ZodType<GoalReviewClientDTO>/,
       );
@@ -472,10 +256,7 @@ import { describe, expect, it } from 'vitest';
   describe('goal record client dto dual retired (residual 815)', () => {
     const apiDir = __dirname;
     const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
-    const aggregate = readFileSync(
-      resolve(apiDir, '../aggregates/goal-record-client.ts'),
-      'utf8',
-    );
+    const aggregate = readFileSync(resolve(apiDir, '../aggregates/goal-record-client.ts'), 'utf8');
     const routes = readFileSync(
       resolve(apiDir, '../../../../../goal/src/api/routes/goal-record.routes.ts'),
       'utf8',
@@ -492,9 +273,7 @@ import { describe, expect, it } from 'vitest';
 
     it('GoalRecordClientDTOSchema owns value/valueAfter/comment fields', () => {
       expect(responseSchemas).toContain('Residual 815');
-      expect(responseSchemas).toContain(
-        'export const GoalRecordClientDTOSchema = z.object({',
-      );
+      expect(responseSchemas).toContain('export const GoalRecordClientDTOSchema = z.object({');
       expect(responseSchemas).toContain('value: z.number()');
       expect(responseSchemas).toContain('valueAfter: z.number()');
       expect(responseSchemas).toContain('comment: z.string().nullable()');
@@ -519,10 +298,7 @@ import { describe, expect, it } from 'vitest';
    */
   describe('goal reminder-config dual retired (residual 741)', () => {
     const apiDir = __dirname;
-    const vo = readFileSync(
-      resolve(apiDir, '../value-objects/goal-reminder-config.ts'),
-      'utf8',
-    );
+    const vo = readFileSync(resolve(apiDir, '../value-objects/goal-reminder-config.ts'), 'utf8');
     const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
 
     it('exports reminder-config schemas as sole shapes from VO module', () => {
@@ -532,9 +308,7 @@ import { describe, expect, it } from 'vitest';
     });
 
     it('semantic DTOs are z.infer aliases without interface dual bodies', () => {
-      expect(vo).toContain(
-        'export type ReminderTrigger = z.infer<typeof ReminderTriggerSchema>',
-      );
+      expect(vo).toContain('export type ReminderTrigger = z.infer<typeof ReminderTriggerSchema>');
       expect(vo).not.toMatch(/export interface ReminderTrigger\b/);
       expect(vo).toContain(
         'export type GoalReminderConfigDTO = z.infer<typeof GoalReminderConfigDTOSchema>',
@@ -548,15 +322,9 @@ import { describe, expect, it } from 'vitest';
       expect(responseSchemas).toContain(
         'export { GoalReminderConfigDTOSchema, ReminderTriggerSchema }',
       );
-      expect(responseSchemas).not.toMatch(
-        /const ReminderTriggerSchema = z\.object\(\{/,
-      );
-      expect(responseSchemas).not.toMatch(
-        /const GoalReminderConfigDTOSchema = z\.object\(\{/,
-      );
-      expect(responseSchemas).toContain(
-        'reminderConfig: GoalReminderConfigDTOSchema.nullable()',
-      );
+      expect(responseSchemas).not.toMatch(/const ReminderTriggerSchema = z\.object\(\{/);
+      expect(responseSchemas).not.toMatch(/const GoalReminderConfigDTOSchema = z\.object\(\{/);
+      expect(responseSchemas).toContain('reminderConfig: GoalReminderConfigDTOSchema.nullable()');
     });
   });
 }
@@ -570,10 +338,7 @@ import { describe, expect, it } from 'vitest';
   describe('goal reminder-config request dual retired (residual 753)', () => {
     const apiDir = __dirname;
     const crud = readFileSync(resolve(apiDir, 'goal-crud.dto.ts'), 'utf8');
-    const vo = readFileSync(
-      resolve(apiDir, '../value-objects/goal-reminder-config.ts'),
-      'utf8',
-    );
+    const vo = readFileSync(resolve(apiDir, '../value-objects/goal-reminder-config.ts'), 'utf8');
 
     it('imports VO-owned reminder schemas (no local dual bodies)', () => {
       expect(crud).toContain('Residual 753');
@@ -588,9 +353,7 @@ import { describe, expect, it } from 'vitest';
       expect(crud).toContain(
         'const GoalReminderConfigRequestSchema = GoalReminderConfigDTOSchema.extend({',
       );
-      expect(crud).toContain(
-        'ReminderTriggerSchema.extend({ value: z.number().min(0) })',
-      );
+      expect(crud).toContain('ReminderTriggerSchema.extend({ value: z.number().min(0) })');
       expect(crud).toContain('.max(10)');
       expect(crud).toContain(
         'reminderConfig: GoalReminderConfigRequestSchema.nullable().optional()',
@@ -600,9 +363,7 @@ import { describe, expect, it } from 'vitest';
     it('VO residual 741 ownership remains the sole transport/response shapes', () => {
       expect(vo).toContain('Residual 741');
       expect(vo).toContain('export const ReminderTriggerSchema = z.object({');
-      expect(vo).toContain(
-        'export const GoalReminderConfigDTOSchema = z.object({',
-      );
+      expect(vo).toContain('export const GoalReminderConfigDTOSchema = z.object({');
     });
   });
 }
@@ -627,13 +388,9 @@ import { describe, expect, it } from 'vitest';
 
     it('exports progress/snapshot schemas as sole shapes from VO modules', () => {
       expect(progress).toContain('Residual 737');
-      expect(progress).toContain(
-        'export const KeyResultProgressDTOSchema = z.object({',
-      );
+      expect(progress).toContain('export const KeyResultProgressDTOSchema = z.object({');
       expect(snapshot).toContain('Residual 737');
-      expect(snapshot).toContain(
-        'export const KeyResultSnapshotDTOSchema = z.object({',
-      );
+      expect(snapshot).toContain('export const KeyResultSnapshotDTOSchema = z.object({');
     });
 
     it('semantic DTOs are z.infer aliases without interface dual bodies', () => {
@@ -654,16 +411,10 @@ import { describe, expect, it } from 'vitest';
       expect(responseSchemas).toContain(
         'export { KeyResultProgressDTOSchema, KeyResultSnapshotDTOSchema }',
       );
-      expect(responseSchemas).not.toMatch(
-        /const KeyResultProgressDTOSchema = z\.object\(\{/,
-      );
-      expect(responseSchemas).not.toMatch(
-        /const KeyResultSnapshotDTOSchema = z\.object\(\{/,
-      );
+      expect(responseSchemas).not.toMatch(/const KeyResultProgressDTOSchema = z\.object\(\{/);
+      expect(responseSchemas).not.toMatch(/const KeyResultSnapshotDTOSchema = z\.object\(\{/);
       expect(responseSchemas).toContain('progress: KeyResultProgressDTOSchema');
-      expect(responseSchemas).toContain(
-        'keyResultSnapshots: z.array(KeyResultSnapshotDTOSchema)',
-      );
+      expect(responseSchemas).toContain('keyResultSnapshots: z.array(KeyResultSnapshotDTOSchema)');
     });
   });
 }
@@ -694,9 +445,7 @@ import { describe, expect, it } from 'vitest';
 
     it('ProgressBreakdownResSchema owns weighted-average contribution fields', () => {
       expect(responseSchemas).toContain('Residual 805');
-      expect(responseSchemas).toContain(
-        'export const ProgressBreakdownResSchema = z.object({',
-      );
+      expect(responseSchemas).toContain('export const ProgressBreakdownResSchema = z.object({');
       expect(responseSchemas).toContain("calculationMode: z.literal('WeightedAverage')");
       expect(responseSchemas).toContain('krContributions: z.array(');
       expect(responseSchemas).toContain('totalProgress: z.number()');
@@ -707,52 +456,6 @@ import { describe, expect, it } from 'vitest';
     it('OpenAPI goal routes use ProgressBreakdownResSchema only', () => {
       expect(routes).toContain('ProgressBreakdownResSchema');
       expect(routes).toContain("successResponse(ProgressBreakdownResSchema, '获取成功')");
-    });
-  });
-}
-
-// --- merged from query-goal-folders-res-dual.surface.spec.ts ---
-{
-  /**
-   * Residual 779: QueryGoalFoldersRes dual body retired.
-   * OpenAPI + transport use QueryGoalFoldersResSchema; Res is z.infer alias.
-   *
-   * Soft residual 819: GoalFolderClientDTO dual retired via GoalFolderClientDTOSchema
-   * (see goal-aggregate-client-dto-dual surface).
-   */
-  describe('query goal folders res dual retired (residual 779)', () => {
-    const apiDir = __dirname;
-    const dto = readFileSync(resolve(apiDir, 'goal-folder.dto.ts'), 'utf8');
-    const routes = readFileSync(
-      resolve(apiDir, '../../../../../goal/src/api/routes/goal-folder.routes.ts'),
-      'utf8',
-    );
-
-    it('dto owns ResSchema and z.infer alias', () => {
-      expect(dto).toContain('Residual 779');
-      expect(dto).toContain(
-        'export const QueryGoalFoldersResSchema = z.object({',
-      );
-      expect(dto).toContain(
-        'export type QueryGoalFoldersRes = z.infer<typeof QueryGoalFoldersResSchema>',
-      );
-      expect(dto).toContain('data: z.array(GoalFolderClientDTOSchema)');
-      expect(dto).not.toMatch(/export interface QueryGoalFoldersRes\b/);
-    });
-
-    it('OpenAPI list route uses shared Res schema without inline dual body', () => {
-      expect(routes).toContain('QueryGoalFoldersResSchema');
-      expect(routes).toContain(
-        "successResponse(QueryGoalFoldersResSchema, '获取成功')",
-      );
-      expect(routes).not.toMatch(
-        /successResponse\(\s*z\.object\(\{\s*data:\s*z\.array\(GoalFolderClientDTOSchema\)/,
-      );
-    });
-
-    it('imports GoalFolderClientDTOSchema for nested list items', () => {
-      expect(dto).toContain("from './response-schemas'");
-      expect(dto).toContain('GoalFolderClientDTOSchema');
     });
   });
 }

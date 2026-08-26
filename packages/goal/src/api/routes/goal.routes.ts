@@ -20,14 +20,12 @@ import {
   GoalMutationReceiptSchema,
   QueryGoalsResSchema,
   GetGoalAggregateResSchema,
-  ArchiveExpiredResSchema,
   ProgressBreakdownResSchema,
   UpdateGoalInvocationSchema,
   DeleteGoalInvocationSchema,
   GoalStatusCommandInvocationSchema,
   CloneGoalInvocationSchema,
   BatchKeyResultWeightsInvocationSchema,
-  ArchiveExpiredInvocationSchema,
 } from '@memoflow/contracts/goal';
 import type { ListGoalFilters } from '@memoflow/contracts/goal';
 import { brandedId } from '@memoflow/contracts/primitives';
@@ -63,18 +61,15 @@ function parseStringArray(value: unknown): string[] | undefined {
 
 /**
  * Normalize raw Express req.query into a canonical ListGoalFilters object.
- * Resolves aliases: includeChildren → includeKeyResults, limit → pageSize, dirId → folderId.
+ * Resolves transport aliases: includeChildren → includeKeyResults, limit → pageSize.
  * 集中 route 层 query alias 兼容，controller 只接收 canonical shape。
  */
 function normalizeGoalListQuery(query: Record<string, unknown>): ListGoalFilters {
   return {
     status: parseStringArray(query.status) as ListGoalFilters['status'],
     systemView: query.systemView as ListGoalFilters['systemView'],
-    importance: parseStringArray(query.importance) as ListGoalFilters['importance'],
-    category: (query.category as string | undefined) ?? undefined,
-    tags: parseStringArray(query.tags),
-    folderId: (query.folderId ?? query.dirId) as ListGoalFilters['folderId'],
     query: (query.query as string | undefined) ?? undefined,
+    labelIdsAll: parseStringArray(query.labelIdsAll),
     startDate: parseNumber(query.startDate),
     endDate: parseNumber(query.endDate),
     sortBy: query.sortBy as ListGoalFilters['sortBy'],
@@ -255,22 +250,6 @@ export function registerGoalCrudRoutes(
 
   // ==================== Goal Status Operations ====================
 
-  r.routeWithValidation(
-    {
-      method: 'post',
-      path: '/archive-expired',
-      summary: '归档所有已过期目标',
-      responses: {
-        200: successResponse(ArchiveExpiredResSchema, '归档成功'),
-      },
-      validation: {
-        schema: ArchiveExpiredInvocationSchema,
-      },
-    },
-    [auth],
-    (_data, ctx) => controller.archiveExpired(ctx),
-  );
-
   // POST /:id/archive — 归档目标
   r.routeWithValidation(
     {
@@ -296,6 +275,33 @@ export function registerGoalCrudRoutes(
     },
     [auth],
     (data, ctx) => controller.archive(data.params.id, data.body.expectedVersion, ctx),
+  );
+
+  // POST /:id/abandon — 明确放弃目标（不归档）
+  r.routeWithValidation(
+    {
+      method: 'post',
+      path: '/:id/abandon',
+      summary: '放弃目标',
+      request: {
+        params: GoalStatusCommandInvocationSchema.shape.params,
+        body: {
+          content: {
+            'application/json': { schema: GoalStatusCommandInvocationSchema.shape.body },
+          },
+        },
+      },
+      responses: {
+        200: successResponse(GoalMutationReceiptSchema, '已放弃'),
+        404: errorResponse('目标不存在'),
+      },
+      validation: {
+        schema: GoalStatusCommandInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
+    },
+    [auth],
+    (data, ctx) => controller.abandon(data.params.id, data.body.expectedVersion, ctx),
   );
 
   // POST /:id/activate — 激活目标

@@ -21,18 +21,21 @@ vi.mock('@memoflow/utils', async () => {
 // ============================================================
 
 function createGoalFixture(overrides?: Record<string, any>) {
-  const { targetDate: rawTargetDate, ...rest } = overrides ?? {};
+  const { dueDate: rawTargetDate, ...rest } = overrides ?? {};
   // ADR-037: Instant epoch ms (not Date)
-  const targetDate = rawTargetDate != null
-    ? (rawTargetDate instanceof Date ? rawTargetDate.getTime() : Number(rawTargetDate))
-    : null;
+  const dueDate =
+    rawTargetDate != null
+      ? rawTargetDate instanceof Date
+        ? rawTargetDate.getTime()
+        : Number(rawTargetDate)
+      : null;
   return {
     id: rest.id ?? 'goal-id-1',
     name: rest.name ?? rest.title ?? 'Test Goal',
     description: rest.description ?? 'Test description',
     status: rest.status ?? 'IN_PROGRESS',
     title: rest.title ?? 'Test Goal',
-    targetDate,
+    dueDate,
     keyResults: rest.keyResults ?? [],
     progress: rest.progress ?? 50,
     getOverallProgress: vi.fn().mockReturnValue(rest.progress ?? 50),
@@ -52,8 +55,12 @@ function createKeyResultFixture(overrides?: Record<string, any>) {
     title: overrides?.title ?? 'Key Result 1',
     description: overrides?.description ?? 'KR description',
     progress: overrides?.progress ?? {
+      aggregationMethod: 'Last',
+      startingValue: 0,
       currentValue: 30,
       targetValue: 100,
+      progressBaselineValue: null,
+      unit: null,
     },
     weight: overrides?.weight ?? 1,
     ...overrides,
@@ -126,7 +133,7 @@ describe('GoalCrossModuleQueryServiceUseCase', () => {
         title: 'My Goal',
         description: 'Desc',
         status: 'IN_PROGRESS',
-        targetDate: 1700000000,
+        dueDate: 1700000000,
         progress: 75,
       });
       const goalRepo = createMockRepo<IGoalRepository>({
@@ -143,7 +150,7 @@ describe('GoalCrossModuleQueryServiceUseCase', () => {
           title: 'My Goal',
           description: 'Desc',
           status: 'IN_PROGRESS',
-          targetDate: 1700000000,
+          dueDate: 1700000000,
           progress: 75,
         });
       }
@@ -195,7 +202,14 @@ describe('GoalCrossModuleQueryServiceUseCase', () => {
         id: 'kr-1',
         title: 'KR Title',
         description: 'KR Desc',
-        progress: { currentValue: 50, targetValue: 200 },
+        progress: {
+          aggregationMethod: 'Last',
+          startingValue: 0,
+          currentValue: 50,
+          targetValue: 200,
+          progressBaselineValue: null,
+          unit: null,
+        },
         weight: 2,
       });
       const goal = createGoalFixture({ id: 'goal-1', keyResults: [kr] });

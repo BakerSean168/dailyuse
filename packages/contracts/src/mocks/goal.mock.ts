@@ -14,7 +14,6 @@
 
 import { faker } from '@faker-js/faker';
 import type { GoalClientDTO } from '../modules/goal/aggregates/goal-client';
-import type { GoalFolderClientDTO } from '../modules/goal/aggregates/goal-folder-client';
 import type { KeyResultClientDTO } from '../modules/goal/entities/key-result-client';
 import type { GoalRecordClientDTO } from '../modules/goal/aggregates/goal-record-client';
 import type { GoalReviewClientDTO } from '../modules/goal/entities/goal-review-client';
@@ -23,7 +22,6 @@ import type {
   GoalMutationReceipt,
   QueryGoalsRes,
 } from '../modules/goal/api/response-schemas';
-import { ReviewType } from '../modules/goal/value-objects/review-type';
 import type { KeyResultId } from '../primitives';
 
 // ============================================================================
@@ -44,31 +42,16 @@ export function createMockGoal(overrides: Partial<GoalClientDTO> = {}): GoalClie
     identityId,
     name: faker.lorem.words({ min: 2, max: 5 }),
     description: faker.datatype.boolean() ? faker.lorem.sentence() : null,
-    color: faker.datatype.boolean() ? faker.color.rgb({ format: 'hex', casing: 'upper' }) : null,
     feasibilityAnalysis: null,
     motivation: faker.datatype.boolean() ? faker.lorem.sentence() : null,
-    status: faker.helpers.arrayElement(['Active', 'Completed', 'Archived'] as const),
-    importance: faker.helpers.arrayElement([
-      'Vital',
-      'Important',
-      'Moderate',
-      'Minor',
-      'Trivial',
-    ] as const),
-    priority: faker.number.int({ min: 0, max: 10000 }),
-    category: faker.datatype.boolean() ? faker.word.noun() : null,
-    tags: faker.helpers.arrayElements(
-      ['work', 'personal', 'health', 'learning', 'finance'],
-      faker.number.int({ min: 0, max: 3 }),
-    ),
+    status: faker.helpers.arrayElement(['Active', 'Completed', 'Abandoned'] as const),
     startDate: faker.datatype.boolean() ? faker.date.past({ years: 1 }).getTime() : null,
-    targetDate: faker.datatype.boolean() ? faker.date.future({ years: 1 }).getTime() : null,
+    dueDate: faker.datatype.boolean() ? faker.date.future({ years: 1 }).getTime() : null,
     completedAt: null,
     archivedAt: null,
-    folderId: null,
-    parentGoalId: null,
     sortOrder: faker.number.int({ min: 0, max: 1000 }),
     reminderConfig: null,
+    labels: [],
     createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
     updatedAt: now,
     deletedAt: null,
@@ -143,36 +126,6 @@ export function createMockQueryGoalsRes(count = 5, total?: number): QueryGoalsRe
 }
 
 // ============================================================================
-// GoalFolderClientDTO
-// ============================================================================
-
-export function createMockGoalFolder(
-  overrides: Partial<GoalFolderClientDTO> = {},
-): GoalFolderClientDTO {
-  const now = Date.now();
-
-  return {
-    id: `IGoalFolderId_${faker.string.uuid()}` as GoalFolderClientDTO['id'],
-    identityId: `IdentityId_${faker.string.uuid()}` as GoalFolderClientDTO['identityId'],
-    name: faker.word.noun(),
-    description: faker.datatype.boolean() ? faker.lorem.sentence() : null,
-    color: faker.color.rgb({ format: 'hex', casing: 'upper' }),
-    icon: null,
-    parentFolderId: null,
-    sortOrder: faker.number.int({ min: 0, max: 100 }),
-    isSystemFolder: false,
-    folderType: 'User',
-    createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
-    updatedAt: now,
-    deletedAt: null,
-    version: 1,
-    displayName: overrides.name ?? 'Folder',
-    displayIcon: 'default-folder-icon',
-    ...overrides,
-  } as GoalFolderClientDTO;
-}
-
-// ============================================================================
 // KeyResultClientDTO
 // ============================================================================
 
@@ -186,13 +139,15 @@ export function createMockKeyResult(
     title: faker.lorem.words({ min: 3, max: 6 }),
     description: faker.datatype.boolean() ? faker.lorem.sentence() : null,
     progress: {
-      valueType: 'Incremental',
       aggregationMethod: 'Sum',
-      initialValue: 0,
-      targetValue: faker.number.int({ min: 10, max: 100 }),
-      currentValue: faker.number.int({ min: 0, max: 100 }),
+      startingValue: 0,
+      targetValue: 100,
+      currentValue: 25,
+      progressBaselineValue: null,
       unit: null,
     },
+    progressPercentage: 25,
+    isCompleted: false,
     weight: faker.number.int({ min: 1, max: 5 }),
     order: faker.number.int({ min: 0, max: 100 }),
     createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
@@ -251,24 +206,22 @@ export function createMockGoalReview(
 ): GoalReviewClientDTO {
   const now = Date.now();
 
+  const start = now - 7 * 24 * 60 * 60 * 1000;
   return {
     id: `IGoalReviewId_${faker.string.uuid()}` as GoalReviewClientDTO['id'],
     goalId: `IGoalId_${faker.string.uuid()}` as GoalReviewClientDTO['goalId'],
-    type: faker.helpers.arrayElement(Object.values(ReviewType)) as GoalReviewClientDTO['type'],
-    rating: faker.number.int({ min: 1, max: 5 }),
-    summary: faker.lorem.sentence(),
-    achievements: faker.datatype.boolean() ? faker.lorem.sentence() : null,
+    reflection: faker.lorem.paragraph(),
     challenges: faker.datatype.boolean() ? faker.lorem.sentence() : null,
-    improvements: faker.datatype.boolean() ? faker.lorem.sentence() : null,
-    keyResultSnapshots: Array.from({ length: faker.number.int({ min: 0, max: 3 }) }, () => ({
-      keyResultId: `IKeyResultId_${faker.string.uuid()}` as unknown as KeyResultId,
-      title: faker.lorem.words({ min: 3, max: 6 }),
-      targetValue: faker.number.int({ min: 10, max: 100 }),
-      currentValue: faker.number.int({ min: 0, max: 100 }),
-      progressPercentage: faker.number.int({ min: 0, max: 100 }),
-    })),
-    reviewedAt: now - faker.number.int({ min: 0, max: 14 * 24 * 60 * 60 * 1000 }),
-    createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
+    adjustments: faker.datatype.boolean() ? faker.lorem.sentence() : null,
+    systemContext: {
+      windowStartAt: start,
+      windowEndAt: now,
+      overallProgress: { startPercentage: 20, endPercentage: 30, deltaPercentage: 10 },
+      keyResults: [],
+      summary: { recordCount: 0, manualRecordCount: 0, taskContributionCount: 0 },
+    },
+    reviewedAt: now,
+    createdAt: now,
     updatedAt: now,
     ...overrides,
   };

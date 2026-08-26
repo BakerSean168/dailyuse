@@ -11,13 +11,13 @@ describe('PrismaGoalMapper additional coverage', () => {
       color: null,
       feasibilityAnalysis: null,
       motivation: null,
-      status: 'InProgress',
+      status: 'Active',
       importance: 'Medium',
       priority: null,
       category: null,
       tags: null,
       startDate: new Date(1_000),
-      targetDate: null,
+      targetDate: new Date(2_000),
       completedAt: null,
       archivedAt: null,
       folderId: null,
@@ -48,12 +48,13 @@ describe('PrismaGoalMapper additional coverage', () => {
         {
           id: 'review-1',
           goalId: 'goal-1',
-          reviewType: 'Weekly',
+          reviewType: 'Adhoc',
           rating: null,
           content: 'summary',
           achievements: null,
-          challenges: null,
-          lessonsLearned: 'learned',
+          challenges: 'blocked',
+          lessonsLearned: '{"windowStartAt":1000,"windowEndAt":1300,"overallProgress":{"startPercentage":10,"endPercentage":30,"deltaPercentage":20},"keyResults":[],"summary":{"recordCount":2,"manualRecordCount":1,"taskContributionCount":1}}',
+          nextSteps: 'adjust',
           createdAt: new Date(1_300),
           updatedAt: new Date(1_400),
           deletedAt: null,
@@ -84,16 +85,20 @@ describe('PrismaGoalMapper additional coverage', () => {
 
     const dto = PrismaGoalMapper.toDomainDTO(row);
 
-    expect(dto.color).toBe('#3B82F6');
-    expect(dto.priority).toBe(0);
-    expect(dto.tags).toEqual([]);
+    expect(dto.dueDate).toBe(2_000);
+    expect('color' in dto).toBe(false);
+    expect('priority' in dto).toBe(false);
+    expect('tags' in dto).toBe(false);
     expect(dto.sortOrder).toBe(0);
     expect(dto.reminderConfig).toEqual({ enabled: true, triggers: '[]' });
     expect(dto.keyResults?.[0].weight).toBe(1);
     expect(dto.keyResults?.[0].sortOrder).toBe(0);
-    expect(dto.goalReviews?.[0].rating).toBe(3);
-    expect(dto.goalReviews?.[0].improvements).toBe('learned');
-    expect(dto.goalReviews?.[0].keyResultSnapshots).toEqual([]);
+    expect(dto.goalReviews?.[0].reflection).toBe('summary');
+    expect(dto.goalReviews?.[0].challenges).toBe('blocked');
+    expect(dto.goalReviews?.[0].adjustments).toBe('adjust');
+    expect(dto.goalReviews?.[0].systemContext.overallProgress).toEqual({
+      startPercentage: 10, endPercentage: 30, deltaPercentage: 20,
+    });
     expect(dto.weightSnapshots?.[0].snapshotTime).toBe(1_500);
     expect(dto.weightSnapshots?.[0].createdAt).toBe(1_600);
     expect(dto.version).toBe(1);
@@ -166,9 +171,9 @@ describe('PrismaGoalMapper additional coverage', () => {
     } as any);
     const fromFull = PrismaGoalMapper.parseKeyResultProgress({
       progress: {
-        valueType: 'Absolute',
         aggregationMethod: 'Max',
-        initialValue: 2,
+        startingValue: 2,
+        progressBaselineValue: null,
         targetValue: 20,
         currentValue: 10,
         unit: 'pt',
@@ -184,7 +189,7 @@ describe('PrismaGoalMapper additional coverage', () => {
       unit: null,
     });
     expect(fromFull).toEqual({
-      valueType: 'Absolute',
+      valueType: 'Incremental',
       aggregationMethod: 'Max',
       initialValue: 2,
       targetValue: 20,
@@ -204,7 +209,7 @@ describe('PrismaGoalMapper fallback branches (R4)', () => {
       color: null,
       feasibilityAnalysis: null,
       motivation: null,
-      status: 'InProgress',
+      status: 'Active',
       importance: 'Medium',
       priority: null,
       category: null,
@@ -228,7 +233,8 @@ describe('PrismaGoalMapper fallback branches (R4)', () => {
     };
 
     const raw = PrismaGoalMapper.toDomainDTO(row as never);
-    expect(raw.rollupPolicy).toBe('kr');
+    expect(raw.dueDate).toBeNull();
+    expect('rollupPolicy' in raw).toBe(false);
     expect(raw.sortOrder).toBe(0);
     expect(raw.version).toBe(1);
     expect(raw.reminderConfig).toBeNull();
@@ -238,9 +244,21 @@ describe('PrismaGoalMapper fallback branches (R4)', () => {
     expect(raw.updatedAt).toBe(2_000);
   });
 
-  it('parses review improvements across JSON / legacy / null inputs', () => {
-    expect(PrismaGoalMapper.parseReviewImprovements(null)).toBeNull();
-    expect(PrismaGoalMapper.parseReviewImprovements('["a","b"]')).toBe('["a","b"]');
-    expect(PrismaGoalMapper.parseReviewImprovements('not-json')).toBe('not-json');
+  it('parses review system context and falls back to a neutral factual snapshot', () => {
+    const at = 1_700;
+    const neutral = PrismaGoalMapper.parseReviewSystemContext(null, at);
+    expect(neutral.windowStartAt).toBe(at);
+    expect(neutral.windowEndAt).toBe(at);
+    expect(neutral.overallProgress).toEqual({
+      startPercentage: 0, endPercentage: 0, deltaPercentage: 0,
+    });
+    const context = {
+      windowStartAt: 1_000, windowEndAt: 1_700,
+      overallProgress: { startPercentage: 25, endPercentage: 50, deltaPercentage: 25 },
+      keyResults: [],
+      summary: { recordCount: 1, manualRecordCount: 1, taskContributionCount: 0 },
+    };
+    expect(PrismaGoalMapper.parseReviewSystemContext(JSON.stringify(context), at)).toEqual(context);
+    expect(PrismaGoalMapper.parseReviewSystemContext('not-json', at)).toEqual(neutral);
   });
 });

@@ -1,6 +1,7 @@
 import { GoalVersionConflictError, type IGoalRepository } from '../../../domain';
 import { Goal } from '../../../domain';
-import type { KeyResultWeightSnapshotDTO } from '@memoflow/contracts/goal';
+import type { GoalSystemView, KeyResultWeightSnapshotDTO } from '@memoflow/contracts/goal';
+import type { LabelDto } from '@memoflow/contracts/label';
 import {
   AggregateRepositoryBase,
   createEventBusAdapter,
@@ -27,6 +28,80 @@ export class GoalPowerSyncRepository
     super(eventBus);
   }
 
+  private static labelDto(row: Record<string, unknown>): LabelDto {
+    return {
+      id: String(row.id),
+      identityId: String(row.identity_id),
+      name: String(row.name),
+      normalizedName: String(row.normalized_name),
+      color: row.color == null ? null : String(row.color),
+      createdAt: Date.parse(String(row.created_at)),
+      updatedAt: Date.parse(String(row.updated_at)),
+    };
+  }
+
+  private async loadLabelMap(
+    identityId: string,
+    goalIds: readonly string[],
+  ): Promise<Map<string, LabelDto[]>> {
+    const ids = [...new Set(goalIds)];
+    const result = new Map(ids.map((id) => [id, [] as LabelDto[]]));
+    if (ids.length === 0) return result;
+    const placeholders = ids.map(() => '?').join(', ');
+    const rows = await this.db.getAll<Record<string, unknown>>(
+      `SELECT l.*, gl.goal_id AS owner_id
+       FROM labels l
+       INNER JOIN goal_labels gl ON gl.label_id = l.id AND gl.identity_id = l.identity_id
+       WHERE gl.identity_id = ? AND gl.goal_id IN (${placeholders})
+       ORDER BY gl.goal_id ASC, l.name ASC, l.id ASC`,
+      [identityId, ...ids],
+    );
+    for (const row of rows)
+      result.get(String(row.owner_id))?.push(GoalPowerSyncRepository.labelDto(row));
+    return result;
+  }
+
+  async replaceLabels(
+    identityId: string,
+    goalId: string,
+    labelIds: readonly string[],
+  ): Promise<LabelDto[]> {
+    const work = async (tx: PowerSyncLockContext): Promise<LabelDto[]> => {
+      const owner = await tx.getOptional<{ id: string }>(
+        'SELECT id FROM goals WHERE id = ? AND identity_id = ? LIMIT 1',
+        [goalId, identityId],
+      );
+      if (!owner) throw new Error('Goal not found.');
+      const uniqueIds = [...new Set(labelIds)];
+      for (const labelId of uniqueIds) {
+        const label = await tx.getOptional<{ id: string }>(
+          'SELECT id FROM labels WHERE id = ? AND identity_id = ? LIMIT 1',
+          [labelId, identityId],
+        );
+        if (!label) throw new Error('One or more labels do not belong to the identity.');
+      }
+      await tx.execute('DELETE FROM goal_labels WHERE identity_id = ? AND goal_id = ?', [
+        identityId,
+        goalId,
+      ]);
+      for (const labelId of uniqueIds) {
+        await tx.execute(
+          'INSERT INTO goal_labels (id, identity_id, goal_id, label_id) VALUES (?, ?, ?, ?)',
+          [`${identityId}:${goalId}:${labelId}`, identityId, goalId, labelId],
+        );
+      }
+      const labels = await tx.getAll<Record<string, unknown>>(
+        `SELECT l.* FROM labels l
+         INNER JOIN goal_labels gl ON gl.label_id = l.id AND gl.identity_id = l.identity_id
+         WHERE gl.identity_id = ? AND gl.goal_id = ? ORDER BY l.name ASC, l.id ASC`,
+        [identityId, goalId],
+      );
+      return labels.map(GoalPowerSyncRepository.labelDto);
+    };
+    if (this.transactionBound) return work(this.db as PowerSyncLockContext);
+    return (this.db as GoalPowerSyncDatabase).writeTransaction(work);
+  }
+
   async findByIdForIdentity(
     identityId: string,
     id: string,
@@ -46,30 +121,29 @@ export class GoalPowerSyncRepository
     options?: {
       includeChildren?: boolean;
       status?: string;
-      folderId?: string;
-      systemView?: 'active' | 'completed' | 'expired' | 'deleted';
+      systemView?: GoalSystemView;
+      labelIdsAll?: readonly string[];
     },
   ): Promise<Goal[]> {
     const params: unknown[] = [identityId];
-    const filters = ['g.identity_id = ?'];
+    const filters = ['g.identity_id = ?', 'g.deleted_at IS NULL', 'g.archived_at IS NULL'];
 
     switch (options?.systemView) {
-      case 'completed':
-        filters.push(
-          'g.archived_at IS NOT NULL',
-          'g.completed_at IS NOT NULL',
-          'g.deleted_at IS NULL',
-        );
-        break;
-      case 'expired':
-        filters.push('g.archived_at IS NOT NULL', 'g.completed_at IS NULL', 'g.deleted_at IS NULL');
-        break;
-      case 'deleted':
-        filters.push('g.deleted_at IS NOT NULL');
-        break;
       case 'active':
-      default:
-        filters.push('g.archived_at IS NULL', 'g.deleted_at IS NULL');
+        filters.push("g.status = 'Active'");
+        break;
+      case 'completed':
+        filters.push("g.status = 'Completed'");
+        break;
+      case 'abandoned':
+        filters.push("g.status = 'Abandoned'");
+        break;
+      case 'archived':
+        filters.splice(filters.indexOf('g.archived_at IS NULL'), 1);
+        filters.push('g.archived_at IS NOT NULL');
+        break;
+      case 'all':
+      case undefined:
         break;
     }
 
@@ -78,9 +152,20 @@ export class GoalPowerSyncRepository
       params.push(options.status);
     }
 
-    if (options?.folderId) {
-      filters.push('g.folder_id = ?');
-      params.push(options.folderId);
+    const requiredLabelIds = [...new Set(options?.labelIdsAll ?? [])];
+    if (requiredLabelIds.length > 0) {
+      const placeholders = requiredLabelIds.map(() => '?').join(', ');
+      const matches = await this.db.getAll<{ goal_id: string }>(
+        `SELECT goal_id FROM goal_labels
+         WHERE identity_id = ? AND label_id IN (${placeholders})
+         GROUP BY goal_id
+         HAVING COUNT(DISTINCT label_id) = ?`,
+        [identityId, ...requiredLabelIds, requiredLabelIds.length],
+      );
+      if (matches.length === 0) return [];
+      const goalPlaceholders = matches.map(() => '?').join(', ');
+      filters.push(`g.id IN (${goalPlaceholders})`);
+      params.push(...matches.map((row) => row.goal_id));
     }
 
     const rows = await this.db.getAll<Record<string, unknown>>(
@@ -91,8 +176,15 @@ export class GoalPowerSyncRepository
       params,
     );
 
-    // Keep aggregate-derived counts/progress authoritative on both adapters.
-    return Promise.all(rows.map((row) => this.toGoal(row, true)));
+    const labelMap = await this.loadLabelMap(
+      identityId,
+      rows.map((row) => String(row.id)),
+    );
+    return Promise.all(
+      rows.map((row) =>
+        this.toGoal(row, options?.includeChildren ?? true, labelMap.get(String(row.id)) ?? []),
+      ),
+    );
   }
 
   async findByKeyResultIdForIdentity(
@@ -106,21 +198,6 @@ export class GoalPowerSyncRepository
     return row
       ? this.findByIdForIdentity(identityId, row.goal_id, { includeChildren: true })
       : null;
-  }
-
-  async findByFolderId(identityId: string, folderId: string): Promise<Goal[]> {
-    const rows = await this.db.getAll<Record<string, unknown>>(
-      `SELECT *
-        FROM goals
-        WHERE identity_id = ?
-          AND folder_id = ?
-          AND deleted_at IS NULL
-          AND archived_at IS NULL
-        ORDER BY sort_order ASC, created_at DESC`,
-      [identityId, folderId],
-    );
-
-    return Promise.all(rows.map((row) => this.toGoal(row, false)));
   }
 
   protected async persist(goal: Goal): Promise<void> {
@@ -138,20 +215,13 @@ export class GoalPowerSyncRepository
            SET identity_id = ?,
                name = ?,
                description = ?,
-               color = ?,
                feasibility_analysis = ?,
                motivation = ?,
                status = ?,
-               importance = ?,
-               priority = ?,
-               category = ?,
-               tags = ?,
                start_date = ?,
                target_date = ?,
                completed_at = ?,
                archived_at = ?,
-               folder_id = ?,
-               parent_goal_id = ?,
                sort_order = ?,
                reminder_config = ?,
                version = ?,
@@ -162,20 +232,13 @@ export class GoalPowerSyncRepository
             dto.identityId,
             dto.name,
             dto.description,
-            dto.color,
             dto.feasibilityAnalysis,
             dto.motivation,
             dto.status,
-            dto.importance,
-            dto.priority ?? 0,
-            dto.category,
-            JSON.stringify(dto.tags ?? []),
             toDbDateTime(dto.startDate),
-            toDbDateTime(dto.targetDate),
+            toDbDateTime(dto.dueDate),
             toDbDateTime(dto.completedAt),
             toDbDateTime(dto.archivedAt),
-            dto.folderId,
-            dto.parentGoalId,
             dto.sortOrder,
             dto.reminderConfig ? JSON.stringify(dto.reminderConfig) : null,
             dto.version,
@@ -198,20 +261,20 @@ export class GoalPowerSyncRepository
             dto.identityId,
             dto.name,
             dto.description,
-            dto.color,
+            '#3B82F6',
             dto.feasibilityAnalysis,
             dto.motivation,
             dto.status,
-            dto.importance,
-            dto.priority ?? 0,
-            dto.category,
-            JSON.stringify(dto.tags ?? []),
+            'moderate',
+            0,
+            null,
+            '[]',
             toDbDateTime(dto.startDate),
-            toDbDateTime(dto.targetDate),
+            toDbDateTime(dto.dueDate),
             toDbDateTime(dto.completedAt),
             toDbDateTime(dto.archivedAt),
-            dto.folderId,
-            dto.parentGoalId,
+            null,
+            null,
             dto.sortOrder,
             dto.reminderConfig ? JSON.stringify(dto.reminderConfig) : null,
             dto.version,
@@ -267,28 +330,24 @@ export class GoalPowerSyncRepository
   private async persistWithExpectedVersion(goal: Goal, expectedVersion: number): Promise<void> {
     const dto = goal.toServerDTO(false);
     const result = await this.db.execute(
-      `UPDATE goals SET name = ?, description = ?, color = ?, feasibility_analysis = ?, motivation = ?,
-       status = ?, importance = ?, priority = ?, category = ?, tags = ?, start_date = ?, target_date = ?,
-       folder_id = ?, parent_goal_id = ?, reminder_config = ?, version = ?, updated_at = ?
+      `UPDATE goals SET name = ?, description = ?, feasibility_analysis = ?, motivation = ?,
+       status = ?, start_date = ?, target_date = ?, completed_at = ?, archived_at = ?,
+       reminder_config = ?, version = ?, updated_at = ?, deleted_at = ?
        WHERE id = ? AND identity_id = ? AND version = ?`,
       [
         dto.name,
         dto.description,
-        dto.color,
         dto.feasibilityAnalysis,
         dto.motivation,
         dto.status,
-        dto.importance,
-        dto.priority ?? 0,
-        dto.category,
-        JSON.stringify(dto.tags ?? []),
         toDbDateTime(dto.startDate),
-        toDbDateTime(dto.targetDate),
-        dto.folderId,
-        dto.parentGoalId,
+        toDbDateTime(dto.dueDate),
+        toDbDateTime(dto.completedAt),
+        toDbDateTime(dto.archivedAt),
         dto.reminderConfig ? JSON.stringify(dto.reminderConfig) : null,
         dto.version,
         toDbDateTime(dto.updatedAt),
+        toDbDateTime(dto.deletedAt),
         dto.id,
         dto.identityId,
         expectedVersion,
@@ -351,57 +410,11 @@ export class GoalPowerSyncRepository
     );
   }
 
-  async batchMoveToFolder(
-    identityId: string,
-    ids: string[],
-    folderId: string | null,
-  ): Promise<void> {
-    if (ids.length === 0) return;
-    const placeholders = ids.map(() => '?').join(', ');
-    await this.db.execute(
-      `UPDATE goals SET folder_id = ?, updated_at = ? WHERE identity_id = ? AND id IN (${placeholders})`,
-      [folderId, toDbDateTime(new Date()), identityId, ...ids],
-    );
-  }
-
-  async isAncestor(
-    identityId: string,
-    potentialAncestorId: string,
-    potentialDescendantId: string,
-  ): Promise<boolean> {
-    let currentId: string | null = potentialDescendantId;
-    const visited = new Set<string>();
-
-    while (currentId) {
-      if (currentId === potentialAncestorId) return true;
-      if (visited.has(currentId)) return false;
-      visited.add(currentId);
-
-      const parentRow: { parent_goal_id: string | null } | null = await this.db.getOptional(
-        `SELECT parent_goal_id FROM goals WHERE id = ? AND identity_id = ? LIMIT 1`,
-        [currentId, identityId],
-      );
-      currentId = parentRow?.parent_goal_id ?? null;
-    }
-
-    return false;
-  }
-
-  async findChildren(identityId: string, parentId: string): Promise<Goal[]> {
-    const rows = await this.db.getAll<Record<string, unknown>>(
-      `SELECT *
-       FROM goals
-       WHERE parent_goal_id = ?
-         AND identity_id = ?
-         AND deleted_at IS NULL
-       ORDER BY sort_order ASC`,
-      [parentId, identityId],
-    );
-
-    return Promise.all(rows.map((row) => this.toGoal(row, false)));
-  }
-
-  private async toGoal(row: Record<string, unknown>, includeChildren: boolean): Promise<Goal> {
+  private async toGoal(
+    row: Record<string, unknown>,
+    includeChildren: boolean,
+    labels?: readonly LabelDto[],
+  ): Promise<Goal> {
     const children = includeChildren
       ? {
           keyResults: await this.loadKeyResults(String(row.id)),
@@ -410,7 +423,13 @@ export class GoalPowerSyncRepository
         }
       : undefined;
 
-    return PowerSyncGoalMapper.toDomain(row, children);
+    const goal = PowerSyncGoalMapper.toDomain(row, children);
+    const projection =
+      labels ??
+      (await this.loadLabelMap(String(row.identity_id), [String(row.id)])).get(String(row.id)) ??
+      [];
+    goal.hydrateLabels(projection);
+    return goal;
   }
 
   private async loadKeyResults(goalId: string): Promise<RawKeyResultData[]> {
@@ -511,9 +530,9 @@ export class GoalPowerSyncRepository
             goalId,
             keyResult.title,
             keyResult.description,
-            progress.valueType ?? 'Incremental',
+            'Incremental',
             progress.aggregationMethod ?? 'Last',
-            progress.initialValue ?? 0,
+            progress.startingValue ?? 0,
             progress.targetValue ?? 100,
             progress.currentValue ?? 0,
             progress.unit ?? null,
@@ -536,9 +555,9 @@ export class GoalPowerSyncRepository
             goalId,
             keyResult.title,
             keyResult.description,
-            progress.valueType ?? 'Incremental',
+            'Incremental',
             progress.aggregationMethod ?? 'Last',
-            progress.initialValue ?? 0,
+            progress.startingValue ?? 0,
             progress.targetValue ?? 100,
             progress.currentValue ?? 0,
             progress.unit ?? null,
@@ -593,13 +612,13 @@ export class GoalPowerSyncRepository
           [
             identityId,
             goalId,
-            review.type,
-            review.summary,
-            review.achievements,
-            review.challenges,
-            review.improvements,
+            'Adhoc',
+            review.reflection,
             null,
-            review.rating,
+            review.challenges,
+            JSON.stringify(review.systemContext),
+            review.adjustments,
+            null,
             toDbDateTime(review.updatedAt),
             review.id,
           ],
@@ -615,13 +634,13 @@ export class GoalPowerSyncRepository
             review.id,
             identityId,
             goalId,
-            review.type,
-            review.summary,
-            review.achievements,
-            review.challenges,
-            review.improvements,
+            'Adhoc',
+            review.reflection,
             null,
-            review.rating,
+            review.challenges,
+            JSON.stringify(review.systemContext),
+            review.adjustments,
+            null,
             toDbDateTime(review.createdAt),
             toDbDateTime(review.updatedAt),
           ],

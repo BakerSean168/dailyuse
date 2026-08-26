@@ -5,6 +5,7 @@
  *
  * Routes:
  *   POST   /:id/key-results/:krId/records          — 创建记录
+ *   PUT    /:id/key-results/:krId/records/:recordId — 编辑记录
  *   GET    /:id/key-results/:krId/records           — 按 KeyResult 查询记录
  *   GET    /:id/records                             — 按 Goal 查询记录
  *   DELETE /:id/key-results/:krId/records/:recordId — 删除记录
@@ -22,6 +23,7 @@ import {
   GoalMutationReceiptSchema,
   GoalRecordListResSchema,
   CreateRecordInvocationSchema,
+  UpdateRecordInvocationSchema,
   DeleteRecordInvocationSchema,
 } from '@memoflow/contracts/goal';
 import { brandedId } from '@memoflow/contracts/primitives';
@@ -82,6 +84,40 @@ export function registerRecordRoutes(
     [auth],
     (data, ctx) => controller.createRecord(data.params.id, data.params.krId, data.body, ctx),
     { successStatus: 201 },
+  );
+
+  // PUT /:id/key-results/:krId/records/:recordId — 编辑用户记录并重算 KR
+  r.routeWithValidation(
+    {
+      method: 'put',
+      path: '/:id/key-results/:krId/records/:recordId',
+      summary: '编辑进度记录',
+      request: {
+        params: UpdateRecordInvocationSchema.shape.params,
+        body: {
+          content: {
+            'application/json': { schema: UpdateRecordInvocationSchema.shape.body },
+          },
+        },
+      },
+      responses: {
+        200: successResponse(GoalMutationReceiptSchema, '更新成功'),
+        404: errorResponse('记录不存在'),
+      },
+      validation: {
+        schema: UpdateRecordInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
+    },
+    [auth],
+    (data, ctx) =>
+      controller.updateRecord(
+        data.params.id,
+        data.params.krId,
+        data.params.recordId,
+        data.body,
+        ctx,
+      ),
   );
 
   // GET /:id/key-results/:krId/records — 按 KeyResult 查询记录

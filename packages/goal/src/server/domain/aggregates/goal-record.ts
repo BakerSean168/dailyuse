@@ -29,7 +29,7 @@ import type {
   GoalRecordSource,
   GoalRecordSourceTypeValue,
 } from '@memoflow/contracts/goal';
-import type {IdentityId, Instant} from '@memoflow/contracts/primitives';
+import type { IdentityId, Instant } from '@memoflow/contracts/primitives';
 
 // 内部状态接口
 export interface GoalRecordState {
@@ -164,8 +164,14 @@ export class GoalRecord extends Entity<GoalRecordId> {
   /**
    * ✅ 更新备注
    */
-  public updateNote(note: string): void {
-    this._props.note = note.trim() || null;
+  public updateValue(value: number): void {
+    if (!Number.isFinite(value)) throw new Error('Value must be a finite number');
+    this._props.value = value;
+    this._props.updatedAt = Date.now();
+  }
+
+  public updateNote(note?: string | null): void {
+    this._props.note = note?.trim() || null;
     this._props.updatedAt = Date.now();
   }
 

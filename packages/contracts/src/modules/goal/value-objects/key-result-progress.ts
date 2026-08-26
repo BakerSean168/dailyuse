@@ -1,43 +1,23 @@
-/**
- * Key Result Progress Value Object Contracts
- * 关键成果进度值对象契约
- *
- * 注意：Contracts 包只包含纯类型定义，不包含业务逻辑或方法
- */
-
 import { z } from 'zod';
-import { KeyResultValueType } from './key-result-value-type';
 import { KeyResultCalculationMethod } from './key-result-calculation-method';
 
-// ============ Domain Shape (领域层) ============
-
-/**
- * 关键成果进度 - Domain Shape
- * 给 domain-shared 中的 Class 实现用
- */
+/** Canonical KR Measurement V2 shape. */
 export interface KeyResultProgress {
-  valueType: KeyResultValueType;
-  aggregationMethod: KeyResultCalculationMethod;
-  /**
-   * 起始值（可选，默认为 0）
-   * 用于计算进度百分比：(currentValue - initialValue) / (targetValue - initialValue)
-   */
-  initialValue: number;
-  targetValue: number;
+  startingValue: number;
   currentValue: number;
+  targetValue: number;
+  progressBaselineValue: number | null;
+  aggregationMethod: KeyResultCalculationMethod;
   unit: string | null;
 }
 
-// Residual 737: KeyResultProgressDTO dual body retired — OpenAPI + transport use
-// KeyResultProgressDTOSchema (semantic type is a z.infer alias).
-
 export const KeyResultProgressDTOSchema = z.object({
-  valueType: z.enum(KeyResultValueType),
-  aggregationMethod: z.enum(KeyResultCalculationMethod),
-  initialValue: z.number(),
-  targetValue: z.number(),
+  startingValue: z.number(),
   currentValue: z.number(),
-  unit: z.string().nullable(),
+  targetValue: z.number(),
+  progressBaselineValue: z.number().nullable(),
+  aggregationMethod: z.enum(KeyResultCalculationMethod),
+  unit: z.string().max(20).nullable(),
 });
 
 export type KeyResultProgressDTO = z.infer<typeof KeyResultProgressDTOSchema>;

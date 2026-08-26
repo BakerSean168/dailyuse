@@ -6,7 +6,6 @@ describe('rawDataToGoalState', () => {
   const GOAL_ID_1 = aPrefixedUuid('IGoalId', 'goal-state-goal-1');
   const GOAL_ID_2 = aPrefixedUuid('IGoalId', 'goal-state-goal-2');
   const IDENTITY_ID_1 = aPrefixedUuid('IdentityId', 'goal-state-owner-1');
-  const FOLDER_ID_1 = aPrefixedUuid('IGoalFolderId', 'goal-state-folder-1');
   const KEY_RESULT_ID_1 = aPrefixedUuid('IKeyResultId', 'goal-state-kr-1');
   const REVIEW_ID_1 = aPrefixedUuid('IGoalReviewId', 'goal-state-review-1');
   const SNAPSHOT_ID_1 = aPrefixedUuid('IKeyResultWeightSnapshotId', 'goal-state-snapshot-1');
@@ -17,20 +16,13 @@ describe('rawDataToGoalState', () => {
       identityId: IDENTITY_ID_1,
       name: 'Goal',
       description: null,
-      color: '#123456',
       feasibilityAnalysis: null,
       motivation: null,
-      status: 'InProgress',
-      importance: 'Medium',
-      priority: 10,
-      category: null,
-      tags: ['a', 'b'],
+      status: 'Active',
       startDate: new Date(1_000),
-      targetDate: new Date(2_000),
+      dueDate: new Date(2_000),
       completedAt: null,
       archivedAt: null,
-      folderId: FOLDER_ID_1,
-      parentGoalId: null,
       sortOrder: 1,
       reminderConfig: {
         enabled: true,
@@ -62,13 +54,16 @@ describe('rawDataToGoalState', () => {
         {
           id: REVIEW_ID_1,
           goalId: GOAL_ID_1,
-          type: 'Weekly',
-          rating: 4,
-          summary: 'ok',
-          achievements: null,
+          reflection: 'ok',
           challenges: null,
-          improvements: null,
-          keyResultSnapshots: [],
+          adjustments: null,
+          systemContext: {
+            windowStartAt: 1_000,
+            windowEndAt: 1_200,
+            overallProgress: { startPercentage: 0, endPercentage: 50, deltaPercentage: 50 },
+            keyResults: [],
+            summary: { recordCount: 0, manualRecordCount: 0, taskContributionCount: 0 },
+          },
           reviewedAt: new Date(1_200),
           version: 1,
           createdAt: new Date(1_200),
@@ -102,13 +97,17 @@ describe('rawDataToGoalState', () => {
 
     const state = rawDataToGoalState(raw);
 
-    expect(state.tags).toEqual(['a', 'b']);
+    expect(state.dueDate).toBe(2_000);
+    expect('tags' in state).toBe(false);
+    expect('folderId' in state).toBe(false);
+    expect('parentGoalId' in state).toBe(false);
     expect(state.reminderConfig?.toDTO().enabled).toBe(true);
     expect(state.keyResults).toHaveLength(1);
     expect(state.keyResults[0].progress.aggregationMethod).toBe('Last');
     expect(state.keyResults[0].progress.currentValue).toBe(0);
     expect(state.goalReviews).toHaveLength(1);
-    expect(state.goalReviews[0].keyResultSnapshots).toHaveLength(0);
+    expect(state.goalReviews[0].reflection).toBe('ok');
+    expect(state.goalReviews[0].systemContext.overallProgress.endPercentage).toBe(50);
     expect(state.weightSnapshots).toHaveLength(1);
     expect(state.weightSnapshots[0].toDTO().id).toBe(SNAPSHOT_ID_1);
   });
@@ -119,20 +118,13 @@ describe('rawDataToGoalState', () => {
       identityId: IDENTITY_ID_1,
       name: 'Goal2',
       description: 'desc',
-      color: '#abcdef',
       feasibilityAnalysis: 'f',
       motivation: 'm',
       status: 'Completed',
-      importance: 'High',
-      priority: 20,
-      category: 'cat',
-      tags: ['x'],
       startDate: null,
-      targetDate: null,
+      dueDate: null,
       completedAt: new Date(3_000),
       archivedAt: null,
-      folderId: null,
-      parentGoalId: GOAL_ID_1,
       sortOrder: 2,
       reminderConfig: {
         enabled: false,
@@ -151,9 +143,9 @@ describe('rawDataToGoalState', () => {
 
     const state = rawDataToGoalState(raw);
 
-    expect(state.tags).toEqual(['x']);
-    expect(state.folderId).toBeNull();
-    expect(state.parentGoalId).toBe(GOAL_ID_1);
+    expect(state.dueDate).toBeNull();
+    expect('category' in state).toBe(false);
+    expect('importance' in state).toBe(false);
     expect(state.keyResults).toEqual([]);
     expect(state.goalReviews).toEqual([]);
     expect(state.weightSnapshots).toEqual([]);

@@ -1,37 +1,18 @@
-/**
- * Key Result Snapshot Value Object Contracts
- * 关键成果快照值对象契约（用于复盘记录）
- *
- * 注意：Contracts 包只包含纯类型定义，不包含业务逻辑或方法
- */
-
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { KeyResultId } from '../../../primitives';
+import { KeyResultCalculationMethod } from './key-result-calculation-method';
 
-// ============ Domain Shape (领域层) ============
-
-/**
- * 关键成果快照 - Domain Shape
- * 给 domain-shared 中的 Class 实现用
- */
-export interface KeyResultSnapshot {
-  keyResultId: KeyResultId;
-  title: string;
-  targetValue: number;
-  currentValue: number;
-  progressPercentage: number;
-}
-
-// Residual 737: KeyResultSnapshotDTO dual body retired — OpenAPI + transport use
-// KeyResultSnapshotDTOSchema (semantic type is a z.infer alias).
-
+/** Authoritative KR measurement snapshot used by Goal Review. */
 export const KeyResultSnapshotDTOSchema = z.object({
   keyResultId: brandedId<KeyResultId>(),
   title: z.string(),
-  targetValue: z.number(),
   currentValue: z.number(),
-  progressPercentage: z.number(),
+  targetValue: z.number(),
+  progressBaselineValue: z.number().nullable(),
+  aggregationMethod: z.enum(KeyResultCalculationMethod),
+  weight: z.number().int().min(1).max(5),
+  progressPercentage: z.number().min(0).max(100),
 });
-
-export type KeyResultSnapshotDTO = z.infer<typeof KeyResultSnapshotDTOSchema>;
+export type KeyResultSnapshot = z.infer<typeof KeyResultSnapshotDTOSchema>;
+export type KeyResultSnapshotDTO = KeyResultSnapshot;
