@@ -1,8 +1,11 @@
 import type { ScheduleEventMap } from '@memoflow/contracts/schedule';
 import type { GoalScheduleProjectionEventMap } from '@memoflow/goal/schedule-projection';
+import { GOAL_SCHEDULING_OWNER_TYPE } from '@memoflow/goal/schedule-projection';
 import type { RoutineScheduleProjectionEventMap } from '@memoflow/reminder/schedule-projection/routine';
+import { ROUTINE_SCHEDULING_OWNER_TYPE } from '@memoflow/reminder/schedule-projection/routine';
 import type { ReminderScheduleProjectionEventMap } from '@memoflow/reminder/schedule-projection';
 import type { TaskScheduleProjectionEventMap } from '@memoflow/task/schedule-projection';
+import { TASK_SCHEDULING_OWNER_TYPE } from '@memoflow/task/schedule-projection';
 import {
   createTypedEventPublisher,
   createTypedEventSubscriber,
@@ -79,6 +82,13 @@ export function createScheduleOrchestrationModule(
         );
         return schedulingPort.reconcile(plan.owner, plan.desired);
       },
+      buildOwner: (ref) =>
+        options.taskProjection.source.buildTemplateOwner(ref.templateId, ref.identityId),
+      listSchedulerOwners: () =>
+        scheduleTaskRepository.listSchedulingOwners?.(TASK_SCHEDULING_OWNER_TYPE) ??
+        Promise.resolve([]),
+      removeOwner: (owner) => schedulingPort.removeOwner(owner),
+      describeOwner: (owner) => `${owner.identityId}/${owner.id}`,
     }),
     defineProjectionRepairLane<{ goalId: string; identityId: string }>({
       source: 'goal',
@@ -88,6 +98,13 @@ export function createScheduleOrchestrationModule(
         const plan = await options.goalProjection.source.buildGoalPlan(ref.goalId, ref.identityId);
         return schedulingPort.reconcile(plan.owner, plan.desired);
       },
+      buildOwner: (ref) =>
+        options.goalProjection.source.buildGoalOwner(ref.goalId, ref.identityId),
+      listSchedulerOwners: () =>
+        scheduleTaskRepository.listSchedulingOwners?.(GOAL_SCHEDULING_OWNER_TYPE) ??
+        Promise.resolve([]),
+      removeOwner: (owner) => schedulingPort.removeOwner(owner),
+      describeOwner: (owner) => `${owner.identityId}/${owner.id}`,
     }),
   ];
 
@@ -124,6 +141,13 @@ export function createScheduleOrchestrationModule(
           );
           return schedulingPort.reconcile(plan.owner, plan.desired);
         },
+        buildOwner: (ref) =>
+          options.routineProjection!.source.buildRoutineOwner(ref.routineId, ref.identityId),
+        listSchedulerOwners: () =>
+          scheduleTaskRepository.listSchedulingOwners?.(ROUTINE_SCHEDULING_OWNER_TYPE) ??
+          Promise.resolve([]),
+        removeOwner: (owner) => schedulingPort.removeOwner(owner),
+        describeOwner: (owner) => `${owner.identityId}/${owner.id}`,
       }),
     );
   }

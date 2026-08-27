@@ -6970,6 +6970,14 @@
       ]
     },
     {
+      "path": "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/scheduler-to-fact-vertical-wave3.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/notification/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/notification/src/server/infrastructure/adapters/prisma/mappers/__tests__/notification-preference-prisma.mapper.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -8139,6 +8147,14 @@
     },
     {
       "path": "packages/schedule-orchestration/src/__tests__/projection-repair-runtime.test.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/schedule-orchestration/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/schedule-orchestration/src/__tests__/reminder-due-set-parity.test.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/schedule-orchestration/vitest.config.ts"
@@ -10091,6 +10107,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "tools/governance/__tests__/schedule-notification-separation.test.mjs",
+      "primarySuite": "governance",
+      "collectors": [
+        "tools/governance/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "tools/governance/__tests__/scope-constraint.test.mjs",
       "primarySuite": "governance",
       "collectors": [
@@ -10444,7 +10468,7 @@
       "type": "primary",
       "suite": "integration",
       "runner": "vitest",
-      "fileCount": 2
+      "fileCount": 3
     },
     {
       "id": "packages/notification/vitest.config.ts",
@@ -10521,7 +10545,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 11
+      "fileCount": 12
     },
     {
       "id": "packages/schedule/vitest.config.ts",
@@ -10675,7 +10699,7 @@
       "type": "primary",
       "suite": "governance",
       "runner": "vitest",
-      "fileCount": 9
+      "fileCount": 10
     },
     {
       "id": "test-system-v2:test",
@@ -11316,13 +11340,13 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 976,
-    "integration": 29,
+    "unit": 977,
+    "integration": 30,
     "smoke": 3,
     "boundary-ipc": 9,
     "boundary-main": 5,
     "e2e": 63,
     "perf": 1,
-    "governance": 37
+    "governance": 38
   }
 }

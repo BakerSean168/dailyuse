@@ -77,6 +77,16 @@ export interface IScheduleTaskRepository {
   findBySchedulingOwner?(owner: SchedulingOwner): Promise<ScheduleTask[]>;
 
   /**
+   * Neutral Scheduler-owner enumeration for bounded stale-owner repair sweeps.
+   * Returns the deduplicated set of owners that still hold persisted scheduling
+   * keys (schedulingKey != null), optionally narrowed to one owner type.
+   * Optional on the legacy domain interface so unrelated test doubles do not
+   * become scheduling-aware; the repair sweep fails closed (no owners found)
+   * when the capability is absent.
+   */
+  listSchedulingOwners?(ownerType?: string): Promise<SchedulingOwner[]>;
+
+  /**
    * Persist a successful owner reconcile receipt inside the caller's transaction.
    * Optional on the legacy domain interface so unrelated test doubles do not become
    * scheduling-aware; SchedulingPort fails closed when the capability is absent.

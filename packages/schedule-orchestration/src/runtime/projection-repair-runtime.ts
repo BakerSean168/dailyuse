@@ -1,4 +1,8 @@
-import type { SchedulingReconcileReceipt } from '@memoflow/contracts/schedule';
+import {
+  buildSchedulingOwnerKey,
+  type SchedulingOwner,
+  type SchedulingReconcileReceipt,
+} from '@memoflow/contracts/schedule';
 import { createLogger } from '@memoflow/utils/logger';
 import type {
   ProjectionRepairCounters,
@@ -21,6 +25,18 @@ export interface TypedProjectionRepairLane<TRef> {
   readonly enumerate: () => Promise<readonly TRef[]>;
   readonly repair: (ref: TRef) => Promise<SchedulingReconcileReceipt>;
   readonly describe: (ref: TRef) => string;
+  /**
+   * Bounded stale-owner reconciliation (lost delete-event healing). When all
+   * three members are present the sweep removes Scheduler owners that the
+   * source no longer enumerates, i.e. owners whose delete event was lost and
+   * whose persisted scheduling keys would otherwise survive a restart forever.
+   * The lane MUST return only owners of its own `source` so one lane can never
+   * remove another source's owners.
+   */
+  readonly buildOwner?: (ref: TRef) => SchedulingOwner;
+  readonly listSchedulerOwners?: () => Promise<readonly SchedulingOwner[]>;
+  readonly removeOwner?: (owner: SchedulingOwner) => Promise<SchedulingReconcileReceipt>;
+  readonly describeOwner?: (owner: SchedulingOwner) => string;
 }
 
 /** Type-erased lane consumed by the common runtime after feature composition. */
@@ -29,6 +45,10 @@ export interface ProjectionRepairLane {
   readonly enumerate: () => Promise<readonly unknown[]>;
   readonly repair: (ref: unknown) => Promise<SchedulingReconcileReceipt>;
   readonly describe: (ref: unknown) => string;
+  readonly buildOwner?: (ref: unknown) => SchedulingOwner;
+  readonly listSchedulerOwners?: () => Promise<readonly SchedulingOwner[]>;
+  readonly removeOwner?: (owner: SchedulingOwner) => Promise<SchedulingReconcileReceipt>;
+  readonly describeOwner?: (owner: SchedulingOwner) => string;
 }
 
 export function defineProjectionRepairLane<TRef>(
@@ -39,6 +59,12 @@ export function defineProjectionRepairLane<TRef>(
     enumerate: lane.enumerate,
     repair: (ref) => lane.repair(ref as TRef),
     describe: (ref) => lane.describe(ref as TRef),
+    ...(lane.buildOwner
+      ? { buildOwner: (ref) => lane.buildOwner!(ref as TRef) }
+      : {}),
+    ...(lane.listSchedulerOwners ? { listSchedulerOwners: lane.listSchedulerOwners } : {}),
+    ...(lane.removeOwner ? { removeOwner: lane.removeOwner } : {}),
+    ...(lane.describeOwner ? { describeOwner: lane.describeOwner } : {}),
   };
 }
 
@@ -136,6 +162,8 @@ export function createProjectionRepairRuntime(
         }
       }
 
+      await sweepStaleOwners(lane, refs);
+
       const sourceCounters = counters[lane.source];
       logger.info(
         `[ProjectionRepair] ${lane.source} sweep complete (${refs.length} owners)` +
@@ -143,6 +171,58 @@ export function createProjectionRepairRuntime(
           ` unchanged=${sourceCounters.unchanged}` +
           ` failed=${sourceCounters.failed}`,
       );
+    }
+  }
+
+  async function sweepStaleOwners(
+    lane: ProjectionRepairLane,
+    refs: readonly unknown[],
+  ): Promise<void> {
+    if (!lane.buildOwner || !lane.listSchedulerOwners || !lane.removeOwner) {
+      return;
+    }
+
+    const describeOwner = lane.describeOwner ?? ((owner: SchedulingOwner) => owner.id);
+    try {
+      const validOwnerKeys = new Set(
+        refs.map((ref) => buildSchedulingOwnerKey(lane.buildOwner!(ref))),
+      );
+      const schedulerOwners = await lane.listSchedulerOwners();
+
+      for (const schedulerOwner of schedulerOwners) {
+        const ownerKey = buildSchedulingOwnerKey(schedulerOwner);
+        if (validOwnerKeys.has(ownerKey)) {
+          continue;
+        }
+        try {
+          const receipt = await lane.removeOwner!(schedulerOwner);
+          if (receipt.status === 'failed') {
+            counters[lane.source].failed += 1;
+            logger.error(
+              `[ProjectionRepair] ${lane.source} stale owner ${describeOwner(schedulerOwner)} returned failed receipt: ${receipt.failure?.message ?? 'unknown failure'}`,
+            );
+            continue;
+          }
+
+          if (mutationCount(receipt) > 0) {
+            counters[lane.source].repaired += 1;
+            logger.info(
+              `[ProjectionRepair] ${lane.source} removed stale owner ${describeOwner(schedulerOwner)} (deleted=${receipt.deletedCount})`,
+            );
+          } else {
+            counters[lane.source].unchanged += 1;
+          }
+        } catch (error) {
+          counters[lane.source].failed += 1;
+          logger.error(
+            `[ProjectionRepair] ${lane.source} stale owner ${describeOwner(schedulerOwner)} removal failed`,
+            error,
+          );
+        }
+      }
+    } catch (error) {
+      counters[lane.source].failed += 1;
+      logger.error(`[ProjectionRepair] ${lane.source} stale-owner enumeration failed`, error);
     }
   }
 

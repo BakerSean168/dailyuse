@@ -11,6 +11,9 @@ export {
 export { createReminderPrismaScheduleProjectionSource } from '../server/infrastructure/prisma';
 export { createReminderPowerSyncScheduleProjectionSource } from '../server/infrastructure/powersync';
 export {
+  ROUTINE_SCHEDULING_OWNER_TYPE,
+} from '../server/infrastructure/routine-schedule/routine-schedule-contract';
+export {
   createRoutineScheduleProjectionEventHandlers,
   createRoutineScheduleProjectionSource,
   routineScheduleProjectionEventNames,

@@ -195,6 +195,43 @@ describe('task projection runtime -> SchedulingPort', () => {
     expect(scheduling.removals).toHaveLength(0);
   });
 
+  it('reconciles the owner on task:rescheduled (incremental fast path)', async () => {
+    const taskEvents = createTaskEventsHarness();
+    const scheduling = createSchedulingPortHarness();
+    const source = sourceWithPlan();
+    const runtime = createTaskProjectionRuntime({
+      source,
+      schedulingPort: scheduling.port,
+      taskEvents: taskEvents.subscriber,
+    });
+    await runtime.start();
+
+    await taskEvents.emit('task:rescheduled', {
+      identityId: 'IdentityId_schedule-owner',
+      taskInstanceId: 'TaskInstanceId_instance',
+      taskTemplateId: 'TaskTemplateId_template',
+      previousDueDate: Date.now(),
+      newDueDate: Date.now(),
+    } as never);
+
+    expect(source.buildTemplatePlan).toHaveBeenCalledWith(
+      'TaskTemplateId_template',
+      'IdentityId_schedule-owner',
+    );
+    expect(scheduling.reconciles).toEqual([{ owner: owner(), desired: [intent()] }]);
+    expect(scheduling.removals).toEqual([]);
+
+    await runtime.stop();
+    await taskEvents.emit('task:rescheduled', {
+      identityId: 'IdentityId_schedule-owner',
+      taskInstanceId: 'TaskInstanceId_instance',
+      taskTemplateId: 'TaskTemplateId_template',
+      previousDueDate: Date.now(),
+      newDueDate: Date.now(),
+    } as never);
+    expect(source.buildTemplatePlan).toHaveBeenCalledTimes(1);
+  });
+
   it('removes the whole TaskTemplate owner on pause/delete and unsubscribes on stop', async () => {
     const taskEvents = createTaskEventsHarness();
     const scheduling = createSchedulingPortHarness();

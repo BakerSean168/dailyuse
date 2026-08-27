@@ -169,4 +169,103 @@ describe('common projection repair runtime (SCHED-3601)', () => {
       total: { repaired: 1, unchanged: 0, failed: 1 },
     });
   });
+
+  it('heals an intentionally lost delete event by removing the stale Scheduler owner after restart', async () => {
+    const removedOwners: string[] = [];
+    const runtime = createProjectionRepairRuntime([
+      defineProjectionRepairLane<{ id: string }>({
+        source: 'task',
+        // The source row is physically gone (delete event was lost): no refs.
+        enumerate: async () => [],
+        describe: (ref) => ref.id,
+        repair: async (ref) => receipt(owner('task', ref.id), { unchanged: 1 }),
+        buildOwner: (ref) => owner('task', ref.id),
+        // The lost delete event left the owner's persisted scheduling keys behind.
+        listSchedulerOwners: async () => [owner('task', 'deleted-template')],
+        removeOwner: async (target) => {
+          removedOwners.push(target.id);
+          return receipt(target, { deleted: 1 });
+        },
+        describeOwner: (target) => target.id,
+      }),
+    ]);
+
+    await runtime.start();
+
+    expect(removedOwners).toEqual(['deleted-template']);
+    expect(runtime.metrics.snapshot().task).toEqual({ repaired: 1, unchanged: 0, failed: 0 });
+  });
+
+  it('keeps a Scheduler owner the source still enumerates and removes a stale same-source owner', async () => {
+    const removedOwners: string[] = [];
+    const runtime = createProjectionRepairRuntime([
+      defineProjectionRepairLane<{ id: string }>({
+        source: 'task',
+        enumerate: async () => [{ id: 'alive-1' }],
+        describe: (ref) => ref.id,
+        repair: async (ref) => receipt(owner('task', ref.id), { unchanged: 1 }),
+        buildOwner: (ref) => owner('task', ref.id),
+        // The lane reports ONLY its own source's owners (composition root
+        // filters by owner type), so cross-source owners are never candidates.
+        listSchedulerOwners: async () => [owner('task', 'alive-1'), owner('task', 'deleted-1')],
+        removeOwner: async (target) => {
+          removedOwners.push(target.id);
+          return receipt(target, { deleted: 1 });
+        },
+        describeOwner: (target) => target.id,
+      }),
+    ]);
+
+    await runtime.start();
+
+    expect(removedOwners).toEqual(['deleted-1']);
+    // alive-1 stays (unchanged from the repair pass); deleted-1 is healed.
+    expect(runtime.metrics.snapshot().task).toEqual({ repaired: 1, unchanged: 1, failed: 0 });
+  });
+
+  it('distinguishes a stale-owner removal failure as failed while still sweeping remaining owners', async () => {
+    const removedOwners: string[] = [];
+    const runtime = createProjectionRepairRuntime([
+      defineProjectionRepairLane<{ id: string }>({
+        source: 'task',
+        enumerate: async () => [],
+        describe: (ref) => ref.id,
+        repair: async (ref) => receipt(owner('task', ref.id), { unchanged: 1 }),
+        buildOwner: (ref) => owner('task', ref.id),
+        listSchedulerOwners: async () => [owner('task', 'bad'), owner('task', 'good')],
+        removeOwner: async (target) => {
+          removedOwners.push(target.id);
+          if (target.id === 'bad') throw new Error('fixture stale-owner removal failure');
+          return receipt(target, { deleted: 1 });
+        },
+        describeOwner: (target) => target.id,
+      }),
+    ]);
+
+    await runtime.start();
+
+    expect(removedOwners).toEqual(['bad', 'good']);
+    expect(runtime.metrics.snapshot().task).toEqual({ repaired: 1, unchanged: 0, failed: 1 });
+  });
+
+  it('reports stale-owner enumeration failure as failed without aborting the source sweep', async () => {
+    const runtime = createProjectionRepairRuntime([
+      defineProjectionRepairLane<{ id: string }>({
+        source: 'task',
+        enumerate: async () => [{ id: 'alive-1' }],
+        describe: (ref) => ref.id,
+        repair: async (ref) => receipt(owner('task', ref.id), { created: 1 }),
+        buildOwner: (ref) => owner('task', ref.id),
+        listSchedulerOwners: async () => {
+          throw new Error('fixture owner enumeration failure');
+        },
+        removeOwner: async (target) => receipt(target, { deleted: 1 }),
+        describeOwner: (target) => target.id,
+      }),
+    ]);
+
+    await runtime.start();
+
+    expect(runtime.metrics.snapshot().task).toEqual({ repaired: 1, unchanged: 0, failed: 1 });
+  });
 });
