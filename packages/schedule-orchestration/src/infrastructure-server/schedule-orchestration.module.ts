@@ -1,5 +1,6 @@
 import type { ScheduleEventMap } from '@memoflow/contracts/schedule';
 import type { GoalScheduleProjectionEventMap } from '@memoflow/goal/schedule-projection';
+import type { RoutineScheduleProjectionEventMap } from '@memoflow/reminder/schedule-projection/routine';
 import type { ReminderScheduleProjectionEventMap } from '@memoflow/reminder/schedule-projection';
 import type { TaskScheduleProjectionEventMap } from '@memoflow/task/schedule-projection';
 import {
@@ -12,6 +13,10 @@ import {
   createHandlerRegistryScheduleTaskSourceExecutor,
   createScheduleTaskSchedulingPort,
 } from '@memoflow/schedule';
+import {
+  createRoutineWallClockExecutionSource,
+  createRoutineWallClockScheduledHandler,
+} from '@memoflow/reminder/schedule-execution/routine';
 import type {
   CreateScheduleOrchestrationModuleOptions,
   ScheduleOrchestrationModule,
@@ -20,7 +25,9 @@ import { createScheduleExecutionRouter } from '../execution/router';
 import { createCompositeRuntimeContribution } from '../runtime/composite-runtime';
 import { createGoalProjectionRuntime } from '../runtime/goal-projection-runtime';
 import { createReminderProjectionRuntime } from '../runtime/reminder-projection-runtime';
+import { createRoutineProjectionRuntime } from '../runtime/routine-projection-runtime';
 import { createTaskProjectionRuntime } from '../runtime/task-projection-runtime';
+import { createRoutineOverrideChangedPublishingStore } from './routine-override-changing-store';
 
 export function createScheduleOrchestrationModule(
   options: CreateScheduleOrchestrationModuleOptions,
@@ -38,30 +45,72 @@ export function createScheduleOrchestrationModule(
   const handlerRegistry = new ScheduledHandlerRegistry();
   const legacySourceExecutor = createScheduleExecutionRouter(options.execution);
 
+  const runtimeContributions = [
+    createTaskProjectionRuntime({
+      source: options.taskProjection.source,
+      schedulingPort,
+      taskEvents: createTypedEventSubscriber<TaskScheduleProjectionEventMap>(eventBus),
+    }),
+    createGoalProjectionRuntime({
+      source: options.goalProjection.source,
+      schedulingPort,
+      goalEvents: createTypedEventSubscriber<GoalScheduleProjectionEventMap>(eventBus),
+    }),
+    createReminderProjectionRuntime({
+      source: options.reminderProjection.source,
+      scheduleTaskRepository: options.reminderProjection.scheduleTaskRepository,
+      reminderEvents: createTypedEventSubscriber<ReminderScheduleProjectionEventMap>(eventBus),
+      scheduleEvents,
+    }),
+  ];
+
+  // ROUTINE-3401: durable wall-clock lane. When a routine projection + execution
+  // deps are joined, register the neutral handler and publish the post-commit
+  // occurrence-committed signal so the routine runtime re-arms the next trigger.
+  if (options.routineProjection && options.execution.routineSource) {
+    const routineCommittedPublisher =
+      createTypedEventPublisher<RoutineScheduleProjectionEventMap>(eventBus);
+    const routineExecutionSource = createRoutineWallClockExecutionSource({
+      ...options.execution.routineSource,
+      publishOccurrenceCommitted: (event) => {
+        routineCommittedPublisher.send('routine:occurrence-committed', event);
+      },
+    });
+    handlerRegistry.register(
+      createRoutineWallClockScheduledHandler({ executionSource: routineExecutionSource }),
+    );
+    runtimeContributions.push(
+      createRoutineProjectionRuntime({
+        source: options.routineProjection.source,
+        schedulingPort,
+        routineEvents: createTypedEventSubscriber<RoutineScheduleProjectionEventMap>(eventBus),
+      }),
+    );
+  }
+
+  // ROUTINE-3401: durable snooze/suppress store. Persisted writes converge the
+  // neutral Scheduler by publishing `routine:override-changed` on the shared
+  // bus (consumed by the routine projection runtime above). Hosts bind the
+  // returned store to their routine snooze/command surface.
+  const routineOverridePublisher =
+    createTypedEventPublisher<RoutineScheduleProjectionEventMap>(eventBus);
+  const routineOverrideStore = options.routineOverrideStore
+    ? createRoutineOverrideChangedPublishingStore({
+        store: options.routineOverrideStore,
+        publish: (event) => {
+          routineOverridePublisher.send('routine:override-changed', event);
+        },
+      })
+    : undefined;
+
   return {
-    projectionRuntime: createCompositeRuntimeContribution([
-      createTaskProjectionRuntime({
-        source: options.taskProjection.source,
-        schedulingPort,
-        taskEvents: createTypedEventSubscriber<TaskScheduleProjectionEventMap>(eventBus),
-      }),
-      createGoalProjectionRuntime({
-        source: options.goalProjection.source,
-        schedulingPort,
-        goalEvents: createTypedEventSubscriber<GoalScheduleProjectionEventMap>(eventBus),
-      }),
-      createReminderProjectionRuntime({
-        source: options.reminderProjection.source,
-        scheduleTaskRepository: options.reminderProjection.scheduleTaskRepository,
-        reminderEvents: createTypedEventSubscriber<ReminderScheduleProjectionEventMap>(eventBus),
-        scheduleEvents,
-      }),
-    ]),
+    projectionRuntime: createCompositeRuntimeContribution(runtimeContributions),
     schedulingPort,
     handlerRegistry,
     sourceExecutor: createHandlerRegistryScheduleTaskSourceExecutor({
       registry: handlerRegistry,
       legacyFallback: legacySourceExecutor,
     }),
+    ...(routineOverrideStore ? { routineOverrideStore } : {}),
   };
 }

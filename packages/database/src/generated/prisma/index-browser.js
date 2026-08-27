@@ -986,6 +986,41 @@ exports.Prisma.RoutineProtocolSessionScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.RoutineOccurrenceScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  routineId: 'routineId',
+  source: 'source',
+  occurrenceKey: 'occurrenceKey',
+  scheduledFor: 'scheduledFor',
+  sourceRevision: 'sourceRevision',
+  idempotencyKey: 'idempotencyKey',
+  status: 'status',
+  attempt: 'attempt',
+  ownerToken: 'ownerToken',
+  claimId: 'claimId',
+  fencingToken: 'fencingToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  lastError: 'lastError',
+  nextRetryAt: 'nextRetryAt',
+  deadLetterAt: 'deadLetterAt',
+  correlationId: 'correlationId',
+  causationId: 'causationId',
+  historyJson: 'historyJson',
+  nextOccurrenceAt: 'nextOccurrenceAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  finishedAt: 'finishedAt'
+};
+
+exports.Prisma.RoutineTemporaryOverrideScalarFieldEnum = {
+  identityId: 'identityId',
+  routineId: 'routineId',
+  overrideJson: 'overrideJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.RepositoryScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -1649,6 +1684,8 @@ exports.Prisma.ModelName = {
   RoutineProfileMembership: 'RoutineProfileMembership',
   RoutineProtocolDefinition: 'RoutineProtocolDefinition',
   RoutineProtocolSession: 'RoutineProtocolSession',
+  RoutineOccurrence: 'RoutineOccurrence',
+  RoutineTemporaryOverride: 'RoutineTemporaryOverride',
   Repository: 'Repository',
   Folder: 'Folder',
   Resource: 'Resource',

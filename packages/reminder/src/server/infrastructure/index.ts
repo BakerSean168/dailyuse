@@ -53,6 +53,50 @@ export {
   type ReminderScheduleProjectionSelection,
   type ReminderScheduleProjectionSource,
 } from './schedule-projection-source';
+
+// ============ Routine wall-clock lane (ROUTINE-3401) ============
+export {
+  ROUTINE_WALLCLOCK_HANDLER_KEY,
+  ROUTINE_WALLCLOCK_PAYLOAD_VERSION,
+  ROUTINE_SCHEDULING_OWNER_TYPE,
+  buildRoutineWallClockIntent,
+  buildRoutineWallClockOwner,
+  buildRoutineWallClockPayload,
+  buildRoutineWallClockSchedulingKey,
+  parseRoutineWallClockPayload,
+  type RoutineWallClockOccurrencePayload,
+} from './routine-schedule/routine-schedule-contract';
+export {
+  createRoutineScheduleProjectionEventHandlers,
+  createRoutineScheduleProjectionSource,
+  routineScheduleProjectionEventNames,
+  type RoutineOccurrenceCommittedEvent,
+  type RoutineScheduleProjectionEventMap,
+  type RoutineScheduleProjectionHandlers,
+  type RoutineScheduleProjectionPlan,
+  type RoutineScheduleProjectionSource,
+  type RoutineScheduleSnapshot,
+  type RoutineScheduleStateReader,
+} from './routine-schedule/routine-schedule-projection-source';
+export {
+  ROUTINE_OCCURRENCE_LEASE_MS,
+  createRoutineWallClockExecutionSource,
+  type RoutineScheduleExecutionDeps,
+  type RoutineScheduleExecutionInput,
+  type RoutineScheduleExecutionOutcome,
+  type RoutineScheduleExecutionSource,
+} from './routine-schedule/routine-schedule-execution-source';
+export {
+  createRoutineWallClockScheduledHandler,
+} from './routine-schedule/routine-wall-clock-scheduled-handler';
+export {
+  createInMemoryRoutineOccurrenceStore,
+} from './routine-schedule/routine-occurrence-store.in-memory';
+export {
+  createInMemoryRoutineNotificationWriter,
+  ROUTINE_NOTIFICATION_SOURCE,
+  buildRoutineNotificationRequestedOutboxInput,
+} from './routine-schedule/routine-occurrence-notification-writer';
 export {
   createReminderPrismaModule,
   createReminderPrismaRepositories,

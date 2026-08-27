@@ -1,45 +1,10 @@
-import type {
-  NotificationCategory,
-  NotificationChannelType,
-  NotificationType,
-  RelatedEntityType,
-} from '@memoflow/contracts/notification';
-
-export interface ReminderScheduleExecutionTask {
-  readonly identityId: string;
-  readonly sourceEntityId: string;
-}
-
-export interface ReminderScheduleExecutionNotification {
-  readonly identityId: string;
-  readonly title: string;
-  readonly content: string;
-  readonly type: NotificationType;
-  readonly category: NotificationCategory;
-  readonly relatedEntityType?: RelatedEntityType;
-  readonly relatedEntityId?: string;
-  readonly channels?: readonly NotificationChannelType[];
-  readonly expiresAt?: number | null;
-}
-
-export interface ReminderScheduleExecutionOutcome {
-  readonly nextRunAt?: number | null;
-  readonly result?: Record<string, unknown>;
-  readonly notification?: ReminderScheduleExecutionNotification | null;
-}
-
-export interface ReminderScheduleExecutionSource {
-  executeReminder(task: ReminderScheduleExecutionTask): Promise<ReminderScheduleExecutionOutcome>;
-}
-
-export {
-  createReminderPrismaScheduleExecutionSource,
-  createReminderPowerSyncScheduleExecutionSource,
-  createReminderScheduleExecutionSource,
-  type CreateReminderScheduleExecutionSourceDeps,
-} from '../server/infrastructure';
-
-// ============ Routine wall-clock lane (ROUTINE-3401) ============
+/**
+ * ROUTINE-3401 Routine wall-clock execution lane (narrow seam).
+ *
+ * Narrow sub-path that avoids dragging the Reminder compose roots (Prisma,
+ * PowerSync, module runtime) into orchestrators that only join the durable
+ * Routine execution fence.
+ */
 export {
   ROUTINE_OCCURRENCE_LEASE_MS,
   createRoutineWallClockExecutionSource,
@@ -74,11 +39,11 @@ export {
   mapSharedOutboxRowToReceipt,
 } from '../server/infrastructure/routine-schedule/routine-occurrence-notification-writer.prisma';
 export {
-  createRoutinePrismaScheduleExecutionDeps,
-} from '../server/infrastructure/routine-schedule/routine-schedule-execution-source.prisma';
-export {
   PrismaRoutineTemporaryOverrideStore,
 } from '../server/infrastructure/routine-schedule/routine-temporary-override-store.prisma';
+export {
+  createRoutinePrismaScheduleExecutionDeps,
+} from '../server/infrastructure/routine-schedule/routine-schedule-execution-source.prisma';
 export type {
   RoutineOccurrenceClaimInput,
   RoutineOccurrenceCommitInput,
@@ -95,3 +60,6 @@ export type {
 export type {
   RoutineTemporaryOverrideStore,
 } from '../server/domain/ports/routine-temporary-override-store.port';
+export type {
+  RoutineTemporaryOverride,
+} from '../server/domain/routine';
