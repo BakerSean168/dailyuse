@@ -39,6 +39,7 @@ class MockWebContents extends EventEmitter {
   readonly closeDevTools = vi.fn();
   readonly executeJavaScript = vi.fn();
   readonly insertCSS = vi.fn();
+  readonly isLoading = vi.fn(() => false);
 }
 
 export class BrowserWindow extends EventEmitter {
@@ -53,7 +54,8 @@ export class BrowserWindow extends EventEmitter {
       ) ?? null,
   );
   static fromId = vi.fn(
-    (id: number) => browserWindows.find((window) => window.id === id && !window.isDestroyed()) ?? null,
+    (id: number) =>
+      browserWindows.find((window) => window.id === id && !window.isDestroyed()) ?? null,
   );
 
   readonly id = nextWindowId++;
@@ -93,6 +95,7 @@ export class BrowserWindow extends EventEmitter {
   readonly setBackgroundColor = vi.fn();
   readonly setIcon = vi.fn();
   readonly setMinimumSize = vi.fn();
+  readonly setProgressBar = vi.fn();
   readonly center = vi.fn();
   readonly reload = vi.fn();
 
@@ -122,6 +125,14 @@ export class BrowserWindow extends EventEmitter {
     if (this.destroyed) {
       return;
     }
+    const event = {
+      defaultPrevented: false,
+      preventDefault() {
+        this.defaultPrevented = true;
+      },
+    };
+    this.emit('close', event);
+    if (event.defaultPrevented) return;
     this.visible = false;
     this.destroyed = true;
     this.focused = false;

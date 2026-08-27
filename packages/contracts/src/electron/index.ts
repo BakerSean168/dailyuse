@@ -8,6 +8,13 @@
  */
 
 export type { IElectronAuthContext, ElectronAuthResolutionCode } from './auth-context';
+export {
+  FocusWindowCommandSchema,
+  type FocusWindowCommand,
+  type FocusWindowProjection,
+  type FocusWindowPhaseKind,
+  type FocusWindowSessionState,
+} from './focus-window';
 export type {
   ProfileKind,
   ProfileUnlockState,

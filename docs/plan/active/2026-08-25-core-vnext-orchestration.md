@@ -1465,6 +1465,19 @@ Due -> Gentle -> Grace -> Guided -> optional Strict
 6. hiding window != ending session;
 7. taskbar integration only through adapter.
 
+**Implementation evidence (2026-08-27):**
+
+- added a Main Process `FocusWindowController` over the durable `ProtocolSessionStore` / `ProtocolSessionRuntime`; renderer/window state is projection-only and never owns protocol transitions;
+- projection includes protocol/phase/cycle/version plus `phaseDeadline`, `pausedRemainingMs`, and derived `remainingMs`; phase/cycle transitions still come from the deterministic durable runtime;
+- dedicated frameless `ElectronFocusWindowHost` owns BrowserWindow lifecycle, drag surface, collapse, always-on-top, and native close interception; native close/hide does not mutate or terminate the ProtocolSession;
+- hiding keeps the Main Process phase-deadline timer alive, and explicit reopen/phase-boundary recovery calls `show()` again, so presentation visibility cannot suspend protocol semantics;
+- pause/resume/end are isolated `RoutineChannels` IPC commands and all route through ProtocolSessionRuntime; FocusWindow channels are separate from legacy ReminderChannels and are explicitly preload-whitelisted;
+- renderer boots through a dedicated `#/focus-window` early path without initializing the full main app/router; its 1s countdown only computes `phaseDeadline - Date.now()` and never issues phase-transition commands;
+- profile activation restores the latest recoverable session for that profile identity from PowerSync, while profile module teardown destroys the window/controller;
+- optional Electron taskbar progress adapter derives progress from the same projection and stores no business state;
+- focused Main Process + host + IPC + renderer tests are `8/8`, including restart catch-up, hide/reopen, pause/resume/end, collapse/always-on-top, native-close-as-hide, taskbar and renderer deadline projection;
+- formal verification: contracts/reminder typechecks green, Desktop Nx typecheck green, full Desktop `244/244`, Desktop production build green, changed TypeScript/Vue ESLint green.
+
 ## ROUTINE-4203 — Protocol break satisfies ambient routine
 
 **Depends:** ROUTINE-4102, ROUTINE-4201

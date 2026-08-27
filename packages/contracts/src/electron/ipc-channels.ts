@@ -299,3 +299,10 @@ export const WindowChannels = {
   GET_CONTROLS_STATE: 'window:get-controls-state',
   FOCUS_MAIN_WINDOW: 'window:focus-main-window',
 } as const;
+
+/** Routine-owned FocusWindow IPC. Kept separate from legacy ReminderChannels. */
+export const RoutineChannels = {
+  FOCUS_WINDOW_GET: 'routine:focus-window:get',
+  FOCUS_WINDOW_COMMAND: 'routine:focus-window:command',
+  FOCUS_WINDOW_PROJECTION: 'routine:focus-window:projection',
+} as const;

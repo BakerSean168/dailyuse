@@ -44,6 +44,15 @@ import { composeTask } from './runtime/compose-task';
 import { composeAccount } from './runtime/compose-account';
 import { composeNotification } from './runtime/compose-notification';
 import { composeReminder } from './runtime/compose-reminder';
+import { PowerSyncProtocolSessionStore } from '@memoflow/reminder/server';
+import { createProtocolSessionRuntime } from '@memoflow/reminder/routine-runtime';
+import {
+  createFocusWindowController,
+  createFocusWindowElectronModule,
+  ElectronFocusTaskbarAdapter,
+  ElectronFocusWindowHost,
+  type FocusWindowController,
+} from './modules/routine';
 import { composeSchedule } from './runtime/compose-schedule';
 import { composeSetting } from './runtime/compose-setting';
 import { composeDataPortability } from './runtime/compose-data-portability';
@@ -86,6 +95,7 @@ configureDesktopShellIdentity();
 const logger = createLogger('DesktopMain');
 let mainRuntime: DesktopMainRuntime | null = null;
 const windowManager = new WindowManager();
+let activeFocusWindowController: FocusWindowController | null = null;
 
 // Composed Goal/Task repository view for the active profile. The dashboard IPC
 // handler is registered once at shell init, but the repositories only exist
@@ -143,6 +153,21 @@ async function registerBusinessModules(
     db,
     notificationRequestedWriter: notificationComposed.requestedWriter,
   });
+
+  // Routine FocusWindow is a Main Process projection over the durable ProtocolSession.
+  // Closing/hiding the window never owns session termination; all state commands go
+  // through ProtocolSessionRuntime and its optimistic-versioned PowerSync store.
+  const protocolSessionStore = new PowerSyncProtocolSessionStore(db);
+  const protocolSessionRuntime = createProtocolSessionRuntime({ store: protocolSessionStore });
+  const focusWindowHost = new ElectronFocusWindowHost();
+  const focusWindowController = createFocusWindowController({
+    store: protocolSessionStore,
+    runtime: protocolSessionRuntime,
+    host: focusWindowHost,
+    taskbar: new ElectronFocusTaskbarAdapter(() => focusWindowHost.browserWindow),
+  });
+  const focusWindowElectronModule = createFocusWindowElectronModule(focusWindowController);
+  activeFocusWindowController = focusWindowController;
 
   // 3. Schedule orchestration using the single schedule-task repository, then the
   //    two-phase schedule composer. The runtime controller is the ONLY schedule
@@ -410,6 +435,7 @@ async function registerBusinessModules(
     .register(taskElectronModule)
     .register(scheduleComposed.module)
     .register(reminderComposed.module)
+    .register(focusWindowElectronModule)
     .register(AIElectronModule)
     .register(governanceElectronModule)
     .register(repositoryElectronModule);
@@ -487,11 +513,17 @@ async function initializeShellRuntime(): Promise<void> {
       },
     );
   });
-  profileRuntimeManager.setAfterActivation((profile) =>
-    cloudConnectionManager.restore(profile).then(() => undefined),
-  );
+  profileRuntimeManager.setAfterActivation(async (profile) => {
+    await cloudConnectionManager.restore(profile).catch((error) => {
+      logger.warn('Cloud connection restore failed; Profile remains locally available', { error });
+    });
+    await activeFocusWindowController?.restoreIdentity(profile.localOwnerId).catch((error) => {
+      logger.warn('FocusWindow restore failed; ProtocolSession remains durable', { error });
+    });
+  });
   profileRuntimeManager.setBeforeDeactivation(() => {
     activeProfileDashboardRepositories = null;
+    activeFocusWindowController = null;
     // Clear the WindowManager's bound schedule runtime controller BEFORE the
     // modules are torn down so no stale controller outlives its instance.
     // 在模块拆除前清除 WindowManager 绑定的 schedule runtime controller，
