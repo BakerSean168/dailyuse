@@ -61,7 +61,7 @@ describe('DI I*Service ClientPort facade keep-boundary (residual 927)', () => {
     const serviceAliasCount = (
       types.match(/^export type I\w+Service = \w+ClientPort;/gm) ?? []
     ).length;
-    expect(serviceAliasCount).toBe(11);
+    expect(serviceAliasCount).toBe(12);
     expect(types).toContain('export type IAIClient = AIClientPort;')
   });
 });
