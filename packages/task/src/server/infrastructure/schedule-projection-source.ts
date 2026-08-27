@@ -16,7 +16,7 @@ import type { ITaskInstanceRepository, ITaskTemplateRepository } from '../domain
 const DEFAULT_ALL_DAY_REMINDER_MINUTES = 9 * 60;
 export const TASK_REMINDER_HANDLER_KEY = 'task.reminder.fire';
 export const TASK_REMINDER_PAYLOAD_VERSION = 1;
-const TASK_SCHEDULING_OWNER_TYPE = 'task.template';
+export const TASK_SCHEDULING_OWNER_TYPE = 'task.template';
 
 export interface TaskReminderScheduledPayload {
   readonly templateId: string;

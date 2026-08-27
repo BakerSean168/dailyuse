@@ -327,6 +327,22 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     );
   }
 
+  async listSchedulingOwners(ownerType?: string): Promise<SchedulingOwner[]> {
+    const rows = await this.queryDb.getAll<{ identity_id: string; owner_type: string; owner_id: string }>(
+      `SELECT DISTINCT identity_id, owner_type, owner_id
+       FROM schedule_tasks
+       WHERE scheduling_key IS NOT NULL AND owner_type IS NOT NULL AND owner_id IS NOT NULL
+       ${ownerType ? 'AND owner_type = ?' : ''}
+       ORDER BY identity_id, owner_type, owner_id`,
+      ownerType ? [ownerType] : [],
+    );
+    return rows.map((row) => ({
+      identityId: row.identity_id,
+      type: row.owner_type,
+      id: row.owner_id,
+    }));
+  }
+
   async appendSchedulingReconcileReceipt(receipt: SchedulingReconcileReceipt): Promise<void> {
     await this.queryDb.execute(
       `INSERT INTO scheduling_reconcile_operations (

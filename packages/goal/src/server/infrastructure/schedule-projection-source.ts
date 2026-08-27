@@ -7,7 +7,7 @@ import type { IGoalRepository } from '../domain';
 
 export const GOAL_REMINDER_HANDLER_KEY = 'goal.reminder.fire';
 export const GOAL_REMINDER_PAYLOAD_VERSION = 1;
-const GOAL_SCHEDULING_OWNER_TYPE = 'goal.goal';
+export const GOAL_SCHEDULING_OWNER_TYPE = 'goal.goal';
 
 export interface GoalReminderScheduledPayload {
   readonly goalId: string;
