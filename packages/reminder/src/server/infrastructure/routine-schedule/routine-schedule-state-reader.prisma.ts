@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@memoflow/database';
-import { requiresDurableScheduleProjection, RoutineDefinition } from '../../domain/routine';
+import { RoutineDefinition } from '../../domain/routine';
 import {
   deserializeRoutineTemporaryOverride,
   deserializeRoutineTrigger,
@@ -39,13 +39,11 @@ export function createPrismaRoutineScheduleStateReader(
     },
 
     async listRoutineRefs() {
-      const rows = await prisma.routineDefinition.findMany({ where: { enabled: true } });
-      return rows
-        .filter((row) => {
-          const trigger = deserializeRoutineTrigger(row.triggerJson);
-          return trigger != null && requiresDurableScheduleProjection(trigger);
-        })
-        .map((row) => ({ routineId: row.id, identityId: row.identityId }));
+      // Enumerate every definition, not only currently enabled WallClock rows.
+      // A missed disable/trigger-change event must still be able to reconcile
+      // the old Scheduler owner to an empty desired set on restart.
+      const rows = await prisma.routineDefinition.findMany();
+      return rows.map((row) => ({ routineId: row.id, identityId: row.identityId }));
     },
   };
 }

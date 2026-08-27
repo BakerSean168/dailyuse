@@ -112,6 +112,25 @@ describe('PowerSync task template goal binding', () => {
     );
   });
 
+  it('enumerates every local template ref for startup repair, including non-active rows', async () => {
+    const db = createDatabase({
+      getAll: vi.fn().mockResolvedValue([
+        { id: 'task-template-1', identity_id: 'identity-1' },
+        { id: 'task-template-soft-deleted', identity_id: 'identity-1' },
+      ]),
+    });
+    const repository = new PowerSyncTaskTemplateRepository(db, eventBus);
+
+    await expect(repository.findAllTemplateRefs()).resolves.toEqual([
+      { id: 'task-template-1', identityId: 'identity-1' },
+      { id: 'task-template-soft-deleted', identityId: 'identity-1' },
+    ]);
+    expect(db.getAll).toHaveBeenCalledWith(
+      'SELECT id, identity_id FROM task_templates ORDER BY id ASC',
+      [],
+    );
+  });
+
   it('writes relational binding values in the matching INSERT columns', async () => {
     const db = createDatabase();
     const repository = new PowerSyncTaskTemplateRepository(db, eventBus);

@@ -43,7 +43,7 @@ export interface TaskScheduleProjectionSource {
   buildTemplatePlan(templateId: string, identityId: string): Promise<TaskScheduleProjectionPlan>;
   buildTemplateOwner(templateId: string, identityId: string): SchedulingOwner;
   /** Full source scan used by startup reconcile / lost-event repair. */
-  listTemplateRefs?(): Promise<Array<{ templateId: string; identityId: string }>>;
+  listTemplateRefs(): Promise<Array<{ templateId: string; identityId: string }>>;
 }
 
 export interface TaskScheduleProjectionHandlers {

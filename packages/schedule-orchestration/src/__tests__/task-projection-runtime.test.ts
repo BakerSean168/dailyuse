@@ -85,7 +85,11 @@ function createTaskEventsHarness(): {
 } {
   const handlers = new Map<
     keyof TaskScheduleProjectionEventMap,
-    Set<(payload: TaskScheduleProjectionEventMap[keyof TaskScheduleProjectionEventMap]) => void | Promise<void>>
+    Set<
+      (
+        payload: TaskScheduleProjectionEventMap[keyof TaskScheduleProjectionEventMap],
+      ) => void | Promise<void>
+    >
   >();
 
   return {
@@ -106,7 +110,9 @@ function createTaskEventsHarness(): {
   };
 }
 
-function sourceWithPlan(overrides: Partial<TaskScheduleProjectionSource> = {}): TaskScheduleProjectionSource {
+function sourceWithPlan(
+  overrides: Partial<TaskScheduleProjectionSource> = {},
+): TaskScheduleProjectionSource {
   return {
     buildTemplatePlan: vi.fn(async (templateId, identityId) => ({
       owner: { identityId, type: 'task.template', id: templateId },
@@ -117,6 +123,7 @@ function sourceWithPlan(overrides: Partial<TaskScheduleProjectionSource> = {}): 
       type: 'task.template',
       id: templateId,
     })),
+    listTemplateRefs: vi.fn().mockResolvedValue([]),
     ...overrides,
   };
 }
@@ -144,9 +151,7 @@ describe('task projection runtime -> SchedulingPort', () => {
       'TaskTemplateId_template',
       'IdentityId_schedule-owner',
     );
-    expect(scheduling.reconciles).toEqual([
-      { owner: owner(), desired: [intent()] },
-    ]);
+    expect(scheduling.reconciles).toEqual([{ owner: owner(), desired: [intent()] }]);
   });
 
   it('reconciles the owner after occurrence completion/skip/delete/uncomplete', async () => {
@@ -222,14 +227,13 @@ describe('task projection runtime -> SchedulingPort', () => {
     expect(scheduling.removals).toEqual([owner(), owner()]);
   });
 
-  it('repairs a lost event by reconciling every authoritative template on startup', async () => {
+  it('registers only the incremental fast path; durable scans are centralized', async () => {
     const taskEvents = createTaskEventsHarness();
     const scheduling = createSchedulingPortHarness();
     const source = sourceWithPlan({
-      listTemplateRefs: vi.fn().mockResolvedValue([
-        { templateId: 'tpl-1', identityId: 'identity-1' },
-        { templateId: 'tpl-2', identityId: 'identity-1' },
-      ]),
+      listTemplateRefs: vi
+        .fn()
+        .mockResolvedValue([{ templateId: 'tpl-1', identityId: 'identity-1' }]),
     });
     const runtime = createTaskProjectionRuntime({
       source,
@@ -239,11 +243,8 @@ describe('task projection runtime -> SchedulingPort', () => {
 
     await runtime.start();
 
-    expect(source.listTemplateRefs).toHaveBeenCalledTimes(1);
-    expect(source.buildTemplatePlan).toHaveBeenCalledWith('tpl-1', 'identity-1');
-    expect(source.buildTemplatePlan).toHaveBeenCalledWith('tpl-2', 'identity-1');
-    expect(scheduling.reconciles.map((entry) => entry.owner.id)).toEqual(['tpl-1', 'tpl-2']);
-
+    expect(source.listTemplateRefs).not.toHaveBeenCalled();
+    expect(scheduling.reconciles).toEqual([]);
     await runtime.stop();
   });
 });

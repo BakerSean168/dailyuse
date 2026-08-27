@@ -150,8 +150,14 @@ export class PowerSyncTaskTemplateRepository
   }
 
   async findAllTemplateRefs(): Promise<Array<{ id: string; identityId: string }>> {
-    // 本地 PowerSync 宿主不执行全量 reconcile（跨用户扫描需要服务端源）。
-    return [];
+    // PowerSync only contains rows synchronized for the local profile. Enumerate
+    // every local row (including soft-deleted/archived templates) so startup
+    // repair can both recreate missed intents and remove stale Scheduler owners.
+    const rows = await this.db.getAll<{ id: string; identity_id: string }>(
+      'SELECT id, identity_id FROM task_templates ORDER BY id ASC',
+      [],
+    );
+    return rows.map((row) => ({ id: String(row.id), identityId: String(row.identity_id) }));
   }
 
   async findNeedGenerateInstances(toDate: number): Promise<TaskTemplate[]> {

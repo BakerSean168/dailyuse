@@ -1,0 +1,172 @@
+import { describe, expect, it, vi } from 'vitest';
+import type { SchedulingOwner, SchedulingReconcileReceipt } from '@memoflow/contracts/schedule';
+import { createCompositeRuntimeContribution } from '../runtime/composite-runtime';
+import {
+  createProjectionRepairRuntime,
+  defineProjectionRepairLane,
+} from '../runtime/projection-repair-runtime';
+import type { RuntimeContribution } from '../ports/runtime-contribution';
+
+function owner(source: 'task' | 'goal' | 'routine', id: string): SchedulingOwner {
+  return {
+    identityId: 'IdentityId_repair',
+    type: `${source}.owner`,
+    id,
+  };
+}
+
+function receipt(
+  target: SchedulingOwner,
+  counts: { created?: number; updated?: number; deleted?: number; unchanged?: number } = {},
+): SchedulingReconcileReceipt {
+  return {
+    operationId: `repair:${target.type}:${target.id}`,
+    owner: target,
+    status: 'succeeded',
+    desiredCount: 1,
+    createdCount: counts.created ?? 0,
+    updatedCount: counts.updated ?? 0,
+    deletedCount: counts.deleted ?? 0,
+    unchangedCount: counts.unchanged ?? 0,
+    startedAt: 1,
+    finishedAt: 2,
+  };
+}
+
+function listenerContribution(name: string, order: string[]): RuntimeContribution {
+  let started = false;
+  return {
+    async start() {
+      if (started) return;
+      order.push(`listen:${name}`);
+      started = true;
+    },
+    async stop() {
+      started = false;
+    },
+  };
+}
+
+describe('common projection repair runtime (SCHED-3601)', () => {
+  it('registers every incremental listener before full repair and heals lost Task/Goal/Routine events after restart', async () => {
+    const order: string[] = [];
+    const durableProjection = new Set<string>();
+    const allListenersReady = () =>
+      ['task', 'goal', 'routine'].every((source) => order.includes(`listen:${source}`));
+
+    const lane = (source: 'task' | 'goal' | 'routine', id: string) =>
+      defineProjectionRepairLane({
+        source,
+        async enumerate() {
+          expect(allListenersReady()).toBe(true);
+          order.push(`enumerate:${source}`);
+          return [{ id }];
+        },
+        describe: (ref) => ref.id,
+        async repair(ref) {
+          const key = `${source}:${ref.id}:stable-scheduling-key`;
+          const target = owner(source, ref.id);
+          if (durableProjection.has(key)) {
+            return receipt(target, { unchanged: 1 });
+          }
+          durableProjection.add(key);
+          return receipt(target, { created: 1 });
+        },
+      });
+
+    const repairRuntime = createProjectionRepairRuntime([
+      lane('task', 'task-1'),
+      lane('goal', 'goal-1'),
+      lane('routine', 'routine-1'),
+    ]);
+    const runtime = createCompositeRuntimeContribution([
+      listenerContribution('task', order),
+      listenerContribution('goal', order),
+      listenerContribution('routine', order),
+      repairRuntime,
+    ]);
+
+    // Simulate a lost event: durable business state exists in enumerate(), but
+    // no incremental listener was invoked and Scheduler projection is empty.
+    expect(durableProjection.size).toBe(0);
+    await runtime.start();
+
+    expect([...durableProjection].sort()).toEqual([
+      'goal:goal-1:stable-scheduling-key',
+      'routine:routine-1:stable-scheduling-key',
+      'task:task-1:stable-scheduling-key',
+    ]);
+    expect(repairRuntime.metrics.snapshot()).toEqual({
+      task: { repaired: 1, unchanged: 0, failed: 0 },
+      goal: { repaired: 1, unchanged: 0, failed: 0 },
+      routine: { repaired: 1, unchanged: 0, failed: 0 },
+      total: { repaired: 3, unchanged: 0, failed: 0 },
+    });
+
+    // A later restart re-enumerates the same stable keys and must converge as
+    // unchanged rather than duplicating scheduled work.
+    await runtime.stop();
+    order.length = 0;
+    await runtime.start();
+
+    expect(durableProjection.size).toBe(3);
+    expect(repairRuntime.metrics.snapshot()).toEqual({
+      task: { repaired: 1, unchanged: 1, failed: 0 },
+      goal: { repaired: 1, unchanged: 1, failed: 0 },
+      routine: { repaired: 1, unchanged: 1, failed: 0 },
+      total: { repaired: 3, unchanged: 3, failed: 0 },
+    });
+  });
+
+  it('isolates one owner repair failure, records failed, and continues the durable sweep', async () => {
+    const repaired: string[] = [];
+    const runtime = createProjectionRepairRuntime([
+      defineProjectionRepairLane<{ id: string }>({
+        source: 'task',
+        enumerate: vi.fn().mockResolvedValue([{ id: 'good-1' }, { id: 'bad' }, { id: 'good-2' }]),
+        describe: (ref) => ref.id,
+        async repair(ref) {
+          if (ref.id === 'bad') throw new Error('fixture repair failure');
+          repaired.push(ref.id);
+          return receipt(owner('task', ref.id), { created: 1 });
+        },
+      }),
+    ]);
+
+    await expect(runtime.start()).resolves.toBeUndefined();
+
+    expect(repaired).toEqual(['good-1', 'good-2']);
+    expect(runtime.metrics.snapshot().task).toEqual({ repaired: 2, unchanged: 0, failed: 1 });
+  });
+
+  it('records enumeration failure without preventing another source lane from repairing', async () => {
+    const goalRepair = vi.fn(async (ref: { id: string }) =>
+      receipt(owner('goal', ref.id), { created: 1 }),
+    );
+    const runtime = createProjectionRepairRuntime([
+      defineProjectionRepairLane<{ id: string }>({
+        source: 'task',
+        enumerate: async () => {
+          throw new Error('fixture enumeration failure');
+        },
+        describe: (ref) => ref.id,
+        repair: async (ref) => receipt(owner('task', ref.id), { created: 1 }),
+      }),
+      defineProjectionRepairLane({
+        source: 'goal',
+        enumerate: async () => [{ id: 'goal-1' }],
+        describe: (ref) => ref.id,
+        repair: goalRepair,
+      }),
+    ]);
+
+    await runtime.start();
+
+    expect(goalRepair).toHaveBeenCalledTimes(1);
+    expect(runtime.metrics.snapshot()).toMatchObject({
+      task: { repaired: 0, unchanged: 0, failed: 1 },
+      goal: { repaired: 1, unchanged: 0, failed: 0 },
+      total: { repaired: 1, unchanged: 0, failed: 1 },
+    });
+  });
+});

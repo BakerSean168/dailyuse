@@ -77,7 +77,7 @@ export interface ITaskTemplateRepository {
   /**
    * 全量模板引用（R1-4 projection reconcile 用）。
    * 返回所有用户的 (id, identityId)，供投影 runtime 启动时全量对账；
-   * 不支持全量扫描的实现应返回空数组（该宿主跳过 reconcile 并记录告警）。
+   * 所有宿主都必须枚举其本地权威范围；API 可跨 identity，Desktop 枚举已同步到本地 profile 的行。
    */
   findAllTemplateRefs(): Promise<Array<{ id: string; identityId: string }>>;
 

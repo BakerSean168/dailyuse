@@ -9,9 +9,7 @@ import type {
   RoutineScheduleProjectionEventMap,
   RoutineScheduleProjectionSource,
 } from '@memoflow/reminder/schedule-projection/routine';
-import type {
-  RoutineWallClockOccurrencePayload,
-} from '@memoflow/reminder/schedule-execution/routine';
+import type { RoutineWallClockOccurrencePayload } from '@memoflow/reminder/schedule-execution/routine';
 import type { Subscriber } from '@memoflow/utils/domain';
 import { createRoutineProjectionRuntime } from '../runtime/routine-projection-runtime';
 
@@ -87,7 +85,10 @@ function createRoutineEventsHarness(): {
     payload: RoutineScheduleProjectionEventMap[K],
   ): Promise<void>;
 } {
-  const handlers = new Map<RoutineProjectionEventName, Set<(payload: unknown) => void | Promise<void>>>();
+  const handlers = new Map<
+    RoutineProjectionEventName,
+    Set<(payload: unknown) => void | Promise<void>>
+  >();
 
   return {
     subscriber: {
@@ -122,6 +123,7 @@ function sourceWithPlan(
       type: 'routine.routine',
       id: routineId,
     })),
+    listRoutineRefs: vi.fn().mockResolvedValue([]),
     ...overrides,
   };
 }
@@ -181,14 +183,13 @@ describe('routine projection runtime -> SchedulingPort (ROUTINE-3401)', () => {
     await runtime.stop();
   });
 
-  it('repairs lost events by reconciling every routine ref on startup', async () => {
+  it('registers only the incremental fast path; durable scans are centralized', async () => {
     const routineEvents = createRoutineEventsHarness();
     const scheduling = createSchedulingPortHarness();
     const source = sourceWithPlan({
-      listRoutineRefs: vi.fn().mockResolvedValue([
-        { routineId: 'routine-1', identityId: 'identity-1' },
-        { routineId: 'routine-2', identityId: 'identity-1' },
-      ]),
+      listRoutineRefs: vi
+        .fn()
+        .mockResolvedValue([{ routineId: 'routine-1', identityId: 'identity-1' }]),
     });
     const runtime = createRoutineProjectionRuntime({
       source,
@@ -198,29 +199,8 @@ describe('routine projection runtime -> SchedulingPort (ROUTINE-3401)', () => {
 
     await runtime.start();
 
-    expect(source.listRoutineRefs).toHaveBeenCalledTimes(1);
-    expect(source.buildRoutinePlan).toHaveBeenCalledWith('routine-1', 'identity-1');
-    expect(source.buildRoutinePlan).toHaveBeenCalledWith('routine-2', 'identity-1');
-    expect(scheduling.reconciles.map((entry) => entry.owner.id)).toEqual(['routine-1', 'routine-2']);
-
-    await runtime.stop();
-  });
-
-  it('skips startup reconcile when the source exposes no enumeration', async () => {
-    const routineEvents = createRoutineEventsHarness();
-    const scheduling = createSchedulingPortHarness();
-    const source = sourceWithPlan();
-    const runtime = createRoutineProjectionRuntime({
-      source,
-      schedulingPort: scheduling.port,
-      routineEvents: routineEvents.subscriber,
-    });
-
-    await runtime.start();
-
-    expect(source.buildRoutinePlan).not.toHaveBeenCalled();
+    expect(source.listRoutineRefs).not.toHaveBeenCalled();
     expect(scheduling.reconciles).toEqual([]);
-
     await runtime.stop();
   });
 });

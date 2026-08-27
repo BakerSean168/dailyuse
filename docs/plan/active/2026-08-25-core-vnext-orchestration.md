@@ -1292,6 +1292,17 @@ Routine wall-clock starts after NotificationRequested seam is available or uses 
 
 **Acceptance:** intentionally lost event heals after restart for all three source modules.
 
+**Implementation evidence (2026-08-27):**
+
+- added one common `ProjectionRepairRuntime`; Task / Goal / Routine event runtimes are now incremental-only fast paths;
+- composition order registers all available feature listeners before the startup durable sweep begins;
+- startup sweep enumerates feature-owned durable refs, rebuilds each neutral plan, and converges through the existing transactional `SchedulingPort.reconcile()` stable-key boundary;
+- source enumeration is mandatory at the projection seam; Desktop Task PowerSync now enumerates synchronized local template refs instead of silently returning `[]`;
+- Routine Prisma enumeration includes disabled / non-wall-clock definitions so a lost disable/trigger-change event reconciles the prior owner to an empty desired set;
+- repair failures are isolated per owner/source and exposed as cumulative `repaired / unchanged / failed` metrics through the orchestration module;
+- no periodic sweep is enabled: incremental events + startup durable repair satisfy the current recovery contract; `sweep()` remains an explicit bounded maintenance seam if evidence later requires scheduling it;
+- verification: schedule-orchestration `35/35`, Task `718/718`, Goal `445/445`, Reminder `491/491`, Routine Prisma integration `5/5`; API and Desktop Nx typecheck dependency chains green.
+
 ### Wave 3 primary vertical acceptance
 
 Must demonstrate in executable integration tests:

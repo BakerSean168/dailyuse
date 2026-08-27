@@ -120,6 +120,7 @@ function sourceWithPlan(
       type: 'goal.goal',
       id: goalId,
     })),
+    listGoalRefs: vi.fn().mockResolvedValue([]),
     ...overrides,
   };
 }
@@ -202,14 +203,11 @@ describe('goal projection runtime -> SchedulingPort', () => {
     expect(scheduling.removals).toEqual([owner(), owner(), owner()]);
   });
 
-  it('repairs a lost event by reconciling every authoritative goal on startup', async () => {
+  it('registers only the incremental fast path; durable scans are centralized', async () => {
     const goalEvents = createGoalEventsHarness();
     const scheduling = createSchedulingPortHarness();
     const source = sourceWithPlan({
-      listGoalRefs: vi.fn().mockResolvedValue([
-        { goalId: 'goal-1', identityId: 'identity-1' },
-        { goalId: 'goal-2', identityId: 'identity-1' },
-      ]),
+      listGoalRefs: vi.fn().mockResolvedValue([{ goalId: 'goal-1', identityId: 'identity-1' }]),
     });
     const runtime = createGoalProjectionRuntime({
       source,
@@ -219,29 +217,8 @@ describe('goal projection runtime -> SchedulingPort', () => {
 
     await runtime.start();
 
-    expect(source.listGoalRefs).toHaveBeenCalledTimes(1);
-    expect(source.buildGoalPlan).toHaveBeenCalledWith('goal-1', 'identity-1');
-    expect(source.buildGoalPlan).toHaveBeenCalledWith('goal-2', 'identity-1');
-    expect(scheduling.reconciles.map((entry) => entry.owner.id)).toEqual(['goal-1', 'goal-2']);
-
-    await runtime.stop();
-  });
-
-  it('skips startup reconcile when the source exposes no enumeration', async () => {
-    const goalEvents = createGoalEventsHarness();
-    const scheduling = createSchedulingPortHarness();
-    const source = sourceWithPlan();
-    const runtime = createGoalProjectionRuntime({
-      source,
-      schedulingPort: scheduling.port,
-      goalEvents: goalEvents.subscriber,
-    });
-
-    await runtime.start();
-
-    expect(source.buildGoalPlan).not.toHaveBeenCalled();
+    expect(source.listGoalRefs).not.toHaveBeenCalled();
     expect(scheduling.reconciles).toEqual([]);
-
     await runtime.stop();
   });
 });

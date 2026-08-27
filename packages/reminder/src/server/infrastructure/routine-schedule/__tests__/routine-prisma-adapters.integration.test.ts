@@ -248,11 +248,29 @@ describe('ROUTINE-3401 Prisma durable adapters integration', () => {
     await expect(stale).rejects.toBeInstanceOf(LeaseFencingException);
   });
 
-  it('reads the persisted wall-clock snapshot and lists the durable routine ref', async () => {
+  it('reads the persisted wall-clock snapshot and enumerates all routine refs for stale-owner repair', async () => {
     const prisma = await getPrisma();
     const identityId = IdentityId.generate();
     await seedAccount({ id: identityId });
     await seedRoutineDefinition(prisma, identityId);
+    await prisma.routineDefinition.createMany({
+      data: [
+        {
+          id: 'RoutineId_disabled-repair',
+          identityId,
+          name: 'Disabled repair fixture',
+          enabled: false,
+          triggerJson: null,
+        },
+        {
+          id: 'RoutineId_local-trigger-repair',
+          identityId,
+          name: 'Local trigger repair fixture',
+          enabled: true,
+          triggerJson: null,
+        },
+      ],
+    });
 
     const reader = createPrismaRoutineScheduleStateReader(prisma);
 
@@ -264,7 +282,13 @@ describe('ROUTINE-3401 Prisma durable adapters integration', () => {
     expect(snapshot?.temporaryOverride).toBeNull();
 
     const refs = await reader.listRoutineRefs();
-    expect(refs).toContainEqual({ routineId: FIXTURE_F.routineId, identityId });
+    expect(refs).toEqual(
+      expect.arrayContaining([
+        { routineId: FIXTURE_F.routineId, identityId },
+        { routineId: 'RoutineId_disabled-repair', identityId },
+        { routineId: 'RoutineId_local-trigger-repair', identityId },
+      ]),
+    );
   });
 
   it('honors a durably persisted snooze in the production projection (Fixture F)', async () => {

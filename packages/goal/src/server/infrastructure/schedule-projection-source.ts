@@ -85,7 +85,7 @@ export interface GoalScheduleProjectionSource {
   buildGoalPlan(goalId: string, identityId: string): Promise<GoalScheduleProjectionPlan>;
   buildGoalOwner(goalId: string, identityId: string): SchedulingOwner;
   /** Full source scan used by startup reconcile / lost-event repair. */
-  listGoalRefs?(): Promise<Array<{ goalId: string; identityId: string }>>;
+  listGoalRefs(): Promise<Array<{ goalId: string; identityId: string }>>;
 }
 
 export interface GoalScheduleProjectionHandlers {

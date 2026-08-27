@@ -31,8 +31,8 @@ export interface RoutineScheduleStateReader {
     routineId: string,
     identityId: string,
   ): Promise<RoutineScheduleSnapshot | null>;
-  /** Optional full scan used by startup reconcile / lost-event repair. */
-  listRoutineRefs?(): Promise<Array<{ routineId: string; identityId: string }>>;
+  /** Full authority scan used by startup reconcile / lost-event repair. */
+  listRoutineRefs(): Promise<Array<{ routineId: string; identityId: string }>>;
 }
 
 export interface RoutineScheduleProjectionPlan {
@@ -46,7 +46,7 @@ export interface RoutineScheduleProjectionSource {
     identityId: string,
   ): Promise<RoutineScheduleProjectionPlan>;
   buildRoutineOwner(routineId: string, identityId: string): SchedulingOwner;
-  listRoutineRefs?(): Promise<Array<{ routineId: string; identityId: string }>>;
+  listRoutineRefs(): Promise<Array<{ routineId: string; identityId: string }>>;
 }
 
 export interface RoutineScheduleProjectionHandlers {
@@ -87,17 +87,17 @@ export const routineScheduleProjectionEventNames = [
 export function createRoutineScheduleProjectionEventHandlers(
   projector: RoutineScheduleProjectionHandlers,
 ): {
-  [K in keyof RoutineScheduleProjectionEventMap]: (event: RoutineScheduleProjectionEventMap[K]) => void;
+  [K in keyof RoutineScheduleProjectionEventMap]: (event: RoutineScheduleProjectionEventMap[K]) => Promise<void>;
 } {
   return {
-    'routine:occurrence-committed': (event) => {
-      void projector.upsertRoutine(event.routineId, event.identityId);
+    'routine:occurrence-committed': async (event) => {
+      await projector.upsertRoutine(event.routineId, event.identityId);
     },
     // An override/snooze change means the desired set may jump (suppress) or
     // reappear (expiry) in place — rebuild the full plan so the neutral
     // Scheduler converges without waiting for the next occurrence commit.
-    'routine:override-changed': (event) => {
-      void projector.upsertRoutine(event.routineId, event.identityId);
+    'routine:override-changed': async (event) => {
+      await projector.upsertRoutine(event.routineId, event.identityId);
     },
   };
 }
@@ -125,7 +125,7 @@ export function createRoutineScheduleProjectionSource(deps: {
     },
 
     async listRoutineRefs() {
-      return (await deps.reader.listRoutineRefs?.()) ?? [];
+      return deps.reader.listRoutineRefs();
     },
 
     async buildRoutinePlan(routineId, identityId) {

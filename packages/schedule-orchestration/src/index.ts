@@ -15,5 +15,11 @@ export type {
 } from './ports/projection';
 export type { ScheduleOrchestrationExecutionDeps } from './ports/execution';
 export type { RuntimeContribution } from './ports/runtime-contribution';
+export type {
+  ProjectionRepairCounters,
+  ProjectionRepairMetricsReader,
+  ProjectionRepairMetricsSnapshot,
+  ProjectionRepairSource,
+} from './ports/projection-repair';
 
 export { createReminderSchedulerDueSetReader } from './shadow/reminder-due-set-shadow';

@@ -21,9 +21,14 @@ import type {
   CreateScheduleOrchestrationModuleOptions,
   ScheduleOrchestrationModule,
 } from '../ports/projection';
+import {
+  defineProjectionRepairLane,
+  type ProjectionRepairLane,
+} from '../runtime/projection-repair-runtime';
 import { createScheduleExecutionRouter } from '../execution/router';
 import { createCompositeRuntimeContribution } from '../runtime/composite-runtime';
 import { createGoalProjectionRuntime } from '../runtime/goal-projection-runtime';
+import { createProjectionRepairRuntime } from '../runtime/projection-repair-runtime';
 import { createReminderProjectionRuntime } from '../runtime/reminder-projection-runtime';
 import { createRoutineProjectionRuntime } from '../runtime/routine-projection-runtime';
 import { createTaskProjectionRuntime } from '../runtime/task-projection-runtime';
@@ -45,7 +50,11 @@ export function createScheduleOrchestrationModule(
   const handlerRegistry = new ScheduledHandlerRegistry();
   const legacySourceExecutor = createScheduleExecutionRouter(options.execution);
 
-  const runtimeContributions = [
+  // SCHED-3601 startup ordering is intentional: every Task/Goal/Routine
+  // incremental listener is registered before the common durable repair sweep.
+  // The legacy Reminder listener also joins before the sweep so moving the
+  // neutral lanes does not regress its event coverage.
+  const incrementalRuntimes = [
     createTaskProjectionRuntime({
       source: options.taskProjection.source,
       schedulingPort,
@@ -56,17 +65,34 @@ export function createScheduleOrchestrationModule(
       schedulingPort,
       goalEvents: createTypedEventSubscriber<GoalScheduleProjectionEventMap>(eventBus),
     }),
-    createReminderProjectionRuntime({
-      source: options.reminderProjection.source,
-      scheduleTaskRepository: options.reminderProjection.scheduleTaskRepository,
-      reminderEvents: createTypedEventSubscriber<ReminderScheduleProjectionEventMap>(eventBus),
-      scheduleEvents,
+  ];
+
+  const repairLanes: ProjectionRepairLane[] = [
+    defineProjectionRepairLane<{ templateId: string; identityId: string }>({
+      source: 'task',
+      enumerate: () => options.taskProjection.source.listTemplateRefs(),
+      describe: (ref) => `${ref.identityId}/${ref.templateId}`,
+      repair: async (ref) => {
+        const plan = await options.taskProjection.source.buildTemplatePlan(
+          ref.templateId,
+          ref.identityId,
+        );
+        return schedulingPort.reconcile(plan.owner, plan.desired);
+      },
+    }),
+    defineProjectionRepairLane<{ goalId: string; identityId: string }>({
+      source: 'goal',
+      enumerate: () => options.goalProjection.source.listGoalRefs(),
+      describe: (ref) => `${ref.identityId}/${ref.goalId}`,
+      repair: async (ref) => {
+        const plan = await options.goalProjection.source.buildGoalPlan(ref.goalId, ref.identityId);
+        return schedulingPort.reconcile(plan.owner, plan.desired);
+      },
     }),
   ];
 
-  // ROUTINE-3401: durable wall-clock lane. When a routine projection + execution
-  // deps are joined, register the neutral handler and publish the post-commit
-  // occurrence-committed signal so the routine runtime re-arms the next trigger.
+  // ROUTINE-3401: durable wall-clock lane. Register its event listener before
+  // the repair runtime, then repair from the feature-owned durable source.
   if (options.routineProjection && options.execution.routineSource) {
     const routineCommittedPublisher =
       createTypedEventPublisher<RoutineScheduleProjectionEventMap>(eventBus);
@@ -79,19 +105,44 @@ export function createScheduleOrchestrationModule(
     handlerRegistry.register(
       createRoutineWallClockScheduledHandler({ executionSource: routineExecutionSource }),
     );
-    runtimeContributions.push(
+    incrementalRuntimes.push(
       createRoutineProjectionRuntime({
         source: options.routineProjection.source,
         schedulingPort,
         routineEvents: createTypedEventSubscriber<RoutineScheduleProjectionEventMap>(eventBus),
       }),
     );
+    repairLanes.push(
+      defineProjectionRepairLane<{ routineId: string; identityId: string }>({
+        source: 'routine',
+        enumerate: () => options.routineProjection!.source.listRoutineRefs(),
+        describe: (ref) => `${ref.identityId}/${ref.routineId}`,
+        repair: async (ref) => {
+          const plan = await options.routineProjection!.source.buildRoutinePlan(
+            ref.routineId,
+            ref.identityId,
+          );
+          return schedulingPort.reconcile(plan.owner, plan.desired);
+        },
+      }),
+    );
   }
+
+  incrementalRuntimes.push(
+    createReminderProjectionRuntime({
+      source: options.reminderProjection.source,
+      scheduleTaskRepository: options.reminderProjection.scheduleTaskRepository,
+      reminderEvents: createTypedEventSubscriber<ReminderScheduleProjectionEventMap>(eventBus),
+      scheduleEvents,
+    }),
+  );
+
+  const projectionRepairRuntime = createProjectionRepairRuntime(repairLanes);
+  const runtimeContributions = [...incrementalRuntimes, projectionRepairRuntime];
 
   // ROUTINE-3401: durable snooze/suppress store. Persisted writes converge the
   // neutral Scheduler by publishing `routine:override-changed` on the shared
-  // bus (consumed by the routine projection runtime above). Hosts bind the
-  // returned store to their routine snooze/command surface.
+  // bus (consumed by the routine incremental runtime above).
   const routineOverridePublisher =
     createTypedEventPublisher<RoutineScheduleProjectionEventMap>(eventBus);
   const routineOverrideStore = options.routineOverrideStore
@@ -105,6 +156,7 @@ export function createScheduleOrchestrationModule(
 
   return {
     projectionRuntime: createCompositeRuntimeContribution(runtimeContributions),
+    projectionRepairMetrics: projectionRepairRuntime.metrics,
     schedulingPort,
     handlerRegistry,
     sourceExecutor: createHandlerRegistryScheduleTaskSourceExecutor({

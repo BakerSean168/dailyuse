@@ -33,6 +33,9 @@ function createReader(options?: {
     async readRoutineScheduleSnapshot() {
       return snapshot;
     },
+    async listRoutineRefs() {
+      return [];
+    },
   };
 }
 

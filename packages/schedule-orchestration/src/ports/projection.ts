@@ -6,6 +6,7 @@ import type { ReminderScheduleProjectionSource } from '@memoflow/reminder/schedu
 import type { IScheduleTaskRepository, ScheduleTask } from '@memoflow/schedule';
 import type { TaskScheduleProjectionSource } from '@memoflow/task/schedule-projection';
 import type { ScheduleOrchestrationExecutionDeps } from './execution';
+import type { ProjectionRepairMetricsReader } from './projection-repair';
 import type { RuntimeContribution } from './runtime-contribution';
 
 export interface ScheduleOrchestrationProjectionDeps<TSource> {
@@ -28,6 +29,8 @@ export interface ScheduleOrchestrationHandlerRegistry {
 
 export interface ScheduleOrchestrationModule {
   readonly projectionRuntime: RuntimeContribution;
+  /** Cumulative startup/manual durable repair outcomes for Task, Goal, and Routine. */
+  readonly projectionRepairMetrics: ProjectionRepairMetricsReader;
   readonly schedulingPort: SchedulingPort;
   readonly handlerRegistry: ScheduleOrchestrationHandlerRegistry;
   readonly sourceExecutor: {
