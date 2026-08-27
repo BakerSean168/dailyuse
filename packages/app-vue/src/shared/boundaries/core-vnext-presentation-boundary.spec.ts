@@ -11,14 +11,14 @@ describe('Core vNext presentation boundaries', () => {
     expect(productTime).toContain('formatProductDate');
     expect(productTime).toContain('toProductDateInputValue');
     for (const file of [
-      'modules/goal/components/cards/GoalCard.vue',
+      'modules/goal/components/GoalProgressRow.vue',
       'modules/goal/views/GoalDetailView.vue',
       'modules/goal/views/GoalReviewDetailView.vue',
       'modules/goal/components/dialogs/GoalDialog.vue',
     ]) {
       const source = read(file);
       expect(source).not.toContain('new Intl.DateTimeFormat');
-      expect(source).not.toContain("toISOString().slice(0,10)");
+      expect(source).not.toContain('toISOString().slice(0,10)');
     }
   });
 

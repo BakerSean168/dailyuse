@@ -7,7 +7,7 @@ const generateTestEmail = () =>
   `e2e-goal-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
 const testPassword = 'Test123456!';
 
-test.describe('Goal CRUD', () => {
+test.describe('Goal vNext product surface', () => {
   test.beforeEach(async ({ page }) => {
     await registerAndLogin(page, {
       email: generateTestEmail(),
@@ -20,80 +20,91 @@ test.describe('Goal CRUD', () => {
     });
   });
 
-  test('[P0] creates a goal from the stable list entry', async ({ page }) => {
-    const goalName = `E2E Goal Create ${Date.now()}`;
-    const goalDescription = 'Created from the default Goal CRUD oracle.';
+  test('[P0] creates one Goal aggregate with a label and drafted key result', async ({ page }) => {
+    const goalName = `E2E Goal vNext ${Date.now()}`;
+    const labelName = `Launch-${Date.now()}`;
 
-    await createGoal(page, { name: goalName, description: goalDescription });
+    const row = await createGoal(page, {
+      name: goalName,
+      description: 'Direction plus measurable outcome.',
+      labelName,
+      keyResult: {
+        title: 'Reach 50 active users',
+        currentValue: '40',
+        targetValue: '50',
+        unit: 'users',
+      },
+    });
 
-    const goalCard = await waitForGoalCardByName(page, goalName);
-    await expect(goalCard.getByTestId('goal-card-title')).toHaveText(goalName);
-    await expect(goalCard).toContainText(goalDescription);
+    await expect(row.getByTestId('goal-row-title')).toHaveText(goalName);
+    await expect(row).toContainText(`#${labelName}`);
+    await expect(row).toContainText(/0%/);
+    await expect(row).toContainText(/0\/1/);
+    await expect(page.getByTestId('goal-card')).toHaveCount(0);
   });
 
-  test('[P0] edits a goal through the card action', async ({ page }) => {
+  test('[P0] edits a goal through the progress-row action', async ({ page }) => {
     const originalName = `E2E Goal Edit ${Date.now()}`;
     const updatedName = `Updated Goal ${Date.now()}`;
-    const updatedDescription = 'Updated through the card action.';
+    const updatedDescription = 'Updated through the vNext Goal editor.';
 
-    const createdCard = await createGoal(page, {
+    const createdRow = await createGoal(page, {
       name: originalName,
       description: 'Original description.',
     });
-    const goalId = await goalIdFromCard(createdCard);
+    const goalId = await goalIdFromRow(createdRow);
 
     await openGoalAction(page, goalId, 'edit');
 
     const dialog = goalDialog(page);
     await expect(dialog).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-
     await page.getByTestId('goal-name-input').fill(updatedName);
     await page.getByTestId('goal-description-input').fill(updatedDescription);
     await goalSubmitButton(page).click();
-
     await expect(dialog).toBeHidden({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
 
-    const updatedCard = goalCardById(page, goalId);
-    await expect(updatedCard).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-    await expect(updatedCard.getByTestId('goal-card-title')).toHaveText(updatedName);
-    await expect(updatedCard).toContainText(updatedDescription);
+    const updatedRow = goalRowById(page, goalId);
+    await expect(updatedRow).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    await expect(updatedRow.getByTestId('goal-row-title')).toHaveText(updatedName);
+
+    await openGoalAction(page, goalId, 'edit');
+    await expect(page.getByTestId('goal-description-input')).toHaveValue(updatedDescription);
   });
 
-  test('[P0] deletes a goal through the card action', async ({ page }) => {
+  test('[P0] deletes a goal through the progress-row action', async ({ page }) => {
     const goalName = `E2E Goal Delete ${Date.now()}`;
-
-    const createdCard = await createGoal(page, {
+    const createdRow = await createGoal(page, {
       name: goalName,
       description: 'This goal should be deleted.',
     });
-    const goalId = await goalIdFromCard(createdCard);
+    const goalId = await goalIdFromRow(createdRow);
 
     await openGoalAction(page, goalId, 'delete');
 
     const confirmDialog = page.getByRole('alertdialog');
     await expect(confirmDialog).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-    await page.getByRole('button', { name: /Delete|删除/i }).click();
+    await confirmDialog.getByRole('button', { name: /Delete|删除/i }).click();
     await expect(confirmDialog).toBeHidden({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
 
     await expect
-      .poll(async () => await goalCardById(page, goalId).count(), {
+      .poll(async () => await goalRowById(page, goalId).count(), {
         timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
         message: `Timed out waiting for goal ${goalId} to be removed from the list.`,
       })
       .toBe(0);
   });
 
-  test('[P1] opens goal detail from the card title', async ({ page }) => {
+  test('[P1] opens goal detail from the progress-row title', async ({ page }) => {
     const goalName = `E2E Goal Detail ${Date.now()}`;
     const goalDescription = 'Goal detail view should show this description.';
 
-    const createdCard = await createGoal(page, {
+    const createdRow = await createGoal(page, {
       name: goalName,
       description: goalDescription,
     });
-    const goalId = await goalIdFromCard(createdCard);
+    const goalId = await goalIdFromRow(createdRow);
 
-    await createdCard.getByTestId('goal-card-title').click();
+    await createdRow.getByTestId('goal-row-title').click();
 
     await page.waitForURL(new RegExp(`/goals/${goalId}$`), {
       timeout: TIMEOUT_CONFIG.NAVIGATION,
@@ -105,24 +116,41 @@ test.describe('Goal CRUD', () => {
     await expect(page.getByTestId('goal-detail-view')).toContainText(goalDescription);
   });
 
-  test('[P0] keeps one primary create action and preserves toolbar state while resizing', async ({
+  test('[P0] exposes only vNext system views and preserves Label filter state while resizing', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
+    const labelName = `Filter-${Date.now()}`;
+    const goalName = `E2E Goal Filter ${Date.now()}`;
+
+    await createGoal(page, { name: goalName, description: 'Label-filter fixture.', labelName });
 
     const toolbar = page.getByTestId('goal-page-toolbar');
-    const searchInput = page.getByTestId('goal-search-input');
     const primaryCreate = page.locator('[data-primary-action="create-goal"]:visible');
+    const labelFilter = page.getByTestId('label-filter-trigger');
     await expect(toolbar).toBeVisible();
     await expect(primaryCreate).toHaveCount(1);
+    await expect(page.getByTestId('goal-search-input')).toHaveCount(0);
+    await expect(page.getByTestId('goal-refresh-entry')).toHaveCount(0);
     await expectToolbarToFit(toolbar);
 
-    await searchInput.fill('layout-state-probe');
-    await searchInput.focus();
-    await toolbar.evaluate((element) => {
-      element.setAttribute('data-instance-probe', 'stable');
-    });
+    await openSystemViewMenu(page);
+    await expect(page.getByRole('menuitem', { name: /^(Active|进行中)$/ })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: /^(Completed|已完成)$/ })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: /^(All|全部)$/ })).toBeVisible();
+    await page.keyboard.press('Escape');
 
+    await labelFilter.click();
+    const filterSearch = page.getByPlaceholder(/Search labels|搜索标签/i).last();
+    await filterSearch.fill(labelName);
+    await expect(page.getByRole('option', { name: labelName, exact: true })).toBeVisible();
+    await filterSearch.press('ArrowDown');
+    await filterSearch.press('Enter');
+    await page.keyboard.press('Escape');
+    await expect(labelFilter).toContainText('1');
+    await expect(waitForGoalRowByName(page, goalName)).resolves.toBeDefined();
+
+    await toolbar.evaluate((element) => element.setAttribute('data-instance-probe', 'stable'));
     const scrollViewport = page
       .getByTestId('goal-list-scroll')
       .locator('[data-reka-scroll-area-viewport]');
@@ -138,23 +166,14 @@ test.describe('Goal CRUD', () => {
     await dragBusinessPanel(page, 'wider');
     await expect(primaryCreate).toHaveCount(1);
     await expect(toolbar).toHaveAttribute('data-instance-probe', 'stable');
-    await expect(searchInput).toHaveValue('layout-state-probe');
-    await expect(searchInput).toBeFocused();
+    await expect(labelFilter).toContainText('1');
     expect(await scrollViewport.evaluate((element) => element.scrollTop)).toBe(96);
     await expectToolbarToFit(toolbar);
 
     await dragBusinessPanel(page, 'narrower');
     await expect(primaryCreate).toHaveCount(1);
     await expect(toolbar).toHaveAttribute('data-instance-probe', 'stable');
-    await expect(searchInput).toHaveValue('layout-state-probe');
-    expect(await scrollViewport.evaluate((element) => element.scrollTop)).toBe(96);
-    await expectToolbarToFit(toolbar);
-
-    await page.getByTestId('business-panel-focus-toggle').click();
-    await expect(page.getByTestId('app-shell')).toHaveAttribute('data-shell-state', 'focus');
-    await expect(primaryCreate).toHaveCount(1);
-    await expect(toolbar).toHaveAttribute('data-instance-probe', 'stable');
-    await expect(searchInput).toHaveValue('layout-state-probe');
+    await expect(labelFilter).toContainText('1');
     expect(await scrollViewport.evaluate((element) => element.scrollTop)).toBe(96);
     await expectToolbarToFit(toolbar);
   });
@@ -173,18 +192,44 @@ async function createGoal(
   data: {
     name: string;
     description: string;
+    labelName?: string;
+    keyResult?: {
+      title: string;
+      currentValue: string;
+      targetValue: string;
+      unit: string;
+    };
   },
 ): Promise<Locator> {
   await openCreateGoalDialog(page);
 
   const dialog = goalDialog(page);
-  // Prefer stable testids (sync helpers); role+accessible name still depends on i18n labels.
   await page.getByTestId('goal-name-input').fill(data.name);
   await page.getByTestId('goal-description-input').fill(data.description);
+
+  if (data.labelName) {
+    await page.getByTestId('label-picker-trigger').click();
+    const labelSearch = page.getByPlaceholder(/Search labels|搜索标签/i).last();
+    await labelSearch.fill(data.labelName);
+    await page.getByTestId('label-create-option').click();
+    await expect(page.getByTestId('label-picker-trigger')).toContainText(data.labelName);
+    await page.keyboard.press('Escape');
+  }
+
+  if (data.keyResult) {
+    await page.getByTestId('add-key-result-entry').click();
+    await page.getByTestId('draft-kr-title-input').fill(data.keyResult.title);
+    await page.getByTestId('draft-kr-current-input').fill(data.keyResult.currentValue);
+    await page.getByTestId('draft-kr-target-input').fill(data.keyResult.targetValue);
+    await page.getByTestId('draft-kr-unit-input').fill(data.keyResult.unit);
+    await page.getByTestId('save-key-result-draft').click();
+    await expect(page.getByTestId('goal-key-result-draft-row')).toContainText(data.keyResult.title);
+  }
+
   await goalSubmitButton(page).click();
   await expect(dialog).toBeHidden({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
 
-  return waitForGoalCardByName(page, data.name);
+  return waitForGoalRowByName(page, data.name);
 }
 
 async function openCreateGoalDialog(page: Page): Promise<void> {
@@ -198,9 +243,16 @@ async function openCreateGoalDialog(page: Page): Promise<void> {
     });
   }
 
-  await expect(goalDialog(page)).toBeVisible({
-    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-  });
+  await expect(goalDialog(page)).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+}
+
+async function openSystemViewMenu(page: Page): Promise<void> {
+  await page
+    .getByTestId('goal-page-toolbar')
+    .getByRole('button')
+    .filter({ hasText: /Active|进行中/ })
+    .first()
+    .click();
 }
 
 function goalDialog(page: Page): Locator {
@@ -211,22 +263,21 @@ function goalSubmitButton(page: Page): Locator {
   return page.getByTestId('save-goal-button');
 }
 
-async function waitForGoalCardByName(page: Page, goalName: string): Promise<Locator> {
-  const card = page
-    .getByTestId('goal-card')
+async function waitForGoalRowByName(page: Page, goalName: string): Promise<Locator> {
+  const row = page
+    .getByTestId('goal-progress-row')
     .filter({ has: page.getByText(goalName, { exact: true }) })
     .first();
-
-  await expect(card).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-  return card;
+  await expect(row).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+  return row;
 }
 
-function goalCardById(page: Page, goalId: string): Locator {
-  return page.locator(`[data-testid="goal-card"][data-goal-id="${goalId}"]`);
+function goalRowById(page: Page, goalId: string): Locator {
+  return page.locator(`[data-testid="goal-progress-row"][data-goal-id="${goalId}"]`);
 }
 
-async function goalIdFromCard(goalCard: Locator): Promise<string> {
-  const goalId = await goalCard.getAttribute('data-goal-id');
+async function goalIdFromRow(goalRow: Locator): Promise<string> {
+  const goalId = await goalRow.getAttribute('data-goal-id');
   expect(goalId).toBeTruthy();
   return goalId!;
 }
@@ -236,7 +287,9 @@ async function openGoalAction(
   goalId: string,
   action: 'edit' | 'delete',
 ): Promise<void> {
-  const card = goalCardById(page, goalId);
-  await expect(card).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-  await card.getByRole('button', { name: action === 'edit' ? /^(编辑|Edit)$/ : /^(删除|Delete)$/ }).click();
+  const row = goalRowById(page, goalId);
+  await expect(row).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+  await row
+    .getByRole('button', { name: action === 'edit' ? /^(编辑|Edit)$/ : /^(删除|Delete)$/ })
+    .click();
 }

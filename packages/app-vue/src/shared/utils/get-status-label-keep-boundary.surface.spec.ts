@@ -4,9 +4,18 @@ import { describe, expect, it } from 'vitest';
 
 describe('status presentation ownership', () => {
   const dir = __dirname;
-  const schedule = readFileSync(resolve(dir, '../../modules/schedule/utils/schedule-presentation.ts'), 'utf8');
-  const goalDetail = readFileSync(resolve(dir, '../../modules/goal/views/GoalDetailView.vue'), 'utf8');
-  const goalCard = readFileSync(resolve(dir, '../../modules/goal/components/cards/GoalCard.vue'), 'utf8');
+  const schedule = readFileSync(
+    resolve(dir, '../../modules/schedule/utils/schedule-presentation.ts'),
+    'utf8',
+  );
+  const goalDetail = readFileSync(
+    resolve(dir, '../../modules/goal/views/GoalDetailView.vue'),
+    'utf8',
+  );
+  const goalRow = readFileSync(
+    resolve(dir, '../../modules/goal/components/GoalProgressRow.vue'),
+    'utf8',
+  );
 
   it('keeps Scheduler status translation in the schedule presentation boundary', () => {
     expect(schedule).toMatch(/export function getStatusLabel\b/);
@@ -15,9 +24,11 @@ describe('status presentation ownership', () => {
     expect(schedule).toContain('schedule.taskStatus.failed');
   });
 
-  it('renders the simplified Goal status directly without resurrecting Draft/Archived mapping logic', () => {
-    for (const source of [goalDetail, goalCard]) {
-      expect(source).toContain('goal.status');
+  it('keeps Goal lifecycle status presentation local without resurrecting Draft/Archived mapping logic', () => {
+    expect(goalDetail).toContain('goal.status');
+    expect(goalRow).toContain('goal.list.overdue');
+    expect(goalRow).toContain("props.goal.status === 'Completed'");
+    for (const source of [goalDetail, goalRow]) {
       expect(source).not.toMatch(/getStatusLabel\b/);
       expect(source).not.toContain('goal.cards.goalStatus.draft');
       expect(source).not.toContain('goal.cards.goalStatus.archived');

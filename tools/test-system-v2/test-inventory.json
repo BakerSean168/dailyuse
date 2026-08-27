@@ -3253,6 +3253,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/modules/goal/components/GoalProgressRow.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/goal/components/cards/GoalRecordCard.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -3286,6 +3294,14 @@
     },
     {
       "path": "packages/app-vue/src/modules/goal/composables/goal-operations-keep-boundary.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/goal/composables/useGoal.label-filter.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -4142,6 +4158,14 @@
     },
     {
       "path": "packages/app-vue/src/shared/composables/use-viewport-breakpoint-dead.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/shared/composables/useLabelCatalog.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -10259,7 +10283,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 193
+      "fileCount": 196
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -11292,7 +11316,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 973,
+    "unit": 976,
     "integration": 29,
     "smoke": 3,
     "boundary-ipc": 9,

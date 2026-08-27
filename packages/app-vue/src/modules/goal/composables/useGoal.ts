@@ -63,11 +63,13 @@ export function useGoal() {
         systemView: store.systemView,
         page: store.pagination.page,
         pageSize: store.pagination.pageSize,
+        labelIdsAll: store.labelIdsAll.length ? [...store.labelIdsAll] : undefined,
       };
 
-      const result = searchQuery
-        ? await service.searchGoals({ query: searchQuery, ...params })
-        : await service.listGoals(params);
+      const result = await service.listGoals({
+        ...params,
+        query: searchQuery,
+      });
 
       if (result.ok) {
         store.setGoals(

@@ -1,15 +1,19 @@
 <template>
-  <div class="flex h-full min-h-0 w-full flex-col overflow-hidden bg-background" data-testid="goal-module-layout">
+  <div
+    class="flex h-full min-h-0 w-full flex-col overflow-hidden bg-background"
+    data-testid="goal-module-layout"
+  >
     <GoalPageToolbar
       v-if="isListRoute"
       :system-views="views"
       :active-system-view="systemView"
       :visible-goal-count="goals.length"
-      :search-query="searchQuery"
+      :label-options="labelOptions"
+      :selected-label-ids="labelIdsAll"
+      :labels-loading="labelsLoading"
       @create-goal="openCreate"
       @select-system-view="setSystemView"
-      @refresh="fetchGoals"
-      @search="handleSearch"
+      @update-labels="setLabelIdsAll"
     />
     <main class="flex min-w-0 flex-1 flex-col overflow-hidden">
       <router-view />
@@ -33,6 +37,7 @@ import type { GoalClientDTO, GoalSystemView } from '@memoflow/contracts/goal';
 import { GoalDialog } from '../components';
 import GoalPageToolbar from '../components/GoalPageToolbar.vue';
 import { useGoal } from '../composables/useGoal';
+import { useLabelCatalog } from '../../../shared/composables/useLabelCatalog';
 import { usePanelSurfaceStatus } from '../../../layouts/shell/usePanelSurfaceStatus';
 
 const route = useRoute();
@@ -41,17 +46,18 @@ const { t } = useI18n();
 const {
   goals,
   systemView,
+  labelIdsAll,
   setSystemView,
-  search,
+  setLabelIdsAll,
   fetchGoals,
   getGoalAggregateView,
   isSaving,
 } = useGoal();
+const { options: labelOptions, isLoading: labelsLoading } = useLabelCatalog();
 
 const dialogOpen = ref(false);
 const dialogMode = ref<'create' | 'edit'>('create');
 const editingGoal = ref<GoalClientDTO | null>(null);
-const searchQuery = ref('');
 const goalDialogDirty = ref(false);
 const isListRoute = computed(() => route.name === 'goal-list');
 const panelSurfaceStatus = computed<'clean' | 'dirty' | 'busy'>(() => {
@@ -61,20 +67,13 @@ const panelSurfaceStatus = computed<'clean' | 'dirty' | 'busy'>(() => {
 usePanelSurfaceStatus(panelSurfaceStatus);
 
 const views = computed(() => [
-  { id: 'active' as GoalSystemView, label: t('goal.systemFolders.active'), count: goals.value.filter((g) => g.status === 'Active' && !g.archivedAt).length },
-  { id: 'completed' as GoalSystemView, label: t('goal.systemFolders.completed'), count: goals.value.filter((g) => g.status === 'Completed').length },
-  { id: 'abandoned' as GoalSystemView, label: 'Abandoned', count: goals.value.filter((g) => g.status === 'Abandoned').length },
-  { id: 'archived' as GoalSystemView, label: 'Archived', count: goals.value.filter((g) => !!g.archivedAt).length },
-  { id: 'all' as GoalSystemView, label: 'All', count: goals.value.length },
+  { id: 'active' as GoalSystemView, label: t('goal.systemFolders.active') },
+  { id: 'completed' as GoalSystemView, label: t('goal.systemFolders.completed') },
+  { id: 'all' as GoalSystemView, label: t('goal.systemFolders.all') },
 ]);
 
 function openCreate() {
   void router.push({ name: 'goal-list', query: { dialog: 'goal' } });
-}
-
-function handleSearch(query: string) {
-  searchQuery.value = query;
-  search(query);
 }
 
 async function syncDialogFromRoute() {
@@ -91,10 +90,12 @@ async function syncDialogFromRoute() {
     dialogOpen.value = true;
     return;
   }
+
   dialogMode.value = 'edit';
-  const cached = goals.value.find((goal) => String(goal.id) === goalId) ?? null;
-  const aggregate = cached ? null : await getGoalAggregateView(goalId);
-  editingGoal.value = cached ?? (aggregate ? { ...aggregate.goal, keyResults: aggregate.keyResults, reviews: aggregate.reviews } : null);
+  const aggregate = await getGoalAggregateView(goalId);
+  editingGoal.value = aggregate
+    ? { ...aggregate.goal, keyResults: aggregate.keyResults, reviews: aggregate.reviews }
+    : null;
   dialogOpen.value = editingGoal.value !== null;
   if (!editingGoal.value) await router.replace({ name: 'goal-list' });
 }
@@ -110,7 +111,11 @@ function handleDatabaseTablesChanged(event: Event) {
   if (detail?.modules?.includes('goal')) void fetchGoals();
 }
 
-watch(() => route.fullPath, () => void syncDialogFromRoute(), { immediate: true });
+watch(
+  () => route.fullPath,
+  () => void syncDialogFromRoute(),
+  { immediate: true },
+);
 onMounted(() => {
   window.addEventListener('db:tables-changed', handleDatabaseTablesChanged);
   void fetchGoals();

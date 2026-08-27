@@ -55,7 +55,7 @@ Wave 0 evidence is frozen in [`Core vNext Wave 0 — Baseline / Acceptance / Sha
 
 **Wave 2 execution point (closed 2026-08-26):** `GOAL-2101~2103`, `TASK-2201~2205`, `ROUTINE-2301~2303`, and `NOTIF-2401/2402` are integrated and gate-verified.
 
-**Current execution point (2026-08-27):** Wave 3 vertical integration and both Wave 4 lanes are closed. Wave 5 has started and shared `UI-5101` is closed: Goal/Task now have one shadcn/Reka-based LabelPicker/LabelFilterPopover presentation seam. `GOAL-5101` and `TASK-5201` are unblocked; the current primary continuation is `GOAL-5101`, while Routine/Planner/Notification UI lanes remain independently parallelizable.
+**Current execution point (2026-08-27):** Wave 3 vertical integration and both Wave 4 lanes are closed. Wave 5 shared `UI-5101` and Goal list/editor `GOAL-5101` are closed. Goal now uses the vNext progress-row + Label AND filter + aggregate editor surface; the current primary continuation is `TASK-5201` (Today/Upcoming execution home), while Goal detail, Routine, Planner, and Notification UI lanes remain independently parallelizable.
 
 **Wave 1 gate evidence (2026-08-25):**
 
@@ -1742,6 +1742,18 @@ title/description/start/due/labels/KRs
 ```
 
 Delete old Folder/Focus/Compare/Search product surfaces when parity reached.
+
+**Implementation evidence (2026-08-27):**
+
+- rebuilt the production Goal list around `GoalProgressRow`: each row owns the Goal title, canonical aggregate progress percentage/bar, attached labels, start/due range, completed/total KR count, and a display-only overdue badge derived from `Active + dueDate`; the old card-grid `GoalCard.vue` is deleted and no production Goal source references it;
+- reduced the Goal toolbar to the three vNext system views `Active / Completed / All`, the shared compact `LabelFilterPopover`, and the single primary create action. Search/Refresh/Folder/Focus/Compare controls are absent from the production list surface rather than hidden conditionally;
+- added `labelIdsAll` to Goal renderer state and sends it directly through `GoalClientPort.listGoals(...)`; selected labels are deduplicated and filtering remains repository-owned AND semantics instead of post-filtering one paginated client page. The old `searchGoals` fork is not used by the list fetch path, so label filters cannot be bypassed by a parallel search request;
+- added the shared identity-scoped `useLabelCatalog` Query seam over `LabelClientPort`: renderer list/create requests stay current-user-only while identity appears only in the Query cache key; a successful create patches only that identity's catalog. Goal and Task can reuse the same seam without importing persistence or host auth details;
+- rebuilt the Goal editor around Direction + Measurement only: title, description, start date, due date, shared `LabelPicker`, and an in-dialog KR draft collection. Motivation/feasibility/taxonomy fields are no longer production form controls;
+- the KR draft editor keeps one `+ Add key result` entry with default title/current/target/unit fields and a collapsible advanced section for progress baseline, calculation method, and 1–5 progress weight. New KRs use `startingValue = currentValue`; decreasing/non-positive targets require a distinct `progressBaselineValue`, matching the canonical domain calculator rather than duplicating a UI-only percentage formula;
+- creation persists `labelIds + initialKeyResults` in one Goal aggregate command and editing persists `labelIds + keyResults` in one update command. Goal lifecycle status remains a separate domain command; the editor does not invent a `status` field that is absent from `UpdateGoalReq`;
+- the default Web Goal Playwright oracle was migrated from the retired card/search UI to the vNext product fixture. Real Chromium verifies aggregate Goal+Label+KR creation, progress-row edit/delete/detail, absence of legacy GoalCard/Search/Refresh, `Active/Completed/All`, keyboard-driven Label filtering, and toolbar/filter stability while the business panel is resized;
+- verification: focused Goal/shared regressions `12` files / `31` tests green; full app-vue `196` files / `739` tests green; app-vue typecheck and production Vite build green; app-vue lint has `0` errors (13 pre-existing warnings); Web Goal vNext Playwright `5/5` green in Chromium; Nx sync, test-target governance, docs, and full governance are green. Test inventory is current at `1123` owned files (`976` unit / `29` integration / `3` smoke / `9` boundary-ipc / `5` boundary-main / `63` e2e / `1` perf / `37` governance).
 
 ## GOAL-5102 — Goal detail / record / review surface
 

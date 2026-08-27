@@ -5,7 +5,7 @@
 
     Usage:
       <ActionableWrapper :actions="menuActions">
-        <GoalCard :goal="goal" />
+        <AnyProductRow :item="item" />
       </ActionableWrapper>
   -->
   <ContextMenu>

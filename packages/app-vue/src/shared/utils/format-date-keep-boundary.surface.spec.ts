@@ -5,13 +5,34 @@ import { DEFAULT_EMPTY_LITERALS, resolveEmptyLabel } from '@memoflow/time';
 
 describe('Product date presentation boundary', () => {
   const dir = __dirname;
-  const goalDetail = readFileSync(resolve(dir, '../../modules/goal/views/GoalDetailView.vue'), 'utf8');
-  const goalCard = readFileSync(resolve(dir, '../../modules/goal/components/cards/GoalCard.vue'), 'utf8');
-  const taskDetail = readFileSync(resolve(dir, '../../modules/task/views/TaskDetailView.vue'), 'utf8');
-  const taskPresentation = readFileSync(resolve(dir, '../../modules/task/utils/task-template-presentation.ts'), 'utf8');
-  const schedule = readFileSync(resolve(dir, '../../modules/schedule/components/ScheduleTaskDetailDialog.vue'), 'utf8');
-  const reminder = readFileSync(resolve(dir, '../../modules/reminder/components/ReminderTemplateCard.vue'), 'utf8');
-  const rule = readFileSync(resolve(dir, '../../modules/governance/components/RuleCard.vue'), 'utf8');
+  const goalDetail = readFileSync(
+    resolve(dir, '../../modules/goal/views/GoalDetailView.vue'),
+    'utf8',
+  );
+  const goalRow = readFileSync(
+    resolve(dir, '../../modules/goal/components/GoalProgressRow.vue'),
+    'utf8',
+  );
+  const taskDetail = readFileSync(
+    resolve(dir, '../../modules/task/views/TaskDetailView.vue'),
+    'utf8',
+  );
+  const taskPresentation = readFileSync(
+    resolve(dir, '../../modules/task/utils/task-template-presentation.ts'),
+    'utf8',
+  );
+  const schedule = readFileSync(
+    resolve(dir, '../../modules/schedule/components/ScheduleTaskDetailDialog.vue'),
+    'utf8',
+  );
+  const reminder = readFileSync(
+    resolve(dir, '../../modules/reminder/components/ReminderTemplateCard.vue'),
+    'utf8',
+  );
+  const rule = readFileSync(
+    resolve(dir, '../../modules/governance/components/RuleCard.vue'),
+    'utf8',
+  );
 
   it('keeps semantic empty labels distinct', () => {
     expect(resolveEmptyLabel('notSet')).toBe(DEFAULT_EMPTY_LITERALS.notSet);
@@ -21,7 +42,7 @@ describe('Product date presentation boundary', () => {
   });
 
   it('renders Goal dates directly through Product Time without local Date wrappers', () => {
-    for (const source of [goalDetail, goalCard]) {
+    for (const source of [goalDetail, goalRow]) {
       expect(source).toContain('formatProductDate');
       expect(source).not.toMatch(/function formatDate\b/);
       expect(source).not.toContain('toISOString');
