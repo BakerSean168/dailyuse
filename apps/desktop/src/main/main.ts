@@ -25,7 +25,10 @@ import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 // ── Module Electron Entry Points ─────────────────────────────────────
 import { PowerSyncTaskBindingReadPort } from '@memoflow/task';
 import { createGoalTaskProgressPowerSyncHandler } from '@memoflow/goal';
-import { createTaskPowerSyncScheduleExecutionSource } from '@memoflow/task/schedule-execution';
+import {
+  createTaskPowerSyncScheduleExecutionSource,
+  createTaskReminderScheduledHandlerRegistration,
+} from '@memoflow/task/schedule-execution';
 import { createTaskPowerSyncScheduleProjectionSource } from '@memoflow/task/schedule-projection';
 import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestration';
 import { createGoalPowerSyncScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
@@ -179,6 +182,17 @@ async function registerBusinessModules(
     runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
     goalProgressHandler: createGoalTaskProgressPowerSyncHandler(db),
   });
+  // Register the Task reminder fire handler so scheduled `task.reminder` work
+  // (e.g. a one-time task + relative reminder) is executed by the registry-based
+  // source executor. Desktop enqueues the durable NotificationRequested envelope
+  // into the shared outbox consumed by the notification durable runtime.
+  scheduleOrchestrationModule.handlerRegistry.register(
+    createTaskReminderScheduledHandlerRegistration({
+      taskInstanceRepository: taskComposed.repositories.taskInstanceRepository,
+      taskTemplateRepository: taskComposed.repositories.taskTemplateRepository,
+      notificationRequestedWriter: notificationComposed.repositories.requestedWriter,
+    }),
+  );
   const taskElectronModule = taskComposed.module;
 
   const goalComposed = composeGoal({

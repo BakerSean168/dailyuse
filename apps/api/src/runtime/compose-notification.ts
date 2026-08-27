@@ -37,6 +37,7 @@
  */
 
 import type { PrismaClient } from '@memoflow/database';
+import type { NotificationRequestedWriterPort } from '@memoflow/contracts/notification';
 import {
   createNotificationDurableRuntime,
   createNotificationModule,
@@ -72,7 +73,11 @@ export interface ComposedNotification {
   /** Already-bound IApiModule-compatible handle. 已绑定的 IApiModule 兼容 handle。 */
   readonly module: NotificationApiModuleDef;
   /** Instance-bound repository view for sibling modules. 暴露给兄弟模块的 instance-bound 仓储视图。 */
-  readonly repositories: { readonly notificationRepository: INotificationRepository };
+  readonly repositories: {
+    readonly notificationRepository: INotificationRepository;
+    /** Durable NotificationRequested writer (NOTIF-3301) for business handlers. */
+    readonly requestedWriter: NotificationRequestedWriterPort;
+  };
   /** Schedule notification port built from the SAME repository set. 从同一仓储集合构建的 schedule notification port。 */
   readonly scheduleNotificationPort: ScheduleNotificationPort;
 }
@@ -147,6 +152,7 @@ export function composeNotification(
     module: createNotificationApiModule({ instance }),
     repositories: {
       notificationRepository: repositories.notificationRepository,
+      requestedWriter: repositories.requestedWriter,
     },
     scheduleNotificationPort: createNotificationPort,
   };

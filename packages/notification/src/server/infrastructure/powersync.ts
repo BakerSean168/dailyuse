@@ -26,10 +26,12 @@ import {
   PowerSyncNotificationPreferenceRepository,
   PowerSyncNotificationTemplateRepository,
   PowerSyncNotificationReliableAdapter,
+  NotificationRequestedPowerSyncWriterAdapter,
 } from './adapters/powersync';
 import type { NotificationMetricsService } from '../domain/services/notification-metrics-service';
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type { INotificationRepository, INotificationPreferenceRepository, INotificationTemplateRepository } from '../domain/repositories';
+import type { NotificationRequestedWriterPort } from '@memoflow/contracts/notification';
 
 export interface CreateNotificationPowerSyncModuleOptions {
   readonly runtimeContributions?: NotificationRuntimeContributionsInput;
@@ -57,6 +59,12 @@ export interface NotificationPowerSyncRepositorySet {
   readonly notificationPreferenceRepository: INotificationPreferenceRepository;
   readonly notificationTemplateRepository: INotificationTemplateRepository;
   readonly reliableAdapter: NotificationReliableOperationPort;
+  /**
+   * Durable NotificationRequested writer for business handlers (NOTIF-3301).
+   * Enqueues `notification.requested` envelopes into the shared outbox_messages
+   * table consumed by the desktop durable runtime.
+   */
+  readonly requestedWriter: NotificationRequestedWriterPort;
 }
 
 /**
@@ -83,6 +91,7 @@ export function createNotificationPowerSyncRepositories(
     notificationPreferenceRepository: new PowerSyncNotificationPreferenceRepository(db),
     notificationTemplateRepository: new PowerSyncNotificationTemplateRepository(db),
     reliableAdapter: new PowerSyncNotificationReliableAdapter(db, metricsService),
+    requestedWriter: new NotificationRequestedPowerSyncWriterAdapter(db),
   };
 }
 
@@ -431,4 +440,5 @@ export {
   PowerSyncNotificationPreferenceRepository,
   PowerSyncNotificationTemplateRepository,
   PowerSyncNotificationReliableAdapter,
+  NotificationRequestedPowerSyncWriterAdapter,
 };

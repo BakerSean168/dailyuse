@@ -55,6 +55,8 @@ import {
   createTaskPrismaRepositories,
   createTaskRuntimeContribution,
   normalizeTaskRuntimeContributions,
+  type ITaskInstanceRepository,
+  type ITaskTemplateRepository,
   type TaskApplicationPort,
   type TaskRuntimeContributionsInput,
 } from '@memoflow/task';
@@ -86,6 +88,10 @@ export interface ComposedTask {
   readonly module: TaskApiModuleDef;
   /** The transport-neutral application port (`instance.api`) for sibling modules to orchestrate. 供兄弟模块编排的与传输无关 application port（`instance.api`）。 */
   readonly applicationPort: TaskApplicationPort;
+  /** Task instance repository for scheduled-handler registration (task.reminder.fire). 供 scheduled handler 注册（task.reminder.fire）使用的任务实例仓储。 */
+  readonly taskInstanceRepository: ITaskInstanceRepository;
+  /** Task template repository for scheduled-handler registration (task.reminder.fire). 供 scheduled handler 注册（task.reminder.fire）使用的任务模板仓储。 */
+  readonly taskTemplateRepository: ITaskTemplateRepository;
 }
 
 /**
@@ -158,5 +164,7 @@ export function composeTask(
   return {
     module: createTaskApiModule({ instance }),
     applicationPort: instance.api,
+    taskInstanceRepository,
+    taskTemplateRepository,
   };
 }
