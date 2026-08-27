@@ -132,8 +132,10 @@
     "vue": "^3.5.39"
   },
   "devDependencies": {
+    "@fullcalendar/vue3": "7.0.2",
     "@types/markdown-it": "14.1.2",
     "@vitejs/plugin-vue": "6.0.7",
+    "temporal-polyfill": "1.0.4",
     "typescript": "~6.0.3",
     "vite": "8.1.4",
     "vite-plugin-dts": "5.0.3"

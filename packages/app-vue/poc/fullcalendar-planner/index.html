@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MemoFlow FullCalendar Standard PoC</title>
+    <style>
+      html, body, #app { height: 100%; margin: 0; font-family: ui-sans-serif, system-ui, sans-serif; }
+      .poc-shell { min-height: 100%; display: grid; grid-template-columns: minmax(180px, 240px) 1fr; }
+      .poc-shell.dark { background: #07101f; color: white; }
+      .poc-controls { padding: 12px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid #d9dce3; }
+      .poc-controls button { min-height: 36px; }
+      .poc-controls pre { overflow: auto; white-space: pre-wrap; font-size: 11px; }
+      @media (max-width: 720px) { .poc-shell { grid-template-columns: 1fr; } .poc-controls { border-right: 0; border-bottom: 1px solid #d9dce3; } }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

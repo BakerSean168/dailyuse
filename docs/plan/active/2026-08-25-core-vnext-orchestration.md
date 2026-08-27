@@ -1509,6 +1509,19 @@ light/dark theme
 
 **Acceptance:** PoC meets core Planner needs without Premium plugin.
 
+**Implementation evidence (2026-08-27):**
+
+- validated `@fullcalendar/vue3@7.0.2` Standard (MIT) with `temporal-polyfill@1.0.4`; both remain dev-only PoC dependencies and no Premium/Scheduler/resource package is present;
+- isolated `CalendarEventProjection`-shaped fixture covers Schedule/Task/Goal/Routine ownership, custom event content, per-event move/resize/read-only capabilities, revision, and owner-command targets;
+- Standard-only adapter provides Day / Week TimeGrid / Month / List, select, now indicator, `eventDrop`, `eventResize`, and failed-owner-command `revert()` semantics;
+- component tests use semantic role/ARIA assertions rather than FullCalendar private/generated CSS classes; targeted adapter/surface suite is `7/7`;
+- real Chromium production-preview smoke switched all four views, rendered custom events, applied light/dark + narrow modes, found accessible names on all observed buttons, and produced no page error; local measurements were 119.3 ms app-mount marker and 182.6 ms first observed interactive toolbar;
+- isolated Vite build was ~396.64 kB JS raw / ~121.3 kB gzip and ~5.92 kB CSS raw / ~1.6 kB gzip; these are engineering baselines, not product SLAs;
+- current custom Month + Week renderers are ~436 LOC before surrounding Planner glue, while Standard supplies the additional Day/List + interaction primitives behind one neutral adapter;
+- two raw headless Playwright pointer gestures did not trigger FullCalendar `eventDrop`; this is recorded rather than misreported. Adapter-level owner routing/revert is deterministic and green, but production migration must add a stable real-Planner drag/resize E2E before old custom surfaces are deleted;
+- formal verification: isolated PoC tests `7/7`, `app-vue:typecheck` green with 26 dependent targets, production `app-vue:vite:build` green, changed TypeScript/Vue ESLint green, and production-route import audit empty;
+- decision: **GO** to PLAN-4302 / PLAN-4401 with FullCalendar Standard; keep the current production Planner route untouched in this ticket.
+
 **Fallback:** if PoC fails hard on panel/responsiveness/a11y, record evidence before considering Schedule-X Premium or keeping custom layout.
 
 ## PLAN-4302 — Planner unified read projection
