@@ -31,3 +31,13 @@ export {
   type ProtocolSessionPersistenceReceipt,
   type ProtocolSessionStore,
 } from '../server/domain/ports';
+export {
+  createActiveUsageRuntime,
+  type ActiveUsageAccumulatorSnapshot,
+  type ActiveUsageGateState,
+  type ActiveUsageNaturalBreakSatisfied,
+  type ActiveUsageOccurrenceDue,
+  type ActiveUsageRoutineRegistration,
+  type ActiveUsageRuntime,
+  type CreateActiveUsageRuntimeOptions,
+} from '../server/runtime/active-usage';

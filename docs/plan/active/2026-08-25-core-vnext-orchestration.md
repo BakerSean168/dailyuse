@@ -1372,6 +1372,17 @@ May execute in parallel with Planner Wave 4B after Routine domain is stable.
 
 **Acceptance:** fixture G suppresses unnecessary stand reminder after sufficient idle rest.
 
+**Implementation evidence (2026-08-27):**
+
+- added Desktop-local `ActiveUsageRuntime` over the platform-neutral `ActivitySensorPort`; it owns only local accumulation/tick semantics and has no Scheduler/ScheduledIntent/ScheduleTask dependency;
+- active accumulation stops at the actual last-input boundary (`UserIdle.at - idleDurationMs`) so the idle-detection window is not incorrectly counted as active usage;
+- existing routine/profile/membership/temporary-override gates are reused; inactive profiles and live snooze/suppress intervals pause accumulation without resetting previously earned active time;
+- coarse ticks split temporary-override time at the real gate reopen instant rather than sampling only the end-state boolean;
+- Natural Break credit is idempotent per idle episode and only advances a routine generation when that routine has active-usage debt; qualifying idle resets the accumulator while duplicate resume events do not double-credit;
+- accumulator snapshots are exportable/restorable and process downtime is never inferred as active usage; occurrence identity is stable per `routine:<id>:active-usage:<generation>`;
+- Fixture G (`40m active -> due -> 6m idle -> Natural Break -> reset/no duplicate`) plus profile deactivation, suppression, idle-only time, and restart snapshot cases are green `5/5`;
+- verification: focused ActiveUsage `5/5`, full Reminder `507/507`, Reminder Nx build green, Desktop Nx typecheck green, changed-file ESLint green; boundary audit confirms zero Scheduler import/reference in the ActiveUsage runtime.
+
 ## ROUTINE-4103 — Intervention state machine
 
 **Depends:** ROUTINE-4102  
