@@ -47,6 +47,8 @@ export function createMockTemplateRepo(): ITaskTemplateRepository {
     findActiveTemplates: vi.fn().mockResolvedValue([]),
     findByGoalId: vi.fn().mockResolvedValue([]),
     findByTags: vi.fn().mockResolvedValue([]),
+    findByLabelIdsAll: vi.fn().mockResolvedValue([]),
+    replaceLabels: vi.fn().mockResolvedValue([]),
     findNeedGenerateInstances: vi.fn().mockResolvedValue([]),
     delete: vi.fn().mockResolvedValue(undefined),
     softDelete: vi.fn().mockResolvedValue(undefined),
@@ -83,7 +85,6 @@ export function createMockInstanceRepo(): ITaskInstanceRepository {
     deleteIncompleteInstancesFrom: vi.fn().mockResolvedValue(0),
   };
 }
-
 
 export function createTestToken(identityId = TEST_IDENTITY_ID): string {
   return jwt.sign({ identityId }, JWT_SECRET, { expiresIn: '1h' });

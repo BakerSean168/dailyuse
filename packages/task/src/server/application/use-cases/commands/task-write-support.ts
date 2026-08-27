@@ -1,6 +1,9 @@
 import { ResultErrorException, type ResultError } from '@memoflow/contracts/result';
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
-import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
+import {
+  TaskLabelOwnershipError,
+  type ITaskTemplateRepository,
+} from '../../../domain/repositories/i-task-template-repository';
 import { mapInfraErrorToResultError } from '@memoflow/utils/errors';
 import { OptimisticConcurrencyError } from '../../../domain/errors/optimistic-concurrency.error';
 
@@ -26,6 +29,13 @@ export function mapTaskWriteErrorToResultError(
   error: unknown,
   fallbackMessage: string,
 ): ResultError {
+  if (error instanceof TaskLabelOwnershipError) {
+    return {
+      code: error.code,
+      message: error.message,
+      cause: error,
+    };
+  }
   if (error instanceof OptimisticConcurrencyError) {
     return {
       code: 'CONFLICT',

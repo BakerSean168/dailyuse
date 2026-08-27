@@ -10,4 +10,5 @@
  */
 
 export type { ITaskInstanceRepository } from './i-task-instance-repository';
+export { TaskLabelOwnershipError } from './i-task-template-repository';
 export type { ITaskTemplateRepository, TaskFilters } from './i-task-template-repository';

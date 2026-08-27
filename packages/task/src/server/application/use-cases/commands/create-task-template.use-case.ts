@@ -85,7 +85,6 @@ export class CreateTaskTemplateUseCase {
             if (replay) return replay;
           }
 
-
           const timeConfig = TaskTimeConfig.fromDTO(request.timeConfig);
           const recurrenceRule = request.recurrenceRule
             ? RecurrenceRule.fromDTO(request.recurrenceRule)
@@ -135,6 +134,14 @@ export class CreateTaskTemplateUseCase {
               : [];
 
           await templateRepository!.save(template);
+          if (request.labelIds !== undefined) {
+            const labels = await templateRepository!.replaceLabels(
+              request.identityId,
+              String(template.id),
+              request.labelIds,
+            );
+            template.hydrateLabels(labels);
+          }
           if (instances.length > 0) {
             await instanceRepository.saveMany(instances);
           }

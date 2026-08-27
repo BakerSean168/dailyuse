@@ -6,6 +6,7 @@
  */
 
 import { z } from 'zod';
+import { LabelClientDTOSchema } from '../../label';
 import { brandedId } from '../../../primitives';
 import type { TaskTemplateId, TaskInstanceId, IdentityId } from '../../../primitives';
 import {
@@ -33,6 +34,7 @@ export const TaskTemplateResponseSchema = z.object({
   importance: z.enum(ImportanceLevel),
   goalBinding: TaskGoalBindingSchema.nullable(),
   tags: z.array(z.string()),
+  labels: z.array(LabelClientDTOSchema),
   color: z.string().nullable(),
   status: z.enum(TaskTemplateStatus),
   outcome: z.enum(TaskPlanOutcome),
@@ -104,7 +106,6 @@ export const TaskInstanceResponseSchema = z.object({
 
 export type TaskTemplateResponse = z.infer<typeof TaskTemplateResponseSchema>;
 export type TaskInstanceResponse = z.infer<typeof TaskInstanceResponseSchema>;
-
 
 // Residual 837: TaskTemplateHistoryClientDTO dual retired — sole TaskTemplateHistoryResponseSchema + z.infer
 // (semantic type is z.infer alias in entities/task-template-history-client.ts).

@@ -46,7 +46,9 @@ describe('UpdateTaskTemplateUseCase', () => {
   it('throws an error if transactionRunner is missing', () => {
     expect(
       () => new UpdateTaskTemplateUseCase(templateRepo, instanceRepo, undefined as any),
-    ).toThrow('TaskWriteTransactionRunner must be explicitly provided to UpdateTaskTemplateUseCase');
+    ).toThrow(
+      'TaskWriteTransactionRunner must be explicitly provided to UpdateTaskTemplateUseCase',
+    );
   });
 
   it('should return NOT_FOUND when template does not exist', async () => {
@@ -123,7 +125,9 @@ describe('UpdateTaskTemplateUseCase', () => {
     const template = aLoadedTaskTemplate({ description: 'Some description' });
     vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    const result = await useCase.execute(template.id, template.identityId, { description: null as any });
+    const result = await useCase.execute(template.id, template.identityId, {
+      description: null as any,
+    });
 
     expect(result).toBeOk();
     expect(template.description).toBeNull();
@@ -249,7 +253,10 @@ describe('UpdateTaskTemplateUseCase', () => {
       taskType: TaskType.Recurring,
       recurrenceRule: RecurrenceRule.createDaily(),
     });
-    template.bindToGoal('goal-1', 'kr-1', { value: 1, trigger: TaskGoalBindingTrigger.EachCompletion });
+    template.bindToGoal('goal-1', 'kr-1', {
+      value: 1,
+      trigger: TaskGoalBindingTrigger.EachCompletion,
+    });
     vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
     const result = await useCase.execute(template.id, template.identityId, {
@@ -380,10 +387,7 @@ describe('UpdateTaskTemplateUseCase', () => {
     });
     futureInProgress.start();
     vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
-    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([
-      futurePending,
-      futureInProgress,
-    ]);
+    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([futurePending, futureInProgress]);
     useCase = new UpdateTaskTemplateUseCase(
       templateRepo,
       instanceRepo,
@@ -405,9 +409,9 @@ describe('UpdateTaskTemplateUseCase', () => {
     expect(generated.length).toBeGreaterThan(0);
     expect(generated.every((instance) => instance.status === 'Pending')).toBe(true);
     expect(generated.every((instance) => instance.timeConfig.timePoint === 600)).toBe(true);
-    expect(generated.some((instance) => instance.instanceDate === futureInProgress.instanceDate)).toBe(
-      false,
-    );
+    expect(
+      generated.some((instance) => instance.instanceDate === futureInProgress.instanceDate),
+    ).toBe(false);
     expect(futureInProgress.timeConfig.timePoint).toBe(540);
   });
 
@@ -447,13 +451,34 @@ describe('UpdateTaskTemplateUseCase', () => {
     const template = aOneTimeTask();
     vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
     const transactionRunner: TaskWriteTransactionRunner = {
-      run: vi.fn((work) => work({ templateRepository: templateRepo, instanceRepository: instanceRepo })),
+      run: vi.fn((work) =>
+        work({ templateRepository: templateRepo, instanceRepository: instanceRepo }),
+      ),
     };
     useCase = new UpdateTaskTemplateUseCase(templateRepo, instanceRepo, transactionRunner);
 
-    const result = await useCase.execute(template.id, template.identityId, { name: 'Transactional' });
+    const result = await useCase.execute(template.id, template.identityId, {
+      name: 'Transactional',
+    });
 
     expect(result).toBeOk();
     expect(transactionRunner.run).toHaveBeenCalledTimes(1);
+  });
+
+  it('replaces shared labels only when labelIds is present and returns the hydrated projection', async () => {
+    const template = aOneTimeTask();
+    const labels = [{ id: 'label-work', name: 'Work', color: null, createdAt: 1, updatedAt: 2 }];
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
+    vi.mocked(templateRepo.replaceLabels).mockResolvedValue(labels);
+
+    const result = await useCase.execute(template.id, template.identityId, {
+      labelIds: ['label-work'],
+    });
+
+    expect(result).toBeOk();
+    expect(templateRepo.replaceLabels).toHaveBeenCalledWith(template.identityId, template.id, [
+      'label-work',
+    ]);
+    expect(result.ok && result.data.labels).toEqual(labels);
   });
 });

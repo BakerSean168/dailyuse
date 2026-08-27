@@ -234,6 +234,10 @@ export class UpdateTaskTemplateUseCase {
         // R2-5a：编辑完成 → 递增版本（乐观锁）。
         template.advanceVersion();
         await templateRepository!.save(template);
+        if (request.labelIds !== undefined) {
+          const labels = await templateRepository!.replaceLabels(identityId, id, request.labelIds);
+          template.hydrateLabels(labels);
+        }
         return ok(template.toClientDTO());
       });
     } catch (caughtError) {

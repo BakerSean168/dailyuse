@@ -2,6 +2,7 @@
  * TaskTemplate aggregate (Server)
  */
 
+import type { LabelClientDTO } from '@memoflow/contracts/label';
 import type {
   TaskTemplateClientDTO,
   TaskTemplateServerDTO,
@@ -49,19 +50,30 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   // ===== Child entity collections =====
   private _history: TaskTemplateHistory[];
   private _instances: TaskInstance[];
+  private _labelProjection: LabelClientDTO[] = [];
 
   // ===== Constructor (use factory methods to create) =====
   protected constructor(state: TaskTemplateState) {
     super(state.id);
     if (!TaskTemplateStatus.isValid(String(state.status))) {
-      throw new InvalidTaskTemplateStateError(`Invalid persisted TaskTemplateStatus: ${String(state.status)}`, {
-        templateId: state.id, currentStatus: state.status, attemptedAction: 'load',
-      });
+      throw new InvalidTaskTemplateStateError(
+        `Invalid persisted TaskTemplateStatus: ${String(state.status)}`,
+        {
+          templateId: state.id,
+          currentStatus: state.status,
+          attemptedAction: 'load',
+        },
+      );
     }
     if (state.outcome !== undefined && !Object.values(TaskPlanOutcome).includes(state.outcome)) {
-      throw new InvalidTaskTemplateStateError(`Invalid persisted TaskPlanOutcome: ${String(state.outcome)}`, {
-        templateId: state.id, currentStatus: state.status, attemptedAction: 'load',
-      });
+      throw new InvalidTaskTemplateStateError(
+        `Invalid persisted TaskPlanOutcome: ${String(state.outcome)}`,
+        {
+          templateId: state.id,
+          currentStatus: state.status,
+          attemptedAction: 'load',
+        },
+      );
     }
 
     const { id: _, ...rest } = state;
@@ -148,6 +160,15 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.title;
   }
 
+  public get labels(): readonly LabelClientDTO[] {
+    return this._labelProjection.map((label) => ({ ...label }));
+  }
+
+  /** Hydrates shared labels for read projection only; Task business state is unchanged. */
+  public hydrateLabels(labels: readonly LabelClientDTO[]): void {
+    this._labelProjection = labels.map((label) => ({ ...label }));
+  }
+
   public get title(): string {
     return this._props.title;
   }
@@ -179,7 +200,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   public get goalBinding(): TaskGoalBinding | null {
     return this._props.goalBinding;
   }
-
 
   public get tags(): string[] {
     return [...this._props.tags];
@@ -227,7 +247,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return [...this._props.checklist];
   }
 
-
   public get startDate(): Instant | null {
     const v = this._props.startDate;
     if (v == null) return null;
@@ -257,7 +276,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   public get note(): string | null {
     return this._props.note;
   }
-
 
   public get createdAt(): Instant {
     const v = this._props.createdAt;
@@ -360,11 +378,18 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this.advanceVersion();
   }
 
-  public updateCompletionPolicy(policy: (typeof TaskPlanCompletionPolicy)[keyof typeof TaskPlanCompletionPolicy]): void {
+  public updateCompletionPolicy(
+    policy: (typeof TaskPlanCompletionPolicy)[keyof typeof TaskPlanCompletionPolicy],
+  ): void {
     if (this._props.status === TaskTemplateStatus.Closed || this._props.deletedAt !== null) {
-      throw new InvalidTaskTemplateStateError('Cannot change completion policy on a closed or deleted task plan', {
-        templateId: this.id, currentStatus: this._props.status, attemptedAction: 'updateCompletionPolicy',
-      });
+      throw new InvalidTaskTemplateStateError(
+        'Cannot change completion policy on a closed or deleted task plan',
+        {
+          templateId: this.id,
+          currentStatus: this._props.status,
+          attemptedAction: 'updateCompletionPolicy',
+        },
+      );
     }
     this._props.completionPolicy = policy;
     this._props.updatedAt = Date.now();
@@ -383,7 +408,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
   /** Apply deterministic evaluator output and publish the authoritative plan-outcome fact. */
   public applyPlanOutcome(
-    outcome: typeof TaskPlanOutcome.Succeeded | typeof TaskPlanOutcome.Failed | typeof TaskPlanOutcome.Open,
+    outcome:
+      | typeof TaskPlanOutcome.Succeeded
+      | typeof TaskPlanOutcome.Failed
+      | typeof TaskPlanOutcome.Open,
     cause: { triggeringTaskInstanceId: TaskInstanceId },
   ): void {
     const previousOutcome = this._props.outcome;
@@ -832,6 +860,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       importance: this._props.importance,
       goalBinding: this._props.goalBinding?.toDTO() ?? null,
       tags: [...this._props.tags],
+      labels: this._labelProjection.map((label) => ({ ...label })),
       color: this._props.color,
       status: this._props.status,
       outcome: this._props.outcome,

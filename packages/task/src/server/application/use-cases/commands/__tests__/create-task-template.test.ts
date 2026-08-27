@@ -358,4 +358,24 @@ describe('CreateTaskTemplateUseCase', () => {
       expect(result.data.template.id).toBeDefined();
     }
   });
+
+  it('assigns shared labels in the same write boundary and returns the hydrated projection', async () => {
+    const labels = [
+      { id: 'label-work', name: 'Work', color: null, createdAt: 1, updatedAt: 2 },
+      { id: 'label-ai', name: 'AI', color: '#123456', createdAt: 3, updatedAt: 4 },
+    ];
+    vi.mocked(templateRepo.replaceLabels).mockResolvedValue(labels);
+    const request = aCreateRequest({ labelIds: ['label-work', 'label-ai'] });
+
+    const result = await useCase.execute(request);
+
+    expect(result).toBeOk();
+    const persisted = vi.mocked(templateRepo.save).mock.calls[0]?.[0];
+    expect(templateRepo.replaceLabels).toHaveBeenCalledWith(
+      request.identityId,
+      String(persisted?.id),
+      ['label-work', 'label-ai'],
+    );
+    expect(result.ok && result.data.template.labels).toEqual(labels);
+  });
 });

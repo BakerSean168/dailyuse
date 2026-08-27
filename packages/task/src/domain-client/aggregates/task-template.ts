@@ -24,6 +24,7 @@ import type {
   TaskPlanCompletionPolicyValue,
 } from '@memoflow/contracts/task';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import type { LabelClientDTO } from '@memoflow/contracts/label';
 import type { GoalId, KeyResultId, Instant } from '@memoflow/contracts/primitives';
 import { AggregateRoot } from '@memoflow/utils/domain';
 import { TaskTemplateId } from '../../server/domain/value-objects/task-template-id';
@@ -40,6 +41,7 @@ export interface TaskTemplateState {
   importance: ImportanceLevel;
   goalBinding: TaskGoalBinding | null;
   tags: string[];
+  labels: LabelClientDTO[];
   color: string | null;
   status: TaskTemplateStatus;
   outcome: TaskPlanOutcomeValue;
@@ -111,26 +113,40 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.importance;
   }
 
-
   get goalBinding(): TaskGoalBinding | null {
     return this._props.goalBinding;
   }
 
-
   get tags(): string[] {
     return [...this._props.tags];
+  }
+
+  get labels(): LabelClientDTO[] {
+    return this._props.labels.map((label) => ({ ...label }));
   }
 
   get color(): string | null {
     return this._props.color;
   }
 
-  get status(): TaskTemplateStatus { return this._props.status; }
-  get outcome(): TaskPlanOutcomeValue { return this._props.outcome; }
-  get completionPolicy(): TaskPlanCompletionPolicyValue { return this._props.completionPolicy; }
-  get closedAt(): Instant | null { return this._props.closedAt; }
-  get archivedAt(): Instant | null { return this._props.archivedAt; }
-  get abandonedReason(): string | null { return this._props.abandonedReason; }
+  get status(): TaskTemplateStatus {
+    return this._props.status;
+  }
+  get outcome(): TaskPlanOutcomeValue {
+    return this._props.outcome;
+  }
+  get completionPolicy(): TaskPlanCompletionPolicyValue {
+    return this._props.completionPolicy;
+  }
+  get closedAt(): Instant | null {
+    return this._props.closedAt;
+  }
+  get archivedAt(): Instant | null {
+    return this._props.archivedAt;
+  }
+  get abandonedReason(): string | null {
+    return this._props.abandonedReason;
+  }
 
   get lastGeneratedDate(): Instant | null {
     const v = this._props.lastGeneratedDate;
@@ -162,7 +178,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return v as Instant;
   }
 
-
   get startDate(): Instant | null {
     const v = this._props.startDate;
     if (v == null) return null;
@@ -192,7 +207,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   get comment(): string | null {
     return this._props.comment;
   }
-
 
   get instanceCount(): number {
     return this._props.instanceCount;
@@ -274,6 +288,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
         ? this.serializeGoalBinding(this._props.goalBinding)
         : null,
       tags: [...this._props.tags],
+      labels: this._props.labels.map((label) => ({ ...label })),
       color: this._props.color,
       status: this._props.status,
       outcome: this._props.outcome,

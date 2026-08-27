@@ -4,6 +4,7 @@ import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { TaskTemplate } from '../../../domain/aggregates/task-template';
 import { RecurrenceRule, TaskTimeConfig } from '../../../domain/value-objects';
 import { TaskTemplatePrismaRepository } from './task-template-prisma.repository';
+import { TaskLabelOwnershipError } from '../../../domain/repositories/i-task-template-repository';
 import {
   cleanTaskTables,
   disconnectPrisma,
@@ -261,5 +262,60 @@ describe('TaskTemplatePrismaRepository integration', () => {
     expect(loaded?.description).toBe(original.description);
     expect(loaded?.taskType).toBe(original.taskType);
     expect(loaded?.importance).toBe(original.importance);
+  });
+
+  it('persists shared Task labels, hydrates labels[] and filters with strict AND + identity isolation', async () => {
+    const identityId = IdentityId.generate();
+    const otherIdentityId = IdentityId.generate();
+    await seedAccount({ id: identityId });
+    await seedAccount({ id: otherIdentityId });
+    const prisma = await getPrisma();
+    const repository = new TaskTemplatePrismaRepository(prisma);
+    const first = TaskTemplate.createOneTimeTask({
+      identityId,
+      title: 'Work and AI',
+      importance: ImportanceLevel.Important,
+      dueDate: new Date(Date.now() + 86400000),
+    });
+    const second = TaskTemplate.createOneTimeTask({
+      identityId,
+      title: 'Work only',
+      importance: ImportanceLevel.Moderate,
+      dueDate: new Date(Date.now() + 2 * 86400000),
+    });
+    await repository.save(first);
+    await repository.save(second);
+
+    const work = await prisma.label.create({
+      data: {
+        id: `task-label-work-${Date.now()}`,
+        identityId,
+        name: '#Work',
+        normalizedName: '#work',
+      },
+    });
+    const ai = await prisma.label.create({
+      data: { id: `task-label-ai-${Date.now()}`, identityId, name: '#AI', normalizedName: '#ai' },
+    });
+    const foreign = await prisma.label.create({
+      data: {
+        id: `task-label-foreign-${Date.now()}`,
+        identityId: otherIdentityId,
+        name: '#Foreign',
+        normalizedName: '#foreign',
+      },
+    });
+
+    await repository.replaceLabels(identityId, String(first.id), [work.id, ai.id]);
+    await repository.replaceLabels(identityId, String(second.id), [work.id]);
+
+    const loaded = await repository.findByIdForIdentity(identityId, String(first.id));
+    expect(loaded?.labels.map((label) => label.id).sort()).toEqual([ai.id, work.id].sort());
+    const both = await repository.findByLabelIdsAll(identityId, [work.id, ai.id]);
+    expect(both.map((template) => String(template.id))).toEqual([String(first.id)]);
+    expect(both[0]?.labels.map((label) => label.id).sort()).toEqual([ai.id, work.id].sort());
+    await expect(
+      repository.replaceLabels(identityId, String(first.id), [foreign.id]),
+    ).rejects.toBeInstanceOf(TaskLabelOwnershipError);
   });
 });

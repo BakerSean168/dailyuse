@@ -1,21 +1,22 @@
-import type {
-  ITaskTemplateRepository,
-  TaskFilters,
+import {
+  TaskLabelOwnershipError,
+  type ITaskTemplateRepository,
+  type TaskFilters,
 } from '../../../domain/repositories/i-task-template-repository';
 import { TaskTemplate } from '../../../domain/aggregates/task-template';
 import type { IElectronDatabaseTransaction } from '@memoflow/contracts/electron';
 import type { TaskTemplateStatus } from '@memoflow/contracts/task';
-import {
-  AggregateRepositoryBase,
-  createEventBusAdapter,
-  type IEventBus,
-} from '@memoflow/patterns';
+import type { LabelClientDTO } from '@memoflow/contracts/label';
+import { AggregateRepositoryBase, createEventBusAdapter, type IEventBus } from '@memoflow/patterns';
 import { eventBus } from '@memoflow/utils/domain';
 import {
   PowerSyncTaskTemplateMapper,
   type PowerSyncTaskTemplateRow,
 } from './mappers/powersync-task-template.mapper';
-import { PowerSyncTaskInstanceMapper, type PowerSyncTaskInstanceRow } from './mappers/powersync-task-instance.mapper';
+import {
+  PowerSyncTaskInstanceMapper,
+  type PowerSyncTaskInstanceRow,
+} from './mappers/powersync-task-instance.mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
@@ -28,6 +29,62 @@ export class PowerSyncTaskTemplateRepository
     eventBus: IEventBus = eventBusAdapter,
   ) {
     super(eventBus);
+  }
+
+  private static labelDto(row: Record<string, unknown>): LabelClientDTO {
+    return {
+      id: String(row.id),
+      name: String(row.name),
+      color: row.color == null ? null : String(row.color),
+      createdAt: Date.parse(String(row.created_at)),
+      updatedAt: Date.parse(String(row.updated_at)),
+    };
+  }
+
+  private async loadLabelMap(
+    identityId: string,
+    taskTemplateIds: readonly string[],
+  ): Promise<Map<string, LabelClientDTO[]>> {
+    const ids = [...new Set(taskTemplateIds)];
+    const result = new Map(ids.map((id) => [id, [] as LabelClientDTO[]]));
+    if (ids.length === 0) return result;
+
+    const placeholders = ids.map(() => '?').join(', ');
+    const rows = await this.db.getAll<Record<string, unknown>>(
+      `SELECT l.*, tl.task_template_id AS owner_id
+       FROM labels l
+       INNER JOIN task_labels tl ON tl.label_id = l.id AND tl.identity_id = l.identity_id
+       WHERE tl.identity_id = ? AND tl.task_template_id IN (${placeholders})
+       ORDER BY tl.task_template_id ASC, l.name ASC, l.id ASC`,
+      [identityId, ...ids],
+    );
+    for (const row of rows) {
+      result.get(String(row.owner_id))?.push(PowerSyncTaskTemplateRepository.labelDto(row));
+    }
+    return result;
+  }
+
+  private async hydrateTemplates(
+    identityId: string,
+    templates: TaskTemplate[],
+  ): Promise<TaskTemplate[]> {
+    const labelMap = await this.loadLabelMap(
+      identityId,
+      templates.map((template) => String(template.id)),
+    );
+    for (const template of templates) {
+      template.hydrateLabels(labelMap.get(String(template.id)) ?? []);
+    }
+    return templates;
+  }
+
+  private async hydrateTemplate(
+    identityId: string,
+    template: TaskTemplate | null,
+  ): Promise<TaskTemplate | null> {
+    if (!template) return null;
+    await this.hydrateTemplates(identityId, [template]);
+    return template;
   }
 
   protected async persist(template: TaskTemplate): Promise<void> {
@@ -101,7 +158,7 @@ export class PowerSyncTaskTemplateRepository
       'SELECT * FROM task_templates WHERE id = ? AND identity_id = ? LIMIT 1',
       [id, identityId],
     );
-    return row ? PowerSyncTaskTemplateMapper.toDomain(row) : null;
+    return this.hydrateTemplate(identityId, row ? PowerSyncTaskTemplateMapper.toDomain(row) : null);
   }
 
   async findByIdWithChildren(identityId: string, id: string): Promise<TaskTemplate | null> {
@@ -120,6 +177,7 @@ export class PowerSyncTaskTemplateRepository
 
   async findByIdentityId(identityId: string): Promise<TaskTemplate[]> {
     return this.queryTemplates(
+      identityId,
       'SELECT * FROM task_templates WHERE identity_id = ? AND deleted_at IS NULL ORDER BY created_at DESC',
       [identityId],
     );
@@ -127,6 +185,7 @@ export class PowerSyncTaskTemplateRepository
 
   async findByStatus(identityId: string, status: TaskTemplateStatus): Promise<TaskTemplate[]> {
     return this.queryTemplates(
+      identityId,
       'SELECT * FROM task_templates WHERE identity_id = ? AND status = ? AND deleted_at IS NULL ORDER BY created_at DESC',
       [identityId, status],
     );
@@ -136,9 +195,9 @@ export class PowerSyncTaskTemplateRepository
     return this.findByStatus(identityId, 'Active' as TaskTemplateStatus);
   }
 
-
   async findByGoalId(identityId: string, goalId: string): Promise<TaskTemplate[]> {
     return this.queryTemplates(
+      identityId,
       'SELECT * FROM task_templates WHERE identity_id = ? AND goal_id = ? AND deleted_at IS NULL ORDER BY created_at DESC',
       [identityId, goalId],
     );
@@ -147,6 +206,66 @@ export class PowerSyncTaskTemplateRepository
   async findByTags(identityId: string, tags: string[]): Promise<TaskTemplate[]> {
     const rows = await this.findByIdentityId(identityId);
     return rows.filter((template) => tags.some((tag) => template.tags.includes(tag)));
+  }
+
+  async findByLabelIdsAll(
+    identityId: string,
+    labelIds: readonly string[],
+  ): Promise<TaskTemplate[]> {
+    const requiredLabelIds = [...new Set(labelIds)];
+    if (requiredLabelIds.length === 0) return this.findByIdentityId(identityId);
+
+    const placeholders = requiredLabelIds.map(() => '?').join(', ');
+    const matches = await this.db.getAll<{ task_template_id: string }>(
+      `SELECT task_template_id FROM task_labels
+       WHERE identity_id = ? AND label_id IN (${placeholders})
+       GROUP BY task_template_id
+       HAVING COUNT(DISTINCT label_id) = ?`,
+      [identityId, ...requiredLabelIds, requiredLabelIds.length],
+    );
+    if (matches.length === 0) return [];
+
+    const templatePlaceholders = matches.map(() => '?').join(', ');
+    return this.queryTemplates(
+      identityId,
+      `SELECT * FROM task_templates
+       WHERE identity_id = ? AND id IN (${templatePlaceholders}) AND deleted_at IS NULL
+       ORDER BY created_at DESC`,
+      [identityId, ...matches.map((row) => row.task_template_id)],
+    );
+  }
+
+  async replaceLabels(
+    identityId: string,
+    taskTemplateId: string,
+    labelIds: readonly string[],
+  ): Promise<LabelClientDTO[]> {
+    const owner = await this.db.getOptional<{ id: string }>(
+      'SELECT id FROM task_templates WHERE id = ? AND identity_id = ? LIMIT 1',
+      [taskTemplateId, identityId],
+    );
+    if (!owner) throw new Error('Task template not found.');
+
+    const uniqueIds = [...new Set(labelIds)];
+    for (const labelId of uniqueIds) {
+      const label = await this.db.getOptional<{ id: string }>(
+        'SELECT id FROM labels WHERE id = ? AND identity_id = ? LIMIT 1',
+        [labelId, identityId],
+      );
+      if (!label) throw new TaskLabelOwnershipError();
+    }
+
+    await this.db.execute(
+      'DELETE FROM task_labels WHERE identity_id = ? AND task_template_id = ?',
+      [identityId, taskTemplateId],
+    );
+    for (const labelId of uniqueIds) {
+      await this.db.execute(
+        'INSERT INTO task_labels (id, identity_id, task_template_id, label_id) VALUES (?, ?, ?, ?)',
+        [`${identityId}:${taskTemplateId}:${labelId}`, identityId, taskTemplateId, labelId],
+      );
+    }
+    return (await this.loadLabelMap(identityId, [taskTemplateId])).get(taskTemplateId) ?? [];
   }
 
   async findAllTemplateRefs(): Promise<Array<{ id: string; identityId: string }>> {
@@ -161,12 +280,13 @@ export class PowerSyncTaskTemplateRepository
   }
 
   async findNeedGenerateInstances(toDate: number): Promise<TaskTemplate[]> {
-    const rows = await this.queryTemplates(
+    const rawRows = await this.db.getAll<PowerSyncTaskTemplateRow>(
       `SELECT * FROM task_templates
        WHERE recurrence_rule_type IS NOT NULL AND status = 'Active' AND deleted_at IS NULL
        ORDER BY updated_at ASC`,
       [],
     );
+    const rows = rawRows.map((row) => PowerSyncTaskTemplateMapper.toDomain(row));
     return rows.filter((template) => {
       const lastGeneratedDate = template.toServerDTO().lastGeneratedDate;
       return lastGeneratedDate == null || lastGeneratedDate < toDate;
@@ -222,13 +342,11 @@ export class PowerSyncTaskTemplateRepository
 
   async findByKeyResultId(identityId: string, keyResultId: string): Promise<TaskTemplate[]> {
     return this.queryTemplates(
+      identityId,
       'SELECT * FROM task_templates WHERE identity_id = ? AND key_result_id = ? AND deleted_at IS NULL ORDER BY created_at DESC',
       [identityId, keyResultId],
     );
   }
-
-
-
 
   async findUpcomingTasks(identityId: string, daysAhead: number): Promise<TaskTemplate[]> {
     const rows = await this.findOneTimeTasks(identityId, { status: 'Active' });
@@ -290,7 +408,7 @@ export class PowerSyncTaskTemplateRepository
       sql += ' OFFSET ?';
       where.params.push(filters.offset);
     }
-    return this.queryTemplates(sql, where.params);
+    return this.queryTemplates(identityId, sql, where.params);
   }
 
   private buildFilters(baseClauses: string[], baseParams: unknown[], filters?: TaskFilters) {
@@ -303,9 +421,15 @@ export class PowerSyncTaskTemplateRepository
     return { clauses, params };
   }
 
-  private async queryTemplates(sql: string, params: unknown[]): Promise<TaskTemplate[]> {
+  private async queryTemplates(
+    identityId: string,
+    sql: string,
+    params: unknown[],
+  ): Promise<TaskTemplate[]> {
     const rows = await this.db.getAll<PowerSyncTaskTemplateRow>(sql, params);
-    return rows.map((row) => PowerSyncTaskTemplateMapper.toDomain(row));
+    return this.hydrateTemplates(
+      identityId,
+      rows.map((row) => PowerSyncTaskTemplateMapper.toDomain(row)),
+    );
   }
 }
-

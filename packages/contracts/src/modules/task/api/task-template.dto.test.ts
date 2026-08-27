@@ -4,10 +4,7 @@ import {
   TaskTimeConfigSchema,
   UpdateTaskTemplateSchema,
 } from './task-template.dto';
-import {
-  CreateTaskTemplateResponseSchema,
-  TaskTemplateResponseSchema,
-} from './response-schemas';
+import { CreateTaskTemplateResponseSchema, TaskTemplateResponseSchema } from './response-schemas';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { TaskTemplateStatus } from '../value-objects/task-template-status';
 import { TaskPlanOutcome } from '../value-objects/task-plan-outcome';
@@ -53,6 +50,7 @@ function validTemplateResponse() {
     importance: ImportanceLevel.Moderate,
     goalBinding: null,
     tags: ['planning'],
+    labels: [],
     color: null,
     status: TaskTemplateStatus.Active,
     outcome: TaskPlanOutcome.Open,

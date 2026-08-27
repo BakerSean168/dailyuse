@@ -10,6 +10,16 @@
 
 import type { TaskTemplate } from '../aggregates';
 import type { TaskTemplateStatus } from '@memoflow/contracts/task';
+import type { LabelClientDTO } from '@memoflow/contracts/label';
+
+export class TaskLabelOwnershipError extends Error {
+  readonly code = 'VALIDATION_ERROR' as const;
+
+  constructor() {
+    super('One or more labels do not belong to the identity.');
+    this.name = 'TaskLabelOwnershipError';
+  }
+}
 
 /**
  * 任务查询过滤器
@@ -58,7 +68,6 @@ export interface ITaskTemplateRepository {
    */
   findActiveTemplates(identityId: string): Promise<TaskTemplate[]>;
 
-
   /**
    * 根据目标查找任务模板（identity-scoped）
    */
@@ -68,6 +77,16 @@ export interface ITaskTemplateRepository {
    * 根据标签查找任务模板
    */
   findByTags(identityId: string, tags: string[]): Promise<TaskTemplate[]>;
+
+  /** Shared Label AND filtering for vNext classification. */
+  findByLabelIdsAll(identityId: string, labelIds: readonly string[]): Promise<TaskTemplate[]>;
+
+  /** Replace shared Label assignment inside the owning Task mutation transaction. */
+  replaceLabels(
+    identityId: string,
+    taskTemplateId: string,
+    labelIds: readonly string[],
+  ): Promise<LabelClientDTO[]>;
 
   /**
    * 查找需要生成实例的模板（供定时任务使用）
@@ -117,9 +136,6 @@ export interface ITaskTemplateRepository {
    * 根据关键结果查找任务（identity-scoped）
    */
   findByKeyResultId(identityId: string, keyResultId: string): Promise<TaskTemplate[]>;
-
-
-
 
   /**
    * 查找即将到期的任务（未来N天内）

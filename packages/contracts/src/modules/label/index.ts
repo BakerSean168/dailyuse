@@ -12,13 +12,14 @@ export interface LabelDto {
 }
 
 /** Current-user presentation DTO. Identity ownership remains host-side. */
-export interface LabelClientDTO {
-  readonly id: string;
-  readonly name: string;
-  readonly color: string | null;
-  readonly createdAt: number;
-  readonly updatedAt: number;
-}
+export const LabelClientDTOSchema = z.object({
+  id: z.string().min(1),
+  name: z.string(),
+  color: z.string().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+export type LabelClientDTO = z.infer<typeof LabelClientDTOSchema>;
 
 export const ListLabelsReqSchema = z
   .object({

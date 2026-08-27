@@ -55,6 +55,7 @@ function taskTemplateFromDTO(dto: TaskTemplateClientDTO): TaskTemplate {
     importance: dto.importance,
     goalBinding: dto.goalBinding ? parseGoalBinding(dto.goalBinding) : null,
     tags: dto.tags ?? [],
+    labels: dto.labels ?? [],
     color: dto.color,
     status: dto.status,
     outcome: dto.outcome,
