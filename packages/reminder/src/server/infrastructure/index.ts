@@ -123,3 +123,7 @@ export {
 // ============ Host-used concrete consumer ============
 /** Host-used by apps/api: closure worker consumer. 宿主使用：apps/api 的账户关闭 consumer。 */
 export { ReminderAccountClosedConsumer } from './consumers/reminder-account-closed.consumer';
+
+// ============ Routine protocol session persistence/recovery (ROUTINE-4201) ============
+export { PrismaProtocolSessionStore } from './routine-vnext/protocol-session-store.prisma';
+export { PowerSyncProtocolSessionStore } from './routine-vnext/protocol-session-store.powersync';

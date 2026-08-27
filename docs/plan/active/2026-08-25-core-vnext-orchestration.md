@@ -1428,6 +1428,17 @@ Due -> Gentle -> Grace -> Guided -> optional Strict
 6. completed/cancelled terminal behavior;
 7. no duplicate phase transition.
 
+**Implementation evidence (2026-08-27):**
+
+- added durable `ProtocolSessionStore` with optimistic `expectedVersion` fencing plus Prisma and PowerSync adapters over the existing Wave 2 `routine_protocol_sessions` schema; no schema migration was required;
+- added a protocol-session runtime that persists every command transition and emits versioned `ProtocolPhaseTransitionReceipt` values;
+- restart recovery reads persisted `phaseDeadline` and calls the deterministic domain `advanceDuePhases()` path, including multi-phase catch-up to terminal completion; renderer tick counts are not an input;
+- paused sessions remain paused across restart; resume reconstructs the deadline from persisted `pausedRemainingMs` and accumulated pause accounting;
+- concurrent recovery uses bounded CAS retry: one runtime wins the version fence, the loser reloads and converges to `unchanged`, preventing duplicate durable phase transitions;
+- terminal Completed/Cancelled sessions are excluded from recoverable scans;
+- crash/restart fixture covers Focus, Break, multi-deadline completion, pause/resume, terminal receipt, and concurrent recovery;
+- verification: protocol recovery + PowerSync `7/7`, Prisma real-database store `2/2`, full Reminder `502/502`, Reminder Nx build green, Desktop Nx typecheck green, changed-file ESLint green.
+
 ## ROUTINE-4202 — FocusWindow
 
 **Depends:** ROUTINE-4201  
