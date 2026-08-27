@@ -50,6 +50,16 @@ export interface ActiveUsageNaturalBreakSatisfied {
   readonly satisfiedAt: Instant;
 }
 
+export interface ActiveUsageSatisfactionReceipt {
+  readonly identityId: string;
+  readonly routineId: string;
+  readonly occurrenceKey: string;
+  readonly completedGeneration: number;
+  readonly nextGeneration: number;
+  readonly previousAccumulatedActiveMs: number;
+  readonly satisfiedAt: Instant;
+}
+
 export interface ActiveUsageRuntime {
   readonly isStarted: boolean;
   registerRoutine(input: ActiveUsageRoutineRegistration): void;
@@ -64,7 +74,7 @@ export interface ActiveUsageRuntime {
     readonly identityId: string;
     readonly routineId: string;
     readonly at?: Instant | number;
-  }): void;
+  }): ActiveUsageSatisfactionReceipt | null;
   getSnapshot(identityId: string, routineId: string): ActiveUsageAccumulatorSnapshot | null;
   listSnapshots(): ActiveUsageAccumulatorSnapshot[];
   start(): void;
@@ -316,10 +326,29 @@ export function createActiveUsageRuntime(
       lane.gates = input.gates;
     },
     markSatisfied(input) {
-      advance(input.at);
       const lane = lanes.get(laneKey(input.identityId, input.routineId));
-      if (!lane) return;
-      resetSatisfied(lane, resolveAt(input.at));
+      if (!lane) return null;
+      const satisfiedAt = resolveAt(input.at);
+      // Satisfaction is an authoritative reset boundary (natural/protocol break,
+      // explicit completion). Do not infer the interval since the last sensor
+      // tick as active usage: a protocol break may legitimately keep the OS
+      // session "active" while still satisfying the routine. Rebase the local
+      // clock so the credited break cannot leak into the next generation.
+      if (lastAdvancedAt == null || Number(satisfiedAt) >= Number(lastAdvancedAt)) {
+        lastAdvancedAt = satisfiedAt;
+      }
+      const occurrenceKeyBeforeReset = occurrenceKey(lane);
+      const previousAccumulatedActiveMs = lane.accumulatedActiveMs;
+      const completedGeneration = resetSatisfied(lane, satisfiedAt);
+      return {
+        identityId: lane.identityId,
+        routineId: lane.routineId,
+        occurrenceKey: occurrenceKeyBeforeReset,
+        completedGeneration,
+        nextGeneration: lane.generation,
+        previousAccumulatedActiveMs,
+        satisfiedAt,
+      };
     },
     getSnapshot(identityId, routineId) {
       const lane = lanes.get(laneKey(identityId, routineId));

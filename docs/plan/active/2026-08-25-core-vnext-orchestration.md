@@ -1503,6 +1503,18 @@ Due -> Gentle -> Grace -> Guided -> optional Strict
 
 **Acceptance:** fixture H completes 50/10 and does not immediately show stand/eye reminder.
 
+
+**Implementation evidence (2026-08-27):**
+
+- introduced a first-class `ProtocolBreakCompletionFact` rather than impersonating protocol rest as OS Idle; facts carry stable `factId`, session/protocol/phase/cycle correlation, Product Time Instants, measured break duration, and explicit break capabilities;
+- Stand / Eye / Movement compatibility is an explicit runtime contract (`stand`, `screen-rest`, `movement`) with each Ambient routine supplying its own `minimumBreakMs`; no routine-name heuristic or hard-coded medical timing is used;
+- `ActiveUsageRuntime.markSatisfied()` now returns a generation/occurrence receipt and treats satisfaction as an authoritative reset boundary: it rebases the local clock to the satisfaction Instant instead of counting the protocol-break interval as active usage;
+- the bridge credits only registered ActiveUsage routines that have real accumulated debt, resets their generation, clears threshold state, and records correlated history linking `breakFactId/sessionId/phaseKey` to the exact Ambient occurrence generation it satisfied;
+- stable break facts are replay-deduplicated in the runtime/history seam; duplicate consumption does not advance the Ambient generation twice;
+- Fixture H uses the real 50/10 `ProtocolSession`: after 50m focus all three Ambient routines are due, the 10m ShortBreak credits Stand/Eye/Movement, resets them, and the next active second does not immediately re-trigger an intervention;
+- a dedicated regression covers `35m active + 10m protocol break`: the break is never miscounted as the final 5m of active usage before reset, even if the OS activity sensor still reports active;
+- focused ActiveUsage + break-credit suite is `10/10`; full Reminder is `518/518`; Reminder Nx build and Desktop Nx typecheck are green.
+
 ---
 
 # 11. Wave 4B — Planner engine and owner-aware edits
