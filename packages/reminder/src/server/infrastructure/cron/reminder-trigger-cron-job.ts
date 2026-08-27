@@ -1,87 +1,161 @@
 /**
- * Reminder Trigger Cron Job — factory-based, container-free.
- * 提醒触发定时任务 —— 基于工厂模式，无容器依赖。
+ * Legacy Reminder due-set shadow cron — read-only cutover diagnostic.
+ * 旧 Reminder due-set shadow cron —— 只读切换诊断器。
  *
- * 职责：
- * - 每分钟扫描需要触发的提醒模板
- * - 调用 ReminderSchedulerService 执行触发逻辑
- * - Record 触发历史
- * - Update 下次触发时间
- *
- * 触发频率：每分钟执行一次
- * Cron Expression: '* * * * *'
- *
- * Dependencies are injected via the factory function, not via a singleton container.
- * 依赖通过工厂函数注入，而非单例容器。
+ * ROUTINE-3402 removes the legacy Reminder cron as a wall-clock authority.
+ * This compatibility factory intentionally retains the old exported name so
+ * stale callers fail safe: execute() may only read the legacy due set, compare
+ * it with the Scheduler due set, and emit diagnostics. It MUST NOT write
+ * ReminderHistory, advance nextTriggerAt, claim occurrences, or enqueue a
+ * notification.
  */
 
 import * as cron from 'node-cron';
 import type { IReminderTemplateRepository } from '../../domain/repositories/i-reminder-template-repository';
-import type { IReminderGroupRepository } from '../../domain/repositories/i-reminder-group-repository';
-import { ReminderSchedulerService } from '../../domain/services/reminder-scheduler-service';
-import { ReminderTriggerService } from '../../domain/services/reminder-trigger-service';
-import { ReminderTemplateControlService } from '../../domain/services/reminder-template-control-service';
 import { createLogger } from '@memoflow/utils/logger';
 import type { ReminderModuleRuntimeContribution } from '../reminder.module';
 
-const logger = createLogger('ReminderTriggerCronJob');
+const logger = createLogger('ReminderDueSetShadowCron');
 
-import type { ReminderReliableOperationPort } from '@memoflow/contracts/reliable-messaging';
-import type { ReminderTransactionRunner } from '../../domain/ports/reminder-transaction-runner.port';
-
-// ---------------------------------------------------------------------------
-// Dependencies — what the cron job needs from the outside world.
-// 依赖 —— 定时任务向外部索取的全部依赖。
-// ---------------------------------------------------------------------------
-
-export interface ReminderTriggerCronJobDependencies {
-  readonly reminderTemplateRepository: IReminderTemplateRepository;
-  readonly reminderGroupRepository: IReminderGroupRepository;
-  readonly reliablePort: ReminderReliableOperationPort;
-  readonly transactionRunner: ReminderTransactionRunner;
-  readonly schedulerService?: ReminderSchedulerService;
-  readonly drainTimeoutMs?: number;
+export interface ReminderDueSetEntry {
+  readonly identityId: string;
+  readonly reminderId: string;
+  readonly dueAt: number;
 }
 
-// ---------------------------------------------------------------------------
-// Factory — creates a ReminderModuleRuntimeContribution that manages the cron lifecycle.
-// 工厂 —— 创建一个管理定时任务生命周期的 ReminderModuleRuntimeContribution。
-// ---------------------------------------------------------------------------
+export interface ReminderDueSetReader {
+  readDueSet(beforeTime: number, limit?: number): Promise<readonly ReminderDueSetEntry[]>;
+}
+
+export interface ReminderDueSetTimingMismatch {
+  readonly identityId: string;
+  readonly reminderId: string;
+  readonly legacyDueAt: number;
+  readonly schedulerDueAt: number;
+}
+
+export interface ReminderDueSetComparison {
+  readonly checkedAt: number;
+  readonly matched: boolean;
+  readonly legacyCount: number;
+  readonly schedulerCount: number;
+  readonly legacyOnly: readonly ReminderDueSetEntry[];
+  readonly schedulerOnly: readonly ReminderDueSetEntry[];
+  readonly timingMismatches: readonly ReminderDueSetTimingMismatch[];
+  readonly duplicateLegacyKeys: readonly string[];
+  readonly duplicateSchedulerKeys: readonly string[];
+}
+
+export interface ReminderTriggerCronJobDependencies {
+  /** Legacy source of truth used only for a read-only due-set snapshot. */
+  readonly reminderTemplateRepository: Pick<IReminderTemplateRepository, 'findByNextTriggerBefore'>;
+  /** Scheduler-side read model. The shadow job never executes these tasks. */
+  readonly schedulerDueSetReader: ReminderDueSetReader;
+  readonly maxCount?: number;
+  readonly drainTimeoutMs?: number;
+  readonly now?: () => number;
+  readonly onComparison?: (comparison: ReminderDueSetComparison) => void | Promise<void>;
+}
+
+function entryKey(entry: ReminderDueSetEntry): string {
+  return `${entry.identityId}\u0000${entry.reminderId}`;
+}
+
+function compareDueEntries(a: ReminderDueSetEntry, b: ReminderDueSetEntry): number {
+  return a.dueAt - b.dueAt || entryKey(a).localeCompare(entryKey(b));
+}
+
+function groupEntries(
+  entries: readonly ReminderDueSetEntry[],
+): Map<string, readonly ReminderDueSetEntry[]> {
+  const grouped = new Map<string, ReminderDueSetEntry[]>();
+  for (const entry of entries) {
+    const key = entryKey(entry);
+    const current = grouped.get(key) ?? [];
+    current.push(entry);
+    grouped.set(key, current);
+  }
+  return grouped;
+}
+
+/** Compare legacy and Scheduler due sets without mutating either side. */
+export function compareReminderDueSets(params: {
+  checkedAt: number;
+  legacy: readonly ReminderDueSetEntry[];
+  scheduler: readonly ReminderDueSetEntry[];
+}): ReminderDueSetComparison {
+  const legacyByKey = groupEntries(params.legacy);
+  const schedulerByKey = groupEntries(params.scheduler);
+  const legacyOnly: ReminderDueSetEntry[] = [];
+  const schedulerOnly: ReminderDueSetEntry[] = [];
+  const timingMismatches: ReminderDueSetTimingMismatch[] = [];
+  const duplicateLegacyKeys: string[] = [];
+  const duplicateSchedulerKeys: string[] = [];
+  const keys = new Set([...legacyByKey.keys(), ...schedulerByKey.keys()]);
+
+  for (const key of keys) {
+    const legacyEntries = legacyByKey.get(key) ?? [];
+    const schedulerEntries = schedulerByKey.get(key) ?? [];
+
+    if (legacyEntries.length > 1) duplicateLegacyKeys.push(key);
+    if (schedulerEntries.length > 1) duplicateSchedulerKeys.push(key);
+
+    if (legacyEntries.length === 0) {
+      schedulerOnly.push(...schedulerEntries);
+      continue;
+    }
+    if (schedulerEntries.length === 0) {
+      legacyOnly.push(...legacyEntries);
+      continue;
+    }
+
+    const legacy = legacyEntries[0]!;
+    const scheduler = schedulerEntries[0]!;
+    if (legacy.dueAt !== scheduler.dueAt) {
+      timingMismatches.push({
+        identityId: legacy.identityId,
+        reminderId: legacy.reminderId,
+        legacyDueAt: legacy.dueAt,
+        schedulerDueAt: scheduler.dueAt,
+      });
+    }
+
+    // A duplicate is a mismatch even when its first timestamp happens to match.
+    if (legacyEntries.length > 1) legacyOnly.push(...legacyEntries.slice(1));
+    if (schedulerEntries.length > 1) schedulerOnly.push(...schedulerEntries.slice(1));
+  }
+
+  const matched =
+    legacyOnly.length === 0 &&
+    schedulerOnly.length === 0 &&
+    timingMismatches.length === 0 &&
+    duplicateLegacyKeys.length === 0 &&
+    duplicateSchedulerKeys.length === 0;
+
+  return {
+    checkedAt: params.checkedAt,
+    matched,
+    legacyCount: params.legacy.length,
+    schedulerCount: params.scheduler.length,
+    legacyOnly,
+    schedulerOnly,
+    timingMismatches,
+    duplicateLegacyKeys,
+    duplicateSchedulerKeys,
+  };
+}
 
 /**
- * Creates a cron-based runtime contribution that scans for due reminders every minute.
- * 创建一个每分钟扫描到期提醒的定时任务运行时贡献。
+ * Compatibility factory for the retired trigger cron.
  *
- * Wire this into `createReminderModule({ runtimeContributions: ... })`.
- * 将此贡献接入 `createReminderModule({ runtimeContributions: ... })`。
+ * The name is retained until the cleanup wave, but the behavior is deliberately
+ * read-only. Production composition no longer starts this contribution.
  */
 export function createReminderTriggerCronJob(
   deps: ReminderTriggerCronJobDependencies,
 ): ReminderModuleRuntimeContribution {
-  const { reminderTemplateRepository, reminderGroupRepository, reliablePort, transactionRunner } = deps;
-
-  if (!deps.schedulerService && (!reliablePort || !transactionRunner)) {
-    throw new Error(
-      '[REMINDER_CRON_JOB] Mandatory dependencies missing: reliablePort and transactionRunner are required.',
-    );
-  }
-
-  // Assemble domain services once / 一次性组装领域服务
-  const controlService = new ReminderTemplateControlService(
-    reminderTemplateRepository,
-    reminderGroupRepository,
-  );
-  const triggerService = new ReminderTriggerService(reminderTemplateRepository, controlService);
-  const schedulerService =
-    deps.schedulerService ??
-    new ReminderSchedulerService(
-      reminderTemplateRepository,
-      triggerService,
-      reliablePort,
-      transactionRunner,
-      controlService,
-    );
-
+  const maxCount = Math.max(1, deps.maxCount ?? 100);
+  const now = deps.now ?? Date.now;
   let cronTask: cron.ScheduledTask | null = null;
   let isRunning = false;
   let isStopping = false;
@@ -89,37 +163,51 @@ export function createReminderTriggerCronJob(
 
   async function executeInternal(): Promise<void> {
     if (isRunning || isStopping) {
-      logger.debug('Previous job still running or cron stopping, skipping this execution');
+      logger.debug('Previous shadow scan still running or stopping; skipping');
       return;
     }
 
     isRunning = true;
-    const startTime = Date.now();
+    const startedAt = Date.now();
+    const checkedAt = now();
 
     try {
-      logger.debug('Starting reminder trigger scan...');
+      const legacyTemplates =
+        await deps.reminderTemplateRepository.findByNextTriggerBefore(checkedAt);
+      const legacy: ReminderDueSetEntry[] = legacyTemplates
+        .flatMap((template) => {
+          if (template.nextTriggerAt == null) return [];
+          return [
+            {
+              identityId: String(template.identityId),
+              reminderId: String(template.id),
+              dueAt: template.nextTriggerAt,
+            },
+          ];
+        })
+        .sort(compareDueEntries)
+        .slice(0, maxCount);
+      const scheduler = await deps.schedulerDueSetReader.readDueSet(checkedAt, maxCount);
+      const comparison = compareReminderDueSets({ checkedAt, legacy, scheduler });
 
-      const result = await schedulerService.schedule();
-      const duration = Date.now() - startTime;
-
-      logger.info('Reminder trigger scan completed', {
-        totalProcessed: result.totalCount,
-        totalTriggered: result.successCount,
-        totalFailed: result.failedCount,
-        duration: `${duration}ms`,
-      });
-
-      if (result.failedCount > 0) {
-        logger.warn('Some reminders failed to trigger', {
-          failedCount: result.failedCount,
-          details: result.details.filter((d) => !d.ok),
+      if (comparison.matched) {
+        logger.debug('Reminder due-set shadow matched Scheduler', {
+          checkedAt,
+          count: comparison.legacyCount,
+          durationMs: Date.now() - startedAt,
+        });
+      } else {
+        logger.warn('Reminder due-set shadow mismatch', {
+          ...comparison,
+          durationMs: Date.now() - startedAt,
         });
       }
+
+      await deps.onComparison?.(comparison);
     } catch (error) {
-      const duration = Date.now() - startTime;
-      logger.error('Error executing reminder trigger scan', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        duration: `${duration}ms`,
+      logger.error('Reminder due-set shadow scan failed', {
+        error: error instanceof Error ? error.message : String(error),
+        durationMs: Date.now() - startedAt,
       });
     } finally {
       isRunning = false;
@@ -128,63 +216,48 @@ export function createReminderTriggerCronJob(
 
   function runScan(): Promise<void> {
     if (isRunning || isStopping) {
-      logger.debug('Previous job still running or cron stopping, skipping this execution');
       return currentExecutionPromise ?? Promise.resolve();
     }
-
     const promise = executeInternal().finally(() => {
-      if (currentExecutionPromise === promise) {
-        currentExecutionPromise = null;
-      }
+      if (currentExecutionPromise === promise) currentExecutionPromise = null;
     });
-
     currentExecutionPromise = promise;
     return promise;
   }
 
   return {
-    start() {
-      if (cronTask) {
-        logger.warn('Cron job already started');
-        return;
-      }
+    start(): void {
+      if (cronTask) return;
       isStopping = false;
-
       cronTask = cron.schedule('* * * * *', () => {
-        runScan();
+        void runScan();
       });
       cronTask.start();
-      logger.info('Reminder trigger cron job started (runs every minute)');
+      logger.info('Reminder due-set shadow cron started (read-only)');
     },
 
     async stop(timeoutMs?: number): Promise<void> {
-      const effectiveTimeout = timeoutMs ?? deps.drainTimeoutMs ?? 10000;
+      const effectiveTimeout = timeoutMs ?? deps.drainTimeoutMs ?? 10_000;
       isStopping = true;
-      if (cronTask) {
-        cronTask.stop();
-        cronTask = null;
-      }
+      cronTask?.stop();
+      cronTask = null;
 
       if (currentExecutionPromise) {
-        logger.info('Waiting for active reminder trigger scan batch to drain...');
-        let timeoutHandle: NodeJS.Timeout | null = null;
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          timeoutHandle = setTimeout(() => {
-            logger.error(`Cron drain timed out after ${effectiveTimeout}ms: active execution did not finish`);
-            reject(new Error(`Cron drain timed out after ${effectiveTimeout}ms: in-flight execution did not finish`));
-          }, effectiveTimeout);
-        });
-
+        let timeoutHandle: NodeJS.Timeout | undefined;
         try {
-          await Promise.race([currentExecutionPromise, timeoutPromise]);
+          await Promise.race([
+            currentExecutionPromise,
+            new Promise<never>((_, reject) => {
+              timeoutHandle = setTimeout(
+                () => reject(new Error(`Shadow cron drain timed out after ${effectiveTimeout}ms`)),
+                effectiveTimeout,
+              );
+            }),
+          ]);
         } finally {
-          if (timeoutHandle) {
-            clearTimeout(timeoutHandle);
-          }
+          if (timeoutHandle) clearTimeout(timeoutHandle);
         }
       }
-
-      logger.info('Reminder trigger cron job stopped');
     },
 
     execute(): Promise<void> {

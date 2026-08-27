@@ -86,12 +86,8 @@ export {
   type RoutineScheduleExecutionOutcome,
   type RoutineScheduleExecutionSource,
 } from './routine-schedule/routine-schedule-execution-source';
-export {
-  createRoutineWallClockScheduledHandler,
-} from './routine-schedule/routine-wall-clock-scheduled-handler';
-export {
-  createInMemoryRoutineOccurrenceStore,
-} from './routine-schedule/routine-occurrence-store.in-memory';
+export { createRoutineWallClockScheduledHandler } from './routine-schedule/routine-wall-clock-scheduled-handler';
+export { createInMemoryRoutineOccurrenceStore } from './routine-schedule/routine-occurrence-store.in-memory';
 export {
   createInMemoryRoutineNotificationWriter,
   ROUTINE_NOTIFICATION_SOURCE,
@@ -105,10 +101,15 @@ export {
   type CreateReminderPrismaModuleOptions,
   type ReminderPrismaRepositorySet,
 } from './prisma';
+export { createReminderRuntimeContribution, createReminderTriggerCronRuntime } from './runtime';
 export {
-  createReminderRuntimeContribution,
-  createReminderTriggerCronRuntime,
-} from './runtime';
+  compareReminderDueSets,
+  type ReminderDueSetComparison,
+  type ReminderDueSetEntry,
+  type ReminderDueSetReader,
+  type ReminderDueSetTimingMismatch,
+  type ReminderTriggerCronJobDependencies,
+} from './cron/reminder-trigger-cron-job';
 
 // ============ Host-used concrete consumer ============
 /** Host-used by apps/api: closure worker consumer. 宿主使用：apps/api 的账户关闭 consumer。 */

@@ -38,10 +38,16 @@ describe('reminder API runtime composer surface', () => {
 
   it('server.ts takes the reminder schedule sources from the composer (no second Prisma set)', () => {
     expect(server).not.toMatch(/createReminderPrismaSchedule(Execution|Projection)Source/);
-    expect(server).not.toContain("from '@memoflow/reminder/schedule-execution'");
-    expect(server).not.toContain("from '@memoflow/reminder/schedule-projection'");
+    // First-class Routine uses the same package subpaths legitimately; only the
+    // legacy Reminder Prisma source factories are forbidden here.
     expect(server).toContain('reminderComposed.scheduleExecutionSource');
     expect(server).toContain('reminderComposed.scheduleProjectionSource');
+  });
+
+  it('ROUTINE-3402 keeps legacy Reminder cron out of production composition', () => {
+    expect(composer).not.toMatch(/createReminderTriggerCron(Runtime|Job)/);
+    expect(server).not.toMatch(/createReminderTriggerCron(Runtime|Job)/);
+    expect(composer).toContain('runtimeContributions: normalizeRuntimeContributions');
   });
 
   it('composer only touches the narrow seams (no deep server import)', () => {

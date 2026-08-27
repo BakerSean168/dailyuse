@@ -19,3 +19,5 @@ export type {
   ScheduleOrchestrationExecutionDeps,
 } from './ports/execution';
 export type { RuntimeContribution } from './ports/runtime-contribution';
+
+export { createReminderSchedulerDueSetReader } from './shadow/reminder-due-set-shadow';

@@ -2,8 +2,8 @@
 
 ## Status
 
-Active implementation (Wave 3 closure). Tracked by `docs/plan/active/2026-08-26-core-vnext-orchestration.md`
-ROUTINE-3401 (line ~1204) / ROUTINE-3402 (line ~1225, shadow compare = later phase).
+ROUTINE-3401 and ROUTINE-3402 implementation complete on the Core vNext continuation lane.
+Canonical orchestration truth: `docs/plan/active/2026-08-25-core-vnext-orchestration.md`.
 
 ## Objective
 
@@ -104,9 +104,13 @@ Surfaces satisfied:
 
 ## Residuals
 
-- ROUTINE-3402 (shadow compare + remove dual wall-clock authority) — separate phase.
-- Production routine CRUD (W3) + Prisma occurrence fence adapter + hosts wiring — after routine
-  definitions are writable; the port seam is fixed here.
+- Production routine CRUD (later Wave 4/5 tickets) remains separate from the wall-clock authority
+  cutover; first-class Routine definitions are still not a replacement source for legacy
+  `ReminderTemplate` CRUD in this phase.
+- The legacy `ReminderSchedulerService` domain class remains as compatibility code for later cleanup,
+  but no production composition root starts it as a clock authority.
+- `createReminderTriggerCronRuntime` keeps its exported name temporarily for forensic tooling, but it
+  now wraps only the read-only due-set shadow and cannot execute the retired write path.
 
 ## Phase status (2026-08-26)
 
@@ -119,3 +123,36 @@ domain occurrence gate); `packages/schedule-orchestration` 18/18 (3 new runtime 
 package `tsc` outputs are unchanged relative to the pre-existing baselines (reminder 246
 pre-existing path-mapping errors; schedule-orchestration dist-based module-resolution errors) —
 no new type errors from the routine lane.
+
+## ROUTINE-3402 closure (2026-08-27)
+
+The dual wall-clock authority has been removed from production composition:
+
+- `apps/api/src/runtime/compose-reminder.ts` no longer creates or starts the legacy Reminder cron.
+- Legacy `ReminderTemplate` wall-clock timing continues through the already-existing
+  Reminder → `ScheduleTask` projection/execution seam; the shared Scheduler is therefore the only
+  production wake-up authority.
+- `createReminderTriggerCronJob` is retained only as a fail-safe read-only shadow diagnostic. It may
+  read `findByNextTriggerBefore`, compare against a Scheduler due-set reader, and emit structured
+  mismatch diagnostics; it has no `ReminderSchedulerService`, `ReminderTriggerService`, transaction,
+  reliable-writer, history-write, next-trigger advance, claim, or notification-dispatch dependency.
+- The shadow comparator reports legacy-only rows, Scheduler-only rows, timing mismatches, and duplicate
+  projection identities. Both sides are deterministically ordered by due time plus identity/source key
+  before sampling, avoiding false mismatches at the comparison limit.
+- `createReminderSchedulerDueSetReader` filters the shared Scheduler due set to `SourceModule.Reminder`
+  before applying the comparison limit, so unrelated Goal/Task/Routine work cannot hide Reminder rows.
+- A production surface test prevents either legacy cron factory from being wired back into API startup.
+
+Verification evidence on the recovered batch-3 base:
+
+- `@memoflow/reminder`: 66 files / **490 tests passed**.
+- `@memoflow/schedule-orchestration`: 10 files / **33 tests passed**.
+- `@memoflow/schedule`: 45 files / **399 tests passed**.
+- `reminder`, `schedule-orchestration`, `schedule`, and `api` typecheck passed together with their Nx
+  dependency graph.
+- Existing Routine execution tests continue to cover lease takeover/restart recovery, stale fencing,
+  concurrent double-dispatch with no duplicate notification, snooze/suppress skips, and disabled
+  projection; Scheduler runtime tests cover lease/runtime restart and pause/disabled execution gates.
+
+Acceptance result: **only Scheduler wakes durable wall-clock Reminder/Routine work in production**;
+legacy cron behavior is observation-only and is not part of host startup.
