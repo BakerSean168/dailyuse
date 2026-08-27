@@ -5,11 +5,10 @@
  * - Lease fencing check
  * - ReminderHistory creation
  * - ReminderTemplate nextTriggerAt advance
- * - Notification Outbox dispatch intent persistence
+ * - canonical NotificationRequested Outbox intent persistence
  * - ReminderOccurrence status/receipt update
  */
 
-import { randomUUID } from 'crypto';
 import type { PrismaClient, Prisma } from '@memoflow/database';
 import {
   assertValidBusinessOperationReceipt,
@@ -19,6 +18,13 @@ import {
   LeaseFencingException,
 } from '@memoflow/contracts/reliable-messaging';
 import { TriggerResult } from '@memoflow/contracts/reminder';
+import {
+  NotificationCategory,
+  NotificationChannelType,
+  NotificationRequestedSchema,
+  NotificationType,
+  RelatedEntityType,
+} from '@memoflow/contracts/notification';
 import type {
   ReminderTransactionRunner,
   ExecuteClaimedOccurrenceTransactionParams,
@@ -27,7 +33,6 @@ import type {
 export type { ExecuteClaimedOccurrenceTransactionParams };
 
 export class PrismaReminderWriteTransactionRunner implements ReminderTransactionRunner {
-
   constructor(private readonly prisma: PrismaClient) {}
 
   async executeClaimedOccurrenceTransaction(
@@ -119,34 +124,48 @@ export class PrismaReminderWriteTransactionRunner implements ReminderTransaction
         },
       });
 
-      // 4. Write Notification delivery intent into Outbox if enabled
+      // 4. Write the business-level NotificationRequested intent. Channel
+      // policy/expansion belongs to Notification, never to Reminder/Scheduler.
       if (isEnabled) {
         const notificationIdempotencyKey = buildIdempotencyKeyString({
           identityId: occurrence.identityId,
-          source: 'notification',
+          source: 'reminder',
           occurrenceKey: occurrence.occurrenceKey,
         });
-
-        const outboxPayload = {
-          operationId: randomUUID(),
+        const operationId = `reminder-occurrence:${occurrence.id}`;
+        const envelope = NotificationRequestedSchema.parse({
           identityId: occurrence.identityId,
-          source: 'notification',
+          source: 'reminder',
           occurrenceKey: occurrence.occurrenceKey,
-          channel: 'in-app',
-          payloadJson: JSON.stringify({
-            templateId: template.id,
-            title: template.title,
-            description: template.description,
-            triggeredAt: triggerTime,
-          }),
           idempotencyKey: notificationIdempotencyKey,
+          workflowKey: 'reminder.trigger',
+          topic: 'reminder.trigger',
+          relatedEntity: { type: RelatedEntityType.Reminder, id: String(template.id) },
+          content: {
+            title: template.notificationConfig.title?.trim() || template.title,
+            content:
+              template.notificationConfig.body?.trim() ||
+              template.description?.trim() ||
+              `提醒「${template.title}」已到达。`,
+            type: NotificationType.Reminder,
+            category: NotificationCategory.Reminder,
+          },
+          suggestedChannels: [NotificationChannelType.InApp],
+          correlationId: occurrence.id,
+          causationId: occurrence.id,
+        });
+        const outboxPayload = {
+          operationId,
+          envelope,
+          correlationId: occurrence.id,
+          causationId: occurrence.id,
         };
 
         await tx.outboxMessage.create({
           data: {
-            id: outboxPayload.operationId,
+            id: operationId,
             identityId: occurrence.identityId,
-            messageType: 'notification.dispatch',
+            messageType: 'notification.requested',
             schemaVersion: 1,
             correlationId: occurrence.id,
             causationId: occurrence.id,
@@ -172,10 +191,7 @@ export class PrismaReminderWriteTransactionRunner implements ReminderTransaction
           ownerToken: occurrence.ownerToken,
           fencingToken: occurrence.fencingToken,
           status: 'running',
-          OR: [
-            { leaseExpiresAt: { gte: commitNow } },
-            { leaseExpiresAt: null },
-          ],
+          OR: [{ leaseExpiresAt: { gte: commitNow } }, { leaseExpiresAt: null }],
         },
         data: {
           status: finalStatus,

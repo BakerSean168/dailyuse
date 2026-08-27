@@ -13,11 +13,7 @@ export type {
   ScheduleOrchestrationProjectionDeps,
   ScheduleOrchestrationScheduleTaskProjectionDeps,
 } from './ports/projection';
-export type {
-  ScheduleNotificationPort,
-  ScheduleNotificationRequest,
-  ScheduleOrchestrationExecutionDeps,
-} from './ports/execution';
+export type { ScheduleOrchestrationExecutionDeps } from './ports/execution';
 export type { RuntimeContribution } from './ports/runtime-contribution';
 
 export { createReminderSchedulerDueSetReader } from './shadow/reminder-due-set-shadow';

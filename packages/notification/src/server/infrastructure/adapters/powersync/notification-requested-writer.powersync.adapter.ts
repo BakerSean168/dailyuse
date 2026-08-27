@@ -15,7 +15,7 @@
  * crash/replay retry carrying the same envelope collapses onto the existing row.
  */
 
-import type { IElectronDatabase } from '@memoflow/contracts/electron';
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@memoflow/contracts/electron';
 import {
   type NotificationRequestedOutboxInput,
   NotificationRequestedOutboxInputSchema,
@@ -34,9 +34,12 @@ export class NotificationRequestedPowerSyncWriterAdapter implements Notification
 
   constructor(private readonly db: IElectronDatabase) {}
 
-  private async ensureTablesExist(): Promise<void> {
-    if (this.tableInitialized) return;
-    await this.db.execute(`
+  private async ensureTablesExist(
+    client: IElectronDatabaseTransaction = this.db,
+    cacheResult = client === this.db,
+  ): Promise<void> {
+    if (cacheResult && this.tableInitialized) return;
+    await client.execute(`
       CREATE TABLE IF NOT EXISTS outbox_messages (
         id TEXT PRIMARY KEY,
         aggregate_type TEXT NOT NULL DEFAULT 'shared',
@@ -62,24 +65,28 @@ export class NotificationRequestedPowerSyncWriterAdapter implements Notification
         dispatched_at TEXT
       );
     `);
-    await this.db.execute(
+    await client.execute(
       `CREATE INDEX IF NOT EXISTS idx_om_message_type ON outbox_messages(message_type);`,
     );
-    await this.db.execute(
-      `CREATE INDEX IF NOT EXISTS idx_om_status ON outbox_messages(status);`,
-    );
-    this.tableInitialized = true;
+    await client.execute(`CREATE INDEX IF NOT EXISTS idx_om_status ON outbox_messages(status);`);
+    if (cacheResult) this.tableInitialized = true;
   }
 
-  private async fetchById(id: string): Promise<PowerSyncSharedOutboxRow | null> {
-    return this.db.getOptional<PowerSyncSharedOutboxRow>(
+  private async fetchById(
+    client: IElectronDatabaseTransaction,
+    id: string,
+  ): Promise<PowerSyncSharedOutboxRow | null> {
+    return client.getOptional<PowerSyncSharedOutboxRow>(
       `SELECT * FROM outbox_messages WHERE id = ? LIMIT 1`,
       [id],
     );
   }
 
-  private async fetchByIdempotencyKey(idempotencyKey: string): Promise<PowerSyncSharedOutboxRow | null> {
-    return this.db.getOptional<PowerSyncSharedOutboxRow>(
+  private async fetchByIdempotencyKey(
+    client: IElectronDatabaseTransaction,
+    idempotencyKey: string,
+  ): Promise<PowerSyncSharedOutboxRow | null> {
+    return client.getOptional<PowerSyncSharedOutboxRow>(
       `SELECT * FROM outbox_messages WHERE idempotency_key = ? LIMIT 1`,
       [idempotencyKey],
     );
@@ -91,31 +98,52 @@ export class NotificationRequestedPowerSyncWriterAdapter implements Notification
 
   async enqueueNotificationRequested(
     input: NotificationRequestedOutboxInput,
+    options?: { txClient?: unknown },
   ): Promise<BusinessOperationReceipt> {
     const validated = NotificationRequestedOutboxInputSchema.parse(input);
-    await this.ensureTablesExist();
+    const txClient = options?.txClient;
+    if (
+      txClient !== undefined &&
+      (typeof txClient !== 'object' ||
+        txClient === null ||
+        !('execute' in txClient) ||
+        !('getOptional' in txClient))
+    ) {
+      throw new TypeError(
+        'NotificationRequested PowerSync txClient must be an Electron transaction.',
+      );
+    }
+    const client = (txClient as IElectronDatabaseTransaction | undefined) ?? this.db;
+    // When the schema is prepared inside a caller-owned transaction, do not cache
+    // the result: that transaction may still roll back. A later retry must be
+    // able to recreate the table/indexes safely.
+    await this.ensureTablesExist(client, txClient === undefined);
 
     // Deterministic operationId anchor: a full replay of the same handler
     // execution must resolve to the durable row it created before.
-    const existingById = await this.fetchById(validated.operationId);
+    const existingById = await this.fetchById(client, validated.operationId);
     if (existingById) {
       return this.mapToReceipt(existingById);
     }
 
     // Envelope-level idempotency: the canonical idempotencyKey (NOT the
     // operationId) is the durable dedupe anchor.
-    const existingByIdempotencyKey = await this.fetchByIdempotencyKey(validated.envelope.idempotencyKey);
+    const existingByIdempotencyKey = await this.fetchByIdempotencyKey(
+      client,
+      validated.envelope.idempotencyKey,
+    );
     if (existingByIdempotencyKey) {
       return this.mapToReceipt(existingByIdempotencyKey);
     }
 
     const now = new Date().toISOString();
     const envelope = validated.envelope;
-    const correlationId = envelope.correlationId ?? validated.correlationId ?? validated.operationId;
+    const correlationId =
+      envelope.correlationId ?? validated.correlationId ?? validated.operationId;
     const causationId = envelope.causationId ?? validated.causationId ?? null;
 
     try {
-      await this.db.execute(
+      await client.execute(
         `INSERT INTO outbox_messages (
           id, aggregate_type, aggregate_id, message_type, payload_json,
           status, attempts, identity_id, idempotency_key, created_at,
@@ -134,7 +162,7 @@ export class NotificationRequestedPowerSyncWriterAdapter implements Notification
         ],
       );
 
-      const created = await this.fetchById(validated.operationId);
+      const created = await this.fetchById(client, validated.operationId);
       if (!created) {
         throw new Error(
           `[FAIL-FAST] Shared outbox row '${validated.operationId}' was not readable after INSERT.`,
@@ -145,8 +173,8 @@ export class NotificationRequestedPowerSyncWriterAdapter implements Notification
       // An idempotency-key collision means a concurrent winner created the
       // durable row first under either anchor; reconcile to the stable row.
       const reFetched =
-        (await this.fetchById(validated.operationId)) ??
-        (await this.fetchByIdempotencyKey(validated.envelope.idempotencyKey));
+        (await this.fetchById(client, validated.operationId)) ??
+        (await this.fetchByIdempotencyKey(client, validated.envelope.idempotencyKey));
       if (!reFetched) throw cause;
       return this.mapToReceipt(reFetched);
     }

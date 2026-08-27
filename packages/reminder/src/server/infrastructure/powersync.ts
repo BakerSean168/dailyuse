@@ -21,9 +21,12 @@ import {
   ReminderResponsePowerSyncRepository,
   UserReminderPreferencePowerSyncRepository,
 } from './adapters/powersync';
+import { ReminderScheduleExecutionPowerSyncCommitAdapter } from './adapters/powersync/reminder-schedule-execution-commit.powersync.adapter';
 import type { ReminderScheduleExecutionSource } from '../../schedule-execution';
+import type { ReminderScheduleExecutionCommitPort } from './schedule-execution-commit.port';
 import type { ReminderScheduleProjectionSource } from '../../schedule-projection';
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
+import type { NotificationRequestedWriterPort } from '@memoflow/contracts/notification';
 import type {
   IReminderTemplateRepository,
   IReminderGroupRepository,
@@ -44,7 +47,9 @@ type Queryable = IElectronDatabase;
  * (b) 存在本地 closure-request 标记（用户发起云端关闭且远程 saga 处于
  * requested/revoking 窗口）时 fail closed。在关闭请求开始的同时阻断本地新工作入口。
  */
-export function createPowerSyncClosureChecker(db: Queryable): (identityId: string) => Promise<boolean> {
+export function createPowerSyncClosureChecker(
+  db: Queryable,
+): (identityId: string) => Promise<boolean> {
   return async (identityId: string): Promise<boolean> => {
     try {
       const row = await db.getOptional<{ status: string }>(
@@ -97,9 +102,7 @@ export interface ReminderPowerSyncRepositorySet {
  * @returns Repository set backed by the PowerSync adapters.
  *          返回基于 PowerSync 适配器的仓储集合。
  */
-export function createReminderPowerSyncRepositories(
-  db: Queryable,
-): ReminderPowerSyncRepositorySet {
+export function createReminderPowerSyncRepositories(db: Queryable): ReminderPowerSyncRepositorySet {
   return {
     reminderTemplateRepository: new ReminderTemplatePowerSyncRepository(db),
     reminderGroupRepository: new ReminderGroupPowerSyncRepository(db),
@@ -149,11 +152,20 @@ export function createReminderPowerSyncScheduleProjectionSource(
   });
 }
 
+export function createReminderPowerSyncScheduleExecutionCommitPort(
+  db: IElectronDatabase,
+  requestedWriter: NotificationRequestedWriterPort,
+): ReminderScheduleExecutionCommitPort {
+  return new ReminderScheduleExecutionPowerSyncCommitAdapter(db, requestedWriter);
+}
+
 export function createReminderPowerSyncScheduleExecutionSource(
-  db: Queryable,
+  db: IElectronDatabase,
+  requestedWriter: NotificationRequestedWriterPort,
 ): ReminderScheduleExecutionSource {
   return createReminderScheduleExecutionSource({
     reminderTemplateRepository: createReminderPowerSyncRepositories(db).reminderTemplateRepository,
+    commitPort: createReminderPowerSyncScheduleExecutionCommitPort(db, requestedWriter),
   });
 }
 

@@ -1201,6 +1201,24 @@ Routine wall-clock starts after NotificationRequested seam is available or uses 
 
 **Acceptance:** Scheduler only wakes handlers.
 
+**Implementation evidence — 2026-08-27:**
+
+- Task, Goal, Routine and the legacy Reminder compatibility source own their durable
+  `NotificationRequested` write; execution outcomes no longer carry a `notification` draft.
+- `schedule-orchestration` is notification-domain neutral: the execution router only dispatches by
+  source/handler and has no `NotificationPort`, channel, requested-envelope or notification package
+  runtime/build dependency.
+- API and Desktop hosts no longer construct or inject `scheduleNotificationPort`; they inject the
+  durable `NotificationRequestedWriterPort` into the business boundary that owns the side effect.
+- Legacy Reminder compatibility execution uses an atomic commit port so Reminder state/history and
+  `notification.requested` are committed in the same Prisma/PowerSync transaction. PowerSync writer
+  rollback/retry behavior is covered explicitly.
+- No production business module outside Notification emits new `notification.dispatch` rows; the
+  Notification package retains legacy dispatch consumption only for backward-compatible draining.
+- Verification: Notification **240/240**, Reminder **491/491**, Task **717/717**, Goal **445/445**,
+  Schedule Orchestration **34/34**, Reminder integration **34/34**, targeted API/Desktop composition
+  **67/67**; final typecheck passed for notification/reminder/task/goal/schedule-orchestration/api/desktop.
+
 ## ROUTINE-3401 — Reliable wall-clock handler path
 
 **Lane:** L-C + L-D  

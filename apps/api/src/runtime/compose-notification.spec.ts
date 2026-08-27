@@ -6,14 +6,14 @@
  * - assembles notification in the mandated plan §3.3 order
  *   (repository set → durable runtime → module instance → API module)
  * - passes the host closureChecker and channel capabilities through unchanged
- * - builds the ScheduleNotificationPort from the SAME repository set
+ * - exposes the durable NotificationRequested writer for business handlers
  * - returns an already-bound IApiModule-compatible handle
  * - mounts /notifications and starts the owned instance when registered
  *
  * 验证 composeNotification()：
  * - 按计划 §3.3 顺序装配通知（仓储集合 → durable runtime → module instance → API module）
  * - 原样透传宿主 closureChecker 与 channel capabilities
- * - 从同一仓储集合构建 ScheduleNotificationPort
+ * - 暴露业务 handler 使用的 durable NotificationRequested writer
  * - 返回已绑定 instance 的、兼容 IApiModule 的 handle
  * - register() 挂载 /notifications 并启动所属实例
  *
@@ -38,7 +38,6 @@ vi.mock('@memoflow/notification', async (importOriginal) => {
     createNotificationDurableRuntime: vi.fn(actual.createNotificationDurableRuntime),
     createNotificationModule: vi.fn(actual.createNotificationModule),
     createNotificationPrismaRepositories: vi.fn(actual.createNotificationPrismaRepositories),
-    createNotificationScheduleNotificationPort: vi.fn(actual.createNotificationScheduleNotificationPort),
   };
 });
 
@@ -55,10 +54,8 @@ import {
   createNotificationDurableRuntime,
   createNotificationModule,
   createNotificationPrismaRepositories,
-  createNotificationScheduleNotificationPort,
 } from '@memoflow/notification';
 import { createNotificationApiModule } from '@memoflow/notification/api';
-import type { ScheduleNotificationPort } from '@memoflow/notification';
 
 const fakeDb = {} as unknown as PrismaClient;
 const closureChecker = async (_identityId: string): Promise<boolean> => false;
@@ -121,25 +118,11 @@ describe('composeNotification assembly order', () => {
     expect(createNotificationApiModule).toHaveBeenCalledWith({ instance });
   });
 
-  it('builds the schedule notification port from the SAME repository set', () => {
-    const composed = composeNotification({
-      db: fakeDb,
-      closureChecker,
-      channelCapabilities,
-    });
-
+  it('exposes the SAME durable NotificationRequested writer from the repository set', () => {
+    const composed = composeNotification({ db: fakeDb, closureChecker, channelCapabilities });
     const repoSet = createNotificationPrismaRepositories.mock.results[0].value;
-    const port: ScheduleNotificationPort = composed.scheduleNotificationPort;
-    expect(typeof port.createNotification).toBe('function');
-
-    expect(createNotificationScheduleNotificationPort).toHaveBeenCalledWith({
-      notificationRepository: repoSet.notificationRepository,
-      notificationPreferenceRepository: repoSet.notificationPreferenceRepository,
-      closureChecker,
-    });
-
-    const notificationRepository = repoSet.notificationRepository;
-    expect(notificationRepository).toBeDefined();
+    expect(composed.requestedWriter).toBe(repoSet.requestedWriter);
+    expect(composed.repositories.requestedWriter).toBe(repoSet.requestedWriter);
   });
 
   it('returns the instance-bound repository view (ComposedNotificationApi shape)', () => {
@@ -150,9 +133,7 @@ describe('composeNotification assembly order', () => {
     });
 
     const repoSet = createNotificationPrismaRepositories.mock.results[0].value;
-    expect(composed.repositories.notificationRepository).toBe(
-      repoSet.notificationRepository,
-    );
+    expect(composed.repositories.notificationRepository).toBe(repoSet.notificationRepository);
   });
 
   it('returns a module handle with name Notification plus register and destroy', () => {
@@ -165,7 +146,6 @@ describe('composeNotification assembly order', () => {
     expect(composed.module).toMatchObject({ name: 'Notification' });
     expect(typeof composed.module.register).toBe('function');
     expect(typeof composed.module.destroy).toBe('function');
-    expect(typeof composed.scheduleNotificationPort.createNotification).toBe('function');
   });
 });
 

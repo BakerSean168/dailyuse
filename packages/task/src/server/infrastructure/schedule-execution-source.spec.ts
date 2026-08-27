@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 import { SourceModule } from '@memoflow/contracts/schedule';
-import { NotificationCategory, NotificationChannelType, NotificationType, RelatedEntityType } from '@memoflow/contracts/notification';
 import { ScheduleTask } from '@memoflow/schedule';
 import { createTaskScheduleExecutionSource } from './schedule-execution-source';
 
@@ -27,7 +26,7 @@ function createScheduleTask(payload: Record<string, unknown> = {}) {
 }
 
 describe('createTaskScheduleExecutionSource', () => {
-  it('builds a notification draft for executable task reminders', async () => {
+  it('returns only business execution metadata for legacy fallback tasks', async () => {
     const findInstanceByIdForIdentity = vi.fn().mockResolvedValue({
       id: 'TaskInstanceId_instance-1',
       identityId: 'IdentityId_task-owner',
@@ -67,16 +66,6 @@ describe('createTaskScheduleExecutionSource', () => {
     );
     expect(outcome).toEqual({
       nextRunAt: null,
-      notification: {
-        identityId: 'IdentityId_task-owner',
-        title: '任务提醒：Write Tests',
-        content: '任务「Write Tests」的提前 15分钟 提醒已到达。',
-        type: NotificationType.Reminder,
-        category: NotificationCategory.Task,
-        relatedEntityType: RelatedEntityType.Task,
-        relatedEntityId: 'TaskInstanceId_instance-1',
-        channels: [NotificationChannelType.InApp, NotificationChannelType.Push],
-      },
       result: {
         instanceId: 'TaskInstanceId_instance-1',
         templateId: 'TaskTemplateId_template-1',
@@ -86,6 +75,7 @@ describe('createTaskScheduleExecutionSource', () => {
         reminderUnit: '分钟',
       },
     });
+    expect(outcome).not.toHaveProperty('notification');
   });
 
   it('skips when identity-scoped instance load returns null', async () => {

@@ -18,24 +18,21 @@
  * `NotificationModuleInstance`。实例随后通过 `createNotificationElectronModule`
  * 绑定为兼容 `IElectronModule` 的 handle。
  *
- * The composer also builds the `ScheduleNotificationPort` from the SAME
- * repository set so schedule orchestration does not construct a second PowerSync
- * repository set (historical desktop behavior kept intact). The closure checker
+ * NOTIF-3302 removes the scheduler-facing NotificationPort from desktop host
+ * composition. The closure checker
  * is a host port built from the profile DB via `createPowerSyncClosureChecker`
  * and passed explicitly — fail-closed on closed accounts.
  *
- * composer 还从同一仓储集合构建 `ScheduleNotificationPort`，使 schedule 编排无需
- * 再构造第二套 PowerSync 仓储集合（保留历史桌面行为）。closure checker 是宿主持有
+ * NOTIF-3302 后 desktop host 不再组装 scheduler-facing NotificationPort。closure checker 是宿主持有
  * 的 Port，通过 `createPowerSyncClosureChecker` 基于 profile DB 构建并显式传入——
  * 对已关闭账户 fail-closed。
  *
  * Assembly order (plan §3.3) — MUST be: runtime db → notification PowerSync
  * repository set → durable runtime (explicit channel capabilities + transport)
- * → notification instance → schedule notification port → Electron module.
+ * → notification instance → Electron module.
  *
  * 组装顺序（计划 §3.3）必须为：runtime db → 通知 PowerSync 仓储集合 → durable
- * runtime（显式 channel capabilities + transport）→ notification instance →
- * schedule notification port → Electron module。
+ * runtime（显式 channel capabilities + transport）→ notification instance → Electron module。
  */
 
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
@@ -44,12 +41,10 @@ import {
   createNotificationDurableRuntime,
   createNotificationModule,
   createNotificationPowerSyncRepositories,
-  createNotificationScheduleNotificationPort,
   createPowerSyncClosureChecker,
   type ChannelCapabilitySpec,
   type INotificationRepository,
   type NotificationRequestedWriterPort,
-  type ScheduleNotificationPort,
 } from '@memoflow/notification';
 import {
   createNotificationElectronModule,
@@ -84,8 +79,6 @@ export interface ComposedNotificationDesktop {
   };
   /** Trusted writer for durable `notification.requested` envelopes (cross-module consumption). 可信的 durable `notification.requested` 信封写入器（跨模块消费）。 */
   readonly requestedWriter: NotificationRequestedWriterPort;
-  /** Schedule notification port built from the SAME repository set. 从同一仓储集合构建的 schedule notification port。 */
-  readonly scheduleNotificationPort: ScheduleNotificationPort;
 }
 
 /**
@@ -101,9 +94,7 @@ export interface ComposedNotificationDesktop {
  * 3. createNotificationModule({ ...repositories, closureChecker, durableRuntime,
  *    runtimeContributions: [durableRuntime], db }) — assemble the
  *    transport-neutral notification instance (fail-closed closure checker).
- * 4. Build the ScheduleNotificationPort from the SAME repository set (so schedule
- *    orchestration shares one set).
- * 5. createNotificationElectronModule({ instance }) — bind the instance to an
+ * 4. createNotificationElectronModule({ instance }) — bind the instance to an
  *    IElectronModule handle (transport + lifecycle only).
  *
  * 接线顺序：
@@ -114,8 +105,7 @@ export interface ComposedNotificationDesktop {
  * 3. createNotificationModule({ ...repositories, closureChecker, durableRuntime,
  *    runtimeContributions: [durableRuntime], db }) —— 装配与传输无关的通知实例
  *    （fail-closed closure checker）。
- * 4. 从同一仓储集合构建 ScheduleNotificationPort（使 schedule 编排共享一套集合）。
- * 5. createNotificationElectronModule({ instance }) —— 把实例绑定到 IElectronModule
+ * 4. createNotificationElectronModule({ instance }) —— 把实例绑定到 IElectronModule
  *    handle（只负责 transport 与生命周期）。
  *
  * The returned handle is already fully bound: ElectronBootstrapper.register()
@@ -125,7 +115,7 @@ export interface ComposedNotificationDesktop {
  * 其 destroy() 会 dispose 所属实例。
  *
  * @param dependencies - ComposeNotificationDesktopDependencies with the runtime Electron database and host ports.
- * @returns ComposedNotificationDesktop — the bound module handle plus the schedule notification port.
+ * @returns ComposedNotificationDesktop — the bound module handle plus durable requestedWriter access.
  */
 export function composeNotification(
   dependencies: ComposeNotificationDesktopDependencies,
@@ -151,12 +141,6 @@ export function composeNotification(
     runtimeContributions: [durableRuntime],
   });
 
-  const scheduleNotificationPort = createNotificationScheduleNotificationPort({
-    notificationRepository: repositories.notificationRepository,
-    notificationPreferenceRepository: repositories.notificationPreferenceRepository,
-    closureChecker,
-  });
-
   return {
     module: createNotificationElectronModule({ instance }),
     repositories: {
@@ -164,6 +148,5 @@ export function composeNotification(
       requestedWriter: repositories.requestedWriter,
     },
     requestedWriter: repositories.requestedWriter,
-    scheduleNotificationPort,
   };
 }

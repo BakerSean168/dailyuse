@@ -40,9 +40,11 @@
  */
 
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
+import type { NotificationRequestedWriterPort } from '@memoflow/notification';
 import {
   createReminderModule,
   createReminderPowerSyncRepositories,
+  createReminderPowerSyncScheduleExecutionCommitPort,
   createReminderScheduleExecutionSource,
   createReminderScheduleProjectionSource,
   type ReminderApplicationPort,
@@ -62,6 +64,8 @@ import {
 export interface ComposeReminderDesktopDependencies {
   /** PowerSync-backed desktop business database owned by the desktop main runtime. 桌面主进程持有的 PowerSync 桌面业务数据库。 */
   readonly db: IElectronDatabase;
+  /** Reminder-owned durable NotificationRequested writer; Scheduler never receives it. */
+  readonly notificationRequestedWriter: NotificationRequestedWriterPort;
 }
 
 /**
@@ -135,6 +139,10 @@ export function composeReminder(
   const reminderTemplateRepository = repositories.reminderTemplateRepository;
   const scheduleExecutionSource = createReminderScheduleExecutionSource({
     reminderTemplateRepository,
+    commitPort: createReminderPowerSyncScheduleExecutionCommitPort(
+      dependencies.db,
+      dependencies.notificationRequestedWriter,
+    ),
   });
   const scheduleProjectionSource = createReminderScheduleProjectionSource({
     reminderTemplateRepository,

@@ -287,4 +287,27 @@ describe('NotificationRequestedPowerSyncWriterAdapter (NOTIF-3301 desktop lane)'
     ).rejects.toThrow();
     expect(tableExists('outbox_messages')).toBe(false);
   });
+
+  it('8. Participates in caller-owned PowerSync transactions and recovers cleanly after rollback', async () => {
+    const opId = randomUUID();
+    const envelope = buildEnvelope();
+
+    await expect(
+      db.writeTransaction(async (tx) => {
+        await writer.enqueueNotificationRequested(
+          { operationId: opId, envelope },
+          { txClient: tx },
+        );
+        throw new Error('force rollback');
+      }),
+    ).rejects.toThrow('force rollback');
+
+    // DDL + row are both rolled back, and the adapter must not have cached a
+    // false "table initialized" result from the aborted transaction.
+    expect(tableExists('outbox_messages')).toBe(false);
+
+    await writer.enqueueNotificationRequested({ operationId: opId, envelope });
+    expect(tableExists('outbox_messages')).toBe(true);
+    expect(rows(envelope.idempotencyKey)).toHaveLength(1);
+  });
 });

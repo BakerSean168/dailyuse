@@ -17,14 +17,12 @@
  *
  * Assembly order (plan §3.3) — MUST be: runtime db → notification Prisma
  * repository set → durable runtime (channel capabilities + transport) →
- * notification instance → API module. The composer also builds the
- * `ScheduleNotificationPort` from the SAME repository set so schedule
- * orchestration does not construct a second Prisma repository set.
+ * notification instance → API module. NOTIF-3302 keeps the scheduler-facing
+ * NotificationPort out of host composition; business handlers use requestedWriter.
  *
  * 组装顺序（计划 §3.3）必须为：runtime db → 通知 Prisma 仓储集合 → durable
  * runtime（channel capabilities + transport）→ notification instance → API module。
- * composer 还从同一仓储集合构建 `ScheduleNotificationPort`，使 schedule 编排无需
- * 再构造第二套 Prisma 仓储集合。
+ * NOTIF-3302 后不再组装 scheduler-facing NotificationPort；业务 handler 使用 requestedWriter。
  *
  * Deliberately narrow interface: the host supplies the shared Prisma client, the
  * closure checker and the explicit channel capability list. Capability selection
@@ -41,11 +39,9 @@ import {
   createNotificationDurableRuntime,
   createNotificationModule,
   createNotificationPrismaRepositories,
-  createNotificationScheduleNotificationPort,
   type ChannelCapabilitySpec,
   type INotificationRepository,
   type NotificationRequestedWriterPort,
-  type ScheduleNotificationPort,
 } from '@memoflow/notification';
 import {
   createNotificationApiModule,
@@ -80,8 +76,6 @@ export interface ComposedNotification {
   };
   /** Compatibility alias for Goal reminder composition; points to repositories.requestedWriter. */
   readonly requestedWriter: NotificationRequestedWriterPort;
-  /** Schedule notification port built from the SAME repository set. 从同一仓储集合构建的 schedule notification port。 */
-  readonly scheduleNotificationPort: ScheduleNotificationPort;
 }
 
 /**
@@ -96,10 +90,7 @@ export interface ComposedNotification {
  * 3. createNotificationModule({ ...repositories, closureChecker, durableRuntime,
  *    runtimeContributions: [durableRuntime], auditRepository }) — assemble the
  *    transport-neutral notification instance.
- * 4. createNotificationScheduleNotificationPort({ ...repositories, closureChecker })
- *    — build the ScheduleNotificationPort from the SAME repository set (so schedule
- *    orchestration shares one set).
- * 5. createNotificationApiModule({ instance }) — bind the instance to an
+ * 4. createNotificationApiModule({ instance }) — bind the instance to an
  *    IApiModule handle (transport + lifecycle only).
  *
  * 接线顺序：
@@ -109,9 +100,7 @@ export interface ComposedNotification {
  * 3. createNotificationModule({ ...repositories, closureChecker, durableRuntime,
  *    runtimeContributions: [durableRuntime], auditRepository }) —— 装配与传输无关的
  *    通知实例。
- * 4. createNotificationScheduleNotificationPort({ ...repositories, closureChecker })
- *    —— 从同一仓储集合构建 ScheduleNotificationPort（使 schedule 编排共享一套集合）。
- * 5. createNotificationApiModule({ instance }) —— 把实例绑定到 IApiModule handle
+ * 4. createNotificationApiModule({ instance }) —— 把实例绑定到 IApiModule handle
  *    （只负责 transport 与生命周期）。
  *
  * The returned handle is already fully bound: ApiBootstrapper.register() must
@@ -121,7 +110,7 @@ export interface ComposedNotification {
  * 其 destroy() 会 dispose 所属实例。
  *
  * @param dependencies - ComposeNotificationDependencies with the runtime Prisma client and host ports.
- * @returns ComposedNotification — the bound module handle plus the schedule notification port.
+ * @returns ComposedNotification — the bound module handle plus durable requestedWriter access.
  */
 export function composeNotification(
   dependencies: ComposeNotificationDependencies,
@@ -144,12 +133,6 @@ export function composeNotification(
     auditRepository: repositories.auditRepository,
   });
 
-  const createNotificationPort = createNotificationScheduleNotificationPort({
-    notificationRepository: repositories.notificationRepository,
-    notificationPreferenceRepository: repositories.notificationPreferenceRepository,
-    closureChecker: dependencies.closureChecker,
-  });
-
   return {
     module: createNotificationApiModule({ instance }),
     repositories: {
@@ -157,6 +140,5 @@ export function composeNotification(
       requestedWriter: repositories.requestedWriter,
     },
     requestedWriter: repositories.requestedWriter,
-    scheduleNotificationPort: createNotificationPort,
   };
 }

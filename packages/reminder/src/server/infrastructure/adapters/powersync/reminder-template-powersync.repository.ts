@@ -34,28 +34,21 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
 
     // 模板与其历史记录多条写入放进单事务，避免半持久化。
     await this.db.writeTransaction(async (tx: IElectronDatabaseTransaction) => {
-      await this.saveWithin(tx, template, data);
+      await this.saveWithinTransaction(tx, template);
     });
 
-    if (pendingDomainEvents.length > 0) {
-      // 事件在事务成功提交后派发；send 已具备 per-handler 错误隔离，派发失败不回滚业务。
-      flushDomainEvents(reminderEventPublisher, template);
-      logger.info('[Reminder][Repo] Published domain events after PowerSync save', {
-        templateId: String(template.id),
-        publishedDomainEvents: pendingDomainEvents,
-      });
-    } else {
-      logger.warn('[Reminder][Repo] PowerSync save completed without domain events to publish', {
-        templateId: String(template.id),
-      });
-    }
+    await this.publishPersistedEvents(template, pendingDomainEvents);
   }
 
-  private async saveWithin(
+  /**
+   * Transaction-scoped aggregate persistence used by Reminder-owned durable
+   * side-effect commits (NOTIF-3302). Event publication remains post-commit.
+   */
+  async saveWithinTransaction(
     tx: IElectronDatabaseTransaction,
     template: ReminderTemplate,
-    data: ReturnType<typeof PowerSyncReminderTemplateMapper.toPersistence>,
   ): Promise<void> {
+    const data = PowerSyncReminderTemplateMapper.toPersistence(template);
     const existingTemplate = await tx.getOptional<{ id: string }>(
       'SELECT id FROM reminder_templates WHERE id = ? LIMIT 1',
       [data.id],
@@ -230,6 +223,24 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
     }
   }
 
+  /** Publish aggregate events only after an externally-owned transaction commits. */
+  async publishPersistedEvents(
+    template: ReminderTemplate,
+    pendingDomainEvents = template.domainEvents.map((event) => event.eventType),
+  ): Promise<void> {
+    if (pendingDomainEvents.length > 0) {
+      flushDomainEvents(reminderEventPublisher, template);
+      logger.info('[Reminder][Repo] Published domain events after PowerSync save', {
+        templateId: String(template.id),
+        publishedDomainEvents: pendingDomainEvents,
+      });
+      return;
+    }
+    logger.warn('[Reminder][Repo] PowerSync save completed without domain events to publish', {
+      templateId: String(template.id),
+    });
+  }
+
   async findByIdForIdentity(
     identityId: string,
     id: string,
@@ -265,11 +276,11 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
     identityId: string,
     options?: { includeHistory?: boolean; historyLimit?: number; includeDeleted?: boolean },
   ): Promise<ReminderTemplate[]> {
-    const groupClause = groupId === null ? 'reminder_group_id IS NULL' : 'reminder_group_id = ?'
+    const groupClause = groupId === null ? 'reminder_group_id IS NULL' : 'reminder_group_id = ?';
     const sql = `SELECT * FROM reminder_templates WHERE ${groupClause} AND identity_id = ?${
       options?.includeDeleted ? '' : ' AND deleted_at IS NULL'
     } ORDER BY created_at ASC`;
-    const params = groupId === null ? [identityId] : [groupId, identityId]
+    const params = groupId === null ? [identityId] : [groupId, identityId];
     return this.mapRows(
       await this.db.getAll(sql, params),
       options?.includeHistory,
@@ -313,11 +324,7 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
       `SELECT * FROM reminder_templates WHERE identity_id = ? AND id IN (${placeholders})`,
       [identityId, ...ids],
     );
-    const templates = await this.mapRows(
-      rows,
-      options?.includeHistory,
-      options?.historyLimit,
-    );
+    const templates = await this.mapRows(rows, options?.includeHistory, options?.historyLimit);
     const map = new Map(templates.map((template) => [String(template.id), template]));
     return ids.map((id) => map.get(id)).filter((item): item is ReminderTemplate => !!item);
   }
@@ -327,10 +334,10 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
     if (!existing) {
       throw new Error('Reminder template not found for the current identity.');
     }
-    await this.db.execute(
-      'DELETE FROM reminder_templates WHERE id = ? AND identity_id = ?',
-      [id, identityId],
-    );
+    await this.db.execute('DELETE FROM reminder_templates WHERE id = ? AND identity_id = ?', [
+      id,
+      identityId,
+    ]);
   }
 
   async exists(identityId: string, id: string): Promise<boolean> {

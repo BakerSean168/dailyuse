@@ -139,7 +139,10 @@ async function registerBusinessModules(
       { channelType: 'Desktop', status: 'available' },
     ],
   });
-  const reminderComposed = composeReminder({ db });
+  const reminderComposed = composeReminder({
+    db,
+    notificationRequestedWriter: notificationComposed.requestedWriter,
+  });
 
   // 3. Schedule orchestration using the single schedule-task repository, then the
   //    two-phase schedule composer. The runtime controller is the ONLY schedule
@@ -164,7 +167,6 @@ async function registerBusinessModules(
       taskSource: createTaskPowerSyncScheduleExecutionSource(db),
       goalSource: createGoalPowerSyncScheduleExecutionSource(db),
       reminderSource: reminderComposed.scheduleExecutionSource,
-      notificationPort: notificationComposed.scheduleNotificationPort,
     },
   });
   scheduleOrchestrationModule.handlerRegistry.register(

@@ -16,9 +16,11 @@
  */
 
 import type { PrismaClient } from '@memoflow/database';
+import type { NotificationRequestedWriterPort } from '@memoflow/notification';
 import {
   createReminderModule,
   createReminderPrismaRepositories,
+  createReminderPrismaScheduleExecutionCommitPort,
   createReminderScheduleExecutionSource,
   createReminderScheduleProjectionSource,
   createReminderUseCases,
@@ -38,6 +40,8 @@ import type { ReminderApplicationPort } from '@memoflow/reminder';
 export interface ComposeReminderDependencies {
   /** Shared API-lane Prisma client owned by apps/api. 由 apps/api 持有的共享 API lane Prisma client。 */
   readonly db: PrismaClient;
+  /** Reminder-owned durable NotificationRequested writer; Scheduler never receives it. */
+  readonly notificationRequestedWriter: NotificationRequestedWriterPort;
   /** Host-owned account-active checker (fail-closed for closed accounts). 宿主持有的账户激活检查器（对已关闭账户 fail-closed）。 */
   readonly closureChecker: (identityId: string) => Promise<boolean>;
   /**
@@ -166,6 +170,10 @@ export function composeReminder(dependencies: ComposeReminderDependencies): Comp
   const reminderTemplateRepository = instance.reminderTemplateRepository;
   const scheduleExecutionSource = createReminderScheduleExecutionSource({
     reminderTemplateRepository,
+    commitPort: createReminderPrismaScheduleExecutionCommitPort(
+      dependencies.db,
+      dependencies.notificationRequestedWriter,
+    ),
   });
   const scheduleProjectionSource = createReminderScheduleProjectionSource({
     reminderTemplateRepository,

@@ -33,7 +33,10 @@ export type { ReminderSnoozeRescheduler } from '../application/use-cases/command
 
 // ============ PowerSync Module Factory / PowerSync 模块工厂 ============
 export { createReminderPowerSyncModule } from './powersync';
-export { createReminderPowerSyncScheduleExecutionSource } from './powersync';
+export {
+  createReminderPowerSyncScheduleExecutionCommitPort,
+  createReminderPowerSyncScheduleExecutionSource,
+} from './powersync';
 export { createReminderPowerSyncScheduleProjectionSource } from './powersync';
 export {
   createReminderPowerSyncRepositories,
@@ -44,6 +47,11 @@ export {
   createReminderScheduleExecutionSource,
   type CreateReminderScheduleExecutionSourceDeps,
 } from './schedule-execution-source';
+export type {
+  ReminderScheduleExecutionCommitInput,
+  ReminderScheduleExecutionCommitPort,
+  ReminderScheduleExecutionCommitResult,
+} from './schedule-execution-commit.port';
 export {
   createReminderScheduleProjectionEventHandlers,
   createReminderScheduleProjectionSource,
@@ -96,6 +104,7 @@ export {
 export {
   createReminderPrismaModule,
   createReminderPrismaRepositories,
+  createReminderPrismaScheduleExecutionCommitPort,
   createReminderPrismaScheduleExecutionSource,
   createReminderPrismaScheduleProjectionSource,
   type CreateReminderPrismaModuleOptions,

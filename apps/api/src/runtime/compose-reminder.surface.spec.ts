@@ -23,10 +23,10 @@ describe('reminder API runtime composer surface', () => {
   const server = readFileSync(resolve(dir, 'server.ts'), 'utf8');
   const composer = readFileSync(resolve(dir, 'runtime/compose-reminder.ts'), 'utf8');
 
-  it('server.ts composes reminder via composeReminder({ db: prisma, closureChecker, executorClosureChecker })', () => {
+  it('server.ts composes reminder with the NotificationRequested writer owned by Reminder', () => {
     expect(server).toContain("from './runtime/compose-reminder'");
     expect(server).toMatch(
-      /composeReminder\(\{\s*db: prisma,\s*closureChecker: accountActiveChecker,\s*executorClosureChecker,?\s*\}/,
+      /composeReminder\(\{\s*db: prisma,\s*notificationRequestedWriter: notificationApiModule\.requestedWriter,\s*closureChecker: accountActiveChecker,\s*executorClosureChecker,?\s*\}/,
     );
     expect(server).toContain('.register(reminderComposed.module)');
   });
@@ -42,6 +42,11 @@ describe('reminder API runtime composer surface', () => {
     // legacy Reminder Prisma source factories are forbidden here.
     expect(server).toContain('reminderComposed.scheduleExecutionSource');
     expect(server).toContain('reminderComposed.scheduleProjectionSource');
+  });
+
+  it('NOTIF-3302 keeps NotificationPort out of schedule orchestration', () => {
+    expect(server).not.toMatch(/notificationPort:\s*notificationApiModule/);
+    expect(server).toContain('notificationRequestedWriter: notificationApiModule.requestedWriter');
   });
 
   it('ROUTINE-3402 keeps legacy Reminder cron out of production composition', () => {

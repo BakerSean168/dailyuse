@@ -38,6 +38,9 @@ vi.mock('@memoflow/reminder', async (importOriginal) => {
   return {
     ...actual,
     createReminderPrismaRepositories: vi.fn(actual.createReminderPrismaRepositories),
+    createReminderPrismaScheduleExecutionCommitPort: vi.fn(
+      actual.createReminderPrismaScheduleExecutionCommitPort,
+    ),
     createReminderModule: vi.fn(actual.createReminderModule),
     createReminderScheduleExecutionSource: vi.fn(actual.createReminderScheduleExecutionSource),
     createReminderScheduleProjectionSource: vi.fn(actual.createReminderScheduleProjectionSource),
@@ -56,12 +59,16 @@ import { composeReminder, createExecutorClosureChecker } from './compose-reminde
 import {
   createReminderModule,
   createReminderPrismaRepositories,
+  createReminderPrismaScheduleExecutionCommitPort,
   createReminderScheduleExecutionSource,
   createReminderScheduleProjectionSource,
 } from '@memoflow/reminder';
 import { createReminderApiModule } from '@memoflow/reminder/api';
 
 const fakeDb = {} as unknown as PrismaClient;
+const notificationRequestedWriter = {
+  enqueueNotificationRequested: vi.fn(),
+} as never;
 const closureChecker = async (_identityId: string): Promise<boolean> => false;
 
 describe('composeReminder assembly order', () => {
@@ -70,7 +77,7 @@ describe('composeReminder assembly order', () => {
   });
 
   it('assembles after ROUTINE-3402 cutover: repositories → module → schedule sources → api module', () => {
-    composeReminder({ db: fakeDb, closureChecker });
+    composeReminder({ db: fakeDb, notificationRequestedWriter, closureChecker });
 
     const reposOrder = createReminderPrismaRepositories.mock.invocationCallOrder[0];
     const moduleOrder = createReminderModule.mock.invocationCallOrder[0];
@@ -85,7 +92,7 @@ describe('composeReminder assembly order', () => {
   });
 
   it('passes the fake db and host closureChecker through unchanged', () => {
-    composeReminder({ db: fakeDb, closureChecker });
+    composeReminder({ db: fakeDb, notificationRequestedWriter, closureChecker });
 
     expect(createReminderPrismaRepositories).toHaveBeenCalledWith(fakeDb);
 
@@ -111,6 +118,7 @@ describe('composeReminder assembly order', () => {
     const hostContribution = { start: vi.fn(), stop: vi.fn() };
     composeReminder({
       db: fakeDb,
+      notificationRequestedWriter,
       closureChecker,
       runtimeContributions: hostContribution,
     });
@@ -120,13 +128,19 @@ describe('composeReminder assembly order', () => {
   });
 
   it('builds both schedule sources from the SAME repository set as the module', () => {
-    composeReminder({ db: fakeDb, closureChecker });
+    composeReminder({ db: fakeDb, notificationRequestedWriter, closureChecker });
 
     const instance = createReminderModule.mock.results[0].value;
     const templateRepository = instance.reminderTemplateRepository;
 
+    const commitPort = createReminderPrismaScheduleExecutionCommitPort.mock.results[0].value;
+    expect(createReminderPrismaScheduleExecutionCommitPort).toHaveBeenCalledWith(
+      fakeDb,
+      notificationRequestedWriter,
+    );
     expect(createReminderScheduleExecutionSource).toHaveBeenCalledWith({
       reminderTemplateRepository: templateRepository,
+      commitPort,
     });
     expect(createReminderScheduleProjectionSource).toHaveBeenCalledWith({
       reminderTemplateRepository: templateRepository,
@@ -134,7 +148,7 @@ describe('composeReminder assembly order', () => {
   });
 
   it('returns the module handle, application port, repository view and both schedule sources', () => {
-    const composed = composeReminder({ db: fakeDb, closureChecker });
+    const composed = composeReminder({ db: fakeDb, notificationRequestedWriter, closureChecker });
 
     expect(composed.module).toMatchObject({ name: 'Reminder' });
     expect(typeof composed.module.register).toBe('function');
@@ -156,7 +170,11 @@ describe('composeReminder assembly order', () => {
 
   it('injects the host closure checker into the reminder module (host-owned, not queried by the AI executor)', () => {
     const hostClosureChecker = async (_identityId: string): Promise<boolean> => true;
-    composeReminder({ db: fakeDb, closureChecker: hostClosureChecker });
+    composeReminder({
+      db: fakeDb,
+      notificationRequestedWriter,
+      closureChecker: hostClosureChecker,
+    });
 
     const moduleCall = createReminderModule.mock.calls[0][0];
     expect(moduleCall.closureChecker).toBe(hostClosureChecker);
@@ -164,7 +182,12 @@ describe('composeReminder assembly order', () => {
 
   it('exposes an executor reminder port with the frozen closure checker when provided', () => {
     const executorClosureChecker = async (_identityId: string): Promise<boolean> => false;
-    const composed = composeReminder({ db: fakeDb, closureChecker, executorClosureChecker });
+    const composed = composeReminder({
+      db: fakeDb,
+      notificationRequestedWriter,
+      closureChecker,
+      executorClosureChecker,
+    });
 
     const instance = createReminderModule.mock.results[0].value;
     // The module api keeps the module checker; the executor port swaps only
@@ -287,7 +310,7 @@ describe('composeReminder structural registration', () => {
   });
 
   it('mounts /reminders on the router and starts the owned instance', async () => {
-    const composed = composeReminder({ db: fakeDb, closureChecker });
+    const composed = composeReminder({ db: fakeDb, notificationRequestedWriter, closureChecker });
 
     const instance = createReminderModule.mock.results[0].value;
     const startSpy = vi.spyOn(instance, 'start');

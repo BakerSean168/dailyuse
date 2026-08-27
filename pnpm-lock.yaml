@@ -1889,9 +1889,6 @@ importers:
       '@memoflow/goal':
         specifier: workspace:*
         version: link:../goal
-      '@memoflow/notification':
-        specifier: workspace:*
-        version: link:../notification
       '@memoflow/reminder':
         specifier: workspace:*
         version: link:../reminder

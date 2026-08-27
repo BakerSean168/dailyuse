@@ -12,6 +12,7 @@
  */
 
 import type { PrismaClient } from '@memoflow/database';
+import type { NotificationRequestedWriterPort } from '@memoflow/contracts/notification';
 import {
   createReminderModule,
   type ReminderModuleInstance,
@@ -20,6 +21,7 @@ import {
 import { createReminderScheduleExecutionSource } from './schedule-execution-source';
 import { createReminderScheduleProjectionSource } from './schedule-projection-source';
 import { createReminderSnoozeReschedulerPrisma } from './reminder-snooze-rescheduler.prisma';
+import { ReminderScheduleExecutionPrismaCommitAdapter } from './adapters/prisma/reminder-schedule-execution-commit.prisma.adapter';
 import {
   ReminderTemplatePrismaRepository,
   ReminderGroupPrismaRepository,
@@ -29,6 +31,7 @@ import {
   PrismaReminderWriteTransactionRunner,
 } from './adapters/prisma';
 import type { ReminderScheduleExecutionSource } from '../../schedule-execution';
+import type { ReminderScheduleExecutionCommitPort } from './schedule-execution-commit.port';
 import type { ReminderScheduleProjectionSource } from '../../schedule-projection';
 import { PrismaOperationAuditRepository } from '@memoflow/patterns/operations';
 import type { OperationAuditRepository } from '@memoflow/patterns/operations';
@@ -152,12 +155,21 @@ export function createReminderPrismaScheduleProjectionSource(
   });
 }
 
+export function createReminderPrismaScheduleExecutionCommitPort(
+  db: PrismaClient,
+  requestedWriter: NotificationRequestedWriterPort,
+): ReminderScheduleExecutionCommitPort {
+  return new ReminderScheduleExecutionPrismaCommitAdapter(db, requestedWriter);
+}
+
 export function createReminderPrismaScheduleExecutionSource(
   db: PrismaClient,
+  requestedWriter: NotificationRequestedWriterPort,
 ): ReminderScheduleExecutionSource {
   const repositories = createReminderPrismaRepositories(db);
 
   return createReminderScheduleExecutionSource({
     reminderTemplateRepository: repositories.reminderTemplateRepository,
+    commitPort: createReminderPrismaScheduleExecutionCommitPort(db, requestedWriter),
   });
 }

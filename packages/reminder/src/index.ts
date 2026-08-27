@@ -53,8 +53,9 @@ export {
 // 通过包根重新导出 schedule 编排集成，使宿主 composer 只导入 `@memoflow/reminder`。
 export {
   createReminderScheduleExecutionSource,
+  createReminderPrismaScheduleExecutionCommitPort,
+  createReminderPowerSyncScheduleExecutionCommitPort,
   type ReminderScheduleExecutionSource,
-  type ReminderScheduleExecutionNotification,
   type ReminderScheduleExecutionOutcome,
   type ReminderScheduleExecutionTask,
 } from './schedule-execution';

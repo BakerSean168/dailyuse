@@ -36,10 +36,12 @@ describe('notification API runtime composer surface', () => {
     expect(server).not.toContain("from '@memoflow/notification/api'");
   });
 
-  it('server.ts takes the schedule notification port from the composer (no second Prisma set)', () => {
+  it('NOTIF-3302 removes the scheduler-facing NotificationPort from host composition', () => {
     expect(server).not.toContain('createNotificationPrismaScheduleNotificationPort');
     expect(server).not.toContain("from '@memoflow/notification/schedule-execution'");
-    expect(server).toContain('notificationApiModule.scheduleNotificationPort');
+    expect(server).not.toContain('notificationApiModule.scheduleNotificationPort');
+    expect(composer).not.toContain('scheduleNotificationPort:');
+    expect(composer).not.toContain('createNotificationScheduleNotificationPort');
   });
 
   it('composer only touches the narrow seams (no deep server import)', () => {

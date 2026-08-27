@@ -207,6 +207,7 @@ async function bootstrap(): Promise<void> {
   });
   const reminderComposed = composeReminder({
     db: prisma,
+    notificationRequestedWriter: notificationApiModule.requestedWriter,
     closureChecker: accountActiveChecker,
     executorClosureChecker,
   });
@@ -249,7 +250,6 @@ async function bootstrap(): Promise<void> {
       goalSource: createGoalPrismaScheduleExecutionSource(prisma),
       reminderSource: reminderComposed.scheduleExecutionSource,
       routineSource: routineExecutionDeps,
-      notificationPort: notificationApiModule.scheduleNotificationPort,
     },
   });
   scheduleOrchestrationModule.handlerRegistry.register(

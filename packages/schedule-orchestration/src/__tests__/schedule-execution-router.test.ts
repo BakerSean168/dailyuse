@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-import { NotificationCategory, NotificationType } from '@memoflow/contracts/notification';
 import { SourceModule, type SourceModule as SourceModuleValue } from '@memoflow/contracts/schedule';
 import { ScheduleTask } from '@memoflow/schedule';
 import { createScheduleExecutionRouter } from '../execution/router';
@@ -17,112 +16,41 @@ function createScheduleTask(sourceModule: SourceModuleValue) {
       endDate: null,
       maxExecutions: 1,
     },
-    metadata: {
-      payload: {},
-      tags: ['test'],
-      priority: 'Normal',
-      timeout: null,
-    },
+    metadata: { payload: {}, tags: ['test'], priority: 'Normal', timeout: null },
   });
 }
 
-describe('schedule execution router', () => {
-  it('routes reminder execution into notification creation', async () => {
-    const notification = {
-      identityId: 'IdentityId_schedule-owner',
-      title: 'Stand up and stretch',
-      content: 'Your reminder is due.',
-      type: NotificationType.Reminder,
-      category: NotificationCategory.Reminder,
-    };
-    const notificationPort = {
-      createNotification: vi.fn().mockResolvedValue(undefined),
-    };
-    const reminderSource = {
-      executeReminder: vi.fn().mockResolvedValue({
-        nextRunAt: null,
-        notification,
-        result: { reminderId: 'ReminderTemplateId_due' },
-      }),
-    };
-    const router = createScheduleExecutionRouter({
-      reminderSource,
-      goalSource: { executeGoal: vi.fn() },
-      taskSource: { executeTask: vi.fn() },
-      notificationPort,
-    });
-    const task = createScheduleTask(SourceModule.Reminder);
+describe('schedule execution router (NOTIF-3302)', () => {
+  it.each([
+    [SourceModule.Reminder, 'executeReminder'],
+    [SourceModule.Goal, 'executeGoal'],
+    [SourceModule.Task, 'executeTask'],
+  ] as const)(
+    'routes %s and returns the business source result unchanged',
+    async (sourceModule, method) => {
+      const outcome = { nextRunAt: null, result: { ok: sourceModule } };
+      const reminderSource = { executeReminder: vi.fn().mockResolvedValue(outcome) };
+      const goalSource = { executeGoal: vi.fn().mockResolvedValue(outcome) };
+      const taskSource = { executeTask: vi.fn().mockResolvedValue(outcome) };
+      const router = createScheduleExecutionRouter({ reminderSource, goalSource, taskSource });
+      const task = createScheduleTask(sourceModule);
 
-    const result = await router.execute(task);
-
-    expect(reminderSource.executeReminder).toHaveBeenCalledWith(task);
-    expect(notificationPort.createNotification).toHaveBeenCalledWith(notification);
-    expect(result).toEqual({
-      nextRunAt: null,
-      result: { reminderId: 'ReminderTemplateId_due' },
-    });
-  });
-
-  it('routes task execution and delegates notification creation', async () => {
-    const notificationPort = {
-      createNotification: vi.fn().mockResolvedValue(undefined),
-    };
-
-    const router = createScheduleExecutionRouter({
-      reminderSource: {
-        executeReminder: vi.fn(),
-      },
-      goalSource: {
-        executeGoal: vi.fn(),
-      },
-      taskSource: {
-        executeTask: vi.fn().mockResolvedValue({
-          nextRunAt: null,
-          notification: {
-            identityId: 'IdentityId_schedule-owner',
-            title: '任务提醒：Execution Router Test',
-            content: 'Task content',
-            type: NotificationType.Reminder,
-            category: NotificationCategory.Task,
-          },
-          result: { ok: true },
-        }),
-      },
-      notificationPort,
-    });
-
-    const task = createScheduleTask(SourceModule.Task);
-    const result = await router.execute(task);
-
-    expect(result).toEqual({
-      nextRunAt: null,
-      result: { ok: true },
-    });
-    expect(notificationPort.createNotification).toHaveBeenCalledWith({
-      identityId: 'IdentityId_schedule-owner',
-      title: '任务提醒：Execution Router Test',
-      content: 'Task content',
-      type: NotificationType.Reminder,
-      category: NotificationCategory.Task,
-    });
-  });
+      await expect(router.execute(task)).resolves.toEqual(outcome);
+      const source = {
+        executeReminder: reminderSource.executeReminder,
+        executeGoal: goalSource.executeGoal,
+        executeTask: taskSource.executeTask,
+      }[method];
+      expect(source).toHaveBeenCalledWith(task);
+    },
+  );
 
   it('throws for unsupported schedule source modules', async () => {
     const router = createScheduleExecutionRouter({
-      reminderSource: {
-        executeReminder: vi.fn(),
-      },
-      goalSource: {
-        executeGoal: vi.fn(),
-      },
-      taskSource: {
-        executeTask: vi.fn(),
-      },
-      notificationPort: {
-        createNotification: vi.fn(),
-      },
+      reminderSource: { executeReminder: vi.fn() },
+      goalSource: { executeGoal: vi.fn() },
+      taskSource: { executeTask: vi.fn() },
     });
-
     await expect(router.execute(createScheduleTask(SourceModule.Custom))).rejects.toThrow(
       'Unsupported schedule source module: Custom',
     );

@@ -2,7 +2,10 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { IdentityId } from '@memoflow/domain-shared';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { ControlMode, ReminderType } from '@memoflow/contracts/reminder';
-import { buildIdempotencyKeyString, LeaseFencingException } from '@memoflow/contracts/reliable-messaging';
+import {
+  buildIdempotencyKeyString,
+  LeaseFencingException,
+} from '@memoflow/contracts/reliable-messaging';
 import { ReminderTemplate } from '../../../../domain/aggregates/reminder-template';
 import { ReminderGroup } from '../../../../domain/aggregates/reminder-group';
 import { ReminderReliableOperationPrismaAdapter } from '../reminder-reliable-operation-prisma.adapter';
@@ -481,7 +484,7 @@ describe('W1 Reminder LeaseClaim & Reliable Operations Integration Tests', () =>
 
     const idempotencyKey = buildIdempotencyKeyString({
       identityId,
-      source: 'notification',
+      source: 'reminder',
       occurrenceKey: '2026-08-09T15:00:00.000Z',
     });
 
@@ -489,7 +492,7 @@ describe('W1 Reminder LeaseClaim & Reliable Operations Integration Tests', () =>
       data: {
         id: 'outbox-msg-1',
         identityId,
-        messageType: 'notification.dispatch',
+        messageType: 'notification.requested',
         schemaVersion: 1,
         correlationId: 'corr-1',
         causationId: 'cause-1',
@@ -506,7 +509,7 @@ describe('W1 Reminder LeaseClaim & Reliable Operations Integration Tests', () =>
         data: {
           id: 'outbox-msg-2',
           identityId,
-          messageType: 'notification.dispatch',
+          messageType: 'notification.requested',
           schemaVersion: 1,
           correlationId: 'corr-2',
           causationId: 'cause-2',
@@ -821,58 +824,48 @@ describe('W1 Reminder LeaseClaim & Reliable Operations Integration Tests', () =>
     expect(occDb.lastHeartbeatAt).not.toBeNull();
   });
 
-  it('14. Real cron job lifecycle: start, schedule scan execution, and graceful stop drain waiting for active scan', async () => {
+  it('14. Read-only shadow cron lifecycle: start, compare due sets, and graceful stop drains an active comparison', async () => {
     const identityId = IdentityId.generate();
     await seedAccount({ id: identityId });
     const prisma = await getPrisma();
-    const adapter = new ReminderReliableOperationPrismaAdapter(prisma);
     const templateRepo = new ReminderTemplatePrismaRepository(prisma);
-    const groupRepo = new ReminderGroupPrismaRepository(prisma);
-    const runner = new PrismaReminderWriteTransactionRunner(prisma);
 
     const template = createSampleTemplate(identityId);
     template.setNextTriggerTime(Date.now() - 1000);
     await templateRepo.save(template);
 
+    const beforeOccurrences = await prisma.reminderOccurrence.count();
+    const beforeOutbox = await prisma.outboxMessage.count();
     let scanExecuted = false;
-    const controlService = new ReminderTemplateControlService(templateRepo, groupRepo);
-    const triggerService = new ReminderTriggerService(templateRepo, controlService);
-    const customScheduler = new ReminderSchedulerService(
-      templateRepo,
-      triggerService,
-      adapter,
-      runner,
-      controlService,
-    );
-
-    const originalSchedule = customScheduler.schedule.bind(customScheduler);
-    customScheduler.schedule = async (options) => {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      const res = await originalSchedule(options);
-      scanExecuted = true;
-      return res;
+    const schedulerDueSetReader = {
+      readDueSet: async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        scanExecuted = true;
+        return [
+          {
+            identityId: String(template.identityId),
+            reminderId: String(template.id),
+            dueAt: template.nextTriggerAt!,
+          },
+        ];
+      },
     };
 
     const cronJob = createReminderTriggerCronJob({
       reminderTemplateRepository: templateRepo,
-      reminderGroupRepository: groupRepo,
-      reliablePort: adapter,
-      transactionRunner: runner,
-      schedulerService: customScheduler,
+      schedulerDueSetReader,
       drainTimeoutMs: 5000,
     });
 
     cronJob.start();
-
-    // Trigger active scan batch execution
-    const executionPromise = (cronJob as any).execute();
+    const executionPromise = cronJob.execute!();
     await new Promise((resolve) => setTimeout(resolve, 10));
-
-    // Call stop() while execution is in-flight -> MUST wait for drain
-    const stopPromise = cronJob.stop();
-    await expect(stopPromise).resolves.toBeUndefined();
+    await expect(cronJob.stop()).resolves.toBeUndefined();
     await executionPromise;
+
     expect(scanExecuted).toBe(true);
+    expect(await prisma.reminderOccurrence.count()).toBe(beforeOccurrences);
+    expect(await prisma.outboxMessage.count()).toBe(beforeOutbox);
   });
 
   it('15. Re-claim atomicity under concurrency: retryable before nextRetryAt rejected by both workers, after nextRetryAt claimed by exactly one worker', async () => {
@@ -1142,103 +1135,60 @@ describe('W1 Reminder LeaseClaim & Reliable Operations Integration Tests', () =>
     expect(occDb.status).toBe('succeeded');
   });
 
-  it('18. Graceful stop drain waits for active cron scan execution batch to complete', async () => {
+  it('18. Graceful stop drain waits for an active read-only due-set comparison to complete', async () => {
     const identityId = IdentityId.generate();
     await seedAccount({ id: identityId });
     const prisma = await getPrisma();
-    const adapter = new ReminderReliableOperationPrismaAdapter(prisma);
     const templateRepo = new ReminderTemplatePrismaRepository(prisma);
-    const groupRepo = new ReminderGroupPrismaRepository(prisma);
-    const runner = new PrismaReminderWriteTransactionRunner(prisma);
-
     const template = createSampleTemplate(identityId);
     template.setNextTriggerTime(Date.now() - 1000);
     await templateRepo.save(template);
 
     let scanExecuted = false;
-
-    // Create custom scheduler that simulates an active long-running scan batch (150ms)
-    const controlService = new ReminderTemplateControlService(templateRepo, groupRepo);
-    const triggerService = new ReminderTriggerService(templateRepo, controlService);
-    const customScheduler = new ReminderSchedulerService(
-      templateRepo,
-      triggerService,
-      adapter,
-      runner,
-      controlService,
-    );
-
-    const originalSchedule = customScheduler.schedule.bind(customScheduler);
-    customScheduler.schedule = async (options) => {
-      await new Promise((resolve) => setTimeout(resolve, 150));
-      const res = await originalSchedule(options);
-      scanExecuted = true;
-      return res;
-    };
-
     const cronJob = createReminderTriggerCronJob({
       reminderTemplateRepository: templateRepo,
-      reminderGroupRepository: groupRepo,
-      reliablePort: adapter,
-      transactionRunner: runner,
-      schedulerService: customScheduler,
+      schedulerDueSetReader: {
+        readDueSet: async () => {
+          await new Promise((resolve) => setTimeout(resolve, 150));
+          scanExecuted = true;
+          return [];
+        },
+      },
       drainTimeoutMs: 5000,
     });
 
     cronJob.start();
-
-    // Trigger active scan batch execution
-    const execPromise = (cronJob as any).execute();
+    const execPromise = cronJob.execute!();
     await new Promise((resolve) => setTimeout(resolve, 10));
-
-    // Call stop() and verify it awaits active scan
     await cronJob.stop();
     await execPromise;
 
     expect(scanExecuted).toBe(true);
   });
 
-  it('19. Drain timeout failure: cronJob.stop() explicitly throws error when in-flight execution exceeds timeout', async () => {
+  it('19. Shadow drain timeout explicitly fails when an in-flight comparison exceeds the stop budget', async () => {
     const identityId = IdentityId.generate();
     await seedAccount({ id: identityId });
     const prisma = await getPrisma();
-    const adapter = new ReminderReliableOperationPrismaAdapter(prisma);
     const templateRepo = new ReminderTemplatePrismaRepository(prisma);
-    const groupRepo = new ReminderGroupPrismaRepository(prisma);
-    const runner = new PrismaReminderWriteTransactionRunner(prisma);
-
-    const controlService = new ReminderTemplateControlService(templateRepo, groupRepo);
-    const triggerService = new ReminderTriggerService(templateRepo, controlService);
-    const customScheduler = new ReminderSchedulerService(
-      templateRepo,
-      triggerService,
-      adapter,
-      runner,
-      controlService,
-    );
-
-    // Simulate scan batch taking 300ms
-    customScheduler.schedule = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      return { successCount: 0, failedCount: 0, skippedCount: 0, totalCount: 0, details: [], duration: 300 };
-    };
 
     const cronJob = createReminderTriggerCronJob({
       reminderTemplateRepository: templateRepo,
-      reminderGroupRepository: groupRepo,
-      reliablePort: adapter,
-      transactionRunner: runner,
-      schedulerService: customScheduler,
+      schedulerDueSetReader: {
+        readDueSet: async () => {
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          return [];
+        },
+      },
       drainTimeoutMs: 50,
     });
 
     cronJob.start();
-    const execPromise = (cronJob as any).execute();
+    const execPromise = cronJob.execute!();
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    // Stop with 50ms timeout -> MUST reject with timeout error
-    await expect(cronJob.stop(50)).rejects.toThrow(/Cron drain timed out after 50ms/);
-    await execPromise.catch(() => {});
+    await expect(cronJob.stop(50)).rejects.toThrow(/Shadow cron drain timed out after 50ms/);
+    await execPromise;
   });
 
   it('20. Same identity same timestamp dual templates do not collide on idempotency key and both deliver successfully', async () => {
@@ -1449,57 +1399,32 @@ describe('W1 Reminder LeaseClaim & Reliable Operations Integration Tests', () =>
     expect(hbRes.lease?.ownerToken).toBe('worker-2');
   });
 
-  it('23. Long scan across cron tick does not lose in-flight promise and graceful drain waits for active scan', async () => {
+  it('23. Long shadow comparison across cron ticks reuses the in-flight promise and graceful drain waits for it', async () => {
     const identityId = IdentityId.generate();
     await seedAccount({ id: identityId });
     const prisma = await getPrisma();
-    const adapter = new ReminderReliableOperationPrismaAdapter(prisma);
     const templateRepo = new ReminderTemplatePrismaRepository(prisma);
-    const groupRepo = new ReminderGroupPrismaRepository(prisma);
-    const runner = new PrismaReminderWriteTransactionRunner(prisma);
-
-    const controlService = new ReminderTemplateControlService(templateRepo, groupRepo as any);
-    const triggerService = new ReminderTriggerService(templateRepo, controlService);
-    const customScheduler = new ReminderSchedulerService(
-      templateRepo,
-      triggerService,
-      adapter,
-      runner,
-      controlService,
-    );
 
     let scanCompleted = false;
-    customScheduler.schedule = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 250));
-      scanCompleted = true;
-      return { successCount: 1, failedCount: 0, skippedCount: 0, totalCount: 1, details: [], duration: 250 };
-    };
-
     const cronJob = createReminderTriggerCronJob({
       reminderTemplateRepository: templateRepo,
-      reminderGroupRepository: groupRepo as any,
-      reliablePort: adapter,
-      transactionRunner: runner,
-      schedulerService: customScheduler,
+      schedulerDueSetReader: {
+        readDueSet: async () => {
+          await new Promise((resolve) => setTimeout(resolve, 250));
+          scanCompleted = true;
+          return [];
+        },
+      },
       drainTimeoutMs: 5000,
     });
 
     cronJob.start();
-
-    // Tick 1: start in-flight scan
-    const execPromise1 = cronJob.execute();
-
+    const execPromise1 = cronJob.execute!();
     await new Promise((resolve) => setTimeout(resolve, 20));
+    const execPromise2 = cronJob.execute!();
 
-    // Tick 2: arrives while Tick 1 is still scanning
-    const execPromise2 = cronJob.execute();
-
-    // Verify Tick 2 returned the in-flight promise rather than starting a parallel execution
     expect(execPromise2).toBe(execPromise1);
-
-    // Call stop() and verify it drains the in-flight scan
     await cronJob.stop();
-
     expect(scanCompleted).toBe(true);
   });
 
@@ -1647,16 +1572,17 @@ describe('W1 Reminder LeaseClaim & Reliable Operations Integration Tests', () =>
     expect(auditRes.ok).toBe(true);
     const audit = auditRes.ok ? (auditRes.data as any[]) : [];
     const replayAudit = audit.find(
-      (a) => a.operationId === 'occ-w7-reminder-1' && a.action === 'replay' && a.source === 'reminder',
+      (a) =>
+        a.operationId === 'occ-w7-reminder-1' && a.action === 'replay' && a.source === 'reminder',
     );
     expect(replayAudit).toBeDefined();
     expect(replayAudit.actorIdentityId).toBe(identityId);
 
     // Timeline after replay reflects state advancement
     const timelineAfter = await moduleInstance.api.queryOperationTimeline(ctx);
-    const entryAfter = (
-      timelineAfter.ok ? (timelineAfter.data as any[]) : []
-    ).find((e) => e.operationId === 'occ-w7-reminder-1');
+    const entryAfter = (timelineAfter.ok ? (timelineAfter.data as any[]) : []).find(
+      (e) => e.operationId === 'occ-w7-reminder-1',
+    );
     expect(entryAfter.status).toBe('retryable');
     expect(entryAfter.replayable).toBe(false);
 
@@ -1719,12 +1645,10 @@ describe('W1 Reminder LeaseClaim & Reliable Operations Integration Tests', () =>
       listByActor: async () => [],
     };
 
-    const { ReminderResponsePrismaRepository } = await import(
-      '../../../../infrastructure/adapters/prisma/reminder-response-prisma.repository'
-    );
-    const { UserReminderPreferencePrismaRepository } = await import(
-      '../../../../infrastructure/adapters/prisma/user-reminder-preference-prisma.repository'
-    );
+    const { ReminderResponsePrismaRepository } =
+      await import('../../../../infrastructure/adapters/prisma/reminder-response-prisma.repository');
+    const { UserReminderPreferencePrismaRepository } =
+      await import('../../../../infrastructure/adapters/prisma/user-reminder-preference-prisma.repository');
 
     const moduleInstance = createReminderModule({
       reminderTemplateRepository: templateRepo,
@@ -1769,12 +1693,10 @@ describe('W1 Reminder LeaseClaim & Reliable Operations Integration Tests', () =>
       listByActor: async () => [],
     };
 
-    const { ReminderResponsePrismaRepository } = await import(
-      '../../../../infrastructure/adapters/prisma/reminder-response-prisma.repository'
-    );
-    const { UserReminderPreferencePrismaRepository } = await import(
-      '../../../../infrastructure/adapters/prisma/user-reminder-preference-prisma.repository'
-    );
+    const { ReminderResponsePrismaRepository } =
+      await import('../../../../infrastructure/adapters/prisma/reminder-response-prisma.repository');
+    const { UserReminderPreferencePrismaRepository } =
+      await import('../../../../infrastructure/adapters/prisma/user-reminder-preference-prisma.repository');
 
     const moduleInstance = createReminderModule({
       reminderTemplateRepository: templateRepo,
