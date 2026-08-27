@@ -81,10 +81,7 @@
       </Button>
     </header>
 
-    <div
-      class="min-h-0 flex-1 overflow-hidden"
-      data-testid="schedule-calendar-content"
-    >
+    <div class="min-h-0 flex-1 overflow-hidden" data-testid="schedule-calendar-content">
       <DayViewCalendar
         v-if="activeView === 'day'"
         :date="calendarDate"
@@ -128,7 +125,6 @@
 
     <EventDetailSheet v-model:open="eventDetailOpen" :event="selectedDetailEvent" />
     <CreateScheduleDialog v-model="showCreateDialog" :on-submit="handleCreateSchedule" />
-    <DevScheduleDebugPanel :tasks="scheduleTasks" />
   </div>
 </template>
 
@@ -152,7 +148,6 @@ import MonthViewCalendar from '../components/MonthViewCalendar.vue';
 import DayDetailSheet from '../components/DayDetailSheet.vue';
 import TaskEventActionPanel from '../components/TaskEventActionPanel.vue';
 import EventDetailSheet from '../components/EventDetailSheet.vue';
-import DevScheduleDebugPanel from '../components/DevScheduleDebugPanel.vue';
 import { getWeekStart, toLocalDateKey, useCalendarView } from '../composables/useCalendarView';
 import { getProductTime } from '../../../shared/utils/product-time';
 // Residual 1285: getWeekStart dual retired onto schedule sole.
@@ -167,7 +162,7 @@ type CalendarView = 'day' | 'week' | 'month';
 
 const { t } = useI18n();
 const { events, isLoading, fetchForRange, windowStart, windowEnd } = useCalendarView();
-const { tasks: scheduleTasks, createCalendarEntry } = useSchedule();
+const { createCalendarEntry } = useSchedule();
 const task = useTask();
 
 const showCreateDialog = ref(false);

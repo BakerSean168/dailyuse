@@ -23,5 +23,8 @@ export * from './protocol';
 // ============ API ============
 export * from './api';
 
+// ============ Planner read projection (ADR-060) ============
+export * from './planner';
+
 // ============ Neutral scheduling seam (ADR-061) ============
 export * from './scheduling';

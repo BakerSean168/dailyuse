@@ -12,6 +12,15 @@ export type { ScheduleStoreType } from './stores/schedule-store';
 export { useSchedule, useCalendarView } from './composables';
 export type { CalendarEventItem } from './composables';
 
+// Canonical owner-aware Planner read projection (PLAN-4302)
+export * from './planner';
+export type {
+  CalendarEventProjection,
+  PlannerEditableCapabilities,
+  PlannerOwnerCommandTarget,
+  PlannerSourceType,
+} from '@memoflow/contracts/schedule';
+
 // Routes
 export { scheduleRoutes } from './router';
 

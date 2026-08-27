@@ -1578,6 +1578,19 @@ Routine wall-clock occurrence
 
 **Acceptance:** no ScheduledInvocation row is rendered in normal Planner.
 
+
+**Implementation evidence (2026-08-27):**
+
+- added canonical `CalendarEventProjection` under `@memoflow/contracts/schedule` with explicit `identityId`, stable `sourceType/sourceId`, display metadata, edit capabilities, owner command target, revision, and source-correlated owner-target unions;
+- time truth remains Product Time at the contract boundary: timed facts use `Instant`, all-day facts use `Ymd`; the projection does not expose `Date`, ISO-string-as-domain-time, Scheduler runAt, or cron/handler fields;
+- added owner adapters for manual `CalendarEntry`, `TaskOccurrence`, Goal start/deadline facts, and Routine wall-clock occurrences; Task all-day/time-point/time-range semantics are derived through an injected Product Time port rather than local `Date` arithmetic;
+- added `projectPlannerReadModel(...)` as the neutral aggregation boundary. Its legal inputs are owner-domain read facts only; raw `ScheduleTask`, `ScheduledInvocationContext`, `SchedulingPort`, retry/lease/dead-letter state are not accepted;
+- current production `useCalendarView` now constructs Schedule/Task data through the canonical projection and exposes `projections` for PLAN-4303/4304; the existing custom Day/Week/Month renderer is temporarily fed through a compatibility mapper so this ticket does not prematurely replace the rendering engine;
+- Goal/Routine adapters are canonical and covered, while their live client feeds are intentionally not fabricated in this ticket; later Planner source-integration/UI work can supply those facts without changing the projection contract;
+- the PLAN-4301 FullCalendar PoC no longer owns a duplicate Planner model and now consumes the canonical PLAN-4302 contract directly;
+- removed `DevScheduleDebugPanel` / `scheduleTasks` from the normal Planner route/data return; the diagnostic component may remain for a future ops/dev-only entry but raw Scheduler rows are no longer mounted by the product Planner;
+- focused Planner/projection/compatibility/PoC suite is `21/21`; full app-vue suite is `727/727`; contracts build, app-vue typecheck, and app-vue build are green.
+
 ## PLAN-4303 — Source-aware command routing
 
 **Depends:** PLAN-4302
