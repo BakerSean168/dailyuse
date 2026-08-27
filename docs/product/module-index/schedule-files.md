@@ -5,7 +5,7 @@ tags:
   - schedule
 description: 日程模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-07-22T00:00:00
+updated: 2026-08-27T00:00:00
 ---
 
 # 日程模块文件索引
@@ -29,9 +29,9 @@ updated: 2026-07-22T00:00:00
 | [`packages/app-vue/src/modules/schedule/composables/useScheduleCalendar.ts`](../../../packages/app-vue/src/modules/schedule/composables/useScheduleCalendar.ts) | 日历条目组合函数 |
 | [`packages/app-vue/src/modules/schedule/composables/useCalendarView.ts`](../../../packages/app-vue/src/modules/schedule/composables/useCalendarView.ts) | 日历视图聚合，合并日历条目和任务实例 |
 | [`packages/app-vue/src/modules/schedule/components/CreateScheduleDialog.vue`](../../../packages/app-vue/src/modules/schedule/components/CreateScheduleDialog.vue) | 创建日历条目弹窗 |
-| [`packages/app-vue/src/modules/schedule/components/WeekViewCalendar.vue`](../../../packages/app-vue/src/modules/schedule/components/WeekViewCalendar.vue) | 周视图日历网格 |
-| [`packages/app-vue/src/modules/schedule/components/DayViewCalendar.vue`](../../../packages/app-vue/src/modules/schedule/components/DayViewCalendar.vue) | 日视图日历 |
-| [`packages/app-vue/src/modules/schedule/components/MonthViewCalendar.vue`](../../../packages/app-vue/src/modules/schedule/components/MonthViewCalendar.vue) | 月视图日历 |
+| [`packages/app-vue/src/modules/schedule/planner/PlannerCalendar.vue`](../../../packages/app-vue/src/modules/schedule/planner/PlannerCalendar.vue) | 生产 Planner 的唯一 FullCalendar 日/周/月渲染引擎 |
+| [`packages/app-vue/src/modules/schedule/planner/calendar-event-projection.ts`](../../../packages/app-vue/src/modules/schedule/planner/calendar-event-projection.ts) | Goal/Task/Routine/CalendarEntry 到统一 Planner 事件投影的适配边界 |
+| [`packages/app-vue/src/modules/schedule/planner/planner-owner-command.router.ts`](../../../packages/app-vue/src/modules/schedule/planner/planner-owner-command.router.ts) | Planner 拖动/缩放到各业务 owner command 的统一路由 |
 | [`packages/app-vue/src/modules/schedule/components/DayDetailSheet.vue`](../../../packages/app-vue/src/modules/schedule/components/DayDetailSheet.vue) | 日期详情侧边栏 |
 | [`packages/app-vue/src/modules/schedule/components/ConflictAlert.vue`](../../../packages/app-vue/src/modules/schedule/components/ConflictAlert.vue) | 冲突提示组件 |
 | [`packages/app-vue/src/modules/schedule/components/ScheduleEventList.vue`](../../../packages/app-vue/src/modules/schedule/components/ScheduleEventList.vue) | 事件列表组件 |
