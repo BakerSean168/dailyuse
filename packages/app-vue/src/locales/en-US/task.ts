@@ -58,6 +58,29 @@ export default {
     "overdue": "Overdue",
     "goalLinked": "Linked goal"
   },
+  "editor": {
+    "title": "What needs doing?",
+    "titlePlaceholder": "e.g. Observe plants and take a photo",
+    "date": "Date",
+    "dateRequired": "Choose a date",
+    "time": "Time",
+    "endTimeOptional": "End time (optional)",
+    "startTimeRequired": "Choose a start time before an end time",
+    "timeInferenceHint": "Leave time empty for an all-day task. Add an end time only when the task has a time range.",
+    "repeat": "Repeat",
+    "every": "every",
+    "labelsPlaceholder": "Choose labels",
+    "createLabel": "Create label",
+    "more": "More settings",
+    "moreHint": "Description, reminder, priority, and checklist",
+    "reminder": "Reminder",
+    "minutesBefore": "min before",
+    "checklist": "Checklist",
+    "checklistHint": "Reusable steps for each occurrence of this task.",
+    "checklistItem": "Checklist item {index}",
+    "addChecklistItem": "Add checklist item",
+    "newChecklistItem": "New step"
+  },
   "management": {
     "title": "Task Library",
     "searchPlaceholder": "Search tasks...",
@@ -165,16 +188,16 @@ export default {
     "hintLast": "Enter the latest value"
   },
   "templateDialog": {
-    "editTitle": "Edit task plan",
-    "createTitle": "New task plan",
-    "copyTitle": "Copy task plan",
-    "editSubtitle": "Change this task plan's configuration",
-    "createSubtitle": "Configure timing, recurrence, and goal contribution",
-    "copySubtitle": "Create a new task plan from the existing configuration",
+    "editTitle": "Edit task",
+    "createTitle": "New task",
+    "copyTitle": "Copy task",
+    "editSubtitle": "Change when, how, and why this task runs",
+    "createSubtitle": "Choose when it happens, whether it repeats, and how it connects to your goals",
+    "copySubtitle": "Create a new task from this configuration",
     "updateImpact": "This will update {count} unstarted to-dos. In-progress and past to-dos are unchanged.",
     "cancel": "Cancel",
     "saveChanges": "Save Changes",
-    "create": "Create task plan"
+    "create": "Create task"
   },
   "quickTask": {
     "title": "Quick task",

@@ -10,6 +10,7 @@ import { TaskReminderConfigSchema } from '../value-objects/task-reminder-config'
 import { TaskGoalBindingSchema } from '../value-objects/task-goal-binding';
 import { RecurrenceConfigSchema } from '../value-objects/recurrence-rule';
 import { TaskTimeConfigSchema } from '../value-objects/task-time-config';
+import { ChecklistItemDefinitionSchema } from '../value-objects/checklist-item-definition';
 
 // Residual 739: TaskReminderConfigSchema / TaskGoalBindingSchema owned by value-objects
 // (semantic DTOs are z.infer aliases). Re-export for OpenAPI/route consumers.
@@ -41,6 +42,7 @@ export const CreateTaskTemplateSchema = z
     labelIds: z.array(z.string().min(1)).max(50).optional(),
     color: z.string().optional().nullable(),
     goalBinding: TaskGoalBindingSchema.optional().nullable(),
+    checklist: z.array(ChecklistItemDefinitionSchema).max(100).optional(),
     completionPolicy: z.enum(TaskPlanCompletionPolicy).optional(),
   })
   .strict();
@@ -70,6 +72,7 @@ export const UpdateTaskTemplateSchema = z
     labelIds: z.array(z.string().min(1)).max(50).optional(),
     color: z.string().optional().nullable(),
     goalBinding: TaskGoalBindingSchema.optional().nullable(),
+    checklist: z.array(ChecklistItemDefinitionSchema).max(100).optional(),
     completionPolicy: z.enum(TaskPlanCompletionPolicy).optional(),
     /** R2-5a：乐观锁期望版本（可选；提供时校验，旧客户端可不传）。 */
     expectedVersion: z.number().int().positive().optional(),

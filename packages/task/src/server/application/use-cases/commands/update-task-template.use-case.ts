@@ -7,6 +7,7 @@ import type { ITaskInstanceRepository } from '../../../domain/repositories/i-tas
 import { RecurrenceRule } from '../../../domain/value-objects/recurrence-rule';
 import { TaskTimeConfig } from '../../../domain/value-objects/task-time-config';
 import { TaskReminderConfig } from '../../../domain/value-objects/task-reminder-config';
+import { ChecklistItemDefinition } from '../../../domain/value-objects/checklist-item-definition';
 import {
   TaskGoalBindingTrigger,
   TaskInstanceStatus,
@@ -162,6 +163,11 @@ export class UpdateTaskTemplateUseCase {
         }
         if (importanceChanged && request.importance !== undefined) {
           template.updatePriority(request.importance);
+        }
+        if (request.checklist !== undefined) {
+          template.updateChecklist(
+            request.checklist.map((item) => ChecklistItemDefinition.fromDTO(item)),
+          );
         }
         if (request.tags !== undefined) {
           template.updateTags(request.tags);

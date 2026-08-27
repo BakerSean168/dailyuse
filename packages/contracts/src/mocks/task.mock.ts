@@ -36,6 +36,7 @@ export function createMockTaskTemplate(
       'Trivial',
     ] as const),
     goalBinding: null,
+    checklist: [],
     labels: [],
     tags: faker.helpers.arrayElements(
       ['work', 'personal', 'health', 'learning'],

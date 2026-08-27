@@ -1,15 +1,21 @@
 /**
  * ChecklistItemDefinition Value Object
  *
- * Residual 853: ChecklistItemDefinitionDTO dual retired — sole ChecklistItemDefinition interface + type alias.
+ * Task plan checklist items are definitions only; completion state belongs to
+ * concrete Task occurrences.
  */
+import { z } from 'zod';
 
-// Residual 853: sole ChecklistItemDefinition body.
+/** Residual 853: keep one canonical VO interface; DTO remains its exact type alias. */
 export interface ChecklistItemDefinition {
   title: string;
   order: number;
-  // 注意：这里没有 isCompleted，因为模版是“死”的
 }
 
-// Residual 853: ChecklistItemDefinitionDTO dual retired — DTO is the ChecklistItemDefinition shape.
 export type ChecklistItemDefinitionDTO = ChecklistItemDefinition;
+
+/** Public transport validation for the canonical checklist definition. */
+export const ChecklistItemDefinitionSchema: z.ZodType<ChecklistItemDefinition> = z.object({
+  title: z.string().trim().min(1).max(200),
+  order: z.number().int().nonnegative(),
+});

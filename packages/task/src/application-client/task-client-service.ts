@@ -54,6 +54,7 @@ function taskTemplateFromDTO(dto: TaskTemplateClientDTO): TaskTemplate {
     reminderConfig: dto.reminderConfig as TaskReminderConfig | null,
     importance: dto.importance,
     goalBinding: dto.goalBinding ? parseGoalBinding(dto.goalBinding) : null,
+    checklist: dto.checklist ?? [],
     tags: dto.tags ?? [],
     labels: dto.labels ?? [],
     color: dto.color,

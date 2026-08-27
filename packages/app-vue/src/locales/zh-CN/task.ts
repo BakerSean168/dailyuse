@@ -58,6 +58,29 @@ export default {
     "overdue": "已逾期",
     "goalLinked": "关联目标"
   },
+  "editor": {
+    "title": "要做什么？",
+    "titlePlaceholder": "例如：完成植物观察并拍照",
+    "date": "日期",
+    "dateRequired": "请选择日期",
+    "time": "时间",
+    "endTimeOptional": "结束时间（可选）",
+    "startTimeRequired": "设置结束时间前请先选择开始时间",
+    "timeInferenceHint": "不填时间即为全天任务；只有需要时间段时才设置结束时间。",
+    "repeat": "重复",
+    "every": "每",
+    "labelsPlaceholder": "选择标签",
+    "createLabel": "新建标签",
+    "more": "更多设置",
+    "moreHint": "描述、提醒、优先级和清单",
+    "reminder": "提醒",
+    "minutesBefore": "分钟前",
+    "checklist": "清单",
+    "checklistHint": "为这个任务的每次执行复用这些步骤。",
+    "checklistItem": "清单项 {index}",
+    "addChecklistItem": "添加清单项",
+    "newChecklistItem": "新步骤"
+  },
   "management": {
     "title": "任务库",
     "searchPlaceholder": "搜索任务...",
@@ -165,16 +188,16 @@ export default {
     "hintLast": "输入最新的值"
   },
   "templateDialog": {
-    "editTitle": "编辑任务计划",
-    "createTitle": "新建任务计划",
-    "copyTitle": "复制任务计划",
-    "editSubtitle": "修改任务计划的配置",
-    "createSubtitle": "配置待办时间、重复规则和目标贡献",
-    "copySubtitle": "基于现有配置创建新的任务计划",
+    "editTitle": "编辑任务",
+    "createTitle": "新建任务",
+    "copyTitle": "复制任务",
+    "editSubtitle": "修改任务的时间、重复方式与目标关联",
+    "createSubtitle": "设置任务何时发生、是否重复，以及如何关联目标",
+    "copySubtitle": "基于现有配置创建一个新任务",
     "updateImpact": "将更新 {count} 个尚未开始的待办任务；进行中和历史待办不受影响。",
     "cancel": "取消",
     "saveChanges": "保存更改",
-    "create": "创建任务计划"
+    "create": "创建任务"
   },
   "quickTask": {
     "title": "快速任务",

@@ -262,6 +262,7 @@ import { ImportanceLevel } from '@memoflow/contracts/shared';
 import {
   TaskType,
   type RecurrenceRuleDTO,
+  type TaskReminderConfigDTO,
   type TaskInstanceClientDTO,
   type TaskTemplateClientDTO,
 } from '@memoflow/contracts/task';
@@ -474,11 +475,11 @@ async function saveTemplate(vm: TaskTemplateViewModel): Promise<void> {
     timeConfig: toTaskTimeConfigPayload(vm.timeConfig),
     recurrenceRule: (vm.recurrenceRule as unknown as RecurrenceRuleDTO) ?? null,
     importance: (vm.importance as ImportanceLevel) ?? ImportanceLevel.Moderate,
-    tags: vm.tags ?? [],
-    color: vm.color ?? null,
+    labelIds: vm.labelIds ?? [],
+    checklist: (vm.checklist ?? []).map((item, order) => ({ title: item.title.trim(), order })),
     goalBinding: goalBinding(vm),
     taskType: vm.recurrenceRule ? TaskType.Recurring : TaskType.OneTime,
-    reminderConfig: (vm.reminderConfig as never) ?? null,
+    reminderConfig: (vm.reminderConfig as unknown as TaskReminderConfigDTO | null) ?? null,
   });
   if (!result) return;
   closeDialog();

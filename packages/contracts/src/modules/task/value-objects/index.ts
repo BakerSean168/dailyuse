@@ -64,4 +64,5 @@ export type { TaskPlanCompletionPolicy as TaskPlanCompletionPolicyValue } from '
 export { TaskInstanceStatus } from './task-instance-status';
 export { TaskTimeType } from './task-time-type';
 export { TaskType } from './task-type';
+export { ChecklistItemDefinitionSchema } from './checklist-item-definition';
 export type { ChecklistItemDefinition, ChecklistItemDefinitionDTO } from './checklist-item-definition';

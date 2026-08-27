@@ -145,6 +145,23 @@ describe('UpdateTaskTemplateUseCase', () => {
     expect(template.importance).toBe(ImportanceLevel.Vital);
   });
 
+  it('replaces the checklist definition through the public update contract', async () => {
+    const template = aOneTimeTask();
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
+    const checklist = [
+      { title: 'Prepare materials', order: 0 },
+      { title: 'Submit evidence', order: 1 },
+    ];
+
+    const result = await useCase.execute(template.id, template.identityId, { checklist });
+
+    expect(result).toBeOk();
+    expect(template.checklist.map((item) => item.toDTO())).toEqual(checklist);
+    if (result.ok) {
+      expect(result.data.checklist).toEqual(checklist);
+    }
+  });
+
   it('should update tags', async () => {
     const template = aOneTimeTask({ tags: ['old-tag'] });
     vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);

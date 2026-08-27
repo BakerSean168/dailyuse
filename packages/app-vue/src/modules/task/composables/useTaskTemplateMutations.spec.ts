@@ -26,6 +26,8 @@ function template(overrides: Partial<TaskTemplateClientDTO> = {}): TaskTemplateC
     updatedAt: 1,
     deletedAt: null,
     goalBinding: null,
+    checklist: [],
+    labels: [],
     parentTaskId: null,
     blockingReason: null,
     instanceCount: 0,

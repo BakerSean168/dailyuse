@@ -55,7 +55,7 @@ Wave 0 evidence is frozen in [`Core vNext Wave 0 — Baseline / Acceptance / Sha
 
 **Wave 2 execution point (closed 2026-08-26):** `GOAL-2101~2103`, `TASK-2201~2205`, `ROUTINE-2301~2303`, and `NOTIF-2401/2402` are integrated and gate-verified.
 
-**Current execution point (2026-08-27):** Wave 3 vertical integration and both Wave 4 lanes are closed. Wave 5 shared `UI-5101`, Goal list/editor `GOAL-5101`, and Task execution home `TASK-5201` are closed. Goal now uses the vNext progress-row + Label AND filter + aggregate editor surface, and Task now opens on the occurrence-first Today/Upcoming execution surface; the current primary continuation is `TASK-5202` (Unified Task editor), while Goal detail, Routine, Planner, and Notification UI lanes remain independently parallelizable.
+**Current execution point (2026-08-27):** Wave 3 vertical integration and both Wave 4 lanes are closed. Wave 5 shared `UI-5101`, Goal list/editor `GOAL-5101`, Task execution home `TASK-5201`, and unified Task editor `TASK-5202` are closed. Goal now uses the vNext progress-row + Label AND filter + aggregate editor surface; Task now opens on the occurrence-first Today/Upcoming execution surface and uses one vNext create/edit surface backed by shared Product Time/recurrence/reminder controls. The current primary continuation is `TASK-5203` (Task detail + repeating plan management), while Goal detail, Routine, Planner, and Notification UI lanes remain independently parallelizable.
 
 **Wave 1 gate evidence (2026-08-25):**
 
@@ -1804,6 +1804,17 @@ more: description/reminder/priority/checklist
 ```
 
 Use `ReminderOffsetField` and `RecurrenceEditor`; do not duplicate time controls.
+
+**Implementation evidence (2026-08-27):**
+
+- rebuilt the production Task create/edit surface as one vNext form: title, Product Time date/time, recurrence, shared Labels, optional Goal/KR link and contribution stay in the primary flow; description, reminder offset, priority, and checklist live behind one `More settings` disclosure;
+- removed the product-facing `TaskTimeType` choice. The editor now accepts date + optional start/end time and derives `AllDay`, `TimePoint`, or `TimeRange` through one adapter; Ymd/Hm conversion and recurrence end dates use the configured Product Time codec rather than renderer-local `Date` semantics;
+- added the planned shared `RecurrenceEditor` to `@memoflow/ui-vue-shadcn` as a thin shadcn/Reka composition over frequency/interval/weekday/end-condition inputs. It owns no recurrence expansion algorithm; Task adapts its value to the existing `RecurrenceRuleDTO`, while `@memoflow/time` and Task domain remain recurrence authorities;
+- reused the existing shared `ReminderOffsetField` instead of the legacy Task reminder editor. The current vNext product surface maps one offset to the existing relative reminder contract and leaves richer reminder policy behind the domain contract rather than duplicating time controls;
+- reused `LabelPicker + useLabelCatalog` for search/create/multi-select and the existing Goal/KR binding section for optional contribution. `EachCompletion` and `PlanCompletion` remain the only contribution triggers, and the existing binding validation continues to require a finite recurrence before plan-completion contribution can be enabled;
+- closed the checklist transport gap discovered during the rebuild: `CreateTaskTemplateReq`, `UpdateTaskTemplateReq`, `TaskTemplateClientDTO`, client aggregate/service, server aggregate, and create/update use cases now carry the already-existing checklist definition through the public boundary. Checklist completion still belongs to individual occurrences; the Task plan only stores reusable definitions;
+- active create/update payloads no longer send the retired free-form `tags`, color metadata, dependency/parent/graph fields, or any visible time-type selector. The old section components are no longer imported by the production unified editor, so they cannot become a second product-authority path;
+- verification: shared recurrence UI `2` files / `6` tests green; Task create/update focused `47/47`; full Task `113` files / `729` tests green; Task editor focused app-vue `5` files / `12` tests green; full app-vue `198` files / `744` tests green; contracts `65` files / `475` tests green; app-vue dependency-chain typecheck green; app-vue and shared UI lint have `0` errors (repository-existing warnings remain); production Vite build, docs check, full governance check, and `git diff --check` are green.
 
 ## TASK-5203 — Task detail + repeating plan management
 

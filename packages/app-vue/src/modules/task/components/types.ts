@@ -21,7 +21,7 @@ export interface TaskTimeConfigViewModel {
   timeType?: 'AllDay' | 'TimePoint' | 'TimeRange';
   timePoint?: number | null;
   timeRange?: TaskTimeRangeViewModel | null;
-  startDate?: string | Date | number;
+  startDate?: string | Date | number | null;
 }
 
 export interface TaskGoalContributionViewModel {
@@ -76,6 +76,8 @@ export interface TaskTemplateViewModel {
   recurrenceText?: string;
   tags?: string[];
   tagSummaryText?: string;
+  labelIds?: string[];
+  checklist?: Array<{ title: string; order: number }>;
   goalBinding?: TaskGoalBindingViewModel | null;
   timeConfig: TaskTimeConfigViewModel;
   recurrenceRule?: Record<string, unknown> | null;

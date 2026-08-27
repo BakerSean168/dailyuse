@@ -163,6 +163,23 @@ describe('CreateTaskTemplateUseCase', () => {
     );
   });
 
+  it('persists checklist definitions on the created Task plan', async () => {
+    const checklist = [
+      { title: 'Pack notebook', order: 0 },
+      { title: 'Take a photo', order: 1 },
+    ];
+    const request = aCreateRequest({ checklist });
+
+    const result = await useCase.execute(request);
+
+    expect(result).toBeOk();
+    const persisted = vi.mocked(templateRepo.save).mock.calls[0]?.[0];
+    expect(persisted?.checklist.map((item) => item.toDTO())).toEqual(checklist);
+    if (result.ok) {
+      expect(result.data.template.checklist).toEqual(checklist);
+    }
+  });
+
   it('should create a recurring task template', async () => {
     const request = aCreateRequest({
       name: 'Daily standup',

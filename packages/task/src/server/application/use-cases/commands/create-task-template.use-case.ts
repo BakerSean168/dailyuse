@@ -8,7 +8,12 @@
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
 import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
 import { TaskTemplate } from '../../../domain/aggregates/task-template';
-import { TaskTimeConfig, RecurrenceRule, TaskReminderConfig } from '../../../domain/value-objects';
+import {
+  ChecklistItemDefinition,
+  TaskTimeConfig,
+  RecurrenceRule,
+  TaskReminderConfig,
+} from '../../../domain/value-objects';
 import { TaskTemplateId } from '../../../domain/value-objects/task-template-id';
 import { TaskInstanceGenerationService } from '../../../domain/services/index';
 import type { CreateTaskTemplateInput, CreateTaskTemplateRes } from '@memoflow/contracts/task';
@@ -116,6 +121,7 @@ export class CreateTaskTemplateUseCase {
             tags: request.tags,
             color: request.color ?? undefined,
             completionPolicy: request.completionPolicy,
+            checklist: (request.checklist ?? []).map((item) => ChecklistItemDefinition.fromDTO(item)),
             goalBinding: request.goalBinding
               ? {
                   goalId: request.goalBinding.goalId,

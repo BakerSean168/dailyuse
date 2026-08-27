@@ -428,16 +428,18 @@ Implementation checkpoint (2026-08-27): `TASK-5201` rebuilt the production landi
 
 ### Task editor
 
-- [ ] title；
-- [ ] date/time；
-- [ ] recurrence progressive disclosure；
-- [ ] label picker；
-- [ ] optional Goal/KR link；
-- [ ] optional auto contribution；
-- [ ] EachCompletion / PlanCompletion natural language；
-- [ ] finite plan validation；
-- [ ] advanced description/reminder/priority/checklist；
-- [ ] 删除 dependency manager / parent / graph fields。
+- [x] title；
+- [x] date/time；
+- [x] recurrence progressive disclosure；
+- [x] label picker；
+- [x] optional Goal/KR link；
+- [x] optional auto contribution；
+- [x] EachCompletion / PlanCompletion natural language；
+- [x] finite plan validation；
+- [x] advanced description/reminder/priority/checklist；
+- [x] 删除 dependency manager / parent / graph fields。
+
+Implementation checkpoint (2026-08-27): `TASK-5202` replaced the legacy multi-section TaskTemplate form with one vNext Task editor. Shared Date/Time fields infer `TaskTimeType`; the new shared `RecurrenceEditor`, existing `ReminderOffsetField`, shared `LabelPicker`, and Goal/KR contribution controls provide the primary flow; description/reminder/priority/checklist are progressive disclosure. The checklist definition is now carried by the public Create/Update/client contract instead of existing only in persistence/domain state.
 
 ### Task detail
 

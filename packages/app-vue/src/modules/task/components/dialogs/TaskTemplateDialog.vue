@@ -93,7 +93,7 @@ import { Copy, Pencil, PlusCircle } from '@lucide/vue';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
 import type { TaskTemplateViewModel } from '../types';
 import { TaskType } from '@memoflow/contracts/task';
-import { defaultNamedColor } from '../../../../shared/constants/color-palette';
+import { getProductTime } from '../../../../shared/utils/product-time';
 import { useTaskGoalBindingOptions } from '../../composables/useTaskGoalBindingOptions';
 import { ProductDialogShell } from '../../../../shared/components';
 import { useDialogDraftStore } from '../../../../layouts/shell/dialog-draft-store';
@@ -122,19 +122,20 @@ function createBlankTemplate(): TaskTemplateViewModel {
     isArchived: false,
     importance: 'Moderate',
     tags: [],
+    labelIds: [],
+    checklist: [],
     goalBinding: null,
     timeConfig: {
       timeType: 'AllDay',
       timePoint: null,
       timeRange: null,
-      startDate: Date.now(),
+      startDate: getProductTime().calendar.startOfDay(Date.now()),
     },
     recurrenceRule: null,
     reminderConfig: null,
     instanceCount: 0,
     completionRate: 0,
-    taskType: TaskType.Recurring,
-    color: defaultNamedColor,
+    taskType: TaskType.OneTime,
   };
 }
 

@@ -626,6 +626,13 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   }
 
   /** Updates the tags. */
+  /** Replaces the Task plan checklist definition. Completion remains occurrence-owned. */
+  public updateChecklist(items: ChecklistItemDefinition[]): void {
+    this._props.checklist = items.map((item) => ChecklistItemDefinition.fromDTO(item.toDTO()));
+    this._props.updatedAt = Date.now();
+    this.addHistory('checklist_updated', { count: this._props.checklist.length });
+  }
+
   public updateTags(newTags: string[]): void {
     const oldTags = [...this._props.tags];
     this._props.tags = [...new Set(newTags)]; // Deduplicate
@@ -859,6 +866,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       reminderConfig: this._props.reminderConfig?.toDTO() ?? null,
       importance: this._props.importance,
       goalBinding: this._props.goalBinding?.toDTO() ?? null,
+      checklist: this._props.checklist.map((item) => item.toDTO()),
       tags: [...this._props.tags],
       labels: this._labelProjection.map((label) => ({ ...label })),
       color: this._props.color,
@@ -965,6 +973,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     recurrenceRule: RecurrenceRule;
     reminderConfig?: TaskReminderConfig;
     importance?: ImportanceLevel;
+    checklist?: ChecklistItemDefinition[];
     tags?: string[];
     color?: string;
     generateAheadDays?: number;
@@ -996,7 +1005,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       archivedAt: null,
       abandonedReason: null,
       goalBinding: null,
-      checklist: [],
+      checklist: params.checklist ?? [],
       timeConfig: params.timeConfig,
       recurrenceRule: params.recurrenceRule,
       reminderConfig: params.reminderConfig ?? null,
@@ -1031,6 +1040,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     tags?: string[];
     color?: string;
     generateAheadDays?: number;
+    checklist?: ChecklistItemDefinition[];
     goalBinding?: {
       goalId: string;
       keyResultId: string;
@@ -1087,7 +1097,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
             contribution: params.goalBinding.contribution ?? null,
           })
         : null,
-      checklist: [],
+      checklist: params.checklist ?? [],
       timeConfig: params.timeConfig,
       recurrenceRule: params.recurrenceRule ?? null,
       reminderConfig: params.reminderConfig ?? null,

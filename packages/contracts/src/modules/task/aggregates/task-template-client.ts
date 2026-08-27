@@ -15,6 +15,7 @@ import type {
   RecurrenceRuleDTO,
   TaskReminderConfigDTO,
   TaskGoalBindingDTO,
+  ChecklistItemDefinitionDTO,
 } from '../value-objects';
 
 // Residual 879: intentional Client≠Server dual (client extra projection fields vs server checklist).
@@ -30,6 +31,7 @@ export interface TaskTemplateClientDTO {
   importance: ImportanceLevel;
 
   goalBinding: TaskGoalBindingDTO | null;
+  checklist: ChecklistItemDefinitionDTO[];
   tags: string[];
   labels: LabelClientDTO[];
   color: string | null;

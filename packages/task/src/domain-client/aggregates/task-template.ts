@@ -22,6 +22,7 @@ import type {
   TaskTemplateStatus,
   TaskPlanOutcomeValue,
   TaskPlanCompletionPolicyValue,
+  ChecklistItemDefinitionDTO,
 } from '@memoflow/contracts/task';
 import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { LabelClientDTO } from '@memoflow/contracts/label';
@@ -40,6 +41,7 @@ export interface TaskTemplateState {
   reminderConfig: TaskReminderConfig | null;
   importance: ImportanceLevel;
   goalBinding: TaskGoalBinding | null;
+  checklist: ChecklistItemDefinitionDTO[];
   tags: string[];
   labels: LabelClientDTO[];
   color: string | null;
@@ -115,6 +117,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
   get goalBinding(): TaskGoalBinding | null {
     return this._props.goalBinding;
+  }
+
+  get checklist(): ChecklistItemDefinitionDTO[] {
+    return this._props.checklist.map((item) => ({ ...item }));
   }
 
   get tags(): string[] {
@@ -287,6 +293,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       goalBinding: this._props.goalBinding
         ? this.serializeGoalBinding(this._props.goalBinding)
         : null,
+      checklist: this._props.checklist.map((item) => ({ ...item })),
       tags: [...this._props.tags],
       labels: this._props.labels.map((label) => ({ ...label })),
       color: this._props.color,

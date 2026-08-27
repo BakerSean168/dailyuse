@@ -165,6 +165,8 @@ export function mapTaskTemplateDtoToViewModel(
     dueDate: dto.dueDate ?? null,
     recurrenceText: getTaskRecurrenceText(t, dto),
     tags: dto.tags ?? [],
+    labelIds: dto.labels.map((label) => label.id),
+    checklist: dto.checklist.map((item) => ({ ...item })),
     tagSummaryText:
       dto.tags && dto.tags.length > 0 ? dto.tags.join(', ') : t('task.templateCard.noTags'),
     goalBinding: dto.goalBinding
