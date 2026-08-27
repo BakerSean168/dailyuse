@@ -55,7 +55,7 @@ Wave 0 evidence is frozen in [`Core vNext Wave 0 — Baseline / Acceptance / Sha
 
 **Wave 2 execution point (closed 2026-08-26):** `GOAL-2101~2103`, `TASK-2201~2205`, `ROUTINE-2301~2303`, and `NOTIF-2401/2402` are integrated and gate-verified.
 
-**Current execution point (2026-08-27):** Wave 3 vertical integration is closed. Wave 4A has completed `ROUTINE-4101~4103` and `ROUTINE-4201~4203`, with `ROUTINE-4104` remaining; Planner Wave 4B has completed `PLAN-4301~4303`, with `PLAN-4304` as the next Planner cutover. `ROUTINE-4104` and `PLAN-4304` may proceed independently before the product-surface rebuild lanes converge on them.
+**Current execution point (2026-08-27):** Wave 3 vertical integration is closed. Planner Wave 4B is closed through `PLAN-4301~4304`: production Planner now has one FullCalendar Standard rendering engine and owner-aware mutation path. Wave 4A has completed `ROUTINE-4101~4103` and `ROUTINE-4201~4203`; `ROUTINE-4104` (InterventionWindow) is the remaining Wave 4 runtime ticket before the relevant product-surface rebuild lanes converge.
 
 **Wave 1 gate evidence (2026-08-25):**
 
@@ -1657,6 +1657,18 @@ Routine wall-clock occurrence
 7. keep ops Scheduler console separate.
 
 **Acceptance:** one Planner rendering engine remains.
+
+**Implementation evidence (2026-08-27):**
+
+- production `/schedule` now mounts `PlannerCalendar` as the single Day/Week/Month layout engine; FullCalendar owns visible-range calculation, period navigation, selection, event layout, drag, and resize while MemoFlow keeps its external toolbar and product panels;
+- promoted `@fullcalendar/vue3@7.0.2` and `temporal-polyfill@1.0.4` from PoC-only dev dependencies to runtime dependencies because the production Planner now imports them directly; no Premium/Scheduler/resource package was introduced;
+- loaded the FullCalendar v7 MIT `classic` theme plugin and theme CSS in production. Real-browser parity exposed that `skeleton.css` alone does not materialize an interactive resize handle even when `durationEditable` is true; the corrected theme integration produces the real resize affordance without private Scheduler APIs;
+- `datesSet` is now the canonical Planner read-window source and feeds owner projections back through `fetchForRange`; view changes and previous/next/today navigation drive the FullCalendar API instead of custom date-layout arithmetic;
+- the canonical `CalendarEventProjection` plus `PlannerOwnerCommandRouter` from PLAN-4302/4303 are consumed directly by production `eventDrop`/`eventResize`; applied commands retain the visual mutation, while conflict/failed/read-only/invalid/unsupported outcomes call FullCalendar `revert()` and UI-facing outcomes use stable codes rather than raw infrastructure error messages;
+- retired the duplicate custom `DayViewCalendar`, `WeekViewCalendar`, `MonthViewCalendar`, their geometry-specific Storybook/tests, the old PoC-local FullCalendar renderer/adapter/model, and product-facing Scheduler/statistics/task cards that mixed raw scheduling infrastructure into Planner; keep-boundary tests now prevent reintroduction of custom calendar geometry;
+- `DevScheduleDebugPanel` remains available only as a separate diagnostics component and is explicitly barred from the normal Planner route by a boundary test, preserving the product Planner / ops Scheduler-console split;
+- retained a small isolated browser parity harness that imports the production `PlannerCalendar` rather than a second rendering implementation. Headless Chromium proves a real pointer drag changes visual position and reaches an applied owner outcome, a real resize changes event height and reaches applied, and a rejected owner mutation visually returns to its original position;
+- verification: full app-vue `190` files / `725` tests green; app-vue typecheck green; app-vue lint has `0` errors (13 pre-existing warnings); production app-vue Vite build green; Chromium parity green; Nx `sync:check`, test-target governance, regenerated test inventory, `docs:check`, and full `governance:check` are green at `1108` owned test files. The inventory governance baseline was updated from 54 to 60 Desktop primary tests because earlier Wave 4A added six already-committed Desktop runtime/window tests.
 
 ---
 

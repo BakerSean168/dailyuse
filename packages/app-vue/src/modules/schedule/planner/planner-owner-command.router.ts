@@ -21,8 +21,8 @@ export type PlannerMutationOutcome =
       readonly status: 'applied';
       readonly ownerType: CalendarEventProjection['ownerCommandTarget']['ownerType'];
     }
-  | { readonly status: 'conflict'; readonly message: string; readonly code: string }
-  | { readonly status: 'failed'; readonly message: string; readonly code: string }
+  | { readonly status: 'conflict'; readonly code: string }
+  | { readonly status: 'failed'; readonly code: string }
   | { readonly status: 'read-only'; readonly message: string }
   | { readonly status: 'unsupported'; readonly message: string }
   | { readonly status: 'invalid'; readonly message: string };
@@ -73,9 +73,9 @@ function resultOutcome(
   if (result.ok) return { status: 'applied', ownerType };
   const code = String(result.error.code ?? 'UNKNOWN_ERROR');
   if (code === 'CONFLICT' || code === 'VERSION_CONFLICT' || code === 'OPTIMISTIC_CONCURRENCY') {
-    return { status: 'conflict', code, message: result.error.message };
+    return { status: 'conflict', code };
   }
-  return { status: 'failed', code, message: result.error.message };
+  return { status: 'failed', code };
 }
 
 function minutesFromDayStart(time: PlannerMutationTimePort, instant: Instant): number | null {

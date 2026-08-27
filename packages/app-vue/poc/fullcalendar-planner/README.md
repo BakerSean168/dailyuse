@@ -59,4 +59,4 @@ Before deleting the current custom calendar during the production migration, PLA
 
 ## Comparison to current custom Planner
 
-The current custom month/week renderers alone are roughly 436 lines (`MonthViewCalendar.vue` + `WeekViewCalendar.vue`) and MemoFlow still owns layout/date-grid behavior. Standard FullCalendar supplies the missing Day/List surfaces plus selection/drag/resize/now-indicator primitives behind one adapter. MemoFlow should continue owning business semantics rather than wrapping FullCalendar as a new domain authority.
+The former custom Day/Week/Month renderers are retired by PLAN-4304. Standard FullCalendar now owns product calendar geometry and supplies selection/drag/resize/now-indicator primitives behind the MemoFlow projection/owner-command adapters; MemoFlow continues to own business semantics rather than treating FullCalendar as a domain authority.

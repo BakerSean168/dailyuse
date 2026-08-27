@@ -26,7 +26,7 @@
             activeView === tab.value ? 'bg-secondary font-medium text-foreground' : '',
           ]"
           :data-testid="`schedule-view-tab-${tab.value}`"
-          @click="activeView = tab.value"
+          @click="changeView(tab.value)"
         >
           <component :is="tab.icon" class="h-4 w-4 @xl/panel:mr-1.5" />
           <span class="hidden @xl/panel:inline">{{ tab.label }}</span>
@@ -63,7 +63,13 @@
         >
           <ChevronRight class="h-4 w-4" />
         </Button>
-        <Button variant="outline" size="sm" class="h-8 shrink-0 px-2" @click="goToToday">
+        <Button
+          variant="outline"
+          size="sm"
+          class="h-8 shrink-0 px-2"
+          data-testid="schedule-today"
+          @click="goToToday"
+        >
           {{ t('schedule.calendar.today') }}
         </Button>
       </div>
@@ -82,29 +88,18 @@
     </header>
 
     <div class="min-h-0 flex-1 overflow-hidden" data-testid="schedule-calendar-content">
-      <DayViewCalendar
-        v-if="activeView === 'day'"
-        :date="calendarDate"
-        :schedules="events"
+      <PlannerCalendar
+        ref="plannerCalendarRef"
+        :projections="projections"
+        :owner-commands="ownerCommands"
+        :view="activeView"
+        :locale="locale"
         :loading="isLoading"
-        @event-click="handleEventClick"
-      />
-
-      <WeekViewCalendar
-        v-else-if="activeView === 'week'"
-        :start-date="calendarDate"
-        :schedules="events"
-        :loading="isLoading"
-        @event-click="handleEventClick"
-      />
-
-      <MonthViewCalendar
-        v-else
-        :month="calendarDate"
-        :schedules="events"
-        :loading="isLoading"
-        @event-click="handleEventClick"
+        :loading-label="t('schedule.dashboard.loading')"
+        @range-change="handleVisibleRange"
+        @event-click="handleProjectionClick"
         @day-click="handleDayClick"
+        @select-range="showCreateDialog = true"
       />
     </div>
 
@@ -129,7 +124,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import {
@@ -142,45 +137,48 @@ import {
 } from '@lucide/vue';
 import { Button } from '@memoflow/ui-vue-shadcn';
 import CreateScheduleDialog from '../components/CreateScheduleDialog.vue';
-import DayViewCalendar from '../components/DayViewCalendar.vue';
-import WeekViewCalendar from '../components/WeekViewCalendar.vue';
-import MonthViewCalendar from '../components/MonthViewCalendar.vue';
 import DayDetailSheet from '../components/DayDetailSheet.vue';
 import TaskEventActionPanel from '../components/TaskEventActionPanel.vue';
 import EventDetailSheet from '../components/EventDetailSheet.vue';
-import { getWeekStart, toLocalDateKey, useCalendarView } from '../composables/useCalendarView';
-import { getProductTime } from '../../../shared/utils/product-time';
-// Residual 1285: getWeekStart dual retired onto schedule sole.
+import { toLocalDateKey, useCalendarView } from '../composables/useCalendarView';
 import { useSchedule } from '../composables/useSchedule';
 import { useTask } from '../../task/composables/useTask';
 import { usePanelSurfaceStatus } from '../../../layouts/shell/usePanelSurfaceStatus';
 import type { PanelSurfaceStatus } from '../../../layouts/shell/useAppShellStore';
 import type { CalendarEventItem } from '../composables/useCalendarView';
-import type { CreateScheduleRequest } from '@memoflow/contracts/schedule';
+import type { CalendarEventProjection, CreateScheduleRequest } from '@memoflow/contracts/schedule';
+import PlannerCalendar, {
+  type PlannerCalendarView,
+  type PlannerVisibleRange,
+} from '../planner/PlannerCalendar.vue';
+import { createPlannerOwnerCommandRouter } from '../planner';
 
-type CalendarView = 'day' | 'week' | 'month';
-
-const { t } = useI18n();
-const { events, isLoading, fetchForRange, windowStart, windowEnd } = useCalendarView();
-const { createCalendarEntry } = useSchedule();
+const { t, locale } = useI18n();
+const { projections, events, isLoading, fetchForRange, windowStart, windowEnd } = useCalendarView();
+const schedule = useSchedule();
 const task = useTask();
 
-const showCreateDialog = ref(false);
+const ownerCommands = createPlannerOwnerCommandRouter({
+  schedule: { updateSchedule: schedule.updateCalendarEntry },
+  task: { rescheduleInstance: task.rescheduleInstance },
+});
 
-// Phase 0 / UI-004：日程创建/编辑弹窗打开即视为未完成操作——统一离开协议
-// （设置场景守卫 / Tab 切换 / 关面板）要求确认，取消不改变路由或草稿。
-const surfaceStatus = computed<PanelSurfaceStatus>(() =>
-  showCreateDialog.value ? 'dirty' : 'clean',
-);
-usePanelSurfaceStatus(surfaceStatus);
-const activeView = ref<CalendarView>('week');
-const calendarDate = ref(new Date());
+const plannerCalendarRef = ref<InstanceType<typeof PlannerCalendar> | null>(null);
+const showCreateDialog = ref(false);
+const activeView = ref<PlannerCalendarView>('week');
+const currentPeriodTitle = ref('');
 const dayDetailOpen = ref(false);
 const selectedDate = ref<Date | null>(null);
 const taskPanelOpen = ref(false);
 const selectedTaskEvent = ref<CalendarEventItem | null>(null);
 const eventDetailOpen = ref(false);
 const selectedDetailEvent = ref<CalendarEventItem | null>(null);
+
+// Phase 0 / UI-004：日程创建/编辑弹窗打开即视为未完成操作——统一离开协议。
+const surfaceStatus = computed<PanelSurfaceStatus>(() =>
+  showCreateDialog.value ? 'dirty' : 'clean',
+);
+usePanelSurfaceStatus(surfaceStatus);
 
 const selectedDayEvents = computed<CalendarEventItem[]>(() => {
   if (!selectedDate.value) return [];
@@ -194,66 +192,42 @@ const viewTabs = computed(() => [
   { label: t('schedule.viewTabs.month'), value: 'month' as const, icon: CalendarRange },
 ]);
 
-const currentPeriodTitle = computed(() => {
-  if (activeView.value === 'day') {
-    return getProductTime().format.slot('periodDay', calendarDate.value.getTime());
-  }
-
-  if (activeView.value === 'month') {
-    return getProductTime().format.slot('periodMonth', calendarDate.value.getTime());
-  }
-
-  const start = getWeekStart(calendarDate.value);
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
-  const format = (date: Date) => getProductTime().format.slot('chartMonthDay', date.getTime());
-  return t('schedule.calendar.weekRange', { start: format(start), end: format(end) });
-});
-
-function resolveCalendarWindow(view: CalendarView, date: Date) {
-  if (view === 'day') {
-    const start = new Date(date);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(date);
-    end.setHours(23, 59, 59, 999);
-    return { start, end };
-  }
-
-  if (view === 'month') {
-    return {
-      start: new Date(date.getFullYear(), date.getMonth(), 1),
-      end: new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999),
-    };
-  }
-
-  const start = getWeekStart(date);
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
-  end.setHours(23, 59, 59, 999);
-  return { start, end };
+function changeView(view: PlannerCalendarView): void {
+  activeView.value = view;
 }
 
-async function refreshCalendar() {
-  const { start, end } = resolveCalendarWindow(activeView.value, calendarDate.value);
-  await fetchForRange(start.getTime(), end.getTime());
+function handleVisibleRange(range: PlannerVisibleRange): void {
+  currentPeriodTitle.value = range.title;
+  if (activeView.value !== range.view) activeView.value = range.view;
+  void fetchForRange(range.start, range.end);
 }
 
-function movePeriod(direction: -1 | 1) {
-  const nextDate = new Date(calendarDate.value);
-  if (activeView.value === 'month') {
-    nextDate.setDate(1);
-    nextDate.setMonth(nextDate.getMonth() + direction);
-  } else {
-    nextDate.setDate(nextDate.getDate() + direction * (activeView.value === 'week' ? 7 : 1));
-  }
-  calendarDate.value = nextDate;
+function movePeriod(direction: -1 | 1): void {
+  if (direction < 0) plannerCalendarRef.value?.previous();
+  else plannerCalendarRef.value?.next();
 }
 
-function goToToday() {
-  calendarDate.value = new Date();
+function goToToday(): void {
+  plannerCalendarRef.value?.today();
 }
 
-function handleEventClick(event: CalendarEventItem) {
+function findLegacyEvent(projection: CalendarEventProjection): CalendarEventItem | null {
+  if (projection.sourceType !== 'schedule' && projection.sourceType !== 'task') return null;
+  return (
+    events.value.find(
+      (event) =>
+        event.source === projection.sourceType &&
+        event.originalId === projection.ownerCommandTarget.ownerId,
+    ) ?? null
+  );
+}
+
+function handleProjectionClick(projection: CalendarEventProjection): void {
+  const event = findLegacyEvent(projection);
+  if (event) handleEventClick(event);
+}
+
+function handleEventClick(event: CalendarEventItem): void {
   if (event.source === 'task') {
     selectedTaskEvent.value = event;
     taskPanelOpen.value = true;
@@ -263,34 +237,34 @@ function handleEventClick(event: CalendarEventItem) {
   }
 }
 
-async function handleCompleteTask(originalId: string) {
+async function handleCompleteTask(originalId: string): Promise<void> {
   const result = await task.completeInstance(originalId);
   if (result && windowStart.value && windowEnd.value) {
     await fetchForRange(windowStart.value, windowEnd.value);
   }
 }
 
-function handleDayClick(date: Date) {
+function handleDayClick(date: Date): void {
   selectedDate.value = date;
   dayDetailOpen.value = true;
 }
 
-function switchToDayView(date: Date | null) {
+function switchToDayView(date: Date | null): void {
   if (!date) return;
   dayDetailOpen.value = false;
-  calendarDate.value = new Date(date);
   activeView.value = 'day';
+  plannerCalendarRef.value?.showDate('day', date);
 }
 
-async function handleCreateSchedule(data: CreateScheduleRequest) {
-  const result = await createCalendarEntry(data);
+async function handleCreateSchedule(data: CreateScheduleRequest): Promise<boolean> {
+  const result = await schedule.createCalendarEntry(data);
   if (result) {
-    await refreshCalendar();
+    if (windowStart.value && windowEnd.value) {
+      await fetchForRange(windowStart.value, windowEnd.value);
+    }
     toast.success(t('schedule.toast.scheduleCreated'));
     return true;
   }
   return false;
 }
-
-watch([activeView, calendarDate], () => void refreshCalendar(), { immediate: true });
 </script>

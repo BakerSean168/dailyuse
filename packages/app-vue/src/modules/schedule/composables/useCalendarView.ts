@@ -43,7 +43,6 @@ export interface CalendarEventItem {
  * Dual-retired from Day/Week/Month calendar local toDateStr copies.
  * Residual 1321: padStart dual retired onto padTwoDigits sole (Date|number key contract stays local).
  * Soft residual 1252: formatDateToYMD Date-only form sole remains separate (storage encoding).
- * Soft residual 1285: getWeekStart dual retired onto schedule sole in residual 1285.
  */
 export function toLocalDateKey(value: Date | number): string {
   const date = typeof value === 'number' ? new Date(value) : value;
@@ -51,38 +50,6 @@ export function toLocalDateKey(value: Date | number): string {
   const month = padTwoDigits(date.getMonth() + 1);
   const day = padTwoDigits(date.getDate());
   return `${year}-${month}-${day}`;
-}
-
-/**
- * Residual 1285: sole getWeekStart — Monday-start local week (hours zeroed).
- * Dual-retired from WeekViewCalendar + ScheduleCalendarView local copies.
- * Soft residual 1282: toLocalDateKey dual-retired sole remains separate.
- */
-export function getWeekStart(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day; // Monday as week start
-  d.setDate(d.getDate() + diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-/**
- * Residual 1288: sole calendarEventBgClass — conflict/source solid bg for Day/Week timed cells.
- * Dual-retired from DayViewCalendar + WeekViewCalendar local eventBgClass copies.
- * Soft residual 1288: Month eventClass uses translucent /text variants (keep-boundary).
- * Soft residual 1288: getEventStyle Day px vs Week % layout keep-boundary (no force-merge).
- */
-export function calendarEventBgClass(
-  event: Pick<CalendarEventItem, 'source' | 'hasConflict'>,
-): string {
-  if (event.hasConflict) return 'bg-warning';
-  const map: Record<CalendarEventItem['source'], string> = {
-    schedule: 'bg-primary',
-    goal: 'bg-success',
-    task: 'bg-info',
-  };
-  return map[event.source];
 }
 
 /**

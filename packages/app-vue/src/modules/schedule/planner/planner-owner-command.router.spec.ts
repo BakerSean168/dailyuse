@@ -72,7 +72,6 @@ describe('PlannerOwnerCommandRouter (PLAN-4303)', () => {
     expect(outcome).toEqual({
       status: 'conflict',
       code: 'CONFLICT',
-      message: 'Task occurrence was changed elsewhere',
     });
     expect(revert).toHaveBeenCalledTimes(1);
     expect(projection.start).toBe(at14);

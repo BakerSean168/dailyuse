@@ -6,10 +6,7 @@ import type {
 } from '@memoflow/contracts/schedule';
 import { asInstant, asYmd } from '@memoflow/time';
 
-/**
- * PLAN-4301 now consumes PLAN-4302's canonical projection instead of owning a
- * PoC-local copy of the Planner contract.
- */
+/** Browser-only PLAN-4304 parity fixture over the canonical Planner contract. */
 export type CalendarEventProjectionFixture = CalendarEventProjection;
 export type { PlannerEditableCapabilities, PlannerOwnerCommandTarget, PlannerSourceType };
 

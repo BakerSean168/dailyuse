@@ -8,7 +8,11 @@ import { useTaskStore } from '../stores/task-store';
 import { TASK_SERVICE_KEY, DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
-import type { CompleteTaskInstanceReq, TaskTemplateClientDTO } from '@memoflow/contracts/task';
+import type {
+  CompleteTaskInstanceReq,
+  RescheduleTaskInput,
+  TaskTemplateClientDTO,
+} from '@memoflow/contracts/task';
 import type { Result } from '@memoflow/contracts/result';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
@@ -151,6 +155,17 @@ export function useTaskInstances() {
     return null;
   }
 
+  async function rescheduleInstance(id: string, request: RescheduleTaskInput) {
+    const result = await executeTaskOperation(
+      () => service.rescheduleInstance(id, sanitizeForIpc(request) as RescheduleTaskInput),
+      'task.error.operationFailed',
+    );
+    if (result.ok) {
+      await updateInstanceProjection(result.data);
+    }
+    return result;
+  }
+
   async function skipInstance(id: string) {
     const result = await executeTaskOperation(
       () => service.skipInstance(id),
@@ -170,6 +185,7 @@ export function useTaskInstances() {
     startInstance,
     completeInstance,
     uncompleteInstance,
+    rescheduleInstance,
     skipInstance,
   };
 }

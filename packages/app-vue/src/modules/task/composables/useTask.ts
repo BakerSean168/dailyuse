@@ -81,6 +81,7 @@ export function useTask() {
     startInstance: instanceOps.startInstance,
     completeInstance: instanceOps.completeInstance,
     uncompleteInstance: instanceOps.uncompleteInstance,
+    rescheduleInstance: instanceOps.rescheduleInstance,
     skipInstance: instanceOps.skipInstance,
     // Pagination
     setPage,

@@ -90,6 +90,7 @@
     "@codemirror/language": "6.12.2",
     "@codemirror/state": "6.6.0",
     "@codemirror/view": "6.39.14",
+    "@fullcalendar/vue3": "7.0.2",
     "@memoflow/account": "workspace:*",
     "@memoflow/ai": "workspace:*",
     "@memoflow/cloud-auth": "workspace:*",
@@ -118,6 +119,7 @@
     "marked": "18.0.6",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.2.0",
+    "temporal-polyfill": "1.0.4",
     "uuid": "^14.0.1",
     "vue": "^3.5.39",
     "vue-echarts": "^8.0.1",
@@ -132,10 +134,8 @@
     "vue": "^3.5.39"
   },
   "devDependencies": {
-    "@fullcalendar/vue3": "7.0.2",
     "@types/markdown-it": "14.1.2",
     "@vitejs/plugin-vue": "6.0.7",
-    "temporal-polyfill": "1.0.4",
     "typescript": "~6.0.3",
     "vite": "8.1.4",
     "vite-plugin-dts": "5.0.3"
