@@ -615,6 +615,13 @@ ReminderOffsetField
 
 **Acceptance:** same `#工作` can attach to Goal and Task.
 
+**Wave 5 renderer transport extension (2026-08-27):**
+
+- added a transport-neutral `@memoflow/label/client` seam exposing only current-user `listLabels` / `createLabel`; public `LabelClientDTO` deliberately omits `identityId` and `normalizedName`;
+- API owns authenticated `/labels` GET/POST over `LabelService + PrismaLabelRepository`; Desktop owns authenticated `label:list` / `label:create` IPC over the same service with `PowerSyncLabelRepository`; Web/Desktop renderer DI both provide one `LABEL_SERVICE_KEY`;
+- canonical Zod request schemas validate list/create before application calls and host auth injects identity, so renderer requests never carry ownership identity;
+- focused verification: Label client `3/3`, API transport `2/2`, Desktop IPC `2/2`; Label build/typecheck/lint plus API/Desktop/Web/App-Vue typechecks are green. Test inventory is current at `1120` files.
+
 ## SCHED-1101 — Neutral Scheduling contracts
 
 **Lane:** L2 + Contract Train  

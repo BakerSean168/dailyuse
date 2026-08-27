@@ -24,6 +24,11 @@ export const TaskChannels = {
   INSTANCE_RESCHEDULE: 'task:reschedule-instance',
 } as const;
 
+export const LabelChannels = {
+  LIST: 'label:list',
+  CREATE: 'label:create',
+} as const;
+
 export const GoalChannels = {
   LIST: 'goal:list',
   GET: 'goal:get',

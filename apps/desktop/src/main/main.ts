@@ -38,6 +38,8 @@ import {
 import { createGoalPowerSyncScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
 import { createLocalVaultRuntime } from '@memoflow/repository/electron';
 import { createSchedulePowerSyncRepositories } from '@memoflow/schedule';
+import { LabelService, PowerSyncLabelRepository } from '@memoflow/label';
+import { createLabelElectronModule } from './modules/label/label.electron-module';
 import { composeGovernance } from './runtime/compose-governance';
 import { composeGoal } from './runtime/compose-goal';
 import { composeTask } from './runtime/compose-task';
@@ -251,6 +253,10 @@ async function registerBusinessModules(
     taskBindingReadPort: new PowerSyncTaskBindingReadPort(db),
   });
 
+  const labelElectronModule = createLabelElectronModule({
+    service: new LabelService(new PowerSyncLabelRepository(db)),
+  });
+
   const dashboardRepositories: DashboardRepositoryDependencies = {
     goalRepository: goalComposed.repositories.goalRepository,
     taskTemplateRepository: taskComposed.repositories.taskTemplateRepository,
@@ -450,6 +456,7 @@ async function registerBusinessModules(
     .register(dataPortabilityElectronModule)
     // Feature modules
     .register(goalComposed.module)
+    .register(labelElectronModule)
     .register(taskElectronModule)
     .register(scheduleComposed.module)
     .register(reminderComposed.module)

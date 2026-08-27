@@ -9,6 +9,7 @@ import { getI18nGlobal } from '@memoflow/app-vue/plugins/i18n';
 import { createAccountIpcClient } from '@memoflow/account/client';
 import { createCloudAuthIpcClient } from '@memoflow/cloud-auth';
 import { createGoalIpcClient } from '@memoflow/goal/client';
+import { createLabelIpcClient } from '@memoflow/label/client';
 import { createGovernanceIpcClient } from '@memoflow/governance/client';
 import { createTaskIpcClient } from '@memoflow/task/client';
 import { createScheduleIpcClient } from '@memoflow/schedule/client';
@@ -27,6 +28,7 @@ import {
   ACCOUNT_SERVICE_KEY,
   DESKTOP_CLOUD_AUTH_SERVICE_KEY,
   GOAL_SERVICE_KEY,
+  LABEL_SERVICE_KEY,
   TASK_SERVICE_KEY,
   SCHEDULE_SERVICE_KEY,
   REMINDER_SERVICE_KEY,
@@ -78,6 +80,7 @@ export function installDesktopAppServices(app: App): void {
   app.provide(DESKTOP_CLOUD_AUTH_SERVICE_KEY, cloudAuth);
 
   app.provide(GOAL_SERVICE_KEY, createGoalIpcClient(resultIpcClient));
+  app.provide(LABEL_SERVICE_KEY, createLabelIpcClient(resultIpcClient));
 
   app.provide(TASK_SERVICE_KEY, createTaskIpcClient(resultIpcClient));
 

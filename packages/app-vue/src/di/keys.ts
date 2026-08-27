@@ -16,6 +16,7 @@ import type {
   IAccountService,
   IAuthService,
   IGoalService,
+  ILabelService,
   ITaskService,
   IScheduleService,
   IReminderService,
@@ -38,6 +39,7 @@ export const AUTH_SERVICE_KEY: InjectionKey<IAuthService> = Symbol('AuthService'
 export const DESKTOP_CLOUD_AUTH_SERVICE_KEY: InjectionKey<CloudAuthDesktopClientPort> =
   Symbol('DesktopCloudAuthService');
 export const GOAL_SERVICE_KEY: InjectionKey<IGoalService> = Symbol('GoalService');
+export const LABEL_SERVICE_KEY: InjectionKey<ILabelService> = Symbol('LabelService');
 export const TASK_SERVICE_KEY: InjectionKey<ITaskService> = Symbol('TaskService');
 export const SCHEDULE_SERVICE_KEY: InjectionKey<IScheduleService> = Symbol('ScheduleService');
 export const REMINDER_SERVICE_KEY: InjectionKey<IReminderService> = Symbol('ReminderService');

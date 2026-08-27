@@ -120,6 +120,16 @@
       ]
     },
     {
+      "path": "apps/api/src/modules/label/module.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/api/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "apps/api/vitest.config.ts"
+      ]
+    },
+    {
       "path": "apps/api/src/modules/powersync/crud-normalization.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -792,6 +802,14 @@
       "primarySuite": "boundary-ipc",
       "collectors": [
         "apps/desktop/vitest.ipc.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "apps/desktop/src/main/modules/label/label.electron-module.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
       ],
       "measurementCollectors": []
     },
@@ -6534,6 +6552,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/label/src/client/index.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/label/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/notification/src/api/__tests__/notification-lane-bootstrap.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10135,7 +10161,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 61
+      "fileCount": 62
     },
     {
       "id": "apps/api/vitest.smoke.config.ts",
@@ -10156,14 +10182,14 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 61
+      "fileCount": 62
     },
     {
       "id": "apps/desktop/vitest.config.ts",
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 51
+      "fileCount": 52
     },
     {
       "id": "apps/desktop/vitest.ipc.config.ts",
@@ -10373,7 +10399,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 2
+      "fileCount": 3
     },
     {
       "id": "packages/label/vitest.integration.config.ts",
@@ -10714,6 +10740,7 @@
       "apps/api/src/modules/ai/repository-knowledge-note-persistence.adapter.test.ts",
       "apps/api/src/modules/ai/repository-knowledge-source.adapter.test.ts",
       "apps/api/src/modules/dashboard/module.spec.ts",
+      "apps/api/src/modules/label/module.spec.ts",
       "apps/api/src/modules/powersync/crud-normalization.spec.ts",
       "apps/api/src/modules/powersync/module.spec.ts",
       "apps/api/src/modules/powersync/parse-json-like-string-keep-boundary.surface.spec.ts",
@@ -11265,7 +11292,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 970,
+    "unit": 973,
     "integration": 29,
     "smoke": 3,
     "boundary-ipc": 9,

@@ -21,6 +21,7 @@ import type {
 import type { CloudAuthClientPort } from '@memoflow/contracts';
 import type { GovernanceClientPort } from '@memoflow/governance/client';
 import type { GoalClientPort } from '@memoflow/goal/client';
+import type { LabelClientPort } from '@memoflow/label/client';
 import type { NotificationClientPort } from '@memoflow/notification/client';
 import type { ReminderClientPort } from '@memoflow/reminder/client';
 import type { RepositoryClientPort } from '@memoflow/repository/client';
@@ -37,6 +38,7 @@ import type { Component } from 'vue';
 export type IAccountService = AccountClientPort;
 export type IAuthService = CloudAuthClientPort;
 export type IGoalService = GoalClientPort;
+export type ILabelService = LabelClientPort;
 export type ITaskService = TaskClientPort;
 export type IScheduleService = ScheduleClientPort;
 export type IReminderService = ReminderClientPort;

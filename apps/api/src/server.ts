@@ -84,6 +84,8 @@ import { composeTask } from './runtime/compose-task';
 // 基础设施模块（直接在 API 内部定义）
 import { composePowerSyncApiModule } from './modules/powersync/module.js';
 import { composeDashboardApiModule } from './modules/dashboard/module.js';
+import { composeLabelApiModule } from './modules/label/module.js';
+import { LabelService, PrismaLabelRepository } from '@memoflow/label';
 import { PrismaDashboardReadPort } from './modules/dashboard/dashboard-read-port.js';
 import {
   PrismaActivityLedgerWriter,
@@ -295,6 +297,9 @@ async function bootstrap(): Promise<void> {
   // runtime composer/factory closure BEFORE registration; register() only
   // mounts routes against the transport-only context.
   const powerSyncApiModule = composePowerSyncApiModule({ db: prisma });
+  const labelApiModule = composeLabelApiModule({
+    service: new LabelService(new PrismaLabelRepository(prisma)),
+  });
   const dashboardApiModule = composeDashboardApiModule({
     dashboardReadPort: new PrismaDashboardReadPort(prisma),
     activityLedgerRuntime: createActivityLedgerRecorder(new PrismaActivityLedgerWriter(prisma)),
@@ -311,6 +316,7 @@ async function bootstrap(): Promise<void> {
     .register(taskComposed.module) // ✅ 任务模块
     .register(aiApiModule) // ✅ AI 模块 (runtime composer)
     .register(goalComposed.module) // ✅ 目标模块
+    .register(labelApiModule) // ✅ 共享标签目录
     .register(dataPortabilityApiModule.module) // ✅ 数据导入导出模块 (runtime composer)
     .register(powerSyncApiModule) // ✅ PowerSync 同步模块
     .register(dashboardApiModule) // ✅ 仪表盘聚合模块

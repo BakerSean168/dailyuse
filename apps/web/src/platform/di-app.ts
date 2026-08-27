@@ -13,6 +13,7 @@ import {
   ACCOUNT_SERVICE_KEY,
   AUTH_SERVICE_KEY,
   GOAL_SERVICE_KEY,
+  LABEL_SERVICE_KEY,
   NOTIFICATION_SERVICE_KEY,
   REMINDER_SERVICE_KEY,
   REPOSITORY_SERVICE_KEY,
@@ -53,6 +54,11 @@ const ruleService = createLazyService(async () => {
 const goalService = createLazyService(async () => {
   const { createGoalHttpClient } = await import('@memoflow/goal/client');
   return createGoalHttpClient(resultHttpClient);
+});
+
+const labelService = createLazyService(async () => {
+  const { createLabelHttpClient } = await import('@memoflow/label/client');
+  return createLabelHttpClient(resultHttpClient);
 });
 
 const notificationService = createLazyService(async () => {
@@ -105,7 +111,6 @@ const aiRuntimeUsage = createLazyService(async () => {
   return createRuntimeUsageHttpClient(resultHttpClient);
 });
 
-
 const taskService = createLazyService(async () => {
   const { createTaskHttpClient } = await import('@memoflow/task/client');
   return createTaskHttpClient(resultHttpClient);
@@ -121,6 +126,7 @@ export function installAppServices(app: App): void {
   app.provide(AUTH_SERVICE_KEY, authService);
   app.provide(RULE_SERVICE_KEY, ruleService);
   app.provide(GOAL_SERVICE_KEY, goalService);
+  app.provide(LABEL_SERVICE_KEY, labelService);
   app.provide(NOTIFICATION_SERVICE_KEY, notificationService);
   app.provide(REMINDER_SERVICE_KEY, reminderService);
   app.provide(REPOSITORY_SERVICE_KEY, repositoryService);

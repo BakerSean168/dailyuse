@@ -342,6 +342,9 @@ importers:
       '@memoflow/http-client':
         specifier: workspace:*
         version: link:../../packages/http-client
+      '@memoflow/label':
+        specifier: workspace:*
+        version: link:../../packages/label
       '@memoflow/notification':
         specifier: workspace:*
         version: link:../../packages/notification
@@ -541,6 +544,9 @@ importers:
       '@memoflow/ipc-client':
         specifier: workspace:*
         version: link:../../packages/ipc-client
+      '@memoflow/label':
+        specifier: workspace:*
+        version: link:../../packages/label
       '@memoflow/notification':
         specifier: workspace:*
         version: link:../../packages/notification
@@ -961,6 +967,9 @@ importers:
       '@memoflow/http-client':
         specifier: workspace:*
         version: link:../../packages/http-client
+      '@memoflow/label':
+        specifier: workspace:*
+        version: link:../../packages/label
       '@memoflow/notification':
         specifier: workspace:*
         version: link:../../packages/notification
@@ -1250,6 +1259,9 @@ importers:
       '@memoflow/ipc-client':
         specifier: workspace:*
         version: link:../ipc-client
+      '@memoflow/label':
+        specifier: workspace:*
+        version: link:../label
       '@memoflow/notification':
         specifier: workspace:*
         version: link:../notification
@@ -1672,6 +1684,12 @@ importers:
       '@memoflow/database':
         specifier: workspace:*
         version: link:../database
+      '@memoflow/http-client':
+        specifier: workspace:*
+        version: link:../http-client
+      '@memoflow/ipc-client':
+        specifier: workspace:*
+        version: link:../ipc-client
     devDependencies:
       '@memoflow/test-utils':
         specifier: workspace:*
