@@ -162,8 +162,13 @@ describe('task-template route contracts', () => {
     const route = getRegisteredRoute(registry, 'get', BASE);
     const querySchema = getQuerySchema(route);
     expect(querySchema).toBeDefined();
-    // Query with status array should pass
-    expect(querySchema.safeParse({ status: ['active'] }).success).toBe(true);
+    // Query with status and Label AND arrays should pass.
+    expect(
+      querySchema.safeParse({
+        status: ['active'],
+        labelIdsAll: ['label-work', 'label-ai'],
+      }).success,
+    ).toBe(true);
   });
 
 
@@ -396,6 +401,21 @@ describe('task template mutation routes run the real validation adapter (Phase 4
     };
     return res;
   }
+
+  it('list: forwards labelIdsAll from the HTTP query into the canonical controller filter', async () => {
+    const controller = createControllerStub();
+    const router = registerTaskTemplateRoutes(controller, { auth: authMiddleware }, null);
+    const handler = getHandler(router, 'get', '/');
+    const req = createReq(undefined);
+    req.query = { labelIdsAll: ['label-work', 'label-ai'] };
+
+    await handler(req, createRes());
+
+    expect(controller.listTemplates).toHaveBeenCalledWith(
+      expect.objectContaining({ labelIdsAll: ['label-work', 'label-ai'] }),
+      expect.anything(),
+    );
+  });
 
   it('create: malformed name is rejected before the controller', async () => {
     const controller = createControllerStub();

@@ -56,8 +56,13 @@ function parseTemplateFilters(query: Record<string, unknown> | undefined): ListT
     : typeof query?.tags === 'string'
       ? [query!.tags as string]
       : undefined;
+  const labelIdsAll = Array.isArray(query?.labelIdsAll)
+    ? (query!.labelIdsAll as string[])
+    : typeof query?.labelIdsAll === 'string'
+      ? [query!.labelIdsAll as string]
+      : undefined;
 
-  return { status, goalId, tags };
+  return { status, goalId, tags, labelIdsAll };
 }
 
 function parseTemplateInstancesRange(query: Record<string, unknown> | undefined): {
