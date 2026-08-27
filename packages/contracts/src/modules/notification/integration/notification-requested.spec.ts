@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildIdempotencyKeyString, refinePortIdempotencyKey } from '@memoflow/contracts/reliable-messaging';
+import { buildIdempotencyKeyString, refinePortIdempotencyKey } from '../../reliable-messaging';
 import {
   NotificationRequestedOutboxInputSchema,
   NotificationRequestedSchema,
