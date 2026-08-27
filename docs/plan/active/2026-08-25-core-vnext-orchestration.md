@@ -1222,6 +1222,16 @@ Routine wall-clock starts after NotificationRequested seam is available or uses 
   rollback/retry behavior is covered explicitly.
 - No production business module outside Notification emits new `notification.dispatch` rows; the
   Notification package retains legacy dispatch consumption only for backward-compatible draining.
+- AC2 integration evidence: `notification-requested-writer.integration.test.ts` now consumes
+  production-shaped `task.reminder` / `goal.reminder` envelopes through the durable
+  `NotificationRequested` path and asserts the materialized Fact carries the workflowKey/topic/type/
+  category/relatedEntity plus both suggested-channel policy decisions; integration suite **9/9**.
+- AC4 anti-resurrection: new `schedule-notification-separation-audit.mjs` (wired into the root
+  `governance-check` target) fails on `@memoflow/notification` imports, the removed legacy delivery
+  symbols (`ScheduleNotificationPort`/`scheduleNotificationPort`/
+  `createNotificationPrismaScheduleNotificationPort`), and `switch (...sourceModule)` execution dispatch
+  in `schedule-orchestration/src` + `schedule/.../infrastructure/scheduling`; the retained
+  domain-neutral if-cascade in `execution/router.ts` stays green (**24 files audited, 0 violations**).
 - Verification: Notification **240/240**, Reminder **491/491**, Task **717/717**, Goal **445/445**,
   Schedule Orchestration **34/34**, Reminder integration **34/34**, targeted API/Desktop composition
   **67/67**; final typecheck passed for notification/reminder/task/goal/schedule-orchestration/api/desktop.

@@ -2,7 +2,11 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { randomUUID } from 'crypto';
 import { buildIdempotencyKeyString } from '@memoflow/contracts/reliable-messaging';
 import {
+  NotificationCategory,
+  NotificationChannelType as ChannelTypeEnum,
   NotificationRequestedSchema,
+  NotificationType,
+  RelatedEntityType,
   type NotificationRequested,
 } from '@memoflow/contracts/notification';
 import { NotificationRequestedPrismaWriterAdapter } from '../notification-requested-writer.prisma.adapter';
@@ -293,5 +297,127 @@ describe('NotificationRequested durable envelope consumer (NOTIF-3301)', () => {
     });
     expect(fact2.correlationId).toBe(inputCorrelationId);
     expect(fact2.causationId).toBe(inputCausationId);
+  });
+
+  it('8. NOTIF-3302: a production task.reminder envelope materializes ONE Fact carrying the Task relatedEntity', async () => {
+    const instanceId = `TaskInstanceId_${randomUUID()}`;
+    const schedulingKey = `${instanceId}|2026-08-10T08:45:00.000Z`;
+    const envelope = NotificationRequestedSchema.parse({
+      identityId,
+      source: 'task',
+      occurrenceKey: schedulingKey,
+      idempotencyKey: buildIdempotencyKeyString({
+        identityId,
+        source: 'task',
+        occurrenceKey: schedulingKey,
+      }),
+      workflowKey: 'task.reminder',
+      topic: 'task.reminder',
+      relatedEntity: { type: RelatedEntityType.Task, id: instanceId },
+      content: {
+        title: '任务提醒：Ship R07',
+        content: '任务「Ship R07」的提前 1day 提醒已到达。',
+        type: NotificationType.Reminder,
+        category: NotificationCategory.Task,
+      },
+      suggestedChannels: [ChannelTypeEnum.InApp, ChannelTypeEnum.Push],
+      correlationId: schedulingKey,
+      causationId: schedulingKey,
+    });
+    const opId = randomUUID();
+    await writer.enqueueNotificationRequested({ operationId: opId, envelope });
+
+    const runtime = buildRuntime();
+    await runtime.tick();
+
+    // Envelope consumed; no second Fact on replay (see tests 3/6).
+    const shared = await prisma.outboxMessage.findUniqueOrThrow({ where: { id: opId } });
+    expect(shared.status).toBe('succeeded');
+
+    const fact = await prisma.notification.findFirstOrThrow({
+      where: { identityId, idempotencyKey: envelope.idempotencyKey },
+    });
+    expect(fact.workflowKey).toBe('task.reminder');
+    expect(fact.topic).toBe('task.reminder');
+    expect(fact.type).toBe(NotificationType.Reminder);
+    expect(fact.category).toBe(NotificationCategory.Task);
+    expect(fact.relatedEntityType).toBe(RelatedEntityType.Task);
+    expect(fact.relatedEntityId).toBe(instanceId);
+    expect(fact.importance).toBe('Moderate');
+    expect(fact.urgency).toBe('Medium');
+    // Durable correlation chain authored by the task handler survives.
+    expect(fact.correlationId).toBe(schedulingKey);
+    expect(fact.causationId).toBe(schedulingKey);
+
+    // Both suggested channels produce a policy decision + pending dispatch intent.
+    const decisions = await prisma.notificationDeliveryDecisionRecord.findMany({
+      where: { notificationId: fact.id },
+    });
+    expect(decisions.map((d) => d.channel).sort()).toEqual(['InApp', 'Push']);
+
+    const dispatch = await prisma.notificationDispatchOutbox.findMany({
+      where: { notificationId: fact.id },
+    });
+    expect(dispatch.map((d) => d.channel).sort()).toEqual(['InApp', 'Push']);
+    expect(dispatch.every((d) => d.status === 'pending')).toBe(true);
+  });
+
+  it('9. NOTIF-3302: a production goal.reminder envelope materializes ONE Fact carrying the Goal relatedEntity', async () => {
+    const goalId = `GoalId_${randomUUID()}`;
+    const schedulingKey = `${goalId}|2026-08-10T08:45:00.000Z`;
+    const envelope = NotificationRequestedSchema.parse({
+      identityId,
+      source: 'goal-reminder',
+      occurrenceKey: schedulingKey,
+      idempotencyKey: buildIdempotencyKeyString({
+        identityId,
+        source: 'goal-reminder',
+        occurrenceKey: schedulingKey,
+      }),
+      workflowKey: 'goal.reminder',
+      topic: 'goal.reminder',
+      relatedEntity: { type: RelatedEntityType.Goal, id: goalId },
+      content: {
+        title: '目标提醒：Ship R06',
+        content: '目标「Ship R06」距离截止还有 3 天。',
+        type: NotificationType.Reminder,
+        category: NotificationCategory.Goal,
+      },
+      suggestedChannels: [ChannelTypeEnum.InApp, ChannelTypeEnum.Push],
+      correlationId: schedulingKey,
+    });
+    const opId = randomUUID();
+    await writer.enqueueNotificationRequested({ operationId: opId, envelope });
+
+    const runtime = buildRuntime();
+    await runtime.tick();
+
+    const shared = await prisma.outboxMessage.findUniqueOrThrow({ where: { id: opId } });
+    expect(shared.status).toBe('succeeded');
+
+    const fact = await prisma.notification.findFirstOrThrow({
+      where: { identityId, idempotencyKey: envelope.idempotencyKey },
+    });
+    expect(fact.workflowKey).toBe('goal.reminder');
+    expect(fact.topic).toBe('goal.reminder');
+    expect(fact.type).toBe(NotificationType.Reminder);
+    expect(fact.category).toBe(NotificationCategory.Goal);
+    expect(fact.relatedEntityType).toBe(RelatedEntityType.Goal);
+    expect(fact.relatedEntityId).toBe(goalId);
+    expect(fact.importance).toBe('Moderate');
+    expect(fact.urgency).toBe('Medium');
+    expect(fact.correlationId).toBe(schedulingKey);
+    expect(fact.causationId).toBeNull();
+
+    const decisions = await prisma.notificationDeliveryDecisionRecord.findMany({
+      where: { notificationId: fact.id },
+    });
+    expect(decisions.map((d) => d.channel).sort()).toEqual(['InApp', 'Push']);
+
+    const dispatch = await prisma.notificationDispatchOutbox.findMany({
+      where: { notificationId: fact.id },
+    });
+    expect(dispatch.map((d) => d.channel).sort()).toEqual(['InApp', 'Push']);
+    expect(dispatch.every((d) => d.status === 'pending')).toBe(true);
   });
 });
