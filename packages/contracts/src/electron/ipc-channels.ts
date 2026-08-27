@@ -21,6 +21,7 @@ export const TaskChannels = {
   INSTANCE_UNCOMPLETE: 'task:instance:uncomplete',
   INSTANCE_SKIP: 'task:instance:skip',
   INSTANCE_MARK_MISSED: 'task:instance:mark-missed',
+  INSTANCE_RESCHEDULE: 'task:reschedule-instance',
 } as const;
 
 export const GoalChannels = {

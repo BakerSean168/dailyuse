@@ -23,7 +23,7 @@ No Premium/Scheduler/resource plugin is installed or required.
 - now indicator
 - selection callback
 - per-event move/resize/read-only capabilities
-- `eventDrop` / `eventResize` -> fake owner command
+- `eventDrop` / `eventResize` -> canonical PLAN-4303 owner command router
 - owner failure/exception -> FullCalendar `revert()`
 - narrow-panel presentation
 - light/dark presentation
@@ -53,9 +53,9 @@ These figures are a local engineering baseline, not a product performance SLA.
 
 ## Drag/resize caveat
 
-The deterministic adapter tests prove that FullCalendar `eventDrop` / `eventResize` callbacks route to the owner command and invoke the supplied `revert()` when the command fails. Two raw Playwright pointer-gesture attempts in headless Chromium did **not** trigger FullCalendar's drag lifecycle, so this PoC does **not** claim browser-level pointer DnD E2E success.
+The deterministic adapter tests prove that FullCalendar `eventDrop` / `eventResize` callbacks route through the canonical source-aware owner command router and invoke the supplied `revert()` when the owner rejects or conflicts. Two raw Playwright pointer-gesture attempts in headless Chromium did **not** trigger FullCalendar's drag lifecycle, so this PoC does **not** claim browser-level pointer DnD E2E success.
 
-Before deleting the current custom calendar during the production migration, PLAN-4401 should add a stable real-Planner drag/resize E2E (or a supported FullCalendar interaction harness) and verify both successful owner mutation and visual revert on failure.
+Before deleting the current custom calendar during the production migration, PLAN-4304 should add a stable real-Planner drag/resize E2E (or a supported FullCalendar interaction harness) and verify both successful owner mutation and visual revert on failure.
 
 ## Comparison to current custom Planner
 

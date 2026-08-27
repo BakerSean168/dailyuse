@@ -21,7 +21,7 @@ describe('task schedule source ownership surface', () => {
     expect(projection).toContain('ScheduledIntent<TaskReminderScheduledPayload>');
     expect(projection).toContain('SchedulingOwner');
     expect(projection).toContain("TASK_REMINDER_HANDLER_KEY = 'task.reminder.fire'");
-    expect(projection).toContain('findByIdForIdentity(identityId, templateId)');
+    expect(projection).toMatch(/findByIdForIdentity\(\s*identityId,\s*templateId,?\s*\)/);
     expect(projection).not.toContain('findById(templateId)');
     expect(projection).toContain('findByTemplateId(');
     expect(projection).toContain('String(templateDTO.identityId)');

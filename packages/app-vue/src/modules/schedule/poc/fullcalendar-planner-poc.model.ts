@@ -13,23 +13,6 @@ import { asInstant, asYmd } from '@memoflow/time';
 export type CalendarEventProjectionFixture = CalendarEventProjection;
 export type { PlannerEditableCapabilities, PlannerOwnerCommandTarget, PlannerSourceType };
 
-export type PlannerOwnerMutationKind = 'move' | 'resize';
-
-export interface PlannerOwnerMutationCommand {
-  readonly kind: PlannerOwnerMutationKind;
-  readonly target: PlannerOwnerCommandTarget;
-  readonly sourceType: PlannerSourceType;
-  readonly sourceId: string;
-  readonly revision: number;
-  readonly start: string;
-  readonly end: string | null;
-  readonly allDay: boolean;
-}
-
-export interface PlannerOwnerCommandPort {
-  execute(command: PlannerOwnerMutationCommand): Promise<{ readonly ok: boolean }>;
-}
-
 export const plannerPocFixture: readonly CalendarEventProjection[] = [
   {
     identityId: 'identity-poc',

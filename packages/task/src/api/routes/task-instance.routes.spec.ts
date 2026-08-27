@@ -34,6 +34,7 @@ function createControllerStub(): TaskInstanceController {
     startInstance: vi.fn(),
     deleteInstance: vi.fn(),
     markMissedInstance: vi.fn(),
+    rescheduleInstance: vi.fn(),
   } as unknown as TaskInstanceController;
 }
 
@@ -52,9 +53,12 @@ function getRegisteredRoute(
 function getJsonBodySchema(route: RegisteredRoute): {
   safeParse: (value: unknown) => { success: boolean };
 } {
-  return (((route.request?.body as Record<string, unknown> | undefined)?.content as
-    | Record<string, unknown>
-    | undefined)?.['application/json'] as Record<string, unknown> | undefined)?.schema as {
+  return (
+    (
+      (route.request?.body as Record<string, unknown> | undefined)?.content as
+        Record<string, unknown> | undefined
+    )?.['application/json'] as Record<string, unknown> | undefined
+  )?.schema as {
     safeParse: (value: unknown) => { success: boolean };
   };
 }
@@ -66,12 +70,23 @@ function getResponseSchema(
   safeParse: (value: unknown) => { success: boolean };
   _def?: { typeName?: string };
 } {
-  const responses = route.responses as Record<string, { content?: Record<string, unknown> }> | undefined;
+  const responses = route.responses as
+    Record<string, { content?: Record<string, unknown> }> | undefined;
   const response = responses?.[String(status)];
   const schema = (response?.content as Record<string, unknown> | undefined)?.[
     'application/json'
-  ] as { schema?: { safeParse: (value: unknown) => { success: boolean }; _def?: { typeName?: string } } } | undefined;
-  return schema?.schema ?? (response as unknown as { safeParse: (value: unknown) => { success: boolean } });
+  ] as
+    | {
+        schema?: {
+          safeParse: (value: unknown) => { success: boolean };
+          _def?: { typeName?: string };
+        };
+      }
+    | undefined;
+  return (
+    schema?.schema ??
+    (response as unknown as { safeParse: (value: unknown) => { success: boolean } })
+  );
 }
 
 function getParamsSchema(route: RegisteredRoute): {
@@ -142,7 +157,9 @@ describe('task-instance route contracts', () => {
     expect(bodySchema.safeParse({ reason: 'No completion evidence' }).success).toBe(true);
     expect(bodySchema.safeParse({ reason: 42 }).success).toBe(false);
     expect(responseSchema).toBeDefined();
-    expect(registry.paths.some((candidate) => candidate.path === `${BASE}/check-expired`)).toBe(false);
+    expect(registry.paths.some((candidate) => candidate.path === `${BASE}/check-expired`)).toBe(
+      false,
+    );
   });
 
   it('GET / list uses z.array(TaskInstanceResponseSchema)', () => {
@@ -228,6 +245,41 @@ describe('task-instance route contracts', () => {
     expect(bodySchema.safeParse({ reason: 'Deferred until tomorrow' }).success).toBe(true);
   });
 
+  it('POST /{id}/reschedule requires owner time + expectedVersion', () => {
+    const registry = new TestOpenApiRegistry();
+    registerAll(registry);
+
+    const route = getRegisteredRoute(registry, 'post', `${BASE}/{id}/reschedule`);
+    const bodySchema = getJsonBodySchema(route);
+    expect(
+      bodySchema.safeParse({
+        newTime: {
+          timeType: 'TimePoint',
+          startDate: Date.now(),
+          timePoint: 16 * 60,
+          timeRange: null,
+        },
+        expectedVersion: 3,
+      }).success,
+    ).toBe(true);
+    expect(
+      bodySchema.safeParse({
+        newTime: { timeType: 'TimePoint', startDate: null, timePoint: 16 * 60, timeRange: null },
+        expectedVersion: 3,
+      }).success,
+    ).toBe(false);
+    expect(
+      bodySchema.safeParse({
+        newTime: {
+          timeType: 'TimePoint',
+          startDate: Date.now(),
+          timePoint: 16 * 60,
+          timeRange: null,
+        },
+      }).success,
+    ).toBe(false);
+  });
+
   it('DELETE /{id} returns z.null() data', () => {
     const registry = new TestOpenApiRegistry();
     registerAll(registry);
@@ -266,6 +318,7 @@ describe('task-instance route contracts', () => {
       [`${BASE}/{id}/uncomplete`, 'post'],
       [`${BASE}/{id}/skip`, 'post'],
       [`${BASE}/{id}/start`, 'post'],
+      [`${BASE}/{id}/reschedule`, 'post'],
       [`${BASE}/{id}`, 'delete'],
     ] as const;
 

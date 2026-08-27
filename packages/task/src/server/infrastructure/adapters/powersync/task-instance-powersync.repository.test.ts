@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { IElectronDatabaseTransaction } from '@memoflow/contracts/electron';
 import { PowerSyncTaskInstanceRepository } from './task-instance-powersync.repository';
+import type { TaskInstance } from '../../../domain/aggregates/task-instance';
 
 describe('PowerSyncTaskInstanceRepository template statistics', () => {
   it('maps the same rolling due window and future Pending projection as Prisma', async () => {
@@ -89,7 +90,12 @@ describe('PowerSyncTaskInstanceRepository occurrence identity (TASK-2204)', () =
         instanceDate: Date.UTC(2026, 2, 8),
         status: 'Pending',
         importance: 'Moderate',
-        timeConfig: { timeType: 'AllDay', startDate: Date.UTC(2026, 2, 8), timePoint: null, timeRange: null },
+        timeConfig: {
+          timeType: 'AllDay',
+          startDate: Date.UTC(2026, 2, 8),
+          timePoint: null,
+          timeRange: null,
+        },
         actualStartTime: null,
         actualEndTime: null,
         comment: null,
@@ -100,7 +106,7 @@ describe('PowerSyncTaskInstanceRepository occurrence identity (TASK-2204)', () =
       }),
       domainEvents: [],
       pullDomainEvents: () => [],
-    } as any;
+    } as unknown as TaskInstance;
 
     await repository.save(instance);
 
@@ -110,5 +116,68 @@ describe('PowerSyncTaskInstanceRepository occurrence identity (TASK-2204)', () =
       ['tpl-1', 'identity-a', 'tpl-1:2026-03-08'],
     );
     expect(execute).not.toHaveBeenCalled();
+  });
+});
+
+describe('PowerSyncTaskInstanceRepository optimistic instance writes (PLAN-4303)', () => {
+  function updatedInstance() {
+    return {
+      occurrenceKey: 'tpl-1:2026-08-28',
+      toServerDTO: () => ({
+        id: 'instance-1',
+        templateId: 'tpl-1',
+        identityId: 'identity-a',
+        instanceDate: Date.UTC(2026, 7, 28),
+        status: 'Pending',
+        importance: 'Moderate',
+        timeConfig: {
+          timeType: 'TimePoint',
+          startDate: Date.UTC(2026, 7, 28),
+          timePoint: 960,
+          timeRange: null,
+        },
+        actualStartTime: null,
+        actualEndTime: null,
+        comment: null,
+        version: 2,
+        createdAt: Date.UTC(2026, 7, 27),
+        updatedAt: Date.UTC(2026, 7, 28),
+        deletedAt: null,
+      }),
+      domainEvents: [],
+      pullDomainEvents: () => [],
+    } as unknown as TaskInstance;
+  }
+
+  it('fences updates by identity + expected version', async () => {
+    const getOptional = vi.fn().mockResolvedValueOnce({ id: 'instance-1', version: 1 });
+    const execute = vi.fn().mockResolvedValue({ rowsAffected: 1 });
+    const repository = new PowerSyncTaskInstanceRepository({
+      getOptional,
+      execute,
+    } as unknown as IElectronDatabaseTransaction);
+
+    await repository.save(updatedInstance());
+
+    const [sql, params] = execute.mock.calls[0] as [string, unknown[]];
+    expect(sql).toContain('WHERE id = ? AND identity_id = ? AND version = ?');
+    expect(params.slice(-3)).toEqual(['instance-1', 'identity-a', 1]);
+  });
+
+  it('throws a concurrency conflict instead of overwriting a newer local row', async () => {
+    const getOptional = vi
+      .fn()
+      .mockResolvedValueOnce({ id: 'instance-1', version: 2 })
+      .mockResolvedValueOnce({ version: 2 });
+    const execute = vi.fn().mockResolvedValue({ rowsAffected: 0 });
+    const repository = new PowerSyncTaskInstanceRepository({
+      getOptional,
+      execute,
+    } as unknown as IElectronDatabaseTransaction);
+
+    await expect(repository.save(updatedInstance())).rejects.toMatchObject({
+      name: 'OptimisticConcurrencyError',
+      aggregateName: 'TaskInstance',
+    });
   });
 });

@@ -2,6 +2,7 @@ import { ResultErrorException, type ResultError } from '@memoflow/contracts/resu
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
 import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
 import { mapInfraErrorToResultError } from '@memoflow/utils/errors';
+import { OptimisticConcurrencyError } from '../../../domain/errors/optimistic-concurrency.error';
 
 export interface TaskWriteRepositories {
   /** 完整事务（complete 等）需要模板读取；仅实例操作（uncomplete）可省略。 */
@@ -25,6 +26,17 @@ export function mapTaskWriteErrorToResultError(
   error: unknown,
   fallbackMessage: string,
 ): ResultError {
+  if (error instanceof OptimisticConcurrencyError) {
+    return {
+      code: 'CONFLICT',
+      message: error.message,
+      context: {
+        aggregateName: error.aggregateName,
+        aggregateId: error.aggregateId,
+      },
+      cause: error,
+    };
+  }
   if (error instanceof ResultErrorException) {
     const ctx = (error as { context?: Record<string, unknown> }).context;
     const cause = (error as { cause?: unknown }).cause ?? error;

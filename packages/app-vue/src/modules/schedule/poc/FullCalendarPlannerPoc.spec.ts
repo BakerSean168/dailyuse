@@ -7,7 +7,7 @@ describe('FullCalendarPlannerPoc surface', () => {
     const wrapper = mount(FullCalendarPlannerPoc, {
       attachTo: document.body,
       props: {
-        ownerCommands: { execute: vi.fn(async () => ({ ok: true })) },
+        ownerCommands: { route: vi.fn(async () => ({ status: 'unsupported' as const, message: 'unused' })) },
       },
     });
     await vi.waitFor(() => expect(wrapper.find('[role="tablist"]').exists()).toBe(true));
@@ -44,7 +44,7 @@ describe('FullCalendarPlannerPoc surface', () => {
   it('supports explicit narrow and dark presentation without changing calendar ownership behavior', () => {
     const wrapper = mount(FullCalendarPlannerPoc, {
       props: {
-        ownerCommands: { execute: vi.fn(async () => ({ ok: true })) },
+        ownerCommands: { route: vi.fn(async () => ({ status: 'unsupported' as const, message: 'unused' })) },
         narrow: true,
         theme: 'dark',
       },

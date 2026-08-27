@@ -2,23 +2,20 @@ import interactionPlugin from '@fullcalendar/vue3/interaction';
 import dayGridPlugin from '@fullcalendar/vue3/daygrid';
 import timeGridPlugin from '@fullcalendar/vue3/timegrid';
 import listPlugin from '@fullcalendar/vue3/list';
-import type {
-  CalendarOptions,
-  DateSelectInfo,
-  EventApi,
-  EventDropInfo,
-  EventInput,
-  EventResizeDoneInfo,
-} from '@fullcalendar/vue3';
-import type {
-  CalendarEventProjectionFixture,
-  PlannerOwnerCommandPort,
-  PlannerOwnerMutationKind,
-} from './fullcalendar-planner-poc.model';
+import type { CalendarOptions, DateSelectInfo, EventInput } from '@fullcalendar/vue3';
+import type { CalendarEventProjectionFixture } from './fullcalendar-planner-poc.model';
+import {
+  applyFullCalendarPlannerMutation,
+  defaultPlannerMutationTimePort,
+  type PlannerMutationTimePort,
+  type PlannerOwnerCommandRouter,
+} from '../planner';
 
 export interface FullCalendarPlannerPocAdapterOptions {
   readonly projections: readonly CalendarEventProjectionFixture[];
-  readonly ownerCommands: PlannerOwnerCommandPort;
+  /** Canonical PLAN-4303 owner router; the PoC no longer owns a second mutation protocol. */
+  readonly ownerCommands: PlannerOwnerCommandRouter;
+  readonly time?: PlannerMutationTimePort;
   readonly onSelect?: (selection: { start: string; end: string; allDay: boolean }) => void;
   readonly initialDate?: string;
 }
@@ -37,43 +34,10 @@ export function toFullCalendarEvent(projection: CalendarEventProjectionFixture):
   };
 }
 
-function getProjection(event: EventApi): CalendarEventProjectionFixture {
-  return event.extendedProps.projection as CalendarEventProjectionFixture;
-}
-
-async function applyOwnerMutation(
-  kind: PlannerOwnerMutationKind,
-  info: EventDropInfo | EventResizeDoneInfo,
-  ownerCommands: PlannerOwnerCommandPort,
-): Promise<void> {
-  const projection = getProjection(info.event);
-  const allowed =
-    kind === 'move' ? projection.editableCapabilities.move : projection.editableCapabilities.resize;
-  if (!allowed || info.event.start == null) {
-    info.revert();
-    return;
-  }
-
-  try {
-    const result = await ownerCommands.execute({
-      kind,
-      target: projection.ownerCommandTarget,
-      sourceType: projection.sourceType,
-      sourceId: projection.sourceId,
-      revision: projection.revision,
-      start: info.event.start.toISOString(),
-      end: info.event.end?.toISOString() ?? null,
-      allDay: info.event.allDay,
-    });
-    if (!result.ok) info.revert();
-  } catch {
-    info.revert();
-  }
-}
-
 export function createFullCalendarPlannerPocOptions(
   options: FullCalendarPlannerPocAdapterOptions,
 ): CalendarOptions {
+  const time = options.time ?? defaultPlannerMutationTimePort;
   return {
     plugins: [interactionPlugin, dayGridPlugin, timeGridPlugin, listPlugin],
     initialView: 'timeGridWeek',
@@ -89,8 +53,10 @@ export function createFullCalendarPlannerPocOptions(
     editable: true,
     nowIndicator: true,
     height: '100%',
-    eventDrop: (info) => void applyOwnerMutation('move', info, options.ownerCommands),
-    eventResize: (info) => void applyOwnerMutation('resize', info, options.ownerCommands),
+    eventDrop: (info) =>
+      void applyFullCalendarPlannerMutation('move', info, options.ownerCommands, time),
+    eventResize: (info) =>
+      void applyFullCalendarPlannerMutation('resize', info, options.ownerCommands, time),
     select: (info: DateSelectInfo) => {
       options.onSelect?.({
         start: info.start.toISOString(),

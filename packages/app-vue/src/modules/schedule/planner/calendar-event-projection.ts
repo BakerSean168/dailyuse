@@ -204,7 +204,7 @@ export function projectRoutineWallClockOccurrence(
       subtitle: occurrence.subtitle ?? null,
       tone: 'default',
     },
-    editableCapabilities: { move: occurrence.editable ?? true, resize: false },
+    editableCapabilities: { move: occurrence.editable ?? false, resize: false },
     ownerCommandTarget: {
       ownerType: 'routine.routine',
       ownerId: occurrence.routineId,

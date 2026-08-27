@@ -83,6 +83,7 @@ import {
   CreateTaskTemplateSchema,
   GenerateInstancesInvocationSchema,
   MarkTaskInstanceMissedInvocationSchema,
+  RescheduleTaskInstanceInvocationSchema,
   SkipTaskInstanceInvocationSchema,
   TaskInstanceIdCommandInvocationSchema,
   TaskTemplateIdCommandInvocationSchema,
@@ -303,7 +304,8 @@ export function createTaskElectronModule(
           ctx,
           TaskChannels.TEMPLATE_ABANDON,
           AbandonTaskPlanInvocationSchema,
-          (data, requestContext) => templateController.abandonPlan(data.params.id, data.body, requestContext),
+          (data, requestContext) =>
+            templateController.abandonPlan(data.params.id, data.body, requestContext),
           (args) => ({
             params: { id: (args as { id?: string }).id },
             body: (args as { request?: unknown }).request,
@@ -458,7 +460,28 @@ export function createTaskElectronModule(
           }),
         );
         installed.push(TaskChannels.INSTANCE_MARK_MISSED);
-
+        registerValidatedChannel(
+          ctx,
+          TaskChannels.INSTANCE_RESCHEDULE,
+          RescheduleTaskInstanceInvocationSchema,
+          (data, requestContext) =>
+            instanceController.rescheduleInstance(data.params.id, data.body, requestContext),
+          (args) => {
+            const wire = args as {
+              instanceId?: unknown;
+              newTime?: unknown;
+              expectedVersion?: unknown;
+            };
+            return {
+              params: { id: wire.instanceId },
+              body: {
+                newTime: wire.newTime,
+                expectedVersion: wire.expectedVersion,
+              },
+            };
+          },
+        );
+        installed.push(TaskChannels.INSTANCE_RESCHEDULE);
 
         await options.instance.start();
         state = 'registered';

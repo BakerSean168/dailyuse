@@ -1,14 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { EventApi } from '@fullcalendar/vue3';
+import { fail, ok } from '@memoflow/contracts/result';
 import {
   createFullCalendarPlannerPocOptions,
   toFullCalendarEvent,
 } from './fullcalendar-planner-poc.adapter';
-import {
-  plannerPocFixture,
-  type CalendarEventProjectionFixture,
-  type PlannerOwnerCommandPort,
-} from './fullcalendar-planner-poc.model';
+import { plannerPocFixture, type CalendarEventProjectionFixture } from './fullcalendar-planner-poc.model';
+import { createPlannerOwnerCommandRouter } from '../planner';
 
 function eventFor(
   projection: CalendarEventProjectionFixture,
@@ -23,11 +21,15 @@ function eventFor(
   } as unknown as EventApi;
 }
 
-describe('FullCalendar Standard Planner PoC adapter (PLAN-4301)', () => {
+function unusedRouter() {
+  return createPlannerOwnerCommandRouter({});
+}
+
+describe('FullCalendar Standard Planner PoC adapter (PLAN-4301/4303)', () => {
   it('configures only Standard day/week/month/list views with select/edit/now indicator', () => {
     const options = createFullCalendarPlannerPocOptions({
       projections: plannerPocFixture,
-      ownerCommands: { execute: vi.fn(async () => ({ ok: true })) },
+      ownerCommands: unusedRouter(),
     });
 
     expect(options.initialView).toBe('timeGridWeek');
@@ -52,14 +54,14 @@ describe('FullCalendar Standard Planner PoC adapter (PLAN-4301)', () => {
     });
   });
 
-  it('routes drop/resize through fake owner commands and reverts a failed mutation', async () => {
-    const execute = vi
-      .fn<PlannerOwnerCommandPort['execute']>()
-      .mockResolvedValueOnce({ ok: true })
-      .mockResolvedValueOnce({ ok: false });
+  it('routes drop/resize through the canonical Schedule owner command and reverts a failed mutation', async () => {
+    const updateSchedule = vi
+      .fn()
+      .mockResolvedValueOnce(ok({}))
+      .mockResolvedValueOnce(fail({ code: 'CONFLICT', message: 'stale schedule revision' }));
     const options = createFullCalendarPlannerPocOptions({
       projections: plannerPocFixture,
-      ownerCommands: { execute },
+      ownerCommands: createPlannerOwnerCommandRouter({ schedule: { updateSchedule } }),
     });
     const projection = plannerPocFixture[0]!;
     const dropRevert = vi.fn();
@@ -67,12 +69,15 @@ describe('FullCalendar Standard Planner PoC adapter (PLAN-4301)', () => {
     let visualState = 'original';
 
     options.eventDrop!({ event: eventFor(projection), revert: dropRevert } as never);
-    await vi.waitFor(() => expect(execute).toHaveBeenCalledTimes(1));
-    expect(execute.mock.calls[0]?.[0]).toMatchObject({
-      kind: 'move',
-      target: projection.ownerCommandTarget,
-      revision: 7,
-    });
+    await vi.waitFor(() => expect(updateSchedule).toHaveBeenCalledTimes(1));
+    expect(updateSchedule.mock.calls[0]).toEqual([
+      projection.ownerCommandTarget.ownerId,
+      {
+        startTime: Date.parse('2026-08-27T02:00:00.000Z'),
+        endTime: Date.parse('2026-08-27T03:00:00.000Z'),
+        expectedVersion: projection.revision,
+      },
+    ]);
     expect(dropRevert).not.toHaveBeenCalled();
 
     visualState = 'optimistic-resize';
@@ -81,32 +86,30 @@ describe('FullCalendar Standard Planner PoC adapter (PLAN-4301)', () => {
       resizeRevert();
     };
     options.eventResize!({ event: eventFor(projection), revert: visualRevert } as never);
-    await vi.waitFor(() => expect(execute).toHaveBeenCalledTimes(2));
-    expect(execute.mock.calls[1]?.[0]).toMatchObject({ kind: 'resize' });
-    expect(resizeRevert).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(updateSchedule).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => expect(resizeRevert).toHaveBeenCalledTimes(1));
     expect(visualState).toBe('original');
   });
 
   it('reverts defensive mutation attempts against read-only events without issuing owner commands', async () => {
-    const execute = vi.fn<PlannerOwnerCommandPort['execute']>(async () => ({ ok: true }));
+    const updateGoal = vi.fn().mockResolvedValue(ok({}));
     const options = createFullCalendarPlannerPocOptions({
       projections: plannerPocFixture,
-      ownerCommands: { execute },
+      ownerCommands: createPlannerOwnerCommandRouter({ goal: { updateGoal } }),
     });
     const revert = vi.fn();
 
     options.eventDrop!({ event: eventFor(plannerPocFixture[2]!), revert } as never);
-    await Promise.resolve();
+    await vi.waitFor(() => expect(revert).toHaveBeenCalledTimes(1));
 
-    expect(execute).not.toHaveBeenCalled();
-    expect(revert).toHaveBeenCalledTimes(1);
+    expect(updateGoal).not.toHaveBeenCalled();
   });
 
   it('forwards user selection as an owner-neutral projection request', () => {
     const onSelect = vi.fn();
     const options = createFullCalendarPlannerPocOptions({
       projections: plannerPocFixture,
-      ownerCommands: { execute: vi.fn(async () => ({ ok: true })) },
+      ownerCommands: unusedRouter(),
       onSelect,
     });
 

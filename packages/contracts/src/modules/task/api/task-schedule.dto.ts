@@ -4,10 +4,37 @@ import type { TaskInstanceId } from '../../../primitives';
 import { TaskTimeConfigSchema } from './task-template.dto';
 import type { TaskInstanceClientDTO } from '../aggregates/task-instance-client';
 
-export const RescheduleTaskSchema = z.object({
-  instanceId: brandedId<TaskInstanceId>(),
-  newTime: TaskTimeConfigSchema,
-});
+function requireRescheduleDate(
+  value: { newTime: { startDate: number | null } },
+  ctx: z.RefinementCtx,
+): void {
+  if (value.newTime.startDate == null) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['newTime', 'startDate'],
+      message: '重新安排任务实例必须提供 startDate',
+    });
+  }
+}
+
+export const RescheduleTaskBodySchema = z
+  .object({
+    newTime: TaskTimeConfigSchema,
+    expectedVersion: z.number().int().positive(),
+  })
+  .strict()
+  .superRefine(requireRescheduleDate);
+export type RescheduleTaskInput = z.infer<typeof RescheduleTaskBodySchema>;
+
+/** Existing RPC shape retained and completed for Electron/typed RPC callers. */
+export const RescheduleTaskSchema = z
+  .object({
+    instanceId: brandedId<TaskInstanceId>(),
+    newTime: TaskTimeConfigSchema,
+    expectedVersion: z.number().int().positive(),
+  })
+  .strict()
+  .superRefine(requireRescheduleDate);
 
 export type RescheduleTaskReq = z.infer<typeof RescheduleTaskSchema>;
 export type RescheduleTaskRes = TaskInstanceClientDTO;

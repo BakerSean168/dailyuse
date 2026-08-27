@@ -55,7 +55,7 @@ Wave 0 evidence is frozen in [`Core vNext Wave 0 — Baseline / Acceptance / Sha
 
 **Wave 2 execution point (closed 2026-08-26):** `GOAL-2101~2103`, `TASK-2201~2205`, `ROUTINE-2301~2303`, and `NOTIF-2401/2402` are integrated and gate-verified.
 
-**Current next executable parallel point:** `TASK-3101`, `GOAL-3201`, `NOTIF-3301`, and `SETTLE-3501`. These four lanes can start independently from the frozen W2 contracts; handler cutover follows their dependency edges below.
+**Current execution point (2026-08-27):** Wave 3 vertical integration is closed. Wave 4A has completed `ROUTINE-4101~4103` and `ROUTINE-4201~4203`, with `ROUTINE-4104` remaining; Planner Wave 4B has completed `PLAN-4301~4303`, with `PLAN-4304` as the next Planner cutover. `ROUTINE-4104` and `PLAN-4304` may proceed independently before the product-surface rebuild lanes converge on them.
 
 **Wave 1 gate evidence (2026-08-25):**
 
@@ -1630,6 +1630,17 @@ Routine wall-clock occurrence
 8. concurrency conflict surface.
 
 **Acceptance:** Planner never directly writes Scheduler invocation persistence.
+
+**Implementation evidence (2026-08-27):**
+
+- added one canonical `PlannerOwnerCommandRouter` over owner-domain client commands: CalendarEntry -> `ScheduleClientPort.updateSchedule`, Task occurrence -> `TaskClientPort.rescheduleInstance`, Goal start/deadline -> `GoalClientPort.updateGoal`, and Routine wall-clock -> an explicit `RoutinePlannerOwnerCommandPort`; no Planner command path imports Scheduler orchestration, `ScheduleTask`, `SchedulingPort`, or invocation persistence;
+- Task occurrence movement is now a real owner command rather than Scheduler metadata mutation: `TaskInstance.reschedule()` preserves template ownership, requires Pending/InProgress state, advances aggregate revision, emits `task:rescheduled`, and causes the existing Task scheduling projector to reconcile the new due time through `SchedulingPort`;
+- HTTP and Electron expose the same validated reschedule invocation contract with `expectedVersion`; Prisma already fenced Task instance updates and the PowerSync repository now uses the same identity + previous-version CAS semantics, including collision/conflict handling and transport-level `CONFLICT` results;
+- Planner range conversion remains on Product Time; AllDay / TimePoint / same-day TimeRange are mapped explicitly and cross-day Task ranges are rejected rather than silently corrupting `TaskTimeConfig`;
+- source projection capabilities are enforced before command dispatch. Routine wall-clock projections remain read-only by default and become movable only when the Routine source supplies both editable capability and its owner command port, so Planner never fabricates a missing Routine mutation API;
+- FullCalendar `eventDrop` / `eventResize` now use the canonical router through one optimistic mutation adapter; every conflict, validation failure, unsupported/read-only result, or malformed FullCalendar event calls `revert()`, while successful owner mutations retain the visual change;
+- removed the PoC-local duplicate owner-mutation protocol: the Standard FullCalendar PoC now exercises the same source-aware router that the production cutover will consume in `PLAN-4304`;
+- verification: contracts `474/474`, Task `727/727`, app-vue `737/737`; Task and app-vue dependency-chain typechecks are green. Task/app-vue project lint have zero errors (repository-existing warnings remain); the contracts project lint still has one pre-existing module-boundary error outside this change in `notification-requested.spec.ts`.
 
 ## PLAN-4304 — Retire custom calendar layout code after parity
 

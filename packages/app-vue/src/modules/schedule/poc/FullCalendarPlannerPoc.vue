@@ -35,12 +35,12 @@ import { createFullCalendarPlannerPocOptions } from './fullcalendar-planner-poc.
 import {
   plannerPocFixture,
   type CalendarEventProjectionFixture,
-  type PlannerOwnerCommandPort,
 } from './fullcalendar-planner-poc.model';
+import type { PlannerOwnerCommandRouter } from '../planner';
 
 const props = withDefaults(
   defineProps<{
-    ownerCommands: PlannerOwnerCommandPort;
+    ownerCommands: PlannerOwnerCommandRouter;
     projections?: readonly CalendarEventProjectionFixture[];
     narrow?: boolean;
     theme?: 'light' | 'dark';

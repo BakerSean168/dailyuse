@@ -187,7 +187,7 @@ describe('CalendarEventProjection (PLAN-4302)', () => {
       sourceId: routineOccurrence.occurrenceKey,
       allDay: false,
       ownerCommandTarget: { ownerType: 'routine.routine', ownerId: 'routine-1' },
-      editableCapabilities: { move: true, resize: false },
+      editableCapabilities: { move: false, resize: false },
       displayMetadata: { semantic: 'routine-wall-clock' },
     });
     if (event.allDay) throw new Error('Routine wall-clock occurrence must be timed');

@@ -34,6 +34,29 @@ const TransportFailureHttpPolicy = defineFailureHttpPolicy(TransportFailureRegis
 });
 
 describe('result transport context support', () => {
+  it('omits undefined optional detail values from IPC while preserving real values', () => {
+    const withoutValue = toIpcResult(
+      fail({
+        code: 'VALIDATION_ERROR',
+        message: 'invalid',
+        details: [{ field: 'body.name', code: 'INVALID_FIELD', message: 'required' }],
+      }),
+    );
+    expect(withoutValue.error?.details).toEqual([
+      { field: 'body.name', code: 'INVALID_FIELD', message: 'required' },
+    ]);
+
+    const withValue = toIpcResult(
+      fail({
+        code: 'VALIDATION_ERROR',
+        message: 'invalid',
+        details: [{ field: 'body.age', code: 'INVALID_FIELD', message: 'invalid', value: 17 }],
+      }),
+    );
+    expect(withValue.error?.details).toEqual([
+      { field: 'body.age', code: 'INVALID_FIELD', message: 'invalid', value: 17 },
+    ]);
+  });
   it('preserves error context through HTTP conversion', () => {
     const result = fail({
       code: 'CONFLICT',

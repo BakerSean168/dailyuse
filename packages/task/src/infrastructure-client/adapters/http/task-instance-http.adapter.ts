@@ -14,6 +14,7 @@ import type {
   CompleteTaskInstanceReq,
   MarkTaskInstanceMissedReq,
   SkipTaskInstanceReq,
+  RescheduleTaskInput,
 } from '@memoflow/contracts/task';
 
 /**
@@ -84,6 +85,12 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
     return this.httpClient.post(`${this.baseUrl}/${id}/missed`, request);
   }
 
+  async rescheduleTaskInstance(
+    id: string,
+    request: RescheduleTaskInput,
+  ): Promise<Result<TaskInstanceClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/reschedule`, request);
+  }
 }
 
 /**

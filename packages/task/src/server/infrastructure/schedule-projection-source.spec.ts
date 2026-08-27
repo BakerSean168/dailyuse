@@ -65,7 +65,10 @@ describe('task schedule projection source -> ScheduledIntent', () => {
 
       const plan = await source.buildTemplatePlan(template.id, String(identityId));
 
-      expect(dependencies.findByIdForIdentity).toHaveBeenCalledWith(String(identityId), template.id);
+      expect(dependencies.findByIdForIdentity).toHaveBeenCalledWith(
+        String(identityId),
+        template.id,
+      );
       expect(dependencies.findById).not.toHaveBeenCalled();
       expect(plan.owner).toEqual({
         identityId: String(identityId),
@@ -152,13 +155,21 @@ describe('task schedule projection source -> ScheduledIntent', () => {
       instanceDate: day.getTime(),
       timeConfig,
     });
-    const pausedSource = createTaskScheduleProjectionSource(repos({ template, instances: [instance] }));
-    expect((await pausedSource.buildTemplatePlan(template.id, String(identityId))).desired).toEqual([]);
+    const pausedSource = createTaskScheduleProjectionSource(
+      repos({ template, instances: [instance] }),
+    );
+    expect((await pausedSource.buildTemplatePlan(template.id, String(identityId))).desired).toEqual(
+      [],
+    );
 
     template.activate();
     instance.complete();
-    const completedSource = createTaskScheduleProjectionSource(repos({ template, instances: [instance] }));
-    expect((await completedSource.buildTemplatePlan(template.id, String(identityId))).desired).toEqual([]);
+    const completedSource = createTaskScheduleProjectionSource(
+      repos({ template, instances: [instance] }),
+    );
+    expect(
+      (await completedSource.buildTemplatePlan(template.id, String(identityId))).desired,
+    ).toEqual([]);
   });
 
   it('returns the canonical owner with an empty desired set when the template is missing', async () => {
@@ -184,14 +195,20 @@ describe('task schedule projection source -> ScheduledIntent', () => {
     };
 
     expect(taskScheduleProjectionEventNames).toContain('task:instance-uncompleted');
+    expect(taskScheduleProjectionEventNames).toContain('task:rescheduled');
     await handlers['task:instance-completed']({ ...common, completedAt: 1 } as never);
     await handlers['task:instance-skipped']({ ...common, skippedAt: 2 } as never);
     await handlers['task:instance-deleted']({ ...common, deletedAt: 3 } as never);
     await handlers['task:instance-uncompleted']({ ...common, uncompletedAt: 4 } as never);
+    await handlers['task:rescheduled']({
+      ...common,
+      previousDueDate: 10,
+      newDueDate: 20,
+    } as never);
     await handlers['task:template-paused']({ ...common, pausedAt: 5 } as never);
     await handlers['task:deleted']({ ...common, deletedAt: 6 } as never);
 
-    expect(upsertTemplate).toHaveBeenCalledTimes(4);
+    expect(upsertTemplate).toHaveBeenCalledTimes(5);
     expect(upsertTemplate).toHaveBeenCalledWith('TaskTemplateId_template', 'IdentityId_test');
     expect(deleteTemplate).toHaveBeenCalledTimes(2);
     expect(deleteTemplate).toHaveBeenCalledWith('TaskTemplateId_template', 'IdentityId_test');

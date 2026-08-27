@@ -11,10 +11,7 @@ import type {
   SchedulingPriority,
 } from '@memoflow/contracts/schedule';
 import { buildSchedulingKey } from '@memoflow/contracts/schedule';
-import type {
-  ITaskInstanceRepository,
-  ITaskTemplateRepository,
-} from '../domain';
+import type { ITaskInstanceRepository, ITaskTemplateRepository } from '../domain';
 
 const DEFAULT_ALL_DAY_REMINDER_MINUTES = 9 * 60;
 export const TASK_REMINDER_HANDLER_KEY = 'task.reminder.fire';
@@ -65,6 +62,7 @@ export type TaskScheduleProjectionEventMap = Pick<
   | 'task:instance-skipped'
   | 'task:instance-deleted'
   | 'task:instance-uncompleted'
+  | 'task:rescheduled'
 >;
 
 export const taskScheduleProjectionEventNames = [
@@ -80,6 +78,7 @@ export const taskScheduleProjectionEventNames = [
   'task:instance-skipped',
   'task:instance-deleted',
   'task:instance-uncompleted',
+  'task:rescheduled',
 ] as const satisfies readonly (keyof TaskScheduleProjectionEventMap)[];
 
 function formatUnit(unit: ReminderTimeUnit): string {
@@ -119,11 +118,16 @@ function getInstanceAnchorTime(instance: {
   const dayStart = instance.instanceDate;
 
   if (instance.timeConfig.timeType === TaskTimeType.TimePoint) {
-    return dayStart + (instance.timeConfig.timePoint ?? DEFAULT_ALL_DAY_REMINDER_MINUTES) * 60 * 1000;
+    return (
+      dayStart + (instance.timeConfig.timePoint ?? DEFAULT_ALL_DAY_REMINDER_MINUTES) * 60 * 1000
+    );
   }
 
   if (instance.timeConfig.timeType === TaskTimeType.TimeRange) {
-    return dayStart + (instance.timeConfig.timeRange?.start ?? DEFAULT_ALL_DAY_REMINDER_MINUTES) * 60 * 1000;
+    return (
+      dayStart +
+      (instance.timeConfig.timeRange?.start ?? DEFAULT_ALL_DAY_REMINDER_MINUTES) * 60 * 1000
+    );
   }
 
   return dayStart + DEFAULT_ALL_DAY_REMINDER_MINUTES * 60 * 1000;
@@ -153,7 +157,9 @@ function calculateReminderAt(
     return null;
   }
 
-  return getInstanceAnchorTime(instance) - convertUnitToMs(trigger.relativeValue, trigger.relativeUnit);
+  return (
+    getInstanceAnchorTime(instance) - convertUnitToMs(trigger.relativeValue, trigger.relativeUnit)
+  );
 }
 
 function buildIntentName(
@@ -165,7 +171,11 @@ function buildIntentName(
     relativeUnit: ReminderTimeUnit | null;
   },
 ): string {
-  if (trigger.type === 'Relative' && trigger.relativeValue !== null && trigger.relativeUnit !== null) {
+  if (
+    trigger.type === 'Relative' &&
+    trigger.relativeValue !== null &&
+    trigger.relativeUnit !== null
+  ) {
     return `${template.name} · 提前 ${trigger.relativeValue}${formatUnit(trigger.relativeUnit)} 提醒`;
   }
   return `${template.name} · 定时提醒`;
@@ -180,13 +190,11 @@ function shouldScheduleTemplate(template: TaskTemplateServerDTO): boolean {
   );
 }
 
-function isSchedulableInstance(instance: {
-  status: string;
-  deletedAt: number | null;
-}): boolean {
+function isSchedulableInstance(instance: { status: string; deletedAt: number | null }): boolean {
   return (
     instance.deletedAt === null &&
-    (instance.status === TaskInstanceStatus.Pending || instance.status === TaskInstanceStatus.InProgress)
+    (instance.status === TaskInstanceStatus.Pending ||
+      instance.status === TaskInstanceStatus.InProgress)
   );
 }
 
@@ -228,7 +236,10 @@ export function createTaskScheduleProjectionSource(deps: {
 
     async buildTemplatePlan(templateId, identityId) {
       const owner = taskOwner(templateId, identityId);
-      const template = await deps.taskTemplateRepository.findByIdForIdentity(identityId, templateId);
+      const template = await deps.taskTemplateRepository.findByIdForIdentity(
+        identityId,
+        templateId,
+      );
       if (!template) {
         return { owner, desired: [] };
       }
@@ -300,7 +311,9 @@ export function createTaskScheduleProjectionSource(deps: {
 export function createTaskScheduleProjectionEventHandlers(
   handlers: TaskScheduleProjectionHandlers,
 ): {
-  [K in keyof TaskScheduleProjectionEventMap]: (event: TaskScheduleProjectionEventMap[K]) => Promise<void>;
+  [K in keyof TaskScheduleProjectionEventMap]: (
+    event: TaskScheduleProjectionEventMap[K],
+  ) => Promise<void>;
 } {
   return {
     'task:created': async (event) =>
@@ -326,6 +339,8 @@ export function createTaskScheduleProjectionEventHandlers(
     'task:instance-deleted': async (event) =>
       handlers.upsertTemplate(event.taskTemplateId, String(event.identityId)),
     'task:instance-uncompleted': async (event) =>
+      handlers.upsertTemplate(event.taskTemplateId, String(event.identityId)),
+    'task:rescheduled': async (event) =>
       handlers.upsertTemplate(event.taskTemplateId, String(event.identityId)),
   };
 }

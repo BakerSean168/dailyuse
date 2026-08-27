@@ -14,9 +14,7 @@
  * injection only, no hidden service locator.
  */
 
-import type {
-  ITaskTemplateRepository,
-} from '../domain/repositories/i-task-template-repository';
+import type { ITaskTemplateRepository } from '../domain/repositories/i-task-template-repository';
 import { createTaskInstanceMaintenanceRuntime } from './runtime/task-instance-maintenance-runtime';
 import type { ITaskInstanceRepository } from '../domain/repositories/i-task-instance-repository';
 import { CreateTaskTemplateUseCase } from '../application/use-cases/commands/create-task-template.use-case';
@@ -42,6 +40,7 @@ import { GenerateTaskInstancesUseCase } from '../application/use-cases/commands/
 import { BindTaskToGoalUseCase } from '../application/use-cases/commands/bind-task-to-goal.use-case';
 import { UnbindTaskFromGoalUseCase } from '../application/use-cases/commands/unbind-task-from-goal.use-case';
 import { MarkTaskInstanceMissedUseCase } from '../application/use-cases/commands/mark-task-instance-missed.use-case';
+import { RescheduleTaskInstanceUseCase } from '../application/use-cases/commands/reschedule-task-instance.use-case';
 import type { TaskWriteTransactionRunner } from '../application/use-cases/commands/task-write-support';
 import type { TaskApplicationPort } from '../application';
 import { createLogger } from '@memoflow/utils/logger';
@@ -66,8 +65,7 @@ export interface TaskModuleRuntimeContribution {
 }
 
 export type TaskRuntimeContributionsInput =
-  | TaskModuleRuntimeContribution
-  | readonly TaskModuleRuntimeContribution[];
+  TaskModuleRuntimeContribution | readonly TaskModuleRuntimeContribution[];
 
 /**
  * Everything the task server runtime needs from the outside world.
@@ -121,6 +119,7 @@ export interface TaskModuleUseCases {
   readonly markTaskInstanceMissed: MarkTaskInstanceMissedUseCase;
   readonly startTaskInstance: StartTaskInstanceUseCase;
   readonly deleteTaskInstance: DeleteTaskInstanceUseCase;
+  readonly rescheduleTaskInstance: RescheduleTaskInstanceUseCase;
 
   // Instance queries
   readonly getTaskInstance: GetTaskInstanceUseCase;
@@ -128,8 +127,6 @@ export interface TaskModuleUseCases {
   readonly listTaskInstancesByTemplate: ListTaskInstancesByTemplateUseCase;
   readonly listTaskInstancesByStatus: ListTaskInstancesByStatusUseCase;
   readonly getTaskInstancesByDateRange: GetTaskInstancesByDateRangeUseCase;
-
-
 }
 
 // ---------------------------------------------------------------------------
@@ -181,15 +178,17 @@ function normalizeRuntimeContributions(
  */
 export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskModuleUseCases {
   if (!dependencies.taskWriteTransactionRunner) {
-    throw new Error('taskWriteTransactionRunner must be explicitly provided to TaskModule (no inline fallback allowed).');
+    throw new Error(
+      'taskWriteTransactionRunner must be explicitly provided to TaskModule (no inline fallback allowed).',
+    );
   }
 
-  const {
+  const { taskTemplateRepository, taskInstanceRepository, taskWriteTransactionRunner } =
+    dependencies;
+  const listTaskTemplates = new ListTaskTemplatesUseCase(
     taskTemplateRepository,
     taskInstanceRepository,
-    taskWriteTransactionRunner,
-  } = dependencies;
-  const listTaskTemplates = new ListTaskTemplatesUseCase(taskTemplateRepository, taskInstanceRepository);
+  );
 
   return {
     // Template commands
@@ -242,10 +241,17 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
       taskInstanceRepository,
       taskWriteTransactionRunner,
     ),
-    skipTaskInstance: new SkipTaskInstanceUseCase(taskInstanceRepository, taskWriteTransactionRunner),
-    markTaskInstanceMissed: new MarkTaskInstanceMissedUseCase(taskInstanceRepository, taskWriteTransactionRunner),
+    skipTaskInstance: new SkipTaskInstanceUseCase(
+      taskInstanceRepository,
+      taskWriteTransactionRunner,
+    ),
+    markTaskInstanceMissed: new MarkTaskInstanceMissedUseCase(
+      taskInstanceRepository,
+      taskWriteTransactionRunner,
+    ),
     startTaskInstance: new StartTaskInstanceUseCase(taskInstanceRepository),
     deleteTaskInstance: new DeleteTaskInstanceUseCase(taskInstanceRepository),
+    rescheduleTaskInstance: new RescheduleTaskInstanceUseCase(taskInstanceRepository),
 
     // Instance queries
     getTaskInstance: new GetTaskInstanceUseCase(taskInstanceRepository),
@@ -256,9 +262,7 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
     ),
     listTaskInstancesByStatus: new ListTaskInstancesByStatusUseCase(taskInstanceRepository),
     getTaskInstancesByDateRange: new GetTaskInstancesByDateRangeUseCase(taskInstanceRepository),
-
-
-    };
+  };
 }
 
 /**
@@ -275,13 +279,12 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
  */
 export function createTaskModule(dependencies: TaskModuleDependencies): TaskModuleInstance {
   if (!dependencies.taskWriteTransactionRunner) {
-    throw new Error('taskWriteTransactionRunner must be explicitly provided to TaskModule (no inline fallback allowed).');
+    throw new Error(
+      'taskWriteTransactionRunner must be explicitly provided to TaskModule (no inline fallback allowed).',
+    );
   }
 
-  const {
-    taskTemplateRepository,
-    taskInstanceRepository,
-  } = dependencies;
+  const { taskTemplateRepository, taskInstanceRepository } = dependencies;
 
   const runtimeContributions = [
     // R2-3：实例补充 maintenance worker（列表查询保持纯读）。
@@ -300,19 +303,17 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
     createTaskTemplate: (input) => useCases.createTaskTemplate.execute(input),
     updateTaskTemplate: (id, identityId, input) =>
       useCases.updateTaskTemplate.execute(id, identityId, input),
-    activateTaskTemplate: (id, identityId) =>
-      useCases.activateTaskTemplate.execute(id, identityId),
+    activateTaskTemplate: (id, identityId) => useCases.activateTaskTemplate.execute(id, identityId),
     pauseTaskTemplate: (id, identityId) => useCases.pauseTaskTemplate.execute(id, identityId),
-    archiveTaskTemplate: (id, identityId) =>
-      useCases.archiveTaskTemplate.execute(id, identityId),
-    abandonTaskPlan: (id, identityId, input) => useCases.abandonTaskPlan.execute(id, identityId, input),
+    archiveTaskTemplate: (id, identityId) => useCases.archiveTaskTemplate.execute(id, identityId),
+    abandonTaskPlan: (id, identityId, input) =>
+      useCases.abandonTaskPlan.execute(id, identityId, input),
     deleteTaskTemplate: (id, identityId) => useCases.deleteTaskTemplate.execute(id, identityId),
     generateTaskInstances: (id, identityId, input) =>
       useCases.generateTaskInstances.execute(id, identityId, input),
     bindTaskToGoal: (id, identityId, input) =>
       useCases.bindTaskToGoal.execute(id, identityId, input),
-    unbindTaskFromGoal: (id, identityId) =>
-      useCases.unbindTaskFromGoal.execute(id, identityId),
+    unbindTaskFromGoal: (id, identityId) => useCases.unbindTaskFromGoal.execute(id, identityId),
     getTaskTemplate: (id, identityId, includeChildren) =>
       useCases.getTaskTemplate.execute(id, identityId, includeChildren),
     listTaskTemplates: (query) => useCases.listTaskTemplates.execute(query),
@@ -326,6 +327,8 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
       useCases.markTaskInstanceMissed.execute(id, identityId, input),
     startTaskInstance: (id, identityId) => useCases.startTaskInstance.execute(id, identityId),
     deleteTaskInstance: (id, identityId) => useCases.deleteTaskInstance.execute(id, identityId),
+    rescheduleTaskInstance: (id, identityId, input) =>
+      useCases.rescheduleTaskInstance.execute(id, identityId, input),
     getTaskInstance: (id, identityId) => useCases.getTaskInstance.execute(id, identityId),
     listTaskInstancesByAccount: (identityId) =>
       useCases.listTaskInstancesByAccount.execute(identityId),
