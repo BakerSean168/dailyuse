@@ -48,6 +48,7 @@ export function createTaskProjectionRuntime(
       deps.taskEvents.on('task:instance-skipped', handlers['task:instance-skipped']);
       deps.taskEvents.on('task:instance-deleted', handlers['task:instance-deleted']);
       deps.taskEvents.on('task:instance-uncompleted', handlers['task:instance-uncompleted']);
+      deps.taskEvents.on('task:rescheduled', handlers['task:rescheduled']);
       started = true;
     },
 
@@ -72,6 +73,7 @@ export function createTaskProjectionRuntime(
       deps.taskEvents.off('task:instance-skipped', handlers['task:instance-skipped']);
       deps.taskEvents.off('task:instance-deleted', handlers['task:instance-deleted']);
       deps.taskEvents.off('task:instance-uncompleted', handlers['task:instance-uncompleted']);
+      deps.taskEvents.off('task:rescheduled', handlers['task:rescheduled']);
       started = false;
     },
   };
