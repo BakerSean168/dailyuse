@@ -1343,6 +1343,16 @@ May execute in parallel with Planner Wave 4B after Routine domain is stable.
 
 **Acceptance:** Routine domain/runtime never imports Win32/platform package.
 
+**Implementation evidence (2026-08-27):**
+
+- added platform-neutral `ActivitySensorPort` / `IdleSensorPort` and canonical `UserActive` / `UserIdle` / `UserResumed` events under the Routine runtime seam;
+- added restart-safe activity normalization with listener-before-sample startup ordering plus deterministic `FakeIdleSensor` / `FakeActivitySensor`;
+- added `WindowsIdleSensorAdapter` under Desktop main-process infrastructure; Electron `powerMonitor.getSystemIdleTime()` is polled only while subscribers exist, and final unsubscribe / dispose tears the timer down;
+- Reminder runtime/domain contains no Electron, Win32, DBus, Wayland, or platform-specific import;
+- focused tests cover initial active/idle state, idle/resume transition, cleanup, idempotent start/stop, app/profile restart, and Windows adapter polling lifecycle;
+- verification: Routine activity runtime `4/4`, Windows adapter `2/2`, Reminder build green, Desktop Nx typecheck green;
+- real Windows operator validation remains an environment gate because the current GCP implementation host is Linux; the adapter is isolated so that gate does not weaken deterministic CI coverage.
+
 ## ROUTINE-4102 — ActiveUsage accumulator + Natural Break
 
 **Depends:** ROUTINE-4101  

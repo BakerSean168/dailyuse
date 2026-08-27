@@ -39,6 +39,9 @@
       "@memoflow/schedule/electron": ["../../packages/schedule/src/electron/index.ts"],
       "@memoflow/reminder/client": ["../../packages/reminder/src/client/index.ts"],
       "@memoflow/reminder/electron": ["../../packages/reminder/src/electron/index.ts"],
+      "@memoflow/reminder/routine-runtime": [
+        "../../packages/reminder/src/routine-runtime/index.ts"
+      ],
       "@memoflow/notification/client": ["../../packages/notification/src/client/index.ts"],
       "@memoflow/notification/electron": ["../../packages/notification/src/electron/index.ts"],
       "@memoflow/ipc-client": ["../../packages/ipc-client/src/index.ts"],

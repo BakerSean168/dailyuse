@@ -8,6 +8,7 @@ export default defineConfig({
     'src/schedule-execution/routine.ts',
     'src/schedule-projection/index.ts',
     'src/schedule-projection/routine.ts',
+    'src/routine-runtime/index.ts',
     'src/api/index.ts',
     'src/client/index.ts',
     'src/electron/index.ts',

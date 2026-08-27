@@ -36,6 +36,10 @@
       "types": "./dist/schedule-projection/routine.d.ts",
       "import": "./dist/schedule-projection/routine.js"
     },
+    "./routine-runtime": {
+      "types": "./dist/routine-runtime/index.d.ts",
+      "import": "./dist/routine-runtime/index.js"
+    },
     "./server": {
       "types": "./dist/server/index.d.ts",
       "import": "./dist/server/index.js"
