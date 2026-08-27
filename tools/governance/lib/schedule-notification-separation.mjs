@@ -22,9 +22,16 @@
 
 import { findPatternMatches } from './source-scan.mjs';
 
-/** `import ... from '@memoflow/notification...'`, `require(...)`, dynamic `import(...)`. */
+/**
+ * Any quoted `@memoflow/notification` module specifier, independent of the
+ * import form. Matches the package string literal itself so a side-effect
+ * import (`import '@memoflow/notification';`), a deep subpath
+ * (`@memoflow/notification/server/infrastructure`), `require(...)`, dynamic
+ * `import(...)` and multiline `from` imports are all caught even though the
+ * keyword and the specifier sit on different lines.
+ */
 export const NOTIFICATION_IMPORT_PATTERN =
-  /(?:from\s+['"]|require\(\s*['"]|import\(\s*['"])@memoflow\/notification(?:\/[a-zA-Z0-9_.-]*)?['"]/;
+  /['"`](@memoflow\/notification(?:\/[a-zA-Z0-9_.\/-]*)?)['"`]/;
 
 /** Removed legacy scheduler→notification delivery symbols (NOTIF-3302). */
 export const LEGACY_NOTIFICATION_PORT_PATTERN =

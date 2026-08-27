@@ -3,12 +3,28 @@ import { randomUUID } from 'crypto';
 import { buildIdempotencyKeyString } from '@memoflow/contracts/reliable-messaging';
 import {
   NotificationCategory,
-  NotificationChannelType as ChannelTypeEnum,
   NotificationRequestedSchema,
   NotificationType,
   RelatedEntityType,
   type NotificationRequested,
 } from '@memoflow/contracts/notification';
+import {
+  ReminderTimeUnit,
+  TaskInstanceStatus,
+  TaskReminderType,
+  TaskTemplateStatus,
+} from '@memoflow/contracts/task';
+import { GoalStatus, ReminderTriggerType } from '@memoflow/contracts/goal';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import {
+  buildTaskReminderOperationId,
+  createTaskReminderScheduledHandlerRegistration,
+} from '@memoflow/task/schedule-execution';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import {
+  buildGoalReminderOperationId,
+  createGoalReminderFireHandler,
+} from '@memoflow/goal/schedule-execution';
 import { NotificationRequestedPrismaWriterAdapter } from '../notification-requested-writer.prisma.adapter';
 import { NotificationPrismaRepository } from '../notification-prisma.repository';
 import { NotificationPreferencePrismaRepository } from '../notification-preference-prisma.repository';
@@ -299,43 +315,90 @@ describe('NotificationRequested durable envelope consumer (NOTIF-3301)', () => {
     expect(fact2.causationId).toBe(inputCausationId);
   });
 
-  it('8. NOTIF-3302: a production task.reminder envelope materializes ONE Fact carrying the Task relatedEntity', async () => {
+  it('8. NOTIF-3302: task.reminder.fire handler emits NotificationRequested and the runtime materializes ONE Task Fact', async () => {
     const instanceId = `TaskInstanceId_${randomUUID()}`;
+    const templateId = `TaskTemplateId_${randomUUID()}`;
     const schedulingKey = `${instanceId}|2026-08-10T08:45:00.000Z`;
-    const envelope = NotificationRequestedSchema.parse({
-      identityId,
-      source: 'task',
-      occurrenceKey: schedulingKey,
-      idempotencyKey: buildIdempotencyKeyString({
-        identityId,
-        source: 'task',
-        occurrenceKey: schedulingKey,
-      }),
-      workflowKey: 'task.reminder',
-      topic: 'task.reminder',
-      relatedEntity: { type: RelatedEntityType.Task, id: instanceId },
-      content: {
-        title: '任务提醒：Ship R07',
-        content: '任务「Ship R07」的提前 1day 提醒已到达。',
-        type: NotificationType.Reminder,
-        category: NotificationCategory.Task,
+    const registration = createTaskReminderScheduledHandlerRegistration({
+      taskInstanceRepository: {
+        findByIdForIdentity: async () => ({
+          id: instanceId,
+          identityId,
+          templateId,
+          occurrenceKey: null,
+          status: TaskInstanceStatus.Pending,
+          deletedAt: null,
+        }),
       },
-      suggestedChannels: [ChannelTypeEnum.InApp, ChannelTypeEnum.Push],
-      correlationId: schedulingKey,
-      causationId: schedulingKey,
+      taskTemplateRepository: {
+        findByIdForIdentity: async () => ({
+          toServerDTO: () => ({
+            id: templateId,
+            identityId,
+            name: 'Ship R07',
+            status: TaskTemplateStatus.Active,
+            deletedAt: null,
+            reminderConfig: {
+              enabled: true,
+              triggers: [
+                {
+                  type: TaskReminderType.Relative,
+                  relativeValue: 1,
+                  relativeUnit: ReminderTimeUnit.Days,
+                  absoluteTime: null,
+                },
+              ],
+            },
+          }),
+        }),
+      },
+      notificationRequestedWriter: writer,
     });
-    const opId = randomUUID();
-    await writer.enqueueNotificationRequested({ operationId: opId, envelope });
+
+    // The Scheduler wakes this handler; the handler itself must not touch any
+    // deliverer — its only output is the durable NotificationRequested envelope.
+    const result = await registration.handler.execute({
+      identityId,
+      owner: { identityId, type: 'task.template', id: templateId },
+      schedulingKey,
+      handlerKey: 'task.reminder.fire',
+      runAt: '2026-08-10T08:45:00.000Z',
+      payloadVersion: 1,
+      payload: {
+        templateId,
+        instanceId,
+        occurrenceKey: null,
+        taskTitle: 'Ship R07',
+        reminderType: TaskReminderType.Relative,
+        reminderValue: 1,
+        reminderUnit: ReminderTimeUnit.Days,
+        reminderAbsoluteTime: null,
+        anchorTime: 1_704_000_000_000,
+        reminderTime: 1_704_000_000_000 - 24 * 60 * 60 * 1000,
+      },
+    });
+    expect(result.status).toBe('succeeded');
+
+    // Envelope written durably by the handler through the shared outbox.
+    const opId = buildTaskReminderOperationId(schedulingKey);
+    const shared = await prisma.outboxMessage.findUniqueOrThrow({ where: { id: opId } });
+    expect(shared.messageType).toBe('notification.requested');
+    expect(shared.status).toBe('pending');
+    // No Fact materialized at write time.
+    expect(
+      await prisma.notification.count({
+        where: { identityId, idempotencyKey: shared.idempotencyKey! },
+      }),
+    ).toBe(0);
 
     const runtime = buildRuntime();
     await runtime.tick();
 
-    // Envelope consumed; no second Fact on replay (see tests 3/6).
-    const shared = await prisma.outboxMessage.findUniqueOrThrow({ where: { id: opId } });
-    expect(shared.status).toBe('succeeded');
+    const consumed = await prisma.outboxMessage.findUniqueOrThrow({ where: { id: opId } });
+    expect(consumed.status).toBe('succeeded');
 
     const fact = await prisma.notification.findFirstOrThrow({
-      where: { identityId, idempotencyKey: envelope.idempotencyKey },
+      where: { identityId, idempotencyKey: consumed.idempotencyKey! },
     });
     expect(fact.workflowKey).toBe('task.reminder');
     expect(fact.topic).toBe('task.reminder');
@@ -349,7 +412,6 @@ describe('NotificationRequested durable envelope consumer (NOTIF-3301)', () => {
     expect(fact.correlationId).toBe(schedulingKey);
     expect(fact.causationId).toBe(schedulingKey);
 
-    // Both suggested channels produce a policy decision + pending dispatch intent.
     const decisions = await prisma.notificationDeliveryDecisionRecord.findMany({
       where: { notificationId: fact.id },
     });
@@ -362,41 +424,69 @@ describe('NotificationRequested durable envelope consumer (NOTIF-3301)', () => {
     expect(dispatch.every((d) => d.status === 'pending')).toBe(true);
   });
 
-  it('9. NOTIF-3302: a production goal.reminder envelope materializes ONE Fact carrying the Goal relatedEntity', async () => {
+  it('9. NOTIF-3302: goal.reminder.fire handler emits NotificationRequested and the runtime materializes ONE Goal Fact', async () => {
     const goalId = `GoalId_${randomUUID()}`;
     const schedulingKey = `${goalId}|2026-08-10T08:45:00.000Z`;
-    const envelope = NotificationRequestedSchema.parse({
+    const context = {
       identityId,
-      source: 'goal-reminder',
-      occurrenceKey: schedulingKey,
-      idempotencyKey: buildIdempotencyKeyString({
-        identityId,
-        source: 'goal-reminder',
-        occurrenceKey: schedulingKey,
-      }),
-      workflowKey: 'goal.reminder',
-      topic: 'goal.reminder',
-      relatedEntity: { type: RelatedEntityType.Goal, id: goalId },
-      content: {
-        title: '目标提醒：Ship R06',
-        content: '目标「Ship R06」距离截止还有 3 天。',
-        type: NotificationType.Reminder,
-        category: NotificationCategory.Goal,
+      owner: { identityId, type: 'Identity', id: identityId },
+      schedulingKey,
+      handlerKey: 'goal.reminder.fire',
+      runAt: '2026-08-10T08:45:00.000Z',
+      payloadVersion: 1,
+      payload: {
+        goalId,
+        goalTitle: 'Ship R06',
+        triggerType: ReminderTriggerType.RemainingDays,
+        triggerValue: 3,
+        startDate: Date.UTC(2026, 1, 1),
+        dueDate: Date.UTC(2026, 8, 1),
+        reminderTime: 8 * 60,
       },
-      suggestedChannels: [ChannelTypeEnum.InApp, ChannelTypeEnum.Push],
-      correlationId: schedulingKey,
+    };
+    const registration = createGoalReminderFireHandler({
+      goalRepository: {
+        findByIdForIdentity: async () => ({
+          toServerDTO: () => ({
+            id: goalId,
+            identityId,
+            name: 'Ship R06',
+            description: null,
+            status: GoalStatus.Active,
+            deletedAt: null,
+            archivedAt: null,
+            completedAt: null,
+            reminderConfig: {
+              enabled: true,
+              triggers: [
+                { type: ReminderTriggerType.RemainingDays, value: 3, enabled: true },
+                { type: ReminderTriggerType.TimeProgressPercentage, value: 30, enabled: true },
+              ],
+            },
+          }),
+        }),
+      },
+      requestedWriter: writer,
     });
-    const opId = randomUUID();
-    await writer.enqueueNotificationRequested({ operationId: opId, envelope });
+
+    // The Scheduler wakes this handler; the handler's only output is the durable
+    // NotificationRequested envelope, never a direct delivery.
+    const result = await registration.handler.execute(context);
+    expect(result.status).toBe('succeeded');
+
+    const opId = buildGoalReminderOperationId(context);
+    const shared = await prisma.outboxMessage.findUniqueOrThrow({ where: { id: opId } });
+    expect(shared.messageType).toBe('notification.requested');
+    expect(shared.status).toBe('pending');
 
     const runtime = buildRuntime();
     await runtime.tick();
 
-    const shared = await prisma.outboxMessage.findUniqueOrThrow({ where: { id: opId } });
-    expect(shared.status).toBe('succeeded');
+    const consumed = await prisma.outboxMessage.findUniqueOrThrow({ where: { id: opId } });
+    expect(consumed.status).toBe('succeeded');
 
     const fact = await prisma.notification.findFirstOrThrow({
-      where: { identityId, idempotencyKey: envelope.idempotencyKey },
+      where: { identityId, idempotencyKey: consumed.idempotencyKey! },
     });
     expect(fact.workflowKey).toBe('goal.reminder');
     expect(fact.topic).toBe('goal.reminder');

@@ -20,6 +20,24 @@ describe('NOTIFICATION_IMPORT_PATTERN', () => {
     expect(`const x = await import('@memoflow/notification');`).toMatch(NOTIFICATION_IMPORT_PATTERN);
   });
 
+  it('catches the anti-resurrection bypass forms: side-effect import, deep subpath, multiline from', () => {
+    // Side-effect import has no `from`/`require(`/`import(` on the same line.
+    expect(`import '@memoflow/notification';`).toMatch(NOTIFICATION_IMPORT_PATTERN);
+    // Deep nested subpath (the legacy character class excluded `/`).
+    expect(`import { x } from '@memoflow/notification/server/infrastructure';`).toMatch(
+      NOTIFICATION_IMPORT_PATTERN,
+    );
+    expect(`import { deliverer } from '@memoflow/notification/server/infrastructure/deliverers';`).toMatch(
+      NOTIFICATION_IMPORT_PATTERN,
+    );
+    // `from` on one line, specifier on the next.
+    expect(`  '@memoflow/notification/server/infrastructure';`).toMatch(NOTIFICATION_IMPORT_PATTERN);
+    // Double-quoted and template-literal specifiers.
+    expect(`import "@memoflow/notification/server/infrastructure";`).toMatch(
+      NOTIFICATION_IMPORT_PATTERN,
+    );
+  });
+
   it('does not match other packages or commented imports', () => {
     expect(`import { x } from '@memoflow/task';`).not.toMatch(NOTIFICATION_IMPORT_PATTERN);
     expect(`import { x } from '@memoflow/notifications';`).not.toMatch(NOTIFICATION_IMPORT_PATTERN);
@@ -96,6 +114,31 @@ describe('findScheduleNotificationSeparationViolations', () => {
     expect(kinds).toContain('notification-import');
     expect(kinds).toContain('legacy-notification-port');
     expect(kinds).toContain('source-module-switch');
+  });
+
+  it('flags the anti-resurrection bypass forms inside scheduler sources', () => {
+    const files = [
+      {
+        relPath: 'packages/schedule-orchestration/src/execution/router.ts',
+        content: [
+          `import '@memoflow/notification';`,
+          `import { deliverer } from '@memoflow/notification/server/infrastructure/deliverers';`,
+          `import { x } from`,
+          `  '@memoflow/notification/server/infrastructure';`,
+          `export const ok = true;`,
+        ].join('\n'),
+      },
+    ];
+    const { violations, auditedFiles } = findScheduleNotificationSeparationViolations(files);
+    expect(auditedFiles).toBe(1);
+    expect(violations.length).toBeGreaterThanOrEqual(3);
+    for (const v of violations) {
+      expect(v.kind).toBe('notification-import');
+    }
+    const lines = violations.map((v) => v.line);
+    expect(lines).toContain(1); // side-effect import
+    expect(lines).toContain(2); // deep subpath
+    expect(lines).toContain(4); // multiline from specifier
   });
 
   it('passes domain-neutral if-cascade dispatch and out-of-scope domains (negative fixture)', () => {
