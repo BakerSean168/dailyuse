@@ -8146,6 +8146,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/schedule-orchestration/src/__tests__/reminder-due-set-parity.test.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/schedule-orchestration/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/schedule-orchestration/src/__tests__/reminder-due-set-shadow.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10091,6 +10099,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "tools/governance/__tests__/schedule-notification-separation.test.mjs",
+      "primarySuite": "governance",
+      "collectors": [
+        "tools/governance/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "tools/governance/__tests__/scope-constraint.test.mjs",
       "primarySuite": "governance",
       "collectors": [
@@ -10521,7 +10537,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 11
+      "fileCount": 12
     },
     {
       "id": "packages/schedule/vitest.config.ts",
@@ -10675,7 +10691,7 @@
       "type": "primary",
       "suite": "governance",
       "runner": "vitest",
-      "fileCount": 9
+      "fileCount": 10
     },
     {
       "id": "test-system-v2:test",
@@ -11316,13 +11332,13 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 976,
+    "unit": 977,
     "integration": 29,
     "smoke": 3,
     "boundary-ipc": 9,
     "boundary-main": 5,
     "e2e": 63,
     "perf": 1,
-    "governance": 37
+    "governance": 38
   }
 }
