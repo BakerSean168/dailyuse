@@ -415,14 +415,16 @@ fallback/removal cost
 
 ### Task home
 
-- [ ] 默认 Today instance list；
-- [ ] Upcoming；
-- [ ] All；
-- [ ] Completed；
-- [ ] Label AND filter；
-- [ ] Goal/KR context filter chip；
-- [ ] 一个 `+ 新建任务`；
-- [ ] Task search 只在 All/command surface 保留需要的位置，不与 Goal 的删除决定混淆。
+- [x] 默认 Today instance list；
+- [x] Upcoming；
+- [x] All；
+- [x] Completed；
+- [x] Label AND filter；
+- [x] Goal/KR context filter chip；
+- [x] 一个 `+ 新建任务`；
+- [x] Task search 只在 All/command surface 保留需要的位置，不与 Goal 的删除决定混淆。
+
+Implementation checkpoint (2026-08-27): `TASK-5201` rebuilt the production landing surface around Task occurrences, Product Time day windows, shared Label AND filtering, Goal/KR context narrowing, and owner-command completion/undo. Unified create/edit semantics remain in `TASK-5202`.
 
 ### Task editor
 

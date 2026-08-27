@@ -42,6 +42,7 @@ export function useTask() {
       status: query?.status,
       goalId: query?.goalId,
       tags: query?.tags,
+      labelIdsAll: query?.labelIdsAll,
     };
     listRequested.value = true;
     const queryKey = taskTemplateQueryKeys.list(

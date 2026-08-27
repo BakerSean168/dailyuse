@@ -55,7 +55,7 @@ Wave 0 evidence is frozen in [`Core vNext Wave 0 — Baseline / Acceptance / Sha
 
 **Wave 2 execution point (closed 2026-08-26):** `GOAL-2101~2103`, `TASK-2201~2205`, `ROUTINE-2301~2303`, and `NOTIF-2401/2402` are integrated and gate-verified.
 
-**Current execution point (2026-08-27):** Wave 3 vertical integration and both Wave 4 lanes are closed. Wave 5 shared `UI-5101` and Goal list/editor `GOAL-5101` are closed. Goal now uses the vNext progress-row + Label AND filter + aggregate editor surface; the current primary continuation is `TASK-5201` (Today/Upcoming execution home), while Goal detail, Routine, Planner, and Notification UI lanes remain independently parallelizable.
+**Current execution point (2026-08-27):** Wave 3 vertical integration and both Wave 4 lanes are closed. Wave 5 shared `UI-5101`, Goal list/editor `GOAL-5101`, and Task execution home `TASK-5201` are closed. Goal now uses the vNext progress-row + Label AND filter + aggregate editor surface, and Task now opens on the occurrence-first Today/Upcoming execution surface; the current primary continuation is `TASK-5202` (Unified Task editor), while Goal detail, Routine, Planner, and Notification UI lanes remain independently parallelizable.
 
 **Wave 1 gate evidence (2026-08-25):**
 
@@ -1775,6 +1775,17 @@ Use:
 **Imitate:** Super Productivity / personal task apps.
 
 Default is occurrence list, not template management.
+
+**Implementation evidence (2026-08-27):**
+
+- rebuilt the production Task landing surface from TaskTemplate management cards into an occurrence-first execution home. `Today` is the default product-time day window; `Upcoming` starts tomorrow and spans the standard 30-day occurrence window; `All` and `Completed` use the canonical instance list API;
+- occurrence rows join `TaskInstanceClientDTO` execution state with the already-owned TaskTemplate projection for title, description, labels, and Goal/KR context. Instance status/date/time remains authoritative for execution while template metadata remains authoritative for plan identity; no renderer copy of recurrence or completion business logic was introduced;
+- the shared `LabelFilterPopover` is now wired end-to-end through `CanonicalTaskTemplateListQuery.labelIdsAll` and `TaskClientPort.listTemplates(...)`. The server-filtered template projection is treated as the authority for Label AND and Goal filters, so the occurrence surface does not post-filter one arbitrary paginated page or reimplement label semantics;
+- added Goal and Key Result context narrowing without inventing a new server contract: Goal uses the existing template `goalId` filter; Key Result is a renderer refinement over the complete matching template projection because the current Task list contract has no KR filter. All-view text search likewise refines template metadata and is deliberately absent from Today/Upcoming/Completed;
+- kept exactly one primary `+ New task` entry and reused the existing create dialog only as a temporary command surface. Full editor parity, Label editing, recurrence progressive disclosure, and contribution controls remain owned by `TASK-5202` rather than being mixed into the execution-home ticket;
+- occurrence completion and undo delegate to the existing `useTaskInstances` mutations / Task owner commands. Skipped/Missed instances are read-only in this surface, overdue remains presentation-only metadata, and Product Time owns day boundaries;
+- added focused projection/query-key regressions that lock Today/Upcoming boundaries, server-filter authority, KR/search refinement, active-before-terminal ordering, Label AND query canonicalization, occurrence-first rendering, and the single create action;
+- verification: focused Task/query regressions `3` files / `23` tests green; full app-vue `197` files / `742` tests green; app-vue dependency-chain typecheck green; app-vue lint has `0` errors (13 repository-existing warnings); `git diff --check` green. The full run also exposed and separately repaired the pre-existing DI facade boundary count left stale when `ILabelService` became the twelfth service alias.
 
 ## TASK-5202 — Unified Task editor
 

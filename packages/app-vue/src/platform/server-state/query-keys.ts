@@ -79,8 +79,8 @@ export const notificationQueryKeys = {
  * Canonical, transport-safe Task template list/graph query used inside the cache key.
  * 进入 cache key 的规范化任务模板列表/图查询（仅 transport 接受的 primitive 字段）。
  *
- * Field order is frozen: `page/limit/status/goalId/folderId/tags`.
- * 字段顺序冻结为：`page/limit/status/goalId/folderId/tags`。
+ * Field order is frozen: `page/limit/status/goalId/folderId/tags/labelIdsAll`.
+ * 字段顺序冻结为：`page/limit/status/goalId/folderId/tags/labelIdsAll`。
  */
 export interface CanonicalTaskTemplateListQuery {
   page: number;
@@ -89,6 +89,8 @@ export interface CanonicalTaskTemplateListQuery {
   goalId?: string;
   folderId?: string;
   tags?: string[];
+  /** Shared Label AND filter; every selected label must match. */
+  labelIdsAll?: string[];
 }
 
 /** Input accepted by the Task canonicalizer (may omit defaults/undefined). */
@@ -111,9 +113,10 @@ function normalizeStringArray(value: string[] | undefined): string[] | undefined
 export function canonicalizeTaskTemplateListQuery(
   query?: TaskTemplateListQueryInput,
 ): CanonicalTaskTemplateListQuery {
-  const { page, limit, status, goalId, folderId, tags } = query ?? {};
+  const { page, limit, status, goalId, folderId, tags, labelIdsAll } = query ?? {};
   const normalizedStatus = normalizeStringArray(status);
   const normalizedTags = normalizeStringArray(tags);
+  const normalizedLabelIdsAll = normalizeStringArray(labelIdsAll);
   return {
     page: page ?? 1,
     limit: limit ?? 20,
@@ -121,6 +124,7 @@ export function canonicalizeTaskTemplateListQuery(
     ...(goalId !== undefined ? { goalId } : {}),
     ...(folderId !== undefined ? { folderId } : {}),
     ...(normalizedTags !== undefined ? { tags: normalizedTags } : {}),
+    ...(normalizedLabelIdsAll !== undefined ? { labelIdsAll: normalizedLabelIdsAll } : {}),
   };
 }
 

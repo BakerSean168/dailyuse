@@ -154,19 +154,22 @@ describe('canonicalizeTaskTemplateListQuery', () => {
     expect(canonicalizeTaskTemplateListQuery({ limit: 50 })).toEqual({ page: 1, limit: 50 });
   });
 
-  it('normalizes status/tags arrays (copy, dedupe, sort) and drops empty arrays', () => {
+  it('normalizes status/tags/label AND arrays (copy, dedupe, sort) and drops empty arrays', () => {
     const canonical = canonicalizeTaskTemplateListQuery({
       page: 1,
       limit: 20,
       status: ['Active', 'Active', 'Paused'],
       tags: ['b', 'a', 'b'],
+      labelIdsAll: ['label-work', 'label-ai', 'label-work'],
     });
     expect(canonical.status).toEqual(['Active', 'Paused']);
     expect(canonical.tags).toEqual(['a', 'b']);
+    expect(canonical.labelIdsAll).toEqual(['label-ai', 'label-work']);
 
-    const empty = canonicalizeTaskTemplateListQuery({ status: [], tags: [] });
+    const empty = canonicalizeTaskTemplateListQuery({ status: [], tags: [], labelIdsAll: [] });
     expect(empty).not.toHaveProperty('status');
     expect(empty).not.toHaveProperty('tags');
+    expect(empty).not.toHaveProperty('labelIdsAll');
   });
 
   it('keeps scalar filters and puts arrays into the frozen field order', () => {
@@ -176,6 +179,7 @@ describe('canonicalizeTaskTemplateListQuery', () => {
       status: ['Active'],
       page: 2,
       tags: ['x'],
+      labelIdsAll: ['label-work'],
       limit: 10,
     });
     expect(Object.keys(canonical)).toEqual([
@@ -185,6 +189,7 @@ describe('canonicalizeTaskTemplateListQuery', () => {
       'goalId',
       'folderId',
       'tags',
+      'labelIdsAll',
     ]);
   });
 
