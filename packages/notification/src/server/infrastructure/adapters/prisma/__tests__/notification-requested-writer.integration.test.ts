@@ -2,9 +2,29 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { randomUUID } from 'crypto';
 import { buildIdempotencyKeyString } from '@memoflow/contracts/reliable-messaging';
 import {
+  NotificationCategory,
   NotificationRequestedSchema,
+  NotificationType,
+  RelatedEntityType,
   type NotificationRequested,
 } from '@memoflow/contracts/notification';
+import {
+  ReminderTimeUnit,
+  TaskInstanceStatus,
+  TaskReminderType,
+  TaskTemplateStatus,
+} from '@memoflow/contracts/task';
+import { GoalStatus, ReminderTriggerType } from '@memoflow/contracts/goal';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import {
+  buildTaskReminderOperationId,
+  createTaskReminderScheduledHandlerRegistration,
+} from '@memoflow/task/schedule-execution';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import {
+  buildGoalReminderOperationId,
+  createGoalReminderFireHandler,
+} from '@memoflow/goal/schedule-execution';
 import { NotificationRequestedPrismaWriterAdapter } from '../notification-requested-writer.prisma.adapter';
 import { NotificationPrismaRepository } from '../notification-prisma.repository';
 import { NotificationPreferencePrismaRepository } from '../notification-preference-prisma.repository';
@@ -293,5 +313,201 @@ describe('NotificationRequested durable envelope consumer (NOTIF-3301)', () => {
     });
     expect(fact2.correlationId).toBe(inputCorrelationId);
     expect(fact2.causationId).toBe(inputCausationId);
+  });
+
+  it('8. NOTIF-3302: task.reminder.fire handler emits NotificationRequested and the runtime materializes ONE Task Fact', async () => {
+    const instanceId = `TaskInstanceId_${randomUUID()}`;
+    const templateId = `TaskTemplateId_${randomUUID()}`;
+    const schedulingKey = `${instanceId}|2026-08-10T08:45:00.000Z`;
+    const registration = createTaskReminderScheduledHandlerRegistration({
+      taskInstanceRepository: {
+        findByIdForIdentity: async () => ({
+          id: instanceId,
+          identityId,
+          templateId,
+          occurrenceKey: null,
+          status: TaskInstanceStatus.Pending,
+          deletedAt: null,
+        }),
+      },
+      taskTemplateRepository: {
+        findByIdForIdentity: async () => ({
+          toServerDTO: () => ({
+            id: templateId,
+            identityId,
+            name: 'Ship R07',
+            status: TaskTemplateStatus.Active,
+            deletedAt: null,
+            reminderConfig: {
+              enabled: true,
+              triggers: [
+                {
+                  type: TaskReminderType.Relative,
+                  relativeValue: 1,
+                  relativeUnit: ReminderTimeUnit.Days,
+                  absoluteTime: null,
+                },
+              ],
+            },
+          }),
+        }),
+      },
+      notificationRequestedWriter: writer,
+    });
+
+    // The Scheduler wakes this handler; the handler itself must not touch any
+    // deliverer — its only output is the durable NotificationRequested envelope.
+    const result = await registration.handler.execute({
+      identityId,
+      owner: { identityId, type: 'task.template', id: templateId },
+      schedulingKey,
+      handlerKey: 'task.reminder.fire',
+      runAt: '2026-08-10T08:45:00.000Z',
+      payloadVersion: 1,
+      payload: {
+        templateId,
+        instanceId,
+        occurrenceKey: null,
+        taskTitle: 'Ship R07',
+        reminderType: TaskReminderType.Relative,
+        reminderValue: 1,
+        reminderUnit: ReminderTimeUnit.Days,
+        reminderAbsoluteTime: null,
+        anchorTime: 1_704_000_000_000,
+        reminderTime: 1_704_000_000_000 - 24 * 60 * 60 * 1000,
+      },
+    });
+    expect(result.status).toBe('succeeded');
+
+    // Envelope written durably by the handler through the shared outbox.
+    const opId = buildTaskReminderOperationId(schedulingKey);
+    const shared = await prisma.outboxMessage.findUniqueOrThrow({ where: { id: opId } });
+    expect(shared.messageType).toBe('notification.requested');
+    expect(shared.status).toBe('pending');
+    // No Fact materialized at write time.
+    expect(
+      await prisma.notification.count({
+        where: { identityId, idempotencyKey: shared.idempotencyKey! },
+      }),
+    ).toBe(0);
+
+    const runtime = buildRuntime();
+    await runtime.tick();
+
+    const consumed = await prisma.outboxMessage.findUniqueOrThrow({ where: { id: opId } });
+    expect(consumed.status).toBe('succeeded');
+
+    const fact = await prisma.notification.findFirstOrThrow({
+      where: { identityId, idempotencyKey: consumed.idempotencyKey! },
+    });
+    expect(fact.workflowKey).toBe('task.reminder');
+    expect(fact.topic).toBe('task.reminder');
+    expect(fact.type).toBe(NotificationType.Reminder);
+    expect(fact.category).toBe(NotificationCategory.Task);
+    expect(fact.relatedEntityType).toBe(RelatedEntityType.Task);
+    expect(fact.relatedEntityId).toBe(instanceId);
+    expect(fact.importance).toBe('Moderate');
+    expect(fact.urgency).toBe('Medium');
+    // Durable correlation chain authored by the task handler survives.
+    expect(fact.correlationId).toBe(schedulingKey);
+    expect(fact.causationId).toBe(schedulingKey);
+
+    const decisions = await prisma.notificationDeliveryDecisionRecord.findMany({
+      where: { notificationId: fact.id },
+    });
+    expect(decisions.map((d) => d.channel).sort()).toEqual(['InApp', 'Push']);
+
+    const dispatch = await prisma.notificationDispatchOutbox.findMany({
+      where: { notificationId: fact.id },
+    });
+    expect(dispatch.map((d) => d.channel).sort()).toEqual(['InApp', 'Push']);
+    expect(dispatch.every((d) => d.status === 'pending')).toBe(true);
+  });
+
+  it('9. NOTIF-3302: goal.reminder.fire handler emits NotificationRequested and the runtime materializes ONE Goal Fact', async () => {
+    const goalId = `GoalId_${randomUUID()}`;
+    const schedulingKey = `${goalId}|2026-08-10T08:45:00.000Z`;
+    const context = {
+      identityId,
+      owner: { identityId, type: 'Identity', id: identityId },
+      schedulingKey,
+      handlerKey: 'goal.reminder.fire',
+      runAt: '2026-08-10T08:45:00.000Z',
+      payloadVersion: 1,
+      payload: {
+        goalId,
+        goalTitle: 'Ship R06',
+        triggerType: ReminderTriggerType.RemainingDays,
+        triggerValue: 3,
+        startDate: Date.UTC(2026, 1, 1),
+        dueDate: Date.UTC(2026, 8, 1),
+        reminderTime: 8 * 60,
+      },
+    };
+    const registration = createGoalReminderFireHandler({
+      goalRepository: {
+        findByIdForIdentity: async () => ({
+          toServerDTO: () => ({
+            id: goalId,
+            identityId,
+            name: 'Ship R06',
+            description: null,
+            status: GoalStatus.Active,
+            deletedAt: null,
+            archivedAt: null,
+            completedAt: null,
+            reminderConfig: {
+              enabled: true,
+              triggers: [
+                { type: ReminderTriggerType.RemainingDays, value: 3, enabled: true },
+                { type: ReminderTriggerType.TimeProgressPercentage, value: 30, enabled: true },
+              ],
+            },
+          }),
+        }),
+      },
+      requestedWriter: writer,
+    });
+
+    // The Scheduler wakes this handler; the handler's only output is the durable
+    // NotificationRequested envelope, never a direct delivery.
+    const result = await registration.handler.execute(context);
+    expect(result.status).toBe('succeeded');
+
+    const opId = buildGoalReminderOperationId(context);
+    const shared = await prisma.outboxMessage.findUniqueOrThrow({ where: { id: opId } });
+    expect(shared.messageType).toBe('notification.requested');
+    expect(shared.status).toBe('pending');
+
+    const runtime = buildRuntime();
+    await runtime.tick();
+
+    const consumed = await prisma.outboxMessage.findUniqueOrThrow({ where: { id: opId } });
+    expect(consumed.status).toBe('succeeded');
+
+    const fact = await prisma.notification.findFirstOrThrow({
+      where: { identityId, idempotencyKey: consumed.idempotencyKey! },
+    });
+    expect(fact.workflowKey).toBe('goal.reminder');
+    expect(fact.topic).toBe('goal.reminder');
+    expect(fact.type).toBe(NotificationType.Reminder);
+    expect(fact.category).toBe(NotificationCategory.Goal);
+    expect(fact.relatedEntityType).toBe(RelatedEntityType.Goal);
+    expect(fact.relatedEntityId).toBe(goalId);
+    expect(fact.importance).toBe('Moderate');
+    expect(fact.urgency).toBe('Medium');
+    expect(fact.correlationId).toBe(schedulingKey);
+    expect(fact.causationId).toBeNull();
+
+    const decisions = await prisma.notificationDeliveryDecisionRecord.findMany({
+      where: { notificationId: fact.id },
+    });
+    expect(decisions.map((d) => d.channel).sort()).toEqual(['InApp', 'Push']);
+
+    const dispatch = await prisma.notificationDispatchOutbox.findMany({
+      where: { notificationId: fact.id },
+    });
+    expect(dispatch.map((d) => d.channel).sort()).toEqual(['InApp', 'Push']);
+    expect(dispatch.every((d) => d.status === 'pending')).toBe(true);
   });
 });
