@@ -26,11 +26,31 @@ export const taskRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'occurrences/:id',
+        name: 'task-occurrence-detail',
+        component: () => import('../views/TaskDetailView.vue'),
+        meta: { title: 'task.route.detail', requiresAuth: true },
+        props: true,
+      },
+      {
+        path: 'plans',
+        name: 'task-plans',
+        component: () => import('../views/TaskPlanListView.vue'),
+        meta: { title: 'task.route.plans', requiresAuth: true },
+      },
+      {
+        path: 'plans/:id',
+        name: 'task-plan-detail',
+        component: () => import('../views/TaskPlanDetailView.vue'),
+        meta: { title: 'task.route.planDetail', requiresAuth: true },
+        props: true,
+      },
+      {
         path: ':id',
         name: 'task-detail',
-        component: () => import('../views/TaskDetailView.vue'),
+        component: () => import('../views/TaskPlanDetailView.vue'),
         meta: {
-          title: 'task.route.detail',
+          title: 'task.route.planDetail',
           requiresAuth: true,
         },
         props: true,

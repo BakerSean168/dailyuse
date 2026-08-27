@@ -52,6 +52,7 @@ function makeService(overrides: Record<string, ReturnType<typeof vi.fn>> = {}) {
     activateTemplate: vi.fn(),
     pauseTemplate: vi.fn(),
     archiveTemplate: vi.fn(),
+    abandonPlan: vi.fn(),
     ...overrides,
   };
 }
@@ -114,6 +115,27 @@ describe('useTaskTemplateMutations (plan §3.4)', () => {
     // Pause failure restores the pre-mutation status.
     await api.pauseTemplateSafe(tpl.id);
     expect(runtime.queryClient.getQueryData(detailKey)?.status).toBe('Active');
+  });
+
+  it('ends a repeating plan through the owner command and converges to server-confirmed closed state', async () => {
+    const tpl = template();
+    const closed = template({
+      status: 'Closed',
+      outcome: 'Abandoned',
+      abandonedReason: null,
+    } as Partial<TaskTemplateClientDTO>);
+    const service = makeService({
+      abandonPlan: vi.fn().mockResolvedValue(ok(entity(closed))),
+    });
+    const { api, runtime } = mountTaskComposable(() => useTaskTemplateMutations(), { service });
+    const detailKey = taskTemplateQueryKeys.detail(SCOPE, tpl.id);
+    runtime.queryClient.setQueryData(detailKey, tpl);
+
+    const result = await api.abandonPlanSafe(tpl.id);
+
+    expect(service.abandonPlan).toHaveBeenCalledWith(tpl.id);
+    expect(result?.toDTO().status).toBe('Closed');
+    expect(runtime.queryClient.getQueryData<TaskTemplateClientDTO>(detailKey)?.status).toBe('Closed');
   });
 
   it('status mutation derives from the complete cached projection, not a bare {id,status} DTO', async () => {

@@ -132,6 +132,17 @@ export function canonicalizeTaskTemplateListQuery(
  * Frozen Task template query key factories.
  * 冻结的 Task template 查询键工厂（§3.2）。
  */
+export const taskOccurrenceQueryKeys = {
+  all: ['server-state', 'task-occurrence'] as const,
+  identity: (identityScope: string) => [...taskOccurrenceQueryKeys.all, identityScope] as const,
+  lists: (identityScope: string) => [...taskOccurrenceQueryKeys.identity(identityScope), 'list'] as const,
+  list: (identityScope: string, templateId = '') =>
+    [...taskOccurrenceQueryKeys.lists(identityScope), templateId] as const,
+  details: (identityScope: string) => [...taskOccurrenceQueryKeys.identity(identityScope), 'detail'] as const,
+  detail: (identityScope: string, id: string) =>
+    [...taskOccurrenceQueryKeys.details(identityScope), id] as const,
+};
+
 export const taskTemplateQueryKeys = {
   all: ['server-state', 'task-template'] as const,
   identity: (identityScope: string) => [...taskTemplateQueryKeys.all, identityScope] as const,
@@ -211,6 +222,7 @@ export const governanceQueryKeys = {
 /** Type alias so the frozen key shape stays importable for dispatcher typing. */
 export type NotificationQueryKeys = typeof notificationQueryKeys;
 export type TaskTemplateQueryKeys = typeof taskTemplateQueryKeys;
+export type TaskOccurrenceQueryKeys = typeof taskOccurrenceQueryKeys;
 export type GovernanceQueryKeys = typeof governanceQueryKeys;
 
 /** Type guard for identity-scoped pilot query keys. */
@@ -218,6 +230,9 @@ export function isServerStateQueryKey(key: QueryKey | readonly unknown[]): boole
   return (
     key.length >= 2 &&
     key[0] === 'server-state' &&
-    (key[1] === 'notification' || key[1] === 'task-template' || key[1] === 'governance')
+    (key[1] === 'notification' ||
+      key[1] === 'task-template' ||
+      key[1] === 'task-occurrence' ||
+      key[1] === 'governance')
   );
 }

@@ -3995,6 +3995,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/modules/task/router/index.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/task/stores/taskStore.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -4021,6 +4029,30 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/modules/task/utils/task-detail-projection.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/task/utils/task-editor-adapter.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/task/utils/task-execution-home.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/task/views/TaskDetailView.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -4030,6 +4062,22 @@
     },
     {
       "path": "packages/app-vue/src/modules/task/views/TaskManagementView.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/task/views/TaskPlanDetailView.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/task/views/TaskPlanListView.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -9747,6 +9795,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/ui-vue-shadcn/src/components/custom/form/recurrence/RecurrenceEditor.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ui-vue-shadcn/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/utils/src/domain/__tests__/cross-platform-event-bus.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10283,7 +10339,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 196
+      "fileCount": 202
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -10647,7 +10703,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 1
+      "fileCount": 2
     },
     {
       "id": "packages/utils/vitest.config.ts",
@@ -11316,7 +11372,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 976,
+    "unit": 983,
     "integration": 29,
     "smoke": 3,
     "boundary-ipc": 9,

@@ -1,6 +1,8 @@
 export default {
   "route": {
     "management": "任务管理",
+    "plans": "重复任务",
+    "planDetail": "重复设置",
     "dependencyDemo": "依赖验证演示 (STORY-024)",
     "detail": "任务详情"
   },
@@ -23,6 +25,8 @@ export default {
     "pauseSuccess": "任务计划已暂停",
     "archiveFailed": "结束任务计划失败",
     "archiveSuccess": "任务计划已结束",
+    "abandonFailed": "结束重复任务失败",
+    "abandonSuccess": "重复任务已结束",
     "loadInstancesFailed": "加载待办任务失败",
     "startFailed": "开始待办任务失败",
     "completeFailed": "完成待办任务失败",
@@ -31,6 +35,43 @@ export default {
     "uncompleteSuccess": "待办任务已恢复为待完成",
     "skipFailed": "跳过待办任务失败",
     "skipSuccess": "待办任务已跳过"
+  },
+  "occurrence": {
+    "notFound": "未找到该待办",
+    "overdue": "已逾期",
+    "linkedGoal": "关联目标",
+    "note": "备注",
+    "viewRepeatSettings": "查看重复设置",
+    "repeatPositionFinite": "第 {position} / {total} 次",
+    "repeatPositionOpen": "第 {position} 次",
+    "markMissed": "标记未完成",
+    "correctToCompleted": "更正为已完成"
+  },
+  "plan": {
+    "title": "重复任务",
+    "subtitle": "在二级页面管理重复规则，不把计划配置堆进今日待办。",
+    "manage": "重复任务",
+    "settings": "重复设置",
+    "empty": "暂无重复任务。",
+    "open": "打开重复任务",
+    "active": "进行中",
+    "paused": "已暂停",
+    "ended": "已结束",
+    "repeat": "重复",
+    "progress": "进度",
+    "next": "下一次",
+    "noNext": "暂无后续待办",
+    "started": "开始于",
+    "completedFinite": "已完成 {completed} / {total}",
+    "completedOpen": "已完成 {completed} 次",
+    "pause": "暂停",
+    "resume": "恢复",
+    "end": "结束计划",
+    "endConfirmTitle": "结束这个重复任务？",
+    "endConfirmDescription": "结束「{name}」会记录已放弃的计划结果并停止后续执行；既有历史会保留。",
+    "occurrences": "执行记录",
+    "noOccurrences": "暂无执行记录。",
+    "notFound": "未找到该重复任务"
   },
   "home": {
     "title": "任务",

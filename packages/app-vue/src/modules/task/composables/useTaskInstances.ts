@@ -17,6 +17,7 @@ import type { Result } from '@memoflow/contracts/result';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
 import { useServerStateIdentityScope, useServerStateRuntime } from '../../../platform/server-state';
+import { taskOccurrenceQueryKeys } from '../../../platform/server-state/query-keys';
 import { patchTaskTemplateEverywhere } from './taskTemplateCache';
 
 type TaskInstanceDTO = ReturnType<typeof useTaskStore>['instances'][number];
@@ -75,6 +76,12 @@ export function useTaskInstances() {
   ): Promise<TaskInstanceDTO> {
     const dto = entity.toDTO();
     store.updateInstance(dto);
+    const identityScope = resolveIdentityScope();
+    runtime.queryClient.setQueryData(taskOccurrenceQueryKeys.detail(identityScope, String(dto.id)), (cached: unknown) => {
+      if (!cached || typeof cached !== 'object') return cached;
+      return { ...(cached as Record<string, unknown>), instance: dto };
+    });
+    await runtime.queryClient.invalidateQueries({ queryKey: taskOccurrenceQueryKeys.lists(identityScope) });
     await refreshTemplateProjection(String(dto.templateId));
     return dto;
   }
@@ -179,6 +186,17 @@ export function useTaskInstances() {
     return null;
   }
 
+  async function markInstanceMissed(id: string) {
+    const result = await executeTaskOperation(
+      () => service.markInstanceMissed(id),
+      'task.error.operationFailed',
+    );
+    if (result.ok) {
+      return updateInstanceProjection(result.data);
+    }
+    return null;
+  }
+
   return {
     fetchInstances,
     fetchInstancesByDateRange,
@@ -187,5 +205,6 @@ export function useTaskInstances() {
     uncompleteInstance,
     rescheduleInstance,
     skipInstance,
+    markInstanceMissed,
   };
 }

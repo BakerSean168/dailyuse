@@ -27,4 +27,12 @@ describe('TaskManagementView TASK-5201', () => {
     expect(source).toContain('completeInstance');
     expect(source).toContain('uncompleteInstance');
   });
+
+  it('deep-links occurrences to instance detail and keeps repeating-plan management secondary', () => {
+    const source = fs.readFileSync(path.resolve(__dirname, 'TaskManagementView.vue'), 'utf8');
+    expect(source).toContain('task-occurrence-open');
+    expect(source).toContain("name: 'task-occurrence-detail'");
+    expect(source).toContain('task-plan-management-entry');
+    expect(source).toContain("name: 'task-plans'");
+  });
 });

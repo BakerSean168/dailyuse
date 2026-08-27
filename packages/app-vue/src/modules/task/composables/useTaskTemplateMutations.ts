@@ -293,6 +293,12 @@ export function useTaskTemplateMutations() {
     'task.error.archiveSuccess',
     'Closed',
   );
+  const abandonPlan = createStatusMutation(
+    (id) => service.abandonPlan(id),
+    'task.error.abandonFailed',
+    'task.error.abandonSuccess',
+    'Closed',
+  );
 
   // 视图兼容的 safe wrappers：失败返回 null/false（错误已由 onError/toast 报告），成功返回结果。
   // View-compatible safe wrappers: null/false on failure, resolved data on success.
@@ -351,6 +357,7 @@ export function useTaskTemplateMutations() {
     activateTemplate,
     pauseTemplate,
     archiveTemplate,
+    abandonPlan,
     // View-compatible safe wrappers.
     createTemplateSafe,
     updateTemplateSafe,
@@ -359,6 +366,7 @@ export function useTaskTemplateMutations() {
     activateTemplateSafe: (id: string) => statusSafe(activateTemplate, id),
     pauseTemplateSafe: (id: string) => statusSafe(pauseTemplate, id),
     archiveTemplateSafe: (id: string) => statusSafe(archiveTemplate, id),
+    abandonPlanSafe: (id: string) => statusSafe(abandonPlan, id),
     isSaving: computed(
       () =>
         createTemplate.isPending.value ||
@@ -367,7 +375,8 @@ export function useTaskTemplateMutations() {
         deleteTemplates.isPending.value ||
         activateTemplate.isPending.value ||
         pauseTemplate.isPending.value ||
-        archiveTemplate.isPending.value,
+        archiveTemplate.isPending.value ||
+        abandonPlan.isPending.value,
     ),
   };
 }

@@ -9,3 +9,4 @@ export {
   useTaskTemplateMutations,
   type CreateTemplateFeedbackIntent,
 } from './useTaskTemplateMutations';
+export * from './useTaskOccurrenceQueries';

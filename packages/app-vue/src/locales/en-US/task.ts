@@ -1,6 +1,8 @@
 export default {
   "route": {
     "management": "Task Management",
+    "plans": "Repeating Tasks",
+    "planDetail": "Repeat Settings",
     "dependencyDemo": "Dependency Validation Demo (STORY-024)",
     "detail": "Task Detail"
   },
@@ -23,6 +25,8 @@ export default {
     "pauseSuccess": "Task plan paused",
     "archiveFailed": "Failed to end task plan",
     "archiveSuccess": "Task plan ended",
+    "abandonFailed": "Failed to end repeating task",
+    "abandonSuccess": "Repeating task ended",
     "loadInstancesFailed": "Failed to load to-dos",
     "startFailed": "Failed to start to-do",
     "completeFailed": "Failed to complete to-do",
@@ -31,6 +35,43 @@ export default {
     "uncompleteSuccess": "To-do marked as pending",
     "skipFailed": "Failed to skip to-do",
     "skipSuccess": "To-do skipped"
+  },
+  "occurrence": {
+    "notFound": "To-do not found",
+    "overdue": "Overdue",
+    "linkedGoal": "Linked goal",
+    "note": "Note",
+    "viewRepeatSettings": "View repeat settings",
+    "repeatPositionFinite": "{position} / {total}",
+    "repeatPositionOpen": "Occurrence {position}",
+    "markMissed": "Mark missed",
+    "correctToCompleted": "Correct to completed"
+  },
+  "plan": {
+    "title": "Repeating tasks",
+    "subtitle": "Manage recurrence without mixing plan settings into today's to-dos.",
+    "manage": "Repeating tasks",
+    "settings": "Repeat settings",
+    "empty": "No repeating tasks yet.",
+    "open": "Open repeating task",
+    "active": "Active",
+    "paused": "Paused",
+    "ended": "Ended",
+    "repeat": "Repeat",
+    "progress": "Progress",
+    "next": "Next",
+    "noNext": "No upcoming occurrence",
+    "started": "Started",
+    "completedFinite": "{completed} / {total} completed",
+    "completedOpen": "{completed} completed",
+    "pause": "Pause",
+    "resume": "Resume",
+    "end": "End plan",
+    "endConfirmTitle": "End this repeating task?",
+    "endConfirmDescription": "Ending \"{name}\" records an abandoned plan outcome and stops future work. Existing history is kept.",
+    "occurrences": "Occurrences",
+    "noOccurrences": "No occurrences yet.",
+    "notFound": "Repeating task not found"
   },
   "home": {
     "title": "Tasks",

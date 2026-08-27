@@ -443,19 +443,21 @@ Implementation checkpoint (2026-08-27): `TASK-5202` replaced the legacy multi-se
 
 ### Task detail
 
-- [ ] instance-first detail；
-- [ ] repeat position `5 / 15`；
-- [ ] Goal link metadata；
-- [ ] contribution summary；
-- [ ] complete/skip/uncomplete；
-- [ ] `查看重复设置` deep-link。
+- [x] instance-first detail；
+- [x] repeat position `5 / 15`；
+- [x] Goal link metadata；
+- [x] contribution summary；
+- [x] complete/skip/uncomplete；
+- [x] `查看重复设置` deep-link。
 
 ### Repeating task management
 
-- [ ] 二级 list；
-- [ ] next occurrence；
-- [ ] completed count / finite total；
-- [ ] pause/resume/end/edit recurrence。
+- [x] 二级 list；
+- [x] next occurrence；
+- [x] completed count / finite total；
+- [x] pause/resume/end/edit recurrence。
+
+Implementation checkpoint (2026-08-27): `TASK-5203` closes the Vue Task product lane with occurrence-first detail plus a secondary repeating-plan list/detail. Occurrence corrections remain Task owner commands; repeating-plan pause/resume/end/edit stay on the template/plan owner surface; Product Time formats every task date; Goal/KR context and contribution are presentation joins only. Compatibility `/tasks/:id` remains a plan deep link, while new occurrence navigation uses `/tasks/occurrences/:id`.
 
 ## 10. Phase 9 — Mobile / React Parity
 

@@ -87,8 +87,18 @@
       <Button
         type="button"
         variant="ghost"
+        size="sm"
+        class="ml-auto h-8"
+        data-testid="task-plan-management-entry"
+        @click="openPlans"
+      >
+        <Repeat2 class="mr-1 h-3.5 w-3.5" />{{ t('task.plan.manage') }}
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
         size="icon"
-        class="ml-auto h-8 w-8"
+        class="h-8 w-8"
         :aria-label="t('common.refresh')"
         @click="refreshHome"
       >
@@ -179,12 +189,15 @@
               <div class="min-w-0 flex-1">
                 <div class="flex min-w-0 items-start gap-3">
                   <div class="min-w-0 flex-1">
-                    <p
-                      class="truncate text-sm font-medium"
+                    <button
+                      type="button"
+                      class="block max-w-full truncate text-left text-sm font-medium hover:underline"
                       :class="{ 'line-through text-muted-foreground': row.instance.status === 'Completed' }"
+                      data-testid="task-occurrence-open"
+                      @click="openOccurrence(String(row.instance.id))"
                     >
                       {{ row.template.name }}
-                    </p>
+                    </button>
                     <p
                       v-if="row.template.description"
                       class="mt-0.5 line-clamp-1 text-xs text-muted-foreground"
@@ -245,6 +258,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Check, CheckCircle2, Loader2, Plus, RefreshCw, Search, Target } from '@lucide/vue';
 import {
@@ -286,6 +300,7 @@ import {
 } from '../utils/task-execution-home';
 
 const { t } = useI18n();
+const router = useRouter();
 const taskStore = useTaskStore();
 const activeView = ref<TaskExecutionView>('today');
 const selectedLabelIds = ref<string[]>([]);
@@ -449,6 +464,14 @@ async function handleComplete(instance: TaskInstanceClientDTO): Promise<void> {
 
 const dialogOpen = ref(false);
 const dialogMode = ref<'create'>('create');
+
+function openOccurrence(instanceId: string): void {
+  void router.push({ name: 'task-occurrence-detail', params: { id: instanceId } });
+}
+
+function openPlans(): void {
+  void router.push({ name: 'task-plans' });
+}
 
 function openCreate(): void {
   dialogMode.value = 'create';

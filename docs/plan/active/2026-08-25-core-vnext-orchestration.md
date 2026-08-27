@@ -55,7 +55,7 @@ Wave 0 evidence is frozen in [`Core vNext Wave 0 — Baseline / Acceptance / Sha
 
 **Wave 2 execution point (closed 2026-08-26):** `GOAL-2101~2103`, `TASK-2201~2205`, `ROUTINE-2301~2303`, and `NOTIF-2401/2402` are integrated and gate-verified.
 
-**Current execution point (2026-08-27):** Wave 3 vertical integration and both Wave 4 lanes are closed. Wave 5 shared `UI-5101`, Goal list/editor `GOAL-5101`, Task execution home `TASK-5201`, and unified Task editor `TASK-5202` are closed. Goal now uses the vNext progress-row + Label AND filter + aggregate editor surface; Task now opens on the occurrence-first Today/Upcoming execution surface and uses one vNext create/edit surface backed by shared Product Time/recurrence/reminder controls. The current primary continuation is `TASK-5203` (Task detail + repeating plan management), while Goal detail, Routine, Planner, and Notification UI lanes remain independently parallelizable.
+**Current execution point (2026-08-27):** Wave 3 vertical integration and both Wave 4 lanes are closed. Wave 5 shared `UI-5101`, Goal list/editor `GOAL-5101`, and the complete Task product lane `TASK-5201~5203` are closed. Goal now uses the vNext progress-row + Label AND filter + aggregate editor surface; Task now opens on occurrence-first Today/Upcoming execution, uses one shared-control vNext editor, and separates occurrence detail from repeating-plan management. The next primary Wave 5 continuation is `ROUTINE-5301` (Routine configuration center); `GOAL-5102`, Routine, Planner, and Notification UI lanes remain independently parallelizable subject to their declared dependencies.
 
 **Wave 1 gate evidence (2026-08-25):**
 
@@ -1830,6 +1830,17 @@ goal metadata
 complete/missed/skip correction
 link to plan settings
 ```
+
+**Implementation evidence (2026-08-27):**
+
+- split Task detail into two explicit authorities. `/tasks/occurrences/:id` is occurrence-first and joins the instance fact with template metadata only for title, labels, Goal/KR context, recurrence identity, and contribution summary; repeating-plan lifecycle/configuration lives under `/tasks/plans` and `/tasks/plans/:id` instead of being mixed into an execution occurrence;
+- occurrence detail shows canonical persisted status, the domain-derived overdue flag, Product Time date/time presentation, finite/open repeat position, labels, Goal/KR deep-link metadata, contribution summary, and occurrence notes. Repeat position is derived from the plan occurrence projection and never mutates domain state;
+- correction actions delegate to Task owner commands: Pending/InProgress can be completed, skipped, or explicitly marked Missed; Completed can be uncompleted; Missed/Skipped can be corrected to Completed. `useTaskInstances` now patches the identity-scoped occurrence detail cache and invalidates occurrence lists after successful owner mutations while still refreshing the template projection;
+- repeating-task management is a secondary list/detail surface with recurrence summary, completed count / finite total, next occurrence, Product Time start date, plan outcome, labels, Goal/KR contribution context, occurrence history, and deep links back to individual occurrence detail. Pause/resume use existing lifecycle commands; End uses the explicit `abandonPlan` owner command and keeps history rather than deleting the plan;
+- editing a repeating plan reuses the `TASK-5202` unified editor and its vNext payload. The plan surface does not resurrect dependency/DAG/critical-path fields, free-form tags/color payloads, or a second recurrence editor;
+- preserved the legacy `/tasks/:id` deep link as a compatibility alias to the repeating-plan detail while making all new occurrence navigation explicit under `/tasks/occurrences/:id`. Header/Planner links therefore remain valid without confusing a template id with an occurrence id;
+- loading/error/not-found/empty-occurrence states are explicit; native buttons and shared Button primitives preserve keyboard semantics, and container-query spacing keeps occurrence and plan surfaces usable in narrow business panels without width-driven product branching;
+- verification: focused Task detail/router/query/mutation regressions `9` files / `44` tests green; full app-vue `202` files / `758` tests green; full Task `72` files / `734` tests green; contracts `65` files / `475` tests green; app-vue dependency-chain typecheck green; app-vue lint has `0` errors (13 repository-existing warnings); production app-vue build, docs check, full governance check, test-target governance, regenerated `1130`-file test inventory (`983` unit / `29` integration / `3` smoke / `9` boundary-ipc / `5` boundary-main / `63` e2e / `1` perf / `37` governance), inventory check, and `git diff --check` are green.
 
 ## ROUTINE-5301 — Routine configuration center
 

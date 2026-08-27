@@ -5,6 +5,7 @@ import {
   canonicalizeTaskTemplateListQuery,
   governanceQueryKeys,
   notificationQueryKeys,
+  taskOccurrenceQueryKeys,
   taskTemplateQueryKeys,
 } from './query-keys';
 
@@ -96,6 +97,20 @@ describe('canonicalizeNotificationListQuery', () => {
   it('rejects nothing at runtime but ignores non-primitive fields at the type boundary', () => {
     const canonical = canonicalizeNotificationListQuery({ page: 1, limit: 20 });
     expect(canonical).not.toHaveProperty('keyword');
+  });
+});
+
+describe('taskOccurrenceQueryKeys', () => {
+  it('separates identity-scoped occurrence lists and details', () => {
+    expect(taskOccurrenceQueryKeys.list('id-1', 'template-1')).toEqual([
+      'server-state', 'task-occurrence', 'id-1', 'list', 'template-1',
+    ]);
+    expect(taskOccurrenceQueryKeys.detail('id-1', 'instance-1')).toEqual([
+      'server-state', 'task-occurrence', 'id-1', 'detail', 'instance-1',
+    ]);
+    expect(taskOccurrenceQueryKeys.detail('id-1', 'instance-1')).not.toEqual(
+      taskOccurrenceQueryKeys.detail('id-2', 'instance-1'),
+    );
   });
 });
 

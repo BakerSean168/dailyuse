@@ -21,6 +21,14 @@ describe('Product date presentation boundary', () => {
     resolve(dir, '../../modules/task/utils/task-template-presentation.ts'),
     'utf8',
   );
+  const taskPlanDetail = readFileSync(
+    resolve(dir, '../../modules/task/views/TaskPlanDetailView.vue'),
+    'utf8',
+  );
+  const taskPlanList = readFileSync(
+    resolve(dir, '../../modules/task/views/TaskPlanListView.vue'),
+    'utf8',
+  );
   const schedule = readFileSync(
     resolve(dir, '../../modules/schedule/components/ScheduleTaskDetailDialog.vue'),
     'utf8',
@@ -51,12 +59,15 @@ describe('Product date presentation boundary', () => {
     expect(goalDetail).toContain('emptyNotSet');
   });
 
-  it('keeps Task date formatting in the presentation mapper rather than the detail view', () => {
+  it('keeps Task occurrence and plan dates on Product Time helpers without local Date wrappers', () => {
     expect(taskPresentation).toContain('formatProductDate');
     expect(taskPresentation).toContain('formattedCreatedAt');
-    expect(taskDetail).toContain('formattedCreatedAt');
-    expect(taskDetail).not.toMatch(/function formatDate\b/);
-    expect(taskDetail).not.toContain('new Date(');
+    for (const source of [taskDetail, taskPlanDetail, taskPlanList]) {
+      expect(source).toContain('formatProductDate');
+      expect(source).not.toMatch(/function formatDate\b/);
+      expect(source).not.toContain('new Date(');
+      expect(source).not.toContain('toLocaleDateString');
+    }
   });
 
   it('keeps other date surfaces on Product Time helpers', () => {

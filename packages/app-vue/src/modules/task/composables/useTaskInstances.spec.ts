@@ -12,7 +12,7 @@ import {
   SERVER_STATE_IDENTITY_SCOPE_KEY,
   SERVER_STATE_RUNTIME_KEY,
 } from '../../../platform/server-state';
-import { taskTemplateQueryKeys } from '../../../platform/server-state/query-keys';
+import { taskOccurrenceQueryKeys, taskTemplateQueryKeys } from '../../../platform/server-state/query-keys';
 import { useTaskStore } from '../stores/task-store';
 import { useTaskInstances } from './useTaskInstances';
 
@@ -63,9 +63,11 @@ function entity<T>(dto: T) {
 function mountComposable() {
   const completed = instance('Completed');
   const pending = instance('Pending');
+  const missed = instance('Missed');
   const service = {
     completeInstance: vi.fn().mockResolvedValue(ok(entity(completed))),
     uncompleteInstance: vi.fn().mockResolvedValue(ok(entity(pending))),
+    markInstanceMissed: vi.fn().mockResolvedValue(ok(entity(missed))),
     getTemplate: vi
       .fn()
       .mockResolvedValueOnce(ok(entity(template(100))))
@@ -105,6 +107,25 @@ function mountComposable() {
 
 describe('useTaskInstances template projection refresh', () => {
   beforeEach(() => vi.clearAllMocks());
+
+  it('patches the canonical occurrence detail after an explicit missed correction', async () => {
+    const { composable, service, runtime } = mountComposable();
+    const detailKey = taskOccurrenceQueryKeys.detail('identity-1', 'instance-a');
+    runtime.queryClient.setQueryData(detailKey, {
+      instance: instance('Pending'),
+      template: template(0),
+      planInstances: [instance('Pending')],
+    });
+
+    const result = await composable.markInstanceMissed('instance-a');
+
+    expect(service.markInstanceMissed).toHaveBeenCalledWith('instance-a');
+    expect(result?.status).toBe('Missed');
+    expect(
+      runtime.queryClient.getQueryData<{ instance: TaskInstanceClientDTO }>(detailKey)?.instance.status,
+    ).toBe('Missed');
+    expect(service.getTemplate).toHaveBeenCalledWith('template-a');
+  });
 
   it('refreshes the canonical template projection in the query cache after complete and uncomplete', async () => {
     const { composable, service, runtime } = mountComposable();
