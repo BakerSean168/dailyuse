@@ -53,6 +53,6 @@ describe('notification API runtime composer surface', () => {
     expect(composer).toContain('requestedWriter: NotificationRequestedWriterPort');
     expect(composer).toContain('requestedWriter: repositories.requestedWriter');
     expect(composer).toContain('NotificationRequestedWriterPort');
-    expect(composer).toContain('from \'@memoflow/contracts/notification\'');
+    expect(composer).toContain('type NotificationRequestedWriterPort,');
   });
 });

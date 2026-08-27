@@ -17,6 +17,12 @@ import { PowerSyncGoalWriteTransactionRunner } from './adapters/powersync/powers
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import { createGoalScheduleExecutionSource } from './schedule-execution-source';
 import { createGoalScheduleProjectionSource } from './schedule-projection-source';
+import {
+  createGoalReminderFireHandler,
+  type GoalReminderFirePayload,
+} from './goal-reminder-fire.handler';
+import type { NotificationRequestedWriterPort } from '@memoflow/contracts/notification';
+import type { ScheduledHandlerRegistration } from '@memoflow/contracts/schedule';
 import type { GoalScheduleExecutionSource } from '../../schedule-execution';
 import type { GoalScheduleProjectionSource } from '../../schedule-projection';
 import { createGoalTaskProgressHandler } from '../application/event-handlers';
@@ -108,6 +114,16 @@ export function createGoalPowerSyncScheduleExecutionSource(
 ): GoalScheduleExecutionSource {
   return createGoalScheduleExecutionSource({
     goalRepository: createGoalPowerSyncRepositories(db).goalRepository,
+  });
+}
+
+export function createGoalPowerSyncReminderFireHandler(
+  db: IElectronDatabase,
+  requestedWriter: NotificationRequestedWriterPort,
+): ScheduledHandlerRegistration<GoalReminderFirePayload> {
+  return createGoalReminderFireHandler({
+    goalRepository: createGoalPowerSyncRepositories(db).goalRepository,
+    requestedWriter,
   });
 }
 

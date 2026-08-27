@@ -39,7 +39,6 @@
  */
 
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
-import type { NotificationRequestedWriterPort } from '@memoflow/contracts/notification';
 import {
   createDefaultElectronDesktopTransport,
   createNotificationDurableRuntime,
@@ -49,6 +48,7 @@ import {
   createPowerSyncClosureChecker,
   type ChannelCapabilitySpec,
   type INotificationRepository,
+  type NotificationRequestedWriterPort,
   type ScheduleNotificationPort,
 } from '@memoflow/notification';
 import {
@@ -82,6 +82,8 @@ export interface ComposedNotificationDesktop {
     /** Durable NotificationRequested writer (NOTIF-3301) for business handlers. */
     readonly requestedWriter: NotificationRequestedWriterPort;
   };
+  /** Trusted writer for durable `notification.requested` envelopes (cross-module consumption). 可信的 durable `notification.requested` 信封写入器（跨模块消费）。 */
+  readonly requestedWriter: NotificationRequestedWriterPort;
   /** Schedule notification port built from the SAME repository set. 从同一仓储集合构建的 schedule notification port。 */
   readonly scheduleNotificationPort: ScheduleNotificationPort;
 }
@@ -161,6 +163,7 @@ export function composeNotification(
       notificationRepository: repositories.notificationRepository,
       requestedWriter: repositories.requestedWriter,
     },
+    requestedWriter: repositories.requestedWriter,
     scheduleNotificationPort,
   };
 }

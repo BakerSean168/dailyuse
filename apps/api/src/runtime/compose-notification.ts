@@ -37,7 +37,6 @@
  */
 
 import type { PrismaClient } from '@memoflow/database';
-import type { NotificationRequestedWriterPort } from '@memoflow/contracts/notification';
 import {
   createNotificationDurableRuntime,
   createNotificationModule,
@@ -45,6 +44,7 @@ import {
   createNotificationScheduleNotificationPort,
   type ChannelCapabilitySpec,
   type INotificationRepository,
+  type NotificationRequestedWriterPort,
   type ScheduleNotificationPort,
 } from '@memoflow/notification';
 import {
@@ -78,6 +78,8 @@ export interface ComposedNotification {
     /** Durable NotificationRequested writer (NOTIF-3301) for business handlers. */
     readonly requestedWriter: NotificationRequestedWriterPort;
   };
+  /** Compatibility alias for Goal reminder composition; points to repositories.requestedWriter. */
+  readonly requestedWriter: NotificationRequestedWriterPort;
   /** Schedule notification port built from the SAME repository set. 从同一仓储集合构建的 schedule notification port。 */
   readonly scheduleNotificationPort: ScheduleNotificationPort;
 }
@@ -154,6 +156,7 @@ export function composeNotification(
       notificationRepository: repositories.notificationRepository,
       requestedWriter: repositories.requestedWriter,
     },
+    requestedWriter: repositories.requestedWriter,
     scheduleNotificationPort: createNotificationPort,
   };
 }

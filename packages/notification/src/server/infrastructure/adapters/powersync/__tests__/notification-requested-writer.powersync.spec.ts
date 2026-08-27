@@ -9,6 +9,7 @@ import {
   type NotificationRequested,
 } from '@memoflow/contracts/notification';
 import { NotificationRequestedPowerSyncWriterAdapter } from '../notification-requested-writer.powersync.adapter';
+import { PowerSyncNotificationReliableAdapter } from '../power-sync-notification-reliable.adapter';
 
 function wrapSqlite(sqlite: ReturnType<typeof Database>): IElectronDatabase {
   const wrapper: IElectronDatabase = {
@@ -80,9 +81,7 @@ describe('NotificationRequestedPowerSyncWriterAdapter (NOTIF-3301 desktop lane)'
   function tableExists(name: string): boolean {
     return (
       sqlite
-        .prepare(
-          `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?`,
-        )
+        .prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?`)
         .get(name) !== undefined
     );
   }
@@ -140,7 +139,10 @@ describe('NotificationRequestedPowerSyncWriterAdapter (NOTIF-3301 desktop lane)'
     const retryOpId = randomUUID();
     const envelope = buildEnvelope();
 
-    const first = await writer.enqueueNotificationRequested({ operationId: originalOpId, envelope });
+    const first = await writer.enqueueNotificationRequested({
+      operationId: originalOpId,
+      envelope,
+    });
     const retried = await writer.enqueueNotificationRequested({ operationId: retryOpId, envelope });
 
     expect(retried.operationId).toBe(first.operationId);
@@ -200,14 +202,22 @@ describe('NotificationRequestedPowerSyncWriterAdapter (NOTIF-3301 desktop lane)'
     expect(row?.status).toBe('pending');
     expect(row?.idempotency_key).toBe(envelope.idempotencyKey);
 
-    // A consumer may claim the row (status stays as written; the claim only sets
-    // lease fields), proving the writer and the desktop shared-outbox consumer
-    // agree on the row shape.
-    const claimed = await db.execute(
-      `UPDATE outbox_messages SET status = 'running', owner_token = 'worker-test', claim_id = 'claim-test', lease_expires_at = '2099-01-01T00:00:00.000Z' WHERE id = ?`,
-      [opId],
-    );
-    expect(claimed.rowsAffected).toBe(1);
+    // Claim through the actual desktop reliable adapter, proving the dedicated
+    // writer and the shared-outbox consumer agree on the durable row shape.
+    const reliableAdapter = new PowerSyncNotificationReliableAdapter(db);
+    const claimed = await reliableAdapter.claimSharedOutboxIntents({
+      ownerToken: 'worker-test',
+      limit: 50,
+    });
+    const claimedRow = claimed.find((candidate) => candidate.id === opId);
+    expect(claimedRow).toMatchObject({
+      id: opId,
+      messageType: NOTIFICATION_REQUESTED_MESSAGE_TYPE,
+      status: 'running',
+      ownerToken: 'worker-test',
+    });
+    expect(claimedRow?.claimId).toBeTruthy();
+    expect(claimedRow?.leaseExpiresAt).toBeTruthy();
   });
 
   it('6. UNIQUE idempotency_key makes business idempotency durable under concurrent writers', async () => {
@@ -216,7 +226,10 @@ describe('NotificationRequestedPowerSyncWriterAdapter (NOTIF-3301 desktop lane)'
 
     // Winner writes first under its own operationId.
     const winner = new NotificationRequestedPowerSyncWriterAdapter(db);
-    const winnerReceipt = await winner.enqueueNotificationRequested({ operationId: opId, envelope });
+    const winnerReceipt = await winner.enqueueNotificationRequested({
+      operationId: opId,
+      envelope,
+    });
 
     // A second adapter racing with a fresh operationId for the SAME canonical
     // envelope must reconcile onto the winner's durable row instead of creating
@@ -253,5 +266,25 @@ describe('NotificationRequestedPowerSyncWriterAdapter (NOTIF-3301 desktop lane)'
         ),
     ).toThrow(/UNIQUE constraint failed/);
     expect(rows()).toHaveLength(1);
+  });
+
+  it('7. Rejects an envelope whose canonical idempotency key does not match its identity tuple', async () => {
+    const valid = buildEnvelope();
+    const invalidEnvelope = {
+      ...valid,
+      idempotencyKey: buildIdempotencyKeyString({
+        identityId: valid.identityId,
+        source: 'notification',
+        occurrenceKey: `${valid.occurrenceKey}:different`,
+      }),
+    } as NotificationRequested;
+
+    await expect(
+      writer.enqueueNotificationRequested({
+        operationId: randomUUID(),
+        envelope: invalidEnvelope,
+      }),
+    ).rejects.toThrow();
+    expect(tableExists('outbox_messages')).toBe(false);
   });
 });
