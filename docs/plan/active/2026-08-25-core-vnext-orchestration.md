@@ -55,7 +55,7 @@ Wave 0 evidence is frozen in [`Core vNext Wave 0 — Baseline / Acceptance / Sha
 
 **Wave 2 execution point (closed 2026-08-26):** `GOAL-2101~2103`, `TASK-2201~2205`, `ROUTINE-2301~2303`, and `NOTIF-2401/2402` are integrated and gate-verified.
 
-**Current execution point (2026-08-27):** Wave 3 vertical integration and both Wave 4 lanes are closed: `ROUTINE-4101~4104`, `ROUTINE-4201~4203`, and `PLAN-4301~4304` are implemented and gate-verified. Production Planner has one FullCalendar Standard rendering engine; local Routine runtime now has separate InterventionWindow and FocusWindow surfaces over runtime/domain truth. The next critical path is Wave 5 Product Surface Rebuild, beginning with shared `UI-5101` where Goal/Task depend on it while independent Routine/Planner/Notification UI lanes may proceed in parallel.
+**Current execution point (2026-08-27):** Wave 3 vertical integration and both Wave 4 lanes are closed. Wave 5 has started and shared `UI-5101` is closed: Goal/Task now have one shadcn/Reka-based LabelPicker/LabelFilterPopover presentation seam. `GOAL-5101` and `TASK-5201` are unblocked; the current primary continuation is `GOAL-5101`, while Routine/Planner/Notification UI lanes remain independently parallelizable.
 
 **Wave 1 gate evidence (2026-08-25):**
 
@@ -1698,6 +1698,17 @@ Parallel feature lanes are encouraged because UI modules are mostly isolated.
 **Borrow:** shadcn Command + Popover.
 
 **Implementation:** existing search/create/multi-select/narrow summary; no custom combobox engine.
+
+**Implementation evidence (2026-08-27):**
+
+- added a domain-neutral controlled `LabelPickerOption { id, name, color? }` presentation contract rather than importing Goal/Task/Label DTOs into shared UI; selected IDs stay caller-owned and unknown selected IDs are preserved in counts instead of being silently rewritten;
+- both public controls reuse one internal `LabelCommandPanel` built directly on the existing shadcn/Reka `Command`, `CommandInput`, `CommandItem`, `Popover`, `Button`, and `Badge` primitives. Search filtering and multiple-selection semantics are delegated to Reka; there is no local combobox/search engine;
+- `LabelPicker` provides searchable multi-select, optional color dots, compact/narrow summary, `+N` overflow, accessible combobox trigger state, and a normalized `create(name)` intent only for non-empty names that do not exactly match an existing label;
+- label creation remains an intent emitted to the owning feature. `LABEL-1101` currently supplies domain/application persistence but no renderer transport; this shared component deliberately does not compensate by touching persistence or inferring a global catalog from Goal/Task DTOs. Goal/Task product lanes must inject a legitimate catalog/create seam;
+- `LabelFilterPopover` reuses the same Command panel with creation disabled, exposes selected-count feedback, an explicit AND-semantics hint (`Matches all selected labels`), compact mode, and a semantic Clear action;
+- tests exercise the actual Reka input path (`setValue('health')`) and prove the Command engine filters items, verify controlled multiple selection/deduplication, exact-match creation suppression, normalized create intent, compact summary behavior, filter semantics, and clear behavior;
+- exported only `LabelPicker`, `LabelFilterPopover`, and the small option type from shared components; the internal Command panel remains private so Goal and Task cannot fork its interaction protocol;
+- verification: focused `3` files / `7` tests green; full app-vue `193` files / `732` tests green; app-vue typecheck and production Vite build green; app-vue lint has `0` errors (13 pre-existing warnings); Nx sync, test-target governance, inventory governance, docs, and full governance are green. Test inventory is current at `1117` owned files (`970` unit / `29` integration / `3` smoke / `9` boundary-ipc / `5` boundary-main / `63` e2e / `1` perf / `37` governance).
 
 ## GOAL-5101 — Goal list/editor rebuild
 

@@ -4075,6 +4075,30 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/shared/components/LabelCommandPanel.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/shared/components/LabelFilterPopover.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/shared/components/LabelPicker.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/shared/components/ProductDialogShell.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10209,7 +10233,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 190
+      "fileCount": 193
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -11241,7 +11265,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 967,
+    "unit": 970,
     "integration": 29,
     "smoke": 3,
     "boundary-ipc": 9,
