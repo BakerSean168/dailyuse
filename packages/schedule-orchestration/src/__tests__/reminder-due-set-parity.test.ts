@@ -4,6 +4,7 @@ import {
   type ReminderDueSetComparison,
 } from '@memoflow/reminder';
 import { SourceModule } from '@memoflow/contracts/schedule';
+import type { ScheduleTask } from '@memoflow/schedule';
 import { createReminderSchedulerDueSetReader } from '../shadow/reminder-due-set-shadow';
 
 /**
@@ -31,6 +32,13 @@ interface TemplateRow {
   deletedAt: boolean | null;
 }
 
+/**
+ * Fixture rows carry the reader-visible task surface (identityId,
+ * sourceEntityId, sourceModule, nextRunAt, enabled, status). They are stored
+ * as plain rows so snooze/pause/commit can advance BOTH authorities in
+ * lockstep; findDueTasksForExecution resolves them as ScheduleTask[] exactly
+ * like the production IScheduleTaskRepository contract.
+ */
 interface TaskRow {
   identityId: string;
   sourceEntityId: string;
@@ -38,6 +46,10 @@ interface TaskRow {
   nextRunAt: Date | null;
   enabled: boolean;
   status: string;
+}
+
+function asScheduleTasks(rows: TaskRow[]): ScheduleTask[] {
+  return rows as unknown as ScheduleTask[];
 }
 
 interface ParityHarness {
@@ -91,17 +103,22 @@ function createParityHarness(): ParityHarness {
       ),
     ),
   };
-  // Mirrors findDueTasksForExecution; the real reader then narrows to the
-  // Reminder source after the query, so the test also exercises that filter.
+  // Mirrors findDueTasksForExecution (async Promise<ScheduleTask[]> as the
+  // production IScheduleTaskRepository contract demands); the real reader then
+  // narrows to the Reminder source after the query, so the test also exercises
+  // that filter.
   const scheduleTaskRepository = {
-    findDueTasksForExecution: vi.fn((beforeDate: Date) =>
-      tasks.filter(
-        (t) =>
-          t.enabled &&
-          t.status === 'Active' &&
-          t.nextRunAt !== null &&
-          t.nextRunAt.getTime() <= beforeDate.getTime(),
-      ),
+    findDueTasksForExecution: vi.fn(
+      async (beforeDate: Date): Promise<ScheduleTask[]> =>
+        asScheduleTasks(
+          tasks.filter(
+            (t) =>
+              t.enabled &&
+              t.status === 'Active' &&
+              t.nextRunAt !== null &&
+              t.nextRunAt.getTime() <= beforeDate.getTime(),
+          ),
+        ),
     ),
   };
 
