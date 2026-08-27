@@ -6970,6 +6970,14 @@
       ]
     },
     {
+      "path": "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/scheduler-to-fact-vertical-wave3.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/notification/vitest.integration.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/notification/src/server/infrastructure/adapters/prisma/mappers/__tests__/notification-preference-prisma.mapper.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10460,7 +10468,7 @@
       "type": "primary",
       "suite": "integration",
       "runner": "vitest",
-      "fileCount": 2
+      "fileCount": 3
     },
     {
       "id": "packages/notification/vitest.config.ts",
@@ -11333,7 +11341,7 @@
   "unexpected": [],
   "counts": {
     "unit": 977,
-    "integration": 29,
+    "integration": 30,
     "smoke": 3,
     "boundary-ipc": 9,
     "boundary-main": 5,
