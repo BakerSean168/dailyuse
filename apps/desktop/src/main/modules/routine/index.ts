@@ -15,3 +15,15 @@ export {
 } from './electron-focus-window.host';
 export { ElectronFocusTaskbarAdapter } from './focus-window-taskbar.adapter';
 export { createFocusWindowElectronModule } from './focus-window.electron-module';
+
+export {
+  createInterventionWindowController,
+  type CreateInterventionWindowControllerOptions,
+  type InterventionWindowController,
+  type InterventionWindowHost,
+} from './intervention-window-controller';
+export {
+  ElectronInterventionWindowHost,
+  type ElectronInterventionWindowHostOptions,
+} from './electron-intervention-window.host';
+export { createInterventionWindowElectronModule } from './intervention-window.electron-module';

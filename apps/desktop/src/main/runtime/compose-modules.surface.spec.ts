@@ -75,6 +75,8 @@ describe('desktop runtime composer surface (Batch Step D)', () => {
       '.register(taskElectronModule)',
       '.register(scheduleComposed.module)',
       '.register(reminderComposed.module)',
+      '.register(interventionWindowElectronModule)',
+      '.register(focusWindowElectronModule)',
       '.register(AIElectronModule)',
       '.register(governanceElectronModule)',
       '.register(repositoryElectronModule)',
@@ -101,7 +103,9 @@ describe('desktop runtime composer surface (Batch Step D)', () => {
       } else {
         expect(source).toContain(`from '${pkg}'`);
       }
-      expect(source).not.toMatch(new RegExp(`@memoflow\\/${pkg.replace('@memoflow/', '')}\\/server`));
+      expect(source).not.toMatch(
+        new RegExp(`@memoflow\\/${pkg.replace('@memoflow/', '')}\\/server`),
+      );
       expect(source).not.toMatch(/@memoflow\/[a-z-]+\/server\/infrastructure/);
     });
 
@@ -112,7 +116,9 @@ describe('desktop runtime composer surface (Batch Step D)', () => {
     });
 
     it(`${name} composer imports no electron repository accessor`, () => {
-      expect(source).not.toMatch(/\bget(Notification|Reminder|Schedule|ScheduleTask)\w*Repository\b/);
+      expect(source).not.toMatch(
+        /\bget(Notification|Reminder|Schedule|ScheduleTask)\w*Repository\b/,
+      );
       expect(source).not.toMatch(/\bstartScheduleRuntime\b/);
       expect(source).not.toMatch(/\bstopScheduleRuntime\b/);
     });
@@ -141,6 +147,16 @@ describe('desktop runtime composer surface (Batch Step D)', () => {
     expect(schedule).toContain('repositories.scheduleTaskRepository');
   });
 
+  it('reminder composer owns one per-profile InterventionRuntime and main wires both Routine windows through bootstrapper', () => {
+    const reminder = readFileSync(resolve(composerDir, 'compose-reminder.ts'), 'utf8');
+    expect(reminder).toContain('createInterventionRuntime');
+    expect(reminder).toContain('readonly interventionRuntime: InterventionRuntime');
+    expect(reminder).toContain('interventionRuntime: createInterventionRuntime()');
+    expect(main).toContain('runtime: reminderComposed.interventionRuntime');
+    expect(main).toContain('.register(interventionWindowElectronModule)');
+    expect(main).toContain('.register(focusWindowElectronModule)');
+  });
+
   it('notification composer exposes the durable NotificationRequested writer from the SAME repository set', () => {
     const notification = readFileSync(resolve(composerDir, 'compose-notification.ts'), 'utf8');
     expect(notification).toContain('requestedWriter: NotificationRequestedWriterPort');
@@ -148,10 +164,7 @@ describe('desktop runtime composer surface (Batch Step D)', () => {
   });
 
   it('dashboard-read-service no longer reads electron accessors', () => {
-    const dashboard = readFileSync(
-      resolve(mainDir, 'services/dashboard-read-service.ts'),
-      'utf8',
-    );
+    const dashboard = readFileSync(resolve(mainDir, 'services/dashboard-read-service.ts'), 'utf8');
     expect(dashboard).not.toMatch(/get(Schedule|ReminderTemplate|Notification)Repository/);
     expect(dashboard).toContain('scheduleRepository');
     expect(dashboard).toContain('reminderTemplateRepository');

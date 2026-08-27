@@ -49,9 +49,13 @@ import { createProtocolSessionRuntime } from '@memoflow/reminder/routine-runtime
 import {
   createFocusWindowController,
   createFocusWindowElectronModule,
+  createInterventionWindowController,
+  createInterventionWindowElectronModule,
   ElectronFocusTaskbarAdapter,
   ElectronFocusWindowHost,
+  ElectronInterventionWindowHost,
   type FocusWindowController,
+  type InterventionWindowController,
 } from './modules/routine';
 import { composeSchedule } from './runtime/compose-schedule';
 import { composeSetting } from './runtime/compose-setting';
@@ -96,6 +100,7 @@ const logger = createLogger('DesktopMain');
 let mainRuntime: DesktopMainRuntime | null = null;
 const windowManager = new WindowManager();
 let activeFocusWindowController: FocusWindowController | null = null;
+let activeInterventionWindowController: InterventionWindowController | null = null;
 
 // Composed Goal/Task repository view for the active profile. The dashboard IPC
 // handler is registered once at shell init, but the repositories only exist
@@ -153,6 +158,19 @@ async function registerBusinessModules(
     db,
     notificationRequestedWriter: notificationComposed.requestedWriter,
   });
+
+  // Routine InterventionWindow is a Main Process projection over the per-profile
+  // InterventionRuntime returned by the Reminder composition root. It owns only
+  // one low-intrusion BrowserWindow; occurrence truth remains in the runtime.
+  const interventionWindowHost = new ElectronInterventionWindowHost();
+  const interventionWindowController = createInterventionWindowController({
+    runtime: reminderComposed.interventionRuntime,
+    host: interventionWindowHost,
+  });
+  const interventionWindowElectronModule = createInterventionWindowElectronModule(
+    interventionWindowController,
+  );
+  activeInterventionWindowController = interventionWindowController;
 
   // Routine FocusWindow is a Main Process projection over the durable ProtocolSession.
   // Closing/hiding the window never owns session termination; all state commands go
@@ -435,6 +453,7 @@ async function registerBusinessModules(
     .register(taskElectronModule)
     .register(scheduleComposed.module)
     .register(reminderComposed.module)
+    .register(interventionWindowElectronModule)
     .register(focusWindowElectronModule)
     .register(AIElectronModule)
     .register(governanceElectronModule)
@@ -517,12 +536,20 @@ async function initializeShellRuntime(): Promise<void> {
     await cloudConnectionManager.restore(profile).catch((error) => {
       logger.warn('Cloud connection restore failed; Profile remains locally available', { error });
     });
+    try {
+      activeInterventionWindowController?.restoreIdentity(profile.localOwnerId);
+    } catch (error) {
+      logger.warn('InterventionWindow restore failed; InterventionRuntime remains authoritative', {
+        error,
+      });
+    }
     await activeFocusWindowController?.restoreIdentity(profile.localOwnerId).catch((error) => {
       logger.warn('FocusWindow restore failed; ProtocolSession remains durable', { error });
     });
   });
   profileRuntimeManager.setBeforeDeactivation(() => {
     activeProfileDashboardRepositories = null;
+    activeInterventionWindowController = null;
     activeFocusWindowController = null;
     // Clear the WindowManager's bound schedule runtime controller BEFORE the
     // modules are torn down so no stale controller outlives its instance.

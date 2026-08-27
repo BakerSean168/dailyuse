@@ -301,8 +301,11 @@ export const WindowChannels = {
   FOCUS_MAIN_WINDOW: 'window:focus-main-window',
 } as const;
 
-/** Routine-owned FocusWindow IPC. Kept separate from legacy ReminderChannels. */
+/** Routine-owned dedicated-window IPC. Kept separate from legacy ReminderChannels. */
 export const RoutineChannels = {
+  INTERVENTION_WINDOW_GET: 'routine:intervention-window:get',
+  INTERVENTION_WINDOW_COMMAND: 'routine:intervention-window:command',
+  INTERVENTION_WINDOW_PROJECTION: 'routine:intervention-window:projection',
   FOCUS_WINDOW_GET: 'routine:focus-window:get',
   FOCUS_WINDOW_COMMAND: 'routine:focus-window:command',
   FOCUS_WINDOW_PROJECTION: 'routine:focus-window:projection',

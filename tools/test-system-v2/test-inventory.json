@@ -852,6 +852,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "apps/desktop/src/main/modules/routine/electron-intervention-window.host.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "apps/desktop/src/main/modules/routine/focus-window-controller.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -861,6 +869,22 @@
     },
     {
       "path": "apps/desktop/src/main/modules/routine/focus-window.electron-module.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "apps/desktop/src/main/modules/routine/intervention-window-controller.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "apps/desktop/src/main/modules/routine/intervention-window.electron-module.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "apps/desktop/vitest.config.ts"
@@ -1125,6 +1149,22 @@
     },
     {
       "path": "apps/desktop/src/renderer/host-electron-bridge-helper-dual.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "apps/desktop/src/renderer/intervention-window/InterventionWindowApp.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "apps/desktop/src/renderer/intervention-window/intervention-window-entry.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "apps/desktop/vitest.config.ts"
@@ -4324,6 +4364,14 @@
     },
     {
       "path": "packages/contracts/src/electron/authenticated-ipc.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/contracts/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/contracts/src/electron/intervention-window.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/contracts/vitest.config.ts"
@@ -10091,7 +10139,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 46
+      "fileCount": 51
     },
     {
       "id": "apps/desktop/vitest.ipc.config.ts",
@@ -10189,7 +10237,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 64
+      "fileCount": 65
     },
     {
       "id": "packages/dashboard/vitest.config.ts",
@@ -11193,7 +11241,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 961,
+    "unit": 967,
     "integration": 29,
     "smoke": 3,
     "boundary-ipc": 9,

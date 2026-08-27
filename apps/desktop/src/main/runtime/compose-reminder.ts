@@ -56,6 +56,10 @@ import {
   createReminderElectronModule,
   type ReminderElectronModuleDef,
 } from '@memoflow/reminder/electron';
+import {
+  createInterventionRuntime,
+  type InterventionRuntime,
+} from '@memoflow/reminder/routine-runtime';
 
 /**
  * Dependencies the reminder composer needs from the desktop host runtime.
@@ -83,6 +87,8 @@ export interface ComposedReminderDesktop {
   readonly scheduleExecutionSource: ReminderScheduleExecutionSource;
   /** Schedule projection source built from the SAME repository set. 从同一仓储集合构建的 schedule projection source。 */
   readonly scheduleProjectionSource: ReminderScheduleProjectionSource;
+  /** Per-profile local Routine intervention truth shared by occurrence coordinators and InterventionWindow. */
+  readonly interventionRuntime: InterventionRuntime;
 }
 
 /**
@@ -154,5 +160,6 @@ export function composeReminder(
     repositories: { reminderTemplateRepository },
     scheduleExecutionSource,
     scheduleProjectionSource,
+    interventionRuntime: createInterventionRuntime(),
   };
 }

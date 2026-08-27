@@ -55,7 +55,7 @@ Wave 0 evidence is frozen in [`Core vNext Wave 0 — Baseline / Acceptance / Sha
 
 **Wave 2 execution point (closed 2026-08-26):** `GOAL-2101~2103`, `TASK-2201~2205`, `ROUTINE-2301~2303`, and `NOTIF-2401/2402` are integrated and gate-verified.
 
-**Current execution point (2026-08-27):** Wave 3 vertical integration is closed. Planner Wave 4B is closed through `PLAN-4301~4304`: production Planner now has one FullCalendar Standard rendering engine and owner-aware mutation path. Wave 4A has completed `ROUTINE-4101~4103` and `ROUTINE-4201~4203`; `ROUTINE-4104` (InterventionWindow) is the remaining Wave 4 runtime ticket before the relevant product-surface rebuild lanes converge.
+**Current execution point (2026-08-27):** Wave 3 vertical integration and both Wave 4 lanes are closed: `ROUTINE-4101~4104`, `ROUTINE-4201~4203`, and `PLAN-4301~4304` are implemented and gate-verified. Production Planner has one FullCalendar Standard rendering engine; local Routine runtime now has separate InterventionWindow and FocusWindow surfaces over runtime/domain truth. The next critical path is Wave 5 Product Surface Rebuild, beginning with shared `UI-5101` where Goal/Task depend on it while independent Routine/Planner/Notification UI lanes may proceed in parallel.
 
 **Wave 1 gate evidence (2026-08-25):**
 
@@ -1434,6 +1434,20 @@ Due -> Gentle -> Grace -> Guided -> optional Strict
 8. crash/reload reconstruction.
 
 **Acceptance:** window is a projection of Runtime truth, not owner.
+
+**Implementation evidence (2026-08-27):**
+
+- added a dedicated `InterventionWindowProjection` and strict Zod command contract under Routine-owned Electron channels. The renderer can only `get` the current projection or send `complete`, positive-duration `snooze`, and `dismiss`; projection updates are Main -> renderer events and arbitrary Node/domain access is not exposed;
+- the Desktop Reminder composition root now creates exactly one per-profile `InterventionRuntime` and returns it as a shared host seam. The InterventionWindow controller subscribes to that same runtime, so future ActiveUsage/WallClock occurrence coordinators can create/restore occurrences without creating a second intervention state machine;
+- Main Process owns a single InterventionWindow instance per active profile. It catches up all active runtime occurrences from deadlines, chooses only one visible candidate using `Guided > Grace > Gentle` priority (then oldest due occurrence), and leaves non-visible active occurrences untouched; after the visible occurrence terminates, the next runtime occurrence is projected automatically;
+- `Strict` is deliberately excluded from InterventionWindow capability. A regression test proves a Strict occurrence stays Strict and no ordinary intervention window is shown, preserving ADR-059's separate BreakOverlay boundary;
+- the Electron host uses `BrowserWindow.showInactive()` so ambient reminders do not steal IDE/game/meeting focus, and uses `screen.getCursorScreenPoint()` + `screen.getDisplayNearestPoint()` to place the compact window inside the active display work area at the bottom-right margin. Guided reuses and expands the same BrowserWindow rather than opening a second surface;
+- native window close is intercepted and routed back through the controller as the explicit Runtime `dismiss` command; the window never silently mutates or terminates intervention truth itself;
+- renderer crash/reload keeps Main Process truth alive: `render-process-gone` reloads the dedicated renderer and `did-finish-load` re-pushes the retained projection. Controller/runtime reconstruction is separately covered by restoring an `InterventionSnapshot` and deriving the window projection from it;
+- added an isolated `#/intervention-window` renderer bootstrap that does not initialize the full app-vue shell. Gentle/Grace/Guided presentation is projection-driven; the renderer's one-second timer only recomputes display countdown from `phaseDeadline` and never advances the domain phase;
+- the window controller owns deadline wakeups in Main Process, including phase escalation without renderer ticks and future occurrence wakeups. Runtime `onChanged` also makes externally-created due occurrences surface automatically once the profile identity is bound;
+- test infrastructure gained `BrowserWindow.showInactive`, renderer reload, cursor/display-nearest stubs so no-focus, multi-monitor placement, close semantics, and renderer recovery are verified as behavior rather than source-string assumptions;
+- verification: focused ROUTINE-4104 Desktop matrix `47/47` plus contract `1/1`; full Desktop `51` files / `258` tests, full Contracts `65` files / `475` tests, full Reminder `72` files / `518` tests; Contracts/Desktop typecheck and Reminder build green; Desktop and Contracts lint have `0` errors (three pre-existing warnings each); Desktop production build green; Nx sync, test-target governance, docs, full governance, and test inventory are green at `1114` owned files (`65` Desktop primary: 51 unit / 9 IPC / 5 main).
 
 ## ROUTINE-4201 — ProtocolSession persistence/recovery
 

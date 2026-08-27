@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { analyzeInventory, buildInventory, classifyTest, collectTestFiles } from '../lib/test-inventory.mjs';
+import {
+  analyzeInventory,
+  buildInventory,
+  classifyTest,
+  collectTestFiles,
+} from '../lib/test-inventory.mjs';
 
 test('classifies explicit boundary and measurement file names', () => {
   assert.equal(classifyTest('apps/desktop/src/main/ipc/system-handlers.spec.ts'), 'boundary-ipc');

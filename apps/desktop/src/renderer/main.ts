@@ -51,6 +51,10 @@ function isProfileAccessHashRoute(path: string): boolean {
   return path === '/profile-access' || path.startsWith('/profile-access/');
 }
 
+function isInterventionWindowHashRoute(path: string): boolean {
+  return path === '/intervention-window' || path.startsWith('/intervention-window/');
+}
+
 function isFocusWindowHashRoute(path: string): boolean {
   return path === '/focus-window' || path.startsWith('/focus-window/');
 }
@@ -72,6 +76,12 @@ async function startRenderer() {
   ensureElectronBridgeAvailable();
 
   const hashPath = getHashPath();
+  if (isInterventionWindowHashRoute(hashPath)) {
+    const { bootstrapInterventionWindow } = await import('./bootstrap/intervention-window');
+    await bootstrapInterventionWindow();
+    return;
+  }
+
   if (isFocusWindowHashRoute(hashPath)) {
     const { bootstrapFocusWindow } = await import('./bootstrap/focus-window');
     await bootstrapFocusWindow();
