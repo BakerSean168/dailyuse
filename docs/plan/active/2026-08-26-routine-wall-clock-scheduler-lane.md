@@ -142,6 +142,11 @@ The dual wall-clock authority has been removed from production composition:
 - `createReminderSchedulerDueSetReader` filters the shared Scheduler due set to `SourceModule.Reminder`
   before applying the comparison limit, so unrelated Goal/Task/Routine work cannot hide Reminder rows.
 - A production surface test prevents either legacy cron factory from being wired back into API startup.
+- A due-set parity matrix (`packages/schedule-orchestration/__tests__/reminder-due-set-parity.test.ts`)
+  drives the real shadow runtime + real Scheduler due-set reader against a shared in-memory world and
+  asserts equivalent due sets for the former cron and the Scheduler across restart, snooze, pause,
+  and two-worker (concurrent fence) scenarios, plus deterministic limit truncation and a drift-detection
+  case proving the comparison is not vacuous.
 
 Verification evidence on the recovered batch-3 base:
 
