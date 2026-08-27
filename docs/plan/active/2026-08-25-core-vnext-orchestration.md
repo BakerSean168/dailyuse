@@ -1404,6 +1404,17 @@ Due -> Gentle -> Grace -> Guided -> optional Strict
 6. safe escape;
 7. fake-clock tests.
 
+**Implementation evidence (2026-08-27):**
+
+- added a serializable `InterventionRuntime` keyed by canonical routine occurrence identity; renderer/Electron are not timing owners and later surfaces can reconstruct from `InterventionSnapshot`;
+- deterministic deadline catch-up implements `Due -> Gentle -> Grace -> Guided`, while `Strict` is unreachable unless `strictEnabled=true`; coarse resume can cross multiple deadlines while recording the exact phase-boundary Instants;
+- Strict always retains the explicit `safe-escape` command and terminal `Escaped` state; safe escape outside Strict is rejected;
+- `complete`, `natural-stop`, `snooze`, and `dismiss` are explicit runtime commands from every presented phase; pre-due interactions and non-positive snooze durations are rejected before mutation;
+- Natural Break and explicit completion converge on one terminal `Completed` truth with `completionReason`; a late competing interaction is idempotent `applied=false` and does not create a second completion history path;
+- snooze records a concrete `snoozeUntil` in the intervention snapshot so the next composition slice can persist/apply the existing Routine TemporaryOverride without rewriting long-lived trigger config;
+- snapshots can be restored after renderer/window restart and listeners emit only applied runtime transitions; no Electron/Scheduler dependency exists in the intervention state machine;
+- focused intervention matrix is `6/6`, covering all presented phases x completion/natural-stop/snooze/dismiss plus opt-in Strict/safe escape, invalid transitions, coarse clock catch-up, terminal idempotency, and restore; full Reminder is `513/513`, Reminder Nx build and Desktop Nx typecheck are green.
+
 ## ROUTINE-4104 — InterventionWindow
 
 **Depends:** ROUTINE-4103  
