@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { asInstant } from '@memoflow/time';
 import { ProtocolDefinition, ProtocolSession } from '../../domain/routine';
 import { createInMemoryProtocolSessionStore } from './protocol-session-store.in-memory';
 import { createProtocolSessionRuntime } from './protocol-session.runtime';
+import type { ProtocolBreakCreditRuntime } from '../protocol-break-credit';
 
 const minute = 60_000;
 const t0 = Date.parse('2026-08-27T00:00:00.000Z');
@@ -34,6 +35,38 @@ function createRunningSession(): ProtocolSession {
 }
 
 describe('ProtocolSession persistence/recovery runtime (ROUTINE-4201)', () => {
+  it('credits a completed break from the pre-transition snapshot after durable persistence', async () => {
+    const store = createInMemoryProtocolSessionStore();
+    const creditBreak = vi.fn();
+    const creditRuntime: ProtocolBreakCreditRuntime = {
+      creditBreak,
+      listHistory: () => [],
+    };
+    const runtime = createProtocolSessionRuntime({
+      store,
+      protocolBreakCreditRuntime: creditRuntime,
+    });
+    const session = createRunningSession();
+    session.advanceDuePhases(asInstant(t0 + 50 * minute));
+    await runtime.persistNewSession(session);
+
+    const receipt = await runtime.transition({
+      identityId: 'identity-1',
+      sessionId: 'session-1',
+      action: 'phase-complete',
+      at: asInstant(t0 + 60 * minute),
+    });
+
+    expect(receipt.state).toBe('Running');
+    expect(creditBreak).toHaveBeenCalledTimes(1);
+    expect(creditBreak.mock.calls[0][0]).toMatchObject({
+      factId: 'session-1:1:break:ShortBreak',
+      phaseKind: 'ShortBreak',
+      breakDurationMs: 10 * minute,
+    });
+    expect((await store.findById({ identityId: 'identity-1', sessionId: 'session-1' }))?.currentPhase?.kind).toBe('Focus');
+  });
+
   it('recovers crash-during-focus and crash-during-break from persisted deadlines', async () => {
     const store = createInMemoryProtocolSessionStore();
     const beforeCrash = createProtocolSessionRuntime({ store });
@@ -83,6 +116,29 @@ describe('ProtocolSession persistence/recovery runtime (ROUTINE-4201)', () => {
       advancedPhaseCount: 1,
       phaseKey: '2:focus:Focus',
     });
+  });
+
+  it('credits every break crossed by deadline catch-up', async () => {
+    const store = createInMemoryProtocolSessionStore();
+    const creditBreak = vi.fn();
+    const runtime = createProtocolSessionRuntime({
+      store,
+      protocolBreakCreditRuntime: { creditBreak, listHistory: () => [] },
+    });
+    await runtime.persistNewSession(createRunningSession());
+
+    const receipt = await runtime.recoverSession({
+      identityId: 'identity-1',
+      sessionId: 'session-1',
+      at: asInstant(t0 + 120 * minute),
+    });
+
+    expect(receipt.advancedPhaseCount).toBe(4);
+    expect(creditBreak).toHaveBeenCalledTimes(2);
+    expect(creditBreak.mock.calls.map(([fact]) => fact.phaseKind)).toEqual([
+      'ShortBreak',
+      'ShortBreak',
+    ]);
   });
 
   it('catches up multiple missed deadlines and persists completion once', async () => {

@@ -58,8 +58,15 @@ import {
 } from '@memoflow/reminder/electron';
 import {
   createInterventionRuntime,
+  createActiveUsageRuntime,
+  createRoutineActivitySensorRuntime,
+  createProtocolBreakCreditRuntime,
+  type ProtocolBreakCreditRuntime,
   type InterventionRuntime,
+  type AmbientBreakCreditRegistration,
 } from '@memoflow/reminder/routine-runtime';
+import type { IdleSensorPort } from '@memoflow/reminder/routine-runtime';
+import { WindowsIdleSensorAdapter } from '../modules/routine/windows-idle-sensor.adapter';
 
 /**
  * Dependencies the reminder composer needs from the desktop host runtime.
@@ -70,6 +77,10 @@ export interface ComposeReminderDesktopDependencies {
   readonly db: IElectronDatabase;
   /** Reminder-owned durable NotificationRequested writer; Scheduler never receives it. */
   readonly notificationRequestedWriter: NotificationRequestedWriterPort;
+  /** Optional per-profile sink for protocol break completion credit. */
+  readonly protocolBreakCreditRuntime?: ProtocolBreakCreditRuntime;
+  readonly idleSensor?: IdleSensorPort;
+  readonly protocolBreakRegistrations?: readonly AmbientBreakCreditRegistration[];
 }
 
 /**
@@ -89,6 +100,7 @@ export interface ComposedReminderDesktop {
   readonly scheduleProjectionSource: ReminderScheduleProjectionSource;
   /** Per-profile local Routine intervention truth shared by occurrence coordinators and InterventionWindow. */
   readonly interventionRuntime: InterventionRuntime;
+  readonly protocolBreakCreditRuntime: ProtocolBreakCreditRuntime;
 }
 
 /**
@@ -154,12 +166,26 @@ export function composeReminder(
     reminderTemplateRepository,
   });
 
+  const interventionRuntime = createInterventionRuntime();
+  const idleSensor = dependencies.idleSensor ?? new WindowsIdleSensorAdapter({ idleThresholdMs: 5 * 60_000 });
+  const activityRuntime = createActiveUsageRuntime({
+    activitySensor: createRoutineActivitySensorRuntime({ idleSensor, idleThresholdMs: 5 * 60_000 }),
+    onOccurrenceDue: () => {},
+  });
+  const protocolBreakCreditRuntime =
+    dependencies.protocolBreakCreditRuntime ??
+    createProtocolBreakCreditRuntime({
+      activeUsage: activityRuntime,
+      registrations: dependencies.protocolBreakRegistrations ?? [],
+    });
+
   return {
     module: createReminderElectronModule({ instance }),
     applicationPort: instance.api,
     repositories: { reminderTemplateRepository },
     scheduleExecutionSource,
     scheduleProjectionSource,
-    interventionRuntime: createInterventionRuntime(),
+    interventionRuntime,
+    protocolBreakCreditRuntime,
   };
 }
