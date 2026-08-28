@@ -13,10 +13,15 @@ export default {
     "account": "Account", "system": "System", "other": "Notifications", "general": "Notifications"
   },
   "workflow": {
-    "system.account-security": "Account security",
-    "task.reminder": "Task reminder", "task.goal": "Task and goal update",
-    "goal.reminder": "Goal reminder", "routine.reminder": "Routine reminder",
-    "reminder.general": "Reminder", "category.general": "Notification"
+    "accountSecurity": "Account security",
+    "goalReminder": "Goal reminder",
+    "goalUpdate": "Goal update",
+    "reminder": "Reminder",
+    "routineReminder": "Routine reminder",
+    "system": "System update",
+    "taskDeadline": "Task deadline",
+    "taskReminder": "Task reminder",
+    "taskUpdate": "Task update"
   },
   "entity": { "task": "Task", "goal": "Goal", "schedule": "Schedule", "reminder": "Reminder", "routine": "Routine" },
   "bell": {

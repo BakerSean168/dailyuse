@@ -13,10 +13,15 @@ export default {
     "account": "账户", "system": "系统", "other": "通知", "general": "通知"
   },
   "workflow": {
-    "system.account-security": "账户安全",
-    "task.reminder": "任务提醒", "task.goal": "任务与目标更新",
-    "goal.reminder": "目标提醒", "routine.reminder": "例行提醒",
-    "reminder.general": "提醒", "category.general": "通知"
+    "accountSecurity": "账户安全",
+    "goalReminder": "目标提醒",
+    "goalUpdate": "目标更新",
+    "reminder": "提醒",
+    "routineReminder": "作息提醒",
+    "system": "系统更新",
+    "taskDeadline": "任务截止提醒",
+    "taskReminder": "任务提醒",
+    "taskUpdate": "任务更新"
   },
   "entity": { "task": "任务", "goal": "目标", "schedule": "日程", "reminder": "提醒", "routine": "例行事项" },
   "bell": {

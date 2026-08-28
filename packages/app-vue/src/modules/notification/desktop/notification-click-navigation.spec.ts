@@ -1,16 +1,25 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import { RendererEventChannels } from '@memoflow/contracts/electron';
-import { createNotificationClickNavigation, resolveNotificationDestination } from './notification-click-navigation';
+import {
+  createNotificationClickNavigation,
+  hasNotificationExternalDestination,
+  resolveNotificationDestination,
+} from './notification-click-navigation';
 
 function makeRouter() {
+  const EmptyRoute = { template: '<div />' };
   return createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: '/', component: {} as never },
-      { path: '/goals', component: {} as never },
-      { path: '/goals/:id', component: {} as never },
-      { path: '/notifications', component: {} as never },
+      { path: '/', component: EmptyRoute },
+      { path: '/goals', component: EmptyRoute },
+      { path: '/goals/:id', component: EmptyRoute },
+      { path: '/notifications', component: EmptyRoute },
+      { path: '/reminders', component: EmptyRoute },
+      { path: '/schedule', component: EmptyRoute },
+      { path: '/tasks', component: EmptyRoute },
+      { path: '/tasks/:id', component: EmptyRoute },
     ],
   });
 }
@@ -23,76 +32,80 @@ function makeBridge() {
       handlers.set(channel, [...(handlers.get(channel) ?? []), cb]);
     }),
     off: vi.fn((channel: string, cb: (...args: unknown[]) => void) => {
-      handlers.set(channel, (handlers.get(channel) ?? []).filter((h) => h !== cb));
+      handlers.set(
+        channel,
+        (handlers.get(channel) ?? []).filter((handler) => handler !== cb),
+      );
     }),
     emit: (channel: string, ...args: unknown[]) => {
-      for (const h of handlers.get(channel) ?? []) h(...args);
+      for (const handler of handlers.get(channel) ?? []) handler(...args);
     },
   };
 }
 
-describe('createNotificationClickNavigation (R3 收尾)', () => {
-  it('navigates via navigationIntent when present', async () => {
+describe('shared Notification click destination policy', () => {
+  it('uses an explicit intent first and preserves its params as query', async () => {
     const router = makeRouter();
-    const bridge = makeBridge() as ReturnType<typeof makeBridge> & { emit(ch: string, ...a: unknown[]): void };
-    const nav = createNotificationClickNavigation(router, () => bridge as never);
-    nav.start();
+    const bridge = makeBridge();
+    const navigation = createNotificationClickNavigation(router, () => bridge as never);
+    navigation.start();
 
     bridge.emit(RendererEventChannels.NOTIFICATION_CLICKED, {
       notificationId: 'n-1',
-      navigationIntent: { route: '/goals/g-1', params: { id: 'g-1' } },
+      category: 'Task',
+      navigationIntent: { route: '/goals/g-1', params: { tab: 'review' } },
     });
 
     await router.isReady();
     expect(router.currentRoute.value.path).toBe('/goals/g-1');
-    expect(resolveNotificationDestination({ navigationIntent: { route: '/goals/g-1', params: { tab: 'open' } } })).toEqual({
-      path: '/goals/g-1', query: { tab: 'open' },
-    });
+    expect(router.currentRoute.value.query).toEqual({ tab: 'review' });
+    expect(
+      resolveNotificationDestination({
+        navigationIntent: { route: '/goals/g-1', params: { tab: 'review' } },
+      }),
+    ).toEqual({ path: '/goals/g-1', query: { tab: 'review' } });
   });
 
-  it('contains navigation failures', async () => {
+  it.each([
+    ['Task', '/tasks'],
+    [' task ', '/tasks'],
+    ['GOAL', '/goals'],
+    ['Schedule', '/schedule'],
+    ['reminder', '/reminders'],
+  ])('normalizes category %s to %s', (category, path) => {
+    expect(resolveNotificationDestination({ category })).toEqual({ path });
+    expect(hasNotificationExternalDestination({ category })).toBe(true);
+  });
+
+  it('keeps unknown, Account, and System notifications in Notification Center', () => {
+    for (const category of [undefined, 'Unknown', 'Account', 'System']) {
+      expect(resolveNotificationDestination({ category })).toEqual({ path: '/notifications' });
+      expect(hasNotificationExternalDestination({ category })).toBe(false);
+    }
+  });
+
+  it('contains desktop navigation failures', async () => {
     const router = makeRouter();
-    const bridge = makeBridge() as ReturnType<typeof makeBridge> & { emit(ch: string, ...a: unknown[]): void };
-    const nav = createNotificationClickNavigation(router, () => bridge as never);
-    nav.start();
+    const bridge = makeBridge();
+    const navigation = createNotificationClickNavigation(router, () => bridge as never);
+    navigation.start();
     vi.spyOn(router, 'push').mockRejectedValueOnce(new Error('internal route detail'));
-    expect(() => bridge.emit(RendererEventChannels.NOTIFICATION_CLICKED, { notificationId: 'n-fail' })).not.toThrow();
+
+    expect(() =>
+      bridge.emit(RendererEventChannels.NOTIFICATION_CLICKED, {
+        notificationId: 'n-fail',
+        category: 'Task',
+      }),
+    ).not.toThrow();
     await Promise.resolve();
-  });
-
-  it('falls back to category landing route', async () => {
-    const router = makeRouter();
-    const bridge = makeBridge() as ReturnType<typeof makeBridge> & { emit(ch: string, ...a: unknown[]): void };
-    const nav = createNotificationClickNavigation(router, () => bridge as never);
-    nav.start();
-
-    bridge.emit(RendererEventChannels.NOTIFICATION_CLICKED, {
-      notificationId: 'n-2',
-      notificationCategory: 'Reminder',
-    });
-
-    await router.isReady();
-    expect(router.currentRoute.value.path).toBe('/reminders');
-  });
-
-  it('falls back to /notifications for unknown categories', async () => {
-    const router = makeRouter();
-    const bridge = makeBridge() as ReturnType<typeof makeBridge> & { emit(ch: string, ...a: unknown[]): void };
-    const nav = createNotificationClickNavigation(router, () => bridge as never);
-    nav.start();
-
-    bridge.emit(RendererEventChannels.NOTIFICATION_CLICKED, { notificationId: 'n-3' });
-
-    await router.isReady();
-    expect(router.currentRoute.value.path).toBe('/notifications');
   });
 
   it('stops listening after stop()', () => {
     const router = makeRouter();
     const bridge = makeBridge();
-    const nav = createNotificationClickNavigation(router, () => bridge as never);
-    nav.start();
-    nav.stop();
+    const navigation = createNotificationClickNavigation(router, () => bridge as never);
+    navigation.start();
+    navigation.stop();
 
     expect(bridge.off).toHaveBeenCalledWith(
       RendererEventChannels.NOTIFICATION_CLICKED,
