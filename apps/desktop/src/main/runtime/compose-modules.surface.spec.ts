@@ -151,8 +151,12 @@ describe('desktop runtime composer surface (Batch Step D)', () => {
     const reminder = readFileSync(resolve(composerDir, 'compose-reminder.ts'), 'utf8');
     expect(reminder).toContain('createInterventionRuntime');
     expect(reminder).toContain('readonly interventionRuntime: InterventionRuntime');
-    expect(reminder).toContain('interventionRuntime: createInterventionRuntime()');
+    expect(reminder).toContain('const interventionRuntime = createInterventionRuntime()');
+    expect(reminder).toContain('readonly activityRuntime: RoutineActivitySensorRuntime');
+    expect(reminder).toContain('readonly activeUsageRuntime: ActiveUsageRuntime');
     expect(main).toContain('runtime: reminderComposed.interventionRuntime');
+    expect(main).toContain('reminderComposed.activityRuntime.start()');
+    expect(main).toContain('reminderComposed.activeUsageRuntime.start()');
     expect(main).toContain('.register(interventionWindowElectronModule)');
     expect(main).toContain('.register(focusWindowElectronModule)');
   });

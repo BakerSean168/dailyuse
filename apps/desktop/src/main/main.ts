@@ -103,6 +103,8 @@ let mainRuntime: DesktopMainRuntime | null = null;
 const windowManager = new WindowManager();
 let activeFocusWindowController: FocusWindowController | null = null;
 let activeInterventionWindowController: InterventionWindowController | null = null;
+let activeReminderActivityRuntime: { stop: () => void } | null = null;
+let activeReminderUsageRuntime: { stop: () => void } | null = null;
 
 // Composed Goal/Task repository view for the active profile. The dashboard IPC
 // handler is registered once at shell init, but the repositories only exist
@@ -160,6 +162,12 @@ async function registerBusinessModules(
     db,
     notificationRequestedWriter: notificationComposed.requestedWriter,
   });
+  // Activity truth is a per-profile runtime. Start the sensor before the
+  // accumulator so no idle/resume transition is lost during activation.
+  reminderComposed.activityRuntime.start();
+  reminderComposed.activeUsageRuntime.start();
+  activeReminderActivityRuntime = reminderComposed.activityRuntime;
+  activeReminderUsageRuntime = reminderComposed.activeUsageRuntime;
 
   // Routine InterventionWindow is a Main Process projection over the per-profile
   // InterventionRuntime returned by the Reminder composition root. It owns only
@@ -178,7 +186,10 @@ async function registerBusinessModules(
   // Closing/hiding the window never owns session termination; all state commands go
   // through ProtocolSessionRuntime and its optimistic-versioned PowerSync store.
   const protocolSessionStore = new PowerSyncProtocolSessionStore(db);
-  const protocolSessionRuntime = createProtocolSessionRuntime({ store: protocolSessionStore });
+  const protocolSessionRuntime = createProtocolSessionRuntime({
+    store: protocolSessionStore,
+    protocolBreakCreditRuntime: reminderComposed.protocolBreakCreditRuntime,
+  });
   const focusWindowHost = new ElectronFocusWindowHost();
   const focusWindowController = createFocusWindowController({
     store: protocolSessionStore,
@@ -555,6 +566,10 @@ async function initializeShellRuntime(): Promise<void> {
     });
   });
   profileRuntimeManager.setBeforeDeactivation(() => {
+    activeReminderUsageRuntime?.stop();
+    activeReminderActivityRuntime?.stop();
+    activeReminderUsageRuntime = null;
+    activeReminderActivityRuntime = null;
     activeProfileDashboardRepositories = null;
     activeInterventionWindowController = null;
     activeFocusWindowController = null;

@@ -80,6 +80,9 @@ export interface ProtocolBreakCreditReport {
 }
 
 export interface ProtocolBreakCreditRuntime {
+  /** Optional for compatibility with externally-owned credit sinks. */
+  register?(registration: AmbientBreakCreditRegistration): void;
+  unregister?(identityId: string, routineId: string): void;
   creditBreak(fact: ProtocolBreakCompletionFact): ProtocolBreakCreditReport;
   listHistory(): ProtocolAmbientSatisfactionHistory[];
 }
@@ -137,7 +140,8 @@ export function createProtocolBreakCreditRuntime(
   options: CreateProtocolBreakCreditRuntimeOptions,
 ): ProtocolBreakCreditRuntime {
   const registrationKeys = new Set<string>();
-  const registrations = options.registrations.map((registration) => {
+  const registrations = new Map<string, AmbientBreakCreditRegistration>();
+  const register = (registration: AmbientBreakCreditRegistration): void => {
     assertPositiveFinite(registration.minimumBreakMs, 'minimumBreakMs');
     const key = `${registration.identityId}\u0000${registration.routineId}`;
     if (registrationKeys.has(key)) {
@@ -146,8 +150,9 @@ export function createProtocolBreakCreditRuntime(
       );
     }
     registrationKeys.add(key);
-    return { ...registration };
-  });
+    registrations.set(key, { ...registration });
+  };
+  for (const registration of options.registrations) register(registration);
   const history = [...(options.restoredHistory ?? [])].map((entry) => ({
     ...entry,
     activeUsage: { ...entry.activeUsage },
@@ -155,6 +160,11 @@ export function createProtocolBreakCreditRuntime(
   const processedFacts = new Set(history.map((entry) => entry.breakFactId));
 
   return {
+    register,
+    unregister(identityId, routineId) {
+      const key = `${identityId}\u0000${routineId}`;
+      if (registrations.delete(key)) registrationKeys.delete(key);
+    },
     creditBreak(fact) {
       if (processedFacts.has(fact.factId)) {
         return { factId: fact.factId, duplicate: true, credited: [], skipped: [] };
@@ -172,7 +182,7 @@ export function createProtocolBreakCreditRuntime(
       const credited: ProtocolAmbientSatisfactionHistory[] = [];
       const skipped: ProtocolBreakCreditReport['skipped'][number][] = [];
 
-      for (const registration of registrations) {
+      for (const registration of registrations.values()) {
         if (registration.identityId !== fact.identityId) {
           skipped.push({ routineId: registration.routineId, reason: 'identity-mismatch' });
           continue;
