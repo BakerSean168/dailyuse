@@ -155,6 +155,19 @@ export function useTaskInstances() {
     return null;
   }
 
+  async function markInstanceMissed(id: string) {
+    const result = await executeTaskOperation(
+      () => service.markInstanceMissed(id),
+      'task.error.markMissedFailed',
+    );
+    if (result.ok) {
+      const dto = await updateInstanceProjection(result.data);
+      toast.success(t('task.error.markMissedSuccess'));
+      return dto;
+    }
+    return null;
+  }
+
   async function rescheduleInstance(id: string, request: RescheduleTaskInput) {
     const result = await executeTaskOperation(
       () => service.rescheduleInstance(id, sanitizeForIpc(request) as RescheduleTaskInput),
@@ -185,6 +198,7 @@ export function useTaskInstances() {
     startInstance,
     completeInstance,
     uncompleteInstance,
+    markInstanceMissed,
     rescheduleInstance,
     skipInstance,
   };
