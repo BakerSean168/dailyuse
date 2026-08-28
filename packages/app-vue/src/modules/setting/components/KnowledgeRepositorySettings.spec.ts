@@ -156,6 +156,8 @@ function createService(overrides: Partial<IRepositoryService> = {}): IRepository
   return {
     listKnowledgeRepositoryConnections: vi.fn(async () => ok({ connections: [] })),
     completeKnowledgeRepositoryInstallation: vi.fn(),
+    getKnowledgeRepositoryInstallationIntentStatus: vi.fn(),
+    finalizeKnowledgeRepositoryInstallationIntent: vi.fn(),
     connectKnowledgeRepository: vi.fn(),
     disconnectKnowledgeRepository: vi.fn(),
     previewKnowledgeRepositoryReconciliation: vi.fn(),
@@ -195,9 +197,8 @@ function mountSettings(
     cloudState: 'ONLINE',
     capabilities: { local: true, sync: true, cloudAi: true, repositoryConnection: true },
   };
-  const desktopAccess = options?.desktopAccess === undefined
-    ? defaultDesktopAccess
-    : options.desktopAccess;
+  const desktopAccess =
+    options?.desktopAccess === undefined ? defaultDesktopAccess : options.desktopAccess;
   Object.defineProperty(window, 'electronAPI', {
     configurable: true,
     value: {
@@ -377,6 +378,149 @@ describe('KnowledgeRepositorySettings', () => {
 
     expect(disconnectKnowledgeRepository).toHaveBeenCalledWith('connection-1', purgeCloudData);
     expect(confirmMock).not.toHaveBeenCalled();
+  });
+
+  it('finalizes the durable Web installation intent before offering repository selection', async () => {
+    routerMocks.query = {
+      tab: 'repository',
+      installation_intent: 'intent-1',
+    };
+    const getKnowledgeRepositoryInstallationIntentStatus = vi.fn(async () =>
+      ok({
+        intentId: 'intent-1',
+        status: 'CallbackReceived' as const,
+        clientKind: 'web' as const,
+        expiresAt: Date.now() + 600_000,
+        installationId: 'installation-1',
+      }),
+    );
+    const finalizeKnowledgeRepositoryInstallationIntent = vi.fn(async () =>
+      ok({
+        installationId: 'installation-1',
+        githubAccountId: '42',
+        returnUrl: 'https://app.example.test/settings?tab=repository',
+        repositories: [
+          {
+            id: 'repository-1',
+            nodeId: 'R_1',
+            fullName: 'owner/knowledge',
+            ownerId: '42',
+            private: true,
+            archived: false,
+            disabled: false,
+            defaultBranch: 'main',
+            permissions: { admin: false, push: true, pull: true },
+          },
+        ],
+      }),
+    );
+    const service = createService({
+      getKnowledgeRepositoryInstallationIntentStatus,
+      finalizeKnowledgeRepositoryInstallationIntent,
+    });
+    const wrapper = mountSettings(service);
+    await flushPromises();
+
+    expect(getKnowledgeRepositoryInstallationIntentStatus).toHaveBeenCalledWith('intent-1');
+    expect(finalizeKnowledgeRepositoryInstallationIntent).toHaveBeenCalledWith('intent-1');
+    expect(wrapper.text()).toContain('owner/knowledge');
+    expect(routerMocks.replace).toHaveBeenCalledWith({ query: { tab: 'repository' } });
+    expect(service.completeKnowledgeRepositoryInstallation).not.toHaveBeenCalled();
+  });
+
+  it('completes Desktop installation through external browser polling without a Web callback session', async () => {
+    const invoke = vi.fn(async () => ({ ok: true as const, data: { opened: true } }));
+    const startKnowledgeRepositoryInstallation = vi.fn(async () =>
+      ok({
+        intentId: 'intent-desktop-1',
+        installationUrl:
+          'https://github.com/apps/memoflow/installations/new?state=mfi1.dev.desktop',
+        expiresAt: Date.now() + 600_000,
+      }),
+    );
+    const getKnowledgeRepositoryInstallationIntentStatus = vi.fn(async () =>
+      ok({
+        intentId: 'intent-desktop-1',
+        status: 'CallbackReceived' as const,
+        clientKind: 'desktop' as const,
+        expiresAt: Date.now() + 600_000,
+        installationId: 'installation-1',
+      }),
+    );
+    const finalizeKnowledgeRepositoryInstallationIntent = vi.fn(async () =>
+      ok({
+        installationId: 'installation-1',
+        githubAccountId: '42',
+        returnUrl: 'https://app.example.test/settings?tab=repository',
+        repositories: [
+          {
+            id: 'repository-1',
+            nodeId: 'R_1',
+            fullName: 'owner/knowledge',
+            ownerId: '42',
+            private: true,
+            archived: false,
+            disabled: false,
+            defaultBranch: 'main',
+            permissions: { admin: false, push: true, pull: true },
+          },
+        ],
+      }),
+    );
+    const wrapper = mountSettings(
+      createService({
+        startKnowledgeRepositoryInstallation,
+        getKnowledgeRepositoryInstallationIntentStatus,
+        finalizeKnowledgeRepositoryInstallationIntent,
+        getLocalVaultBinding: vi.fn(async () => ok(null)),
+      }),
+      { invoke },
+    );
+    await flushPromises();
+
+    await wrapper.get('[data-testid="github-repository-connect"]').trigger('click');
+    await flushPromises();
+
+    expect(startKnowledgeRepositoryInstallation).toHaveBeenCalledWith({
+      returnUrl: undefined,
+      clientKind: 'desktop',
+    });
+    expect(invoke).toHaveBeenCalledWith(SystemChannels.OPEN_EXTERNAL_URL, {
+      url: expect.stringContaining('github.com/apps/memoflow/installations/new'),
+    });
+    expect(getKnowledgeRepositoryInstallationIntentStatus).toHaveBeenCalledWith('intent-desktop-1');
+    expect(finalizeKnowledgeRepositoryInstallationIntent).toHaveBeenCalledWith('intent-desktop-1');
+    expect(wrapper.text()).toContain('owner/knowledge');
+  });
+
+  it('recovers the Desktop UI when opening the external GitHub installation page fails', async () => {
+    const invoke = vi.fn(async () => {
+      throw new Error('shell open failed');
+    });
+    const startKnowledgeRepositoryInstallation = vi.fn(async () =>
+      ok({
+        intentId: 'intent-desktop-failed-open',
+        installationUrl: 'https://github.com/apps/memoflow/installations/new?state=mfi1.dev.desktop',
+        expiresAt: Date.now() + 600_000,
+      }),
+    );
+    const getKnowledgeRepositoryInstallationIntentStatus = vi.fn();
+    const wrapper = mountSettings(
+      createService({
+        startKnowledgeRepositoryInstallation,
+        getKnowledgeRepositoryInstallationIntentStatus,
+        getLocalVaultBinding: vi.fn(async () => ok(null)),
+      }),
+      { invoke },
+    );
+    await flushPromises();
+
+    await wrapper.get('[data-testid="github-repository-connect"]').trigger('click');
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Start failed');
+    expect(getKnowledgeRepositoryInstallationIntentStatus).not.toHaveBeenCalled();
+    expect(wrapper.get('[data-testid="github-repository-connect"]').attributes('disabled')).toBeUndefined();
   });
 
   it('completes the GitHub callback and connects a Contents-write repository without admin permission', async () => {
@@ -848,5 +992,4 @@ describe('KnowledgeRepositorySettings', () => {
     expect(wrapper.find('[data-testid="github-repository-connect"]').exists()).toBe(false);
     expect(service.startKnowledgeRepositoryInstallation).not.toHaveBeenCalled();
   });
-
 });

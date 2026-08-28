@@ -245,6 +245,42 @@ export interface GithubAppConfig {
   appSlug: string;
   privateKey: string;
   webhookSecret: string;
+  installationRouting: {
+    routeKey: string;
+    webOrigin: string;
+    routeTargets: Record<string, string>;
+  };
+}
+
+function parseGithubInstallationRouteTargets(value?: string): Record<string, string> {
+  const targets: Record<string, string> = {};
+  if (!value?.trim()) return targets;
+  for (const rawEntry of value.split(',')) {
+    const entry = rawEntry.trim();
+    if (!entry) continue;
+    const equalsIndex = entry.indexOf('=');
+    if (equalsIndex <= 0 || equalsIndex === entry.length - 1) {
+      throw new Error(
+        'GITHUB_INSTALLATION_ROUTE_TARGETS entries must use routeKey=https://api-origin',
+      );
+    }
+    const routeKey = entry.slice(0, equalsIndex).trim();
+    const rawUrl = entry.slice(equalsIndex + 1).trim();
+    if (!/^[a-z0-9](?:[a-z0-9-]{0,30}[a-z0-9])?$/.test(routeKey)) {
+      throw new Error(`Invalid GitHub installation route key: ${routeKey}`);
+    }
+    const url = new URL(rawUrl);
+    const loopbackHttp =
+      url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+    if (url.protocol !== 'https:' && !(env.LOCAL_VALIDATION && loopbackHttp)) {
+      throw new Error(`GitHub installation route target ${routeKey} must use HTTPS`);
+    }
+    if (url.pathname !== '/' || url.search || url.hash) {
+      throw new Error(`GitHub installation route target ${routeKey} must be an API origin only`);
+    }
+    targets[routeKey] = url.origin;
+  }
+  return targets;
 }
 
 /**
@@ -253,18 +289,23 @@ export interface GithubAppConfig {
  * that later fails at token issuance or webhook verification.
  */
 export function getGithubAppConfig(): GithubAppConfig | null {
-  const values = [
+  const credentialValues = [
     env.GITHUB_APP_ID,
     env.GITHUB_APP_SLUG,
     env.GITHUB_APP_PRIVATE_KEY,
     env.GITHUB_APP_WEBHOOK_SECRET,
   ];
-  if (values.every((value) => value === undefined)) {
+  if (credentialValues.every((value) => value === undefined)) {
     return null;
   }
-  if (values.some((value) => value === undefined)) {
+  if (credentialValues.some((value) => value === undefined)) {
     throw new Error(
       'GITHUB_APP_ID, GITHUB_APP_SLUG, GITHUB_APP_PRIVATE_KEY and GITHUB_APP_WEBHOOK_SECRET must be configured together',
+    );
+  }
+  if (!env.GITHUB_INSTALLATION_ROUTE_KEY || !env.MEMOFLOW_WEB_URL) {
+    throw new Error(
+      'GITHUB_INSTALLATION_ROUTE_KEY and MEMOFLOW_WEB_URL are required when the GitHub knowledge App is configured',
     );
   }
   return {
@@ -272,6 +313,11 @@ export function getGithubAppConfig(): GithubAppConfig | null {
     appSlug: env.GITHUB_APP_SLUG!,
     privateKey: env.GITHUB_APP_PRIVATE_KEY!,
     webhookSecret: env.GITHUB_APP_WEBHOOK_SECRET!,
+    installationRouting: {
+      routeKey: env.GITHUB_INSTALLATION_ROUTE_KEY,
+      webOrigin: new URL(env.MEMOFLOW_WEB_URL).origin,
+      routeTargets: parseGithubInstallationRouteTargets(env.GITHUB_INSTALLATION_ROUTE_TARGETS),
+    },
   };
 }
 

@@ -16,6 +16,8 @@ updated: 2026-07-22T00:00:00
 **日期：** 2026-07-16  
 **影响范围：** Authentication、Repository、Editor、AI Knowledge、Desktop、Web、Mobile
 
+> 2026-08-28 补充：GitHub App installation 的 durable intent、Setup Gateway、Web/Desktop completion 与 dev/staging/prod routing 由 [ADR-065](./ADR-065-durable-github-installation-intent-gateway.md) 细化；本 ADR 继续拥有知识事实源、GitHub repository 与多端能力边界。
+
 ## 1. 背景
 
 MemoFlow（Memory Flow）需要把用户知识资产接入 AI、目标和行动流程，但不应继续维护一套与 Obsidian 重叠的完整 Markdown 编辑器。用户同时需要三种进入产品的方式：账密账号、GitHub 登录和无需注册的访客；笔记应首先保存在本地，用户需要跨设备和 Web 能力时再绑定 GitHub。
@@ -40,11 +42,11 @@ MemoFlow（Memory Flow）需要把用户知识资产接入 AI、目标和行动�
 
 产品保留三种入口：
 
-| 入口          | 身份状态                                  | 本地 Vault | GitHub 同步          | Web 笔记       |
-| ------------- | ----------------------------------------- | ---------- | -------------------- | -------------- |
+| 入口          | 身份状态                                 | 本地 Vault | GitHub 同步          | Web 笔记       |
+| ------------- | ---------------------------------------- | ---------- | -------------------- | -------------- |
 | 账密注册/登录 | MemoFlow 在线账号                        | 支持       | 可后续绑定           | 绑定仓库后可用 |
 | GitHub 登录   | MemoFlow 在线账号 + GitHub OAuth binding | 支持       | 仍需单独确认仓库授权 | 绑定仓库后可用 |
-| 访客          | Desktop 本地 profile                      | 支持       | 不支持，需先升级账号 | 不支持         |
+| 访客          | Desktop 本地 profile                     | 支持       | 不支持，需先升级账号 | 不支持         |
 
 GitHub 登录与 GitHub 笔记仓库授权必须解耦：
 

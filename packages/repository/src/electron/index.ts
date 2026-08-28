@@ -118,6 +118,8 @@ export type KnowledgeRepositoryConnectionElectronPort = Pick<
   IRepositoryApiClient,
   | 'startKnowledgeRepositoryInstallation'
   | 'completeKnowledgeRepositoryInstallation'
+  | 'getKnowledgeRepositoryInstallationIntentStatus'
+  | 'finalizeKnowledgeRepositoryInstallationIntent'
   | 'listKnowledgeRepositoryConnections'
   | 'connectKnowledgeRepository'
   | 'disconnectKnowledgeRepository'
@@ -245,6 +247,22 @@ export function createRepositoryElectronModule(
           ),
         );
         installed.push(RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_COMPLETE);
+        ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_STATUS, (_, request) =>
+          withAuthenticatedValue(ctx, () =>
+            withKnowledgeConnection((port) =>
+              port.getKnowledgeRepositoryInstallationIntentStatus(request?.intentId ?? ''),
+            ),
+          ),
+        );
+        installed.push(RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_STATUS);
+        ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_FINALIZE, (_, request) =>
+          withAuthenticatedValue(ctx, () =>
+            withKnowledgeConnection((port) =>
+              port.finalizeKnowledgeRepositoryInstallationIntent(request?.intentId ?? ''),
+            ),
+          ),
+        );
+        installed.push(RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_FINALIZE);
         ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_LIST, (_) =>
           withAuthenticatedValue(ctx, () =>
             withKnowledgeConnection((port) => port.listKnowledgeRepositoryConnections()),

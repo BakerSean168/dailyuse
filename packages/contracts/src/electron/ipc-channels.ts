@@ -207,6 +207,9 @@ export const RepositoryChannels = {
   KNOWLEDGE_CONNECTION_INSTALLATION_START: 'repository:knowledge-connection:installation:start',
   KNOWLEDGE_CONNECTION_INSTALLATION_COMPLETE:
     'repository:knowledge-connection:installation:complete',
+  KNOWLEDGE_CONNECTION_INSTALLATION_STATUS: 'repository:knowledge-connection:installation:status',
+  KNOWLEDGE_CONNECTION_INSTALLATION_FINALIZE:
+    'repository:knowledge-connection:installation:finalize',
   KNOWLEDGE_CONNECTION_LIST: 'repository:knowledge-connection:list',
   KNOWLEDGE_CONNECTION_CONNECT: 'repository:knowledge-connection:connect',
   KNOWLEDGE_CONNECTION_DISCONNECT: 'repository:knowledge-connection:disconnect',

@@ -17,12 +17,24 @@ import type {
   ConfirmKnowledgeRepositoryHeadReq,
   CreateKnowledgeRepositoryConnectionReq,
   KnowledgeRepositoryConnectionClientDTO,
+  KnowledgeRepositoryInstallationIntentStatusResponse,
   KnowledgeRepositoryReconciliationPreview,
   ListKnowledgeRepositoryConnectionsRes,
   PreviewKnowledgeRepositoryReconciliationReq,
   StartKnowledgeRepositoryInstallationReq,
   StartKnowledgeRepositoryInstallationRes,
 } from '@memoflow/contracts/repository';
+
+export interface KnowledgeRepositoryInstallationSetupRequest {
+  state: string;
+  installationId: string;
+  setupAction?: 'install' | 'update';
+}
+
+export type KnowledgeRepositoryInstallationSetupResolution =
+  | { kind: 'redirect'; location: string }
+  | { kind: 'web'; location: string; intentId: string }
+  | { kind: 'desktop'; intentId: string; expiresAt: number };
 
 export interface IKnowledgeRepositoryConnectionService {
   startInstallation(
@@ -32,6 +44,17 @@ export interface IKnowledgeRepositoryConnectionService {
   completeInstallation(
     identityId: string,
     request: CompleteKnowledgeRepositoryInstallationReq,
+  ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>>;
+  receiveInstallationSetup(
+    request: KnowledgeRepositoryInstallationSetupRequest,
+  ): Promise<Result<KnowledgeRepositoryInstallationSetupResolution>>;
+  getInstallationIntentStatus(
+    identityId: string,
+    intentId: string,
+  ): Promise<Result<KnowledgeRepositoryInstallationIntentStatusResponse>>;
+  finalizeInstallationIntent(
+    identityId: string,
+    intentId: string,
   ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>>;
   connect(
     identityId: string,

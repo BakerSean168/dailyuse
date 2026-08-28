@@ -448,7 +448,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onMounted, ref } from 'vue';
+import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
@@ -511,15 +511,20 @@ const route = useRoute();
 const router = useRouter();
 const service = useStrictInject(REPOSITORY_SERVICE_KEY, 'RepositoryService');
 const desktopBridge = inject(DESKTOP_BRIDGE_KEY, undefined);
-const desktopApi = typeof window !== 'undefined' && 'electronAPI' in window
-  ? (window as Window & { electronAPI: { invoke(channel: string, ...args: unknown[]): Promise<unknown> } }).electronAPI
-  : undefined;
+const desktopApi =
+  typeof window !== 'undefined' && 'electronAPI' in window
+    ? (
+        window as Window & {
+          electronAPI: { invoke(channel: string, ...args: unknown[]): Promise<unknown> };
+        }
+      ).electronAPI
+    : undefined;
 const desktopAccess = ref<Awaited<ReturnType<typeof readDesktopAccessSnapshot>>>(null);
 const desktopAccessLoaded = ref(desktopApi === undefined);
 const canUseCloudKnowledgeRepo = computed(
-  () => desktopApi === undefined || (
-    desktopAccessLoaded.value && desktopAccess.value?.capabilities.repositoryConnection === true
-  ),
+  () =>
+    desktopApi === undefined ||
+    (desktopAccessLoaded.value && desktopAccess.value?.capabilities.repositoryConnection === true),
 );
 const isGuest = computed(() => desktopAccess.value?.profile?.profileKind === 'guest');
 
@@ -543,6 +548,8 @@ const busy = computed(() => busyAction.value !== null);
 const lifecycleErrorCodes = new Set<string>(Object.values(KnowledgeRepositoryLifecycleErrorCodes));
 const GITHUB_NEW_PRIVATE_REPOSITORY_URL =
   'https://github.com/new?name=memory-flow-notes&visibility=private';
+const INSTALLATION_POLL_INTERVAL_MS = 1_500;
+let installationPollGeneration = 0;
 
 function queryValue(value: unknown): string | undefined {
   return typeof value === 'string' && value.length > 0 ? value : undefined;
@@ -630,7 +637,10 @@ async function startInstallation(): Promise<void> {
         router.resolve({ path: '/settings', query: { tab: 'repository' } }).href,
         window.location.origin,
       ).toString();
-  const result = await service.startKnowledgeRepositoryInstallation({ returnUrl });
+  const result = await service.startKnowledgeRepositoryInstallation({
+    returnUrl,
+    clientKind: desktopBridge ? 'desktop' : 'web',
+  });
   if (!result.ok) {
     errorMessage.value = resultError(result, t('setting.knowledgeRepository.startFailed'));
     busyAction.value = null;
@@ -638,14 +648,63 @@ async function startInstallation(): Promise<void> {
   }
 
   if (desktopBridge) {
-    await desktopBridge.invoke(SystemChannels.OPEN_EXTERNAL_URL, {
-      url: result.data.installationUrl,
-    });
-    busyAction.value = null;
+    try {
+      await desktopBridge.invoke(SystemChannels.OPEN_EXTERNAL_URL, {
+        url: result.data.installationUrl,
+      });
+    } catch {
+      errorMessage.value = t('setting.knowledgeRepository.startFailed');
+      busyAction.value = null;
+      return;
+    }
+    void pollDesktopInstallationIntent(result.data.intentId, result.data.expiresAt);
     return;
   }
 
   window.location.assign(result.data.installationUrl);
+}
+
+async function applyFinalizedInstallationIntent(intentId: string): Promise<boolean> {
+  const result = await service.finalizeKnowledgeRepositoryInstallationIntent(intentId);
+  if (!result.ok) {
+    errorMessage.value = resultError(result, t('setting.knowledgeRepository.completeFailed'));
+    return false;
+  }
+  pendingInstallationId.value = result.data.installationId;
+  installationRepositories.value = result.data.repositories;
+  errorMessage.value = '';
+  return true;
+}
+
+async function pollDesktopInstallationIntent(intentId: string, expiresAt: number): Promise<void> {
+  const generation = ++installationPollGeneration;
+  busyAction.value = 'complete';
+  while (generation === installationPollGeneration && Date.now() < expiresAt) {
+    const result = await service.getKnowledgeRepositoryInstallationIntentStatus(intentId);
+    if (generation !== installationPollGeneration) return;
+    if (result.ok) {
+      if (result.data.status === 'CallbackReceived' || result.data.status === 'Finalized') {
+        await applyFinalizedInstallationIntent(intentId);
+        if (generation === installationPollGeneration) busyAction.value = null;
+        return;
+      }
+      if (result.data.status === 'Consumed') {
+        await loadConnections();
+        if (generation === installationPollGeneration) busyAction.value = null;
+        return;
+      }
+      if (result.data.status === 'Expired') break;
+    } else if (!['SERVICE_UNAVAILABLE', 'RATE_LIMITED'].includes(result.error.code)) {
+      errorMessage.value = resultError(result, t('setting.knowledgeRepository.completeFailed'));
+      busyAction.value = null;
+      return;
+    }
+    await new Promise<void>((resolve) => setTimeout(resolve, INSTALLATION_POLL_INTERVAL_MS));
+  }
+  if (generation === installationPollGeneration) {
+    errorMessage.value = t('setting.knowledgeRepository.installationExpired');
+    busyAction.value = null;
+  }
 }
 
 async function createPrivateRepository(): Promise<void> {
@@ -677,10 +736,11 @@ async function createPrivateRepository(): Promise<void> {
 }
 
 async function completeInstallationFromQuery(): Promise<void> {
+  const intentId = queryValue(route.query.installation_intent);
   const state = queryValue(route.query.state);
   const installationId = queryValue(route.query.installation_id);
   const setupAction = queryValue(route.query.setup_action);
-  if (!state || !installationId) return;
+  if (!intentId && (!state || !installationId)) return;
   if (!canUseCloudKnowledgeRepo.value) {
     errorMessage.value = isGuest.value
       ? t('setting.knowledgeRepository.guestCloudBlocked')
@@ -689,25 +749,47 @@ async function completeInstallationFromQuery(): Promise<void> {
   }
 
   busyAction.value = 'complete';
-  const result = await service.completeKnowledgeRepositoryInstallation({
-    state,
-    installationId,
-    setupAction: setupAction === 'update' ? 'update' : 'install',
-  });
+  let completed = false;
+  if (intentId) {
+    const status = await service.getKnowledgeRepositoryInstallationIntentStatus(intentId);
+    if (status.ok && ['CallbackReceived', 'Finalized'].includes(status.data.status)) {
+      completed = await applyFinalizedInstallationIntent(intentId);
+    } else if (status.ok && status.data.status === 'Consumed') {
+      await loadConnections();
+      completed = true;
+    } else if (status.ok && status.data.status === 'Expired') {
+      errorMessage.value = t('setting.knowledgeRepository.installationExpired');
+    } else {
+      errorMessage.value = status.ok
+        ? t('setting.knowledgeRepository.installationPending')
+        : resultError(status, t('setting.knowledgeRepository.completeFailed'));
+    }
+  } else if (state && installationId) {
+    const result = await service.completeKnowledgeRepositoryInstallation({
+      state,
+      installationId,
+      setupAction: setupAction === 'update' ? 'update' : 'install',
+    });
+    if (result.ok) {
+      pendingInstallationId.value = result.data.installationId;
+      installationRepositories.value = result.data.repositories;
+      errorMessage.value = '';
+      completed = true;
+    } else {
+      errorMessage.value = resultError(result, t('setting.knowledgeRepository.completeFailed'));
+    }
+  }
+
   await router.replace({
     query: Object.fromEntries(
       Object.entries(route.query).filter(
-        ([key]) => !['state', 'installation_id', 'setup_action'].includes(key),
+        ([key]) =>
+          !['installation_intent', 'state', 'installation_id', 'setup_action'].includes(key),
       ),
     ),
   });
-
-  if (result.ok) {
-    pendingInstallationId.value = result.data.installationId;
-    installationRepositories.value = result.data.repositories;
-    errorMessage.value = '';
-  } else {
-    errorMessage.value = resultError(result, t('setting.knowledgeRepository.completeFailed'));
+  if (!completed && !errorMessage.value) {
+    errorMessage.value = t('setting.knowledgeRepository.completeFailed');
   }
   busyAction.value = null;
 }
@@ -922,6 +1004,10 @@ async function executeReconciliation(
 function statusLabel(status: KnowledgeRepositoryConnectionStatus): string {
   return t(`setting.knowledgeRepository.status.${status}`);
 }
+
+onBeforeUnmount(() => {
+  installationPollGeneration += 1;
+});
 
 onMounted(async () => {
   if (desktopApi) {

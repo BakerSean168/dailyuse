@@ -1161,6 +1161,25 @@ exports.Prisma.RepositoryStatisticScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.KnowledgeRepositoryInstallationIntentScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  stateHash: 'stateHash',
+  routeKey: 'routeKey',
+  clientKind: 'clientKind',
+  returnPath: 'returnPath',
+  status: 'status',
+  installationId: 'installationId',
+  providerAccountId: 'providerAccountId',
+  setupAction: 'setupAction',
+  expiresAt: 'expiresAt',
+  callbackReceivedAt: 'callbackReceivedAt',
+  finalizedAt: 'finalizedAt',
+  consumedAt: 'consumedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.KnowledgeRepositoryConnectionScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -1694,6 +1713,7 @@ exports.Prisma.ModelName = {
   ResourceReference: 'ResourceReference',
   RepositoryExplorer: 'RepositoryExplorer',
   RepositoryStatistic: 'RepositoryStatistic',
+  KnowledgeRepositoryInstallationIntent: 'KnowledgeRepositoryInstallationIntent',
   KnowledgeRepositoryConnection: 'KnowledgeRepositoryConnection',
   GithubWebhookDelivery: 'GithubWebhookDelivery',
   KnowledgeNoteProjection: 'KnowledgeNoteProjection',

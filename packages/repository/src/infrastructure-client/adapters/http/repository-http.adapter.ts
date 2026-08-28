@@ -7,9 +7,7 @@
 
 import { fail, type Result } from '@memoflow/contracts/result';
 import type { IResultHttpClient } from '@memoflow/http-client';
-import type {
-  IRepositoryApiClient,
-} from '../types';
+import type { IRepositoryApiClient } from '../types';
 import type {
   LocalVaultBindingClientDTO,
   SelectLocalVaultReq,
@@ -26,6 +24,7 @@ import type {
   CreateKnowledgeRepositoryConnectionReq,
   KnowledgeRepositoryConnectionClientDTO,
   KnowledgeRepositoryInstallationTokenRes,
+  KnowledgeRepositoryInstallationIntentStatusResponse,
   KnowledgeRepositoryReconciliationPreview,
   ListKnowledgeRepositoryConnectionsRes,
   StartKnowledgeRepositoryInstallationReq,
@@ -49,7 +48,6 @@ import type {
   ListKnowledgeWriteRequestsRes,
   KnowledgeWriteRequestReplayResponse,
 } from '@memoflow/contracts/repository';
-
 
 /**
  * Repository HTTP Adapter
@@ -75,6 +73,23 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
     return this.httpClient.post(
       `${this.baseUrl}/knowledge-connections/installations/complete`,
       request,
+    );
+  }
+
+  async getKnowledgeRepositoryInstallationIntentStatus(
+    intentId: string,
+  ): Promise<Result<KnowledgeRepositoryInstallationIntentStatusResponse>> {
+    return this.httpClient.get(
+      `${this.baseUrl}/knowledge-connections/installations/intents/${encodeURIComponent(intentId)}`,
+    );
+  }
+
+  async finalizeKnowledgeRepositoryInstallationIntent(
+    intentId: string,
+  ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>> {
+    return this.httpClient.post(
+      `${this.baseUrl}/knowledge-connections/installations/intents/${encodeURIComponent(intentId)}/finalize`,
+      {},
     );
   }
 
@@ -201,7 +216,6 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
       {},
     );
   }
-
 
   private localVaultUnavailable<T>(): Result<T> {
     return fail({

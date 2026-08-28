@@ -21,6 +21,7 @@ import type {
   CreateKnowledgeRepositoryConnectionReq,
   KnowledgeRepositoryConnectionClientDTO,
   KnowledgeRepositoryInstallationTokenRes,
+  KnowledgeRepositoryInstallationIntentStatusResponse,
   KnowledgeRepositoryReconciliationPreview,
   ListKnowledgeRepositoryConnectionsRes,
   StartKnowledgeRepositoryInstallationReq,
@@ -59,6 +60,18 @@ export class RepositoryClientService implements IRepositoryApiClient {
     request: CompleteKnowledgeRepositoryInstallationReq,
   ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>> {
     return this.repositoryApi.completeKnowledgeRepositoryInstallation(request);
+  }
+
+  getKnowledgeRepositoryInstallationIntentStatus(
+    intentId: string,
+  ): Promise<Result<KnowledgeRepositoryInstallationIntentStatusResponse>> {
+    return this.repositoryApi.getKnowledgeRepositoryInstallationIntentStatus(intentId);
+  }
+
+  finalizeKnowledgeRepositoryInstallationIntent(
+    intentId: string,
+  ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>> {
+    return this.repositoryApi.finalizeKnowledgeRepositoryInstallationIntent(intentId);
   }
 
   listKnowledgeRepositoryConnections(): Promise<Result<ListKnowledgeRepositoryConnectionsRes>> {

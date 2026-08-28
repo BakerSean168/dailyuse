@@ -48,6 +48,8 @@ export default {
     "loadFailed": "加载仓库连接失败",
     "startFailed": "发起连接失败",
     "completeFailed": "完成安装失败",
+    "installationPending": "GitHub 安装尚未完成，请在 GitHub 完成安装后重试。",
+    "installationExpired": "GitHub 安装已过期，请重新开始连接。",
     "connectFailed": "连接仓库失败",
     "disconnectFailed": "断开连接失败",
     "disconnectTitle": "断开仓库连接？",

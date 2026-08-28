@@ -257,6 +257,8 @@ describe('GitHub server-only compose environment contract', () => {
     'GITHUB_APP_SLUG',
     'GITHUB_APP_PRIVATE_KEY',
     'GITHUB_APP_WEBHOOK_SECRET',
+    'GITHUB_INSTALLATION_ROUTE_KEY',
+    'GITHUB_INSTALLATION_ROUTE_TARGETS',
   ];
 
   for (const composeFile of ['docker-compose.local.yml', 'docker-compose.prod.yml']) {

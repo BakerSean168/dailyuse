@@ -8052,6 +8052,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/repository/src/server/application/services/knowledge-repository-installation-intent.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/repository/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/repository/src/server/application/services/knowledge-repository-lease-coordinator.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -8152,6 +8160,14 @@
       "primarySuite": "unit",
       "collectors": [
         "packages/repository/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/repository/src/server/infrastructure/adapters/prisma/knowledge-repository-connection-write-prisma-transaction.runner.integration.test.ts",
+      "primarySuite": "integration",
+      "collectors": [
+        "packages/repository/vitest.integration.config.ts"
       ],
       "measurementCollectors": []
     },
@@ -10581,14 +10597,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 33
+      "fileCount": 34
     },
     {
       "id": "packages/repository/vitest.integration.config.ts",
       "type": "primary",
       "suite": "integration",
       "runner": "vitest",
-      "fileCount": 1
+      "fileCount": 2
     },
     {
       "id": "packages/schedule-orchestration/vitest.config.ts",
@@ -11391,8 +11407,8 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 983,
-    "integration": 30,
+    "unit": 984,
+    "integration": 31,
     "smoke": 3,
     "boundary-ipc": 9,
     "boundary-main": 5,

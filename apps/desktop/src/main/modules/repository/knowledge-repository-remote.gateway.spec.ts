@@ -44,6 +44,53 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
     );
   });
 
+  it('polls and finalizes durable installation intents through authenticated API routes', async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        response({
+          ok: true,
+          data: {
+            intentId: 'intent-1',
+            status: 'CallbackReceived',
+            clientKind: 'desktop',
+            expiresAt: 1_750_000_600_000,
+            installationId: 'installation-1',
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        response({
+          ok: true,
+          data: {
+            installationId: 'installation-1',
+            githubAccountId: '42',
+            repositories: [],
+            returnUrl: 'https://app.example.test/settings?tab=repository',
+          },
+        }),
+      );
+    const gateway = new KnowledgeRepositoryRemoteGateway({
+      getAccessToken: async () => 'memoflow-access-token',
+      fetchImpl,
+      createApiUrl: (path) => `https://api.example.test/api/v1${path}`,
+    });
+
+    await gateway.getKnowledgeRepositoryInstallationIntentStatus('intent/1');
+    await gateway.finalizeKnowledgeRepositoryInstallationIntent('intent/1');
+
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      1,
+      'https://api.example.test/api/v1/repositories/knowledge-connections/installations/intents/intent%2F1',
+      expect.objectContaining({ method: 'GET' }),
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      2,
+      'https://api.example.test/api/v1/repositories/knowledge-connections/installations/intents/intent%2F1/finalize',
+      expect.objectContaining({ method: 'POST', body: '{}' }),
+    );
+  });
+
   it('requests the Desktop-only repository token through the dedicated endpoint', async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
       response({
@@ -70,9 +117,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
   });
 
   it('forwards the explicit cloud-data retention choice when disconnecting', async () => {
-    const fetchImpl = vi
-      .fn<typeof fetch>()
-      .mockResolvedValue(response({ ok: true, data: null }));
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(response({ ok: true, data: null }));
     const gateway = new KnowledgeRepositoryRemoteGateway({
       getAccessToken: async () => 'memoflow-access-token',
       fetchImpl,

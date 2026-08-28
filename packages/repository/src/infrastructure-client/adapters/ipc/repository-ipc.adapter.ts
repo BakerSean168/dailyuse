@@ -27,6 +27,7 @@ import type {
   CreateKnowledgeRepositoryConnectionReq,
   KnowledgeRepositoryConnectionClientDTO,
   KnowledgeRepositoryInstallationTokenRes,
+  KnowledgeRepositoryInstallationIntentStatusResponse,
   KnowledgeRepositoryReconciliationPreview,
   ListKnowledgeRepositoryConnectionsRes,
   StartKnowledgeRepositoryInstallationReq,
@@ -75,6 +76,22 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
       RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_COMPLETE,
       request,
     );
+  }
+
+  async getKnowledgeRepositoryInstallationIntentStatus(
+    intentId: string,
+  ): Promise<Result<KnowledgeRepositoryInstallationIntentStatusResponse>> {
+    return this.ipcClient.invoke(RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_STATUS, {
+      intentId,
+    });
+  }
+
+  async finalizeKnowledgeRepositoryInstallationIntent(
+    intentId: string,
+  ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>> {
+    return this.ipcClient.invoke(RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_FINALIZE, {
+      intentId,
+    });
   }
 
   async listKnowledgeRepositoryConnections(): Promise<
