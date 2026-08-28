@@ -154,13 +154,6 @@ export class PrismaReminderWriteTransactionRunner implements ReminderTransaction
           correlationId: occurrence.id,
           causationId: occurrence.id,
         });
-        const outboxPayload = {
-          operationId,
-          envelope,
-          correlationId: occurrence.id,
-          causationId: occurrence.id,
-        };
-
         await tx.outboxMessage.create({
           data: {
             id: operationId,
@@ -169,7 +162,7 @@ export class PrismaReminderWriteTransactionRunner implements ReminderTransaction
             schemaVersion: 1,
             correlationId: occurrence.id,
             causationId: occurrence.id,
-            payloadJson: JSON.stringify(outboxPayload),
+            payloadJson: JSON.stringify(envelope),
             idempotencyKey: notificationIdempotencyKey,
             status: 'pending',
             attempts: 0,

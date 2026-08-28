@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { IdentityId } from '@memoflow/domain-shared';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { ControlMode, ReminderType } from '@memoflow/contracts/reminder';
+import { NotificationRequestedSchema } from '@memoflow/contracts/notification';
 import {
   buildIdempotencyKeyString,
   LeaseFencingException,
@@ -211,6 +212,16 @@ describe('W1 Reminder LeaseClaim & Reliable Operations Integration Tests', () =>
     });
 
     expect(receipt.status).toBe('succeeded');
+
+    const requestedOutbox = await prisma.outboxMessage.findFirstOrThrow({
+      where: { identityId, messageType: 'notification.requested' },
+    });
+    const requestedEnvelope = NotificationRequestedSchema.parse(
+      JSON.parse(requestedOutbox.payloadJson),
+    );
+    expect(requestedEnvelope.identityId).toBe(identityId);
+    expect(requestedEnvelope.source).toBe('reminder');
+    expect(requestedEnvelope.idempotencyKey).toBe(idempotencyKey);
 
     // Subsequent duplicate claim
     const dupClaim = await adapter.claimOccurrence({
