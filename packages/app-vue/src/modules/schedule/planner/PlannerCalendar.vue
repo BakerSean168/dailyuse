@@ -1,6 +1,5 @@
 <template>
   <section
-    ref="plannerRootRef"
     class="planner-calendar relative h-full min-h-0 overflow-hidden bg-background"
     data-testid="schedule-fullcalendar"
     :aria-busy="loading"
@@ -92,7 +91,6 @@ const emit = defineEmits<{
   (e: 'select-range', range: { start: number; end: number; allDay: boolean }): void;
 }>();
 
-const plannerRootRef = ref<HTMLElement | null>(null);
 const calendarRef = ref<{ getApi(): CalendarApi } | null>(null);
 const lastVisibleRangeKey = ref<string | null>(null);
 
@@ -101,17 +99,6 @@ const fullCalendarView: Record<PlannerCalendarView, string> = {
   week: 'timeGridWeek',
   month: 'dayGridMonth',
 };
-
-function markCalendarScrollHost(): void {
-  requestAnimationFrame(() => {
-    const root = plannerRootRef.value;
-    if (!root) return;
-    const scrollHost =
-      root.querySelector<HTMLElement>('.fc-scroller-liquid-absolute') ??
-      root.querySelector<HTMLElement>('.fc-scroller');
-    scrollHost?.setAttribute('data-testid', 'schedule-calendar-scroll-host');
-  });
-}
 
 function projectionToEvent(projection: CalendarEventProjection): EventInput {
   return {
@@ -176,11 +163,7 @@ const calendarOptions = computed<CalendarOptions>(() => ({
   slotMaxTime: '24:00:00',
   eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
   events: props.projections.map(projectionToEvent),
-  viewDidMount() {
-    markCalendarScrollHost();
-  },
   datesSet(info) {
-    markCalendarScrollHost();
     const range: PlannerVisibleRange = {
       start: info.start.getTime(),
       end: Math.max(info.start.getTime(), info.end.getTime() - 1),

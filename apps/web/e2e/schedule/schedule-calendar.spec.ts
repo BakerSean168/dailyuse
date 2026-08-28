@@ -27,7 +27,6 @@ test.describe('Schedule calendar workspace', () => {
     const plannerCalendar = page.getByTestId('schedule-fullcalendar');
     const weekTab = page.getByTestId('schedule-view-tab-week');
     const periodLabel = page.getByTestId('schedule-period-label');
-    const scrollHost = page.getByTestId('schedule-calendar-scroll-host');
     const primaryCreate = page.locator('[data-primary-action="create-schedule"]:visible');
 
     await expect(plannerCalendar).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
@@ -37,10 +36,7 @@ test.describe('Schedule calendar workspace', () => {
     await markDomIdentity(content, 'content');
     await markDomIdentity(plannerCalendar, 'planner');
     const periodText = await periodLabel.innerText();
-    const scrollTop = await scrollHost.evaluate((element) => {
-      element.scrollTop = Math.min(96, element.scrollHeight - element.clientHeight);
-      return element.scrollTop;
-    });
+    const scrollTop = await markCalendarScrollPosition(plannerCalendar);
     expect(scrollTop).toBeGreaterThan(0);
 
     await dragBusinessPanel(page, 'wider');
@@ -51,7 +47,6 @@ test.describe('Schedule calendar workspace', () => {
       weekTab,
       periodLabel,
       periodText,
-      scrollHost,
       scrollTop,
       primaryCreate,
     });
@@ -64,7 +59,6 @@ test.describe('Schedule calendar workspace', () => {
       weekTab,
       periodLabel,
       periodText,
-      scrollHost,
       scrollTop,
       primaryCreate,
     });
@@ -78,7 +72,6 @@ test.describe('Schedule calendar workspace', () => {
       weekTab,
       periodLabel,
       periodText,
-      scrollHost,
       scrollTop,
       primaryCreate,
     });
@@ -142,7 +135,6 @@ async function assertStableSchedule({
   weekTab,
   periodLabel,
   periodText,
-  scrollHost,
   scrollTop,
   primaryCreate,
 }: {
@@ -152,7 +144,6 @@ async function assertStableSchedule({
   weekTab: Locator;
   periodLabel: Locator;
   periodText: string;
-  scrollHost: Locator;
   scrollTop: number;
   primaryCreate: Locator;
 }): Promise<void> {
@@ -162,7 +153,31 @@ async function assertStableSchedule({
   await expect(plannerCalendar).toHaveAttribute('data-instance-probe', 'planner');
   await expect(weekTab).toHaveAttribute('aria-selected', 'true');
   await expect(periodLabel).toHaveText(periodText);
-  expect(await scrollHost.evaluate((element) => element.scrollTop)).toBe(scrollTop);
+  expect(await readCalendarScrollPosition(plannerCalendar)).toBe(scrollTop);
+}
+
+async function markCalendarScrollPosition(plannerCalendar: Locator): Promise<number> {
+  return plannerCalendar.evaluate((root) => {
+    const scrollHost = Array.from(root.querySelectorAll<HTMLElement>('*')).find((element) => {
+      const style = getComputedStyle(element);
+      return (
+        (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
+        element.scrollHeight > element.clientHeight + 1
+      );
+    });
+    if (!scrollHost) throw new Error('Planner calendar has no vertical scroll owner');
+    scrollHost.setAttribute('data-scroll-probe', 'planner-calendar');
+    scrollHost.scrollTop = Math.min(96, scrollHost.scrollHeight - scrollHost.clientHeight);
+    return scrollHost.scrollTop;
+  });
+}
+
+async function readCalendarScrollPosition(plannerCalendar: Locator): Promise<number> {
+  return plannerCalendar.evaluate((root) => {
+    const scrollHost = root.querySelector<HTMLElement>('[data-scroll-probe="planner-calendar"]');
+    if (!scrollHost) throw new Error('Planner calendar scroll owner was remounted');
+    return scrollHost.scrollTop;
+  });
 }
 
 async function expectElementToFit(locator: Locator): Promise<void> {
