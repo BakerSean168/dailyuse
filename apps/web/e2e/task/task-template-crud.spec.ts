@@ -44,7 +44,10 @@ test.describe('Task Plan CRUD Operations', () => {
 
   test('should display task template list', async ({ page }) => {
     await expect(page.getByTestId('task-management-view')).toBeVisible();
-    await expect(page.getByTestId('create-task-entry')).toBeVisible();
+    await expect(page.getByTestId('task-surface-today')).toBeVisible();
+    await expect(page.getByTestId('task-surface-upcoming')).toBeVisible();
+    await expect(page.getByTestId('task-surface-plans')).toBeVisible();
+    await expect(page.getByTestId('create-task-template-button')).toBeVisible();
   });
 
   test('should edit an existing task template', async ({ page }) => {
@@ -110,7 +113,7 @@ test.describe('Task Plan CRUD Operations', () => {
     const toolbar = page.getByTestId('task-page-toolbar');
     const searchInput = page.getByTestId('task-search-input');
     const primaryCreate = page.locator('[data-primary-action="create-task"]:visible');
-    const scrollHost = page.getByTestId('task-management-scroll');
+    const scrollHost = page.getByTestId('task-management-scroll-host');
 
     await expect(toolbar).toBeVisible();
     await expect(primaryCreate).toHaveCount(1);
@@ -118,11 +121,11 @@ test.describe('Task Plan CRUD Operations', () => {
     await searchInput.fill('stable-task-filter');
     await searchInput.focus();
     await toolbar.evaluate((element) => element.setAttribute('data-instance-probe', 'stable'));
+    await expect(page.getByTestId('task-loading-state')).toHaveCount(0);
     await scrollHost.evaluate((element) => {
-      const filler = document.createElement('div');
-      filler.style.height = '1200px';
-      filler.dataset.layoutProbe = 'filler';
-      element.appendChild(filler);
+      // Keep the probe outside Vue's managed child list so a legitimate data refresh
+      // cannot delete the test-only overflow while the panel is being resized.
+      element.style.paddingBottom = '1200px';
       element.scrollTop = 96;
     });
 
@@ -160,7 +163,7 @@ async function expectToolbarToFit(toolbar: Locator): Promise<void> {
 }
 
 async function openCreateTaskDialog(page: Page) {
-  const primaryCreateButton = page.getByTestId('create-task-entry');
+  const primaryCreateButton = page.getByTestId('create-task-template-button');
   await primaryCreateButton.click();
 
   await expect(page.getByTestId('task-template-dialog')).toBeVisible({
@@ -209,6 +212,7 @@ async function createTaskTemplate(page: Page, title: string) {
   await expect(page.getByTestId('task-template-dialog')).toBeHidden({
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
+  await page.getByTestId('task-surface-plans').click();
   await expect(taskCardByTitle(page, title)).toBeVisible();
   return {
     instanceCount: creation.instanceCount ?? 0,
