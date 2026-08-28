@@ -12,6 +12,10 @@ import {
   type ProtocolSessionPersistenceReceipt,
   type ProtocolSessionStore,
 } from '../../domain/ports';
+import {
+  buildProtocolBreakCompletionFact,
+  type ProtocolBreakCreditRuntime,
+} from '../protocol-break-credit';
 
 export type ProtocolSessionRuntimeAction =
   'start' | 'pause' | 'resume' | 'phase-complete' | 'end' | 'cancel' | 'recover';
@@ -63,6 +67,8 @@ export interface ProtocolSessionRuntime {
 
 export interface CreateProtocolSessionRuntimeOptions {
   readonly store: ProtocolSessionStore;
+  /** Optional ambient-routine credit sink invoked after a durable break completion. */
+  readonly protocolBreakCreditRuntime?: ProtocolBreakCreditRuntime;
   readonly now?: () => number;
   /** Bounded CAS retries for two runtimes recovering the same durable session. */
   readonly recoveryConflictRetries?: number;
@@ -130,6 +136,7 @@ export function createProtocolSessionRuntime(
       const at = resolveAt(input.at);
       const session = await loadRequired(input.identityId, input.sessionId);
       const before = session.snapshot();
+      let breakFact = null as ReturnType<typeof buildProtocolBreakCompletionFact>;
 
       switch (input.action) {
         case 'start':
@@ -141,9 +148,19 @@ export function createProtocolSessionRuntime(
         case 'resume':
           session.resume(at);
           break;
-        case 'phase-complete':
+        case 'phase-complete': {
+          // Capture the pre-transition snapshot: completeCurrentPhase advances
+          // the plan, so the completed break is no longer addressable after it.
+          const completedAt =
+            before.phaseDeadline != null && Number(at) >= Number(before.phaseDeadline)
+              ? before.phaseDeadline
+              : at;
+          breakFact = options.protocolBreakCreditRuntime
+            ? buildProtocolBreakCompletionFact({ session: before, completedAt })
+            : null;
           session.completeCurrentPhase(at);
           break;
+        }
         case 'end':
           session.end(at);
           break;
@@ -153,6 +170,7 @@ export function createProtocolSessionRuntime(
       }
 
       const persistence = await options.store.save(session, before.version);
+      if (breakFact) options.protocolBreakCreditRuntime?.creditBreak(breakFact);
       return receiptFor({
         action: input.action,
         status: 'applied',
