@@ -1,8 +1,5 @@
 import type { Prisma, PrismaClient, OutboxMessage } from '@memoflow/database';
-import {
-  NOTIFICATION_REQUESTED_MESSAGE_TYPE,
-  type NotificationRequestedOutboxInput,
-} from '@memoflow/contracts/notification';
+import { NOTIFICATION_REQUESTED_MESSAGE_TYPE } from '@memoflow/contracts/notification';
 import {
   assertValidBusinessOperationReceipt,
   buildIdempotencyKeyString,
@@ -67,9 +64,7 @@ export function mapSharedOutboxRowToReceipt(row: OutboxMessage): BusinessOperati
  * intent join ONE transaction through the shared ROUTINE-3401 handle — no
  * cross-package opaque transaction casts.
  */
-export class PrismaRoutineOccurrenceNotificationWriter
-  implements RoutineOccurrenceNotificationWriterPort
-{
+export class PrismaRoutineOccurrenceNotificationWriter implements RoutineOccurrenceNotificationWriterPort {
   constructor(private readonly prisma: PrismaClient) {}
 
   async enqueueRoutineOccurrenceRequested(
@@ -79,8 +74,7 @@ export class PrismaRoutineOccurrenceNotificationWriter
     const outboxInput = buildRoutineNotificationRequestedOutboxInput(input);
     const envelope = outboxInput.envelope;
 
-    const client =
-      resolveRoutineScheduleTransactionClient(options?.transaction) ?? this.prisma;
+    const client = resolveRoutineScheduleTransactionClient(options?.transaction) ?? this.prisma;
     const existing = await this.findByOutboxAnchor(
       client,
       outboxInput.operationId,

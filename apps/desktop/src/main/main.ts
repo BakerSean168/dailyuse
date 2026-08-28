@@ -158,10 +158,21 @@ async function registerBusinessModules(
       { channelType: 'Desktop', status: 'available' },
     ],
   });
+  const profileIdentityId = mainRuntime?.profileRuntimeManager.getCurrentIdentityId();
+  if (!profileIdentityId) {
+    throw new Error(
+      'Reminder local Routine runtime requires an active or prepared profile identity',
+    );
+  }
   const reminderComposed = composeReminder({
     db,
+    identityId: profileIdentityId,
     notificationRequestedWriter: notificationComposed.requestedWriter,
   });
+  // Project the durable vNext Routine snapshot before sensors start so the first
+  // activity transition cannot race ahead of registration. ROUTINE-5301 can
+  // reuse the same refresh seam after configuration mutations.
+  await reminderComposed.refreshLocalRoutineRegistrations();
   // Activity truth is a per-profile runtime. Start the sensor before the
   // accumulator so no idle/resume transition is lost during activation.
   reminderComposed.activityRuntime.start();

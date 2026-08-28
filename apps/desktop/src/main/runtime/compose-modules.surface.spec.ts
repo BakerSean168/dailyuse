@@ -155,8 +155,14 @@ describe('desktop runtime composer surface (Batch Step D)', () => {
     expect(reminder).toContain('readonly activityRuntime: RoutineActivitySensorRuntime');
     expect(reminder).toContain('readonly activeUsageRuntime: ActiveUsageRuntime');
     expect(main).toContain('runtime: reminderComposed.interventionRuntime');
+    expect(main).toContain('await reminderComposed.refreshLocalRoutineRegistrations()');
+    expect(main.indexOf('await reminderComposed.refreshLocalRoutineRegistrations()')).toBeLessThan(
+      main.indexOf('reminderComposed.activityRuntime.start()'),
+    );
     expect(main).toContain('reminderComposed.activityRuntime.start()');
     expect(main).toContain('reminderComposed.activeUsageRuntime.start()');
+    expect(reminder).toContain('loadPowerSyncRoutineLocalRegistrations');
+    expect(reminder).not.toContain('onOccurrenceDue: () => {}');
     expect(main).toContain('.register(interventionWindowElectronModule)');
     expect(main).toContain('.register(focusWindowElectronModule)');
   });

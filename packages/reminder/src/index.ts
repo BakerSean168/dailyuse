@@ -47,6 +47,8 @@ export {
   type IReminderGroupRepository,
   type IReminderResponseRepository,
   type IUserReminderPreferenceRepository,
+  loadPowerSyncRoutineLocalRegistrations,
+  type RoutineLocalRegistrationsSnapshot,
 } from './server';
 // Schedule orchestration integrations are re-exported through the package root
 // so host composers import only `@memoflow/reminder` (no `/schedule-*` subpath).

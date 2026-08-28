@@ -1062,6 +1062,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "apps/desktop/src/main/runtime/compose-reminder.runtime.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "apps/desktop/src/main/runtime/compose-task.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -7758,6 +7766,16 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/reminder/src/server/infrastructure/routine-vnext/routine-local-registrations.powersync.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/reminder/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/reminder/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/reminder/src/server/infrastructure/routine-vnext/trigger-persistence-parity.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10237,7 +10255,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 52
+      "fileCount": 53
     },
     {
       "id": "apps/desktop/vitest.ipc.config.ts",
@@ -10496,7 +10514,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 72
+      "fileCount": 73
     },
     {
       "id": "packages/reminder/vitest.integration.config.ts",
@@ -10510,7 +10528,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 72
+      "fileCount": 73
     },
     {
       "id": "packages/reminder/vitest.use-cases.config.ts",
@@ -11188,6 +11206,7 @@
       "packages/reminder/src/server/infrastructure/routine-vnext/profile-persistence-parity.spec.ts",
       "packages/reminder/src/server/infrastructure/routine-vnext/protocol-persistence-parity.spec.ts",
       "packages/reminder/src/server/infrastructure/routine-vnext/protocol-session-store.powersync.spec.ts",
+      "packages/reminder/src/server/infrastructure/routine-vnext/routine-local-registrations.powersync.spec.ts",
       "packages/reminder/src/server/infrastructure/routine-vnext/trigger-persistence-parity.spec.ts",
       "packages/reminder/src/server/infrastructure/runtime/reminder-trigger-cron.runtime.spec.ts",
       "packages/reminder/src/server/infrastructure/schedule-execution-source.spec.ts",
@@ -11340,7 +11359,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 977,
+    "unit": 979,
     "integration": 30,
     "smoke": 3,
     "boundary-ipc": 9,

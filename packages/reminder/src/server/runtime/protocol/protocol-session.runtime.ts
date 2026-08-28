@@ -136,13 +136,33 @@ export function createProtocolSessionRuntime(
       const at = resolveAt(input.at);
       const session = await loadRequired(input.identityId, input.sessionId);
       const before = session.snapshot();
-      let breakFact = null as ReturnType<typeof buildProtocolBreakCompletionFact>;
+      const breakFacts: NonNullable<ReturnType<typeof buildProtocolBreakCompletionFact>>[] = [];
+      let advancedPhaseCount = 0;
 
       switch (input.action) {
         case 'start':
           session.start(at);
           break;
         case 'pause':
+          // ProtocolSession.pause() performs deadline catch-up before entering
+          // Paused. Capture those deadline-owned break facts here first so the
+          // runtime can credit them only after the resulting snapshot is
+          // durably persisted. The domain's internal catch-up then becomes a
+          // no-op at the same Instant.
+          while (
+            session.status === 'Running' &&
+            session.snapshot().phaseDeadline != null &&
+            Number(at) >= Number(session.snapshot().phaseDeadline)
+          ) {
+            const beforePhase = session.snapshot();
+            const deadline = beforePhase.phaseDeadline!;
+            const fact = options.protocolBreakCreditRuntime
+              ? buildProtocolBreakCompletionFact({ session: beforePhase, completedAt: deadline })
+              : null;
+            session.completeCurrentPhase(deadline);
+            advancedPhaseCount += 1;
+            if (fact) breakFacts.push(fact);
+          }
           session.pause(at);
           break;
         case 'resume':
@@ -155,10 +175,14 @@ export function createProtocolSessionRuntime(
             before.phaseDeadline != null && Number(at) >= Number(before.phaseDeadline)
               ? before.phaseDeadline
               : at;
-          breakFact = options.protocolBreakCreditRuntime
+          const breakFact = options.protocolBreakCreditRuntime
             ? buildProtocolBreakCompletionFact({ session: before, completedAt })
             : null;
           session.completeCurrentPhase(at);
+          if (before.currentPlanIndex !== session.snapshot().currentPlanIndex) {
+            advancedPhaseCount = 1;
+          }
+          if (breakFact) breakFacts.push(breakFact);
           break;
         }
         case 'end':
@@ -170,18 +194,14 @@ export function createProtocolSessionRuntime(
       }
 
       const persistence = await options.store.save(session, before.version);
-      if (breakFact) options.protocolBreakCreditRuntime?.creditBreak(breakFact);
+      for (const fact of breakFacts) options.protocolBreakCreditRuntime?.creditBreak(fact);
       return receiptFor({
         action: input.action,
         status: 'applied',
         before,
         after: session,
         at,
-        advancedPhaseCount:
-          input.action === 'phase-complete' &&
-          before.currentPlanIndex !== session.snapshot().currentPlanIndex
-            ? 1
-            : 0,
+        advancedPhaseCount,
         persistence,
       });
     },

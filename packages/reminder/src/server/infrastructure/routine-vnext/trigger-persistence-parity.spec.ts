@@ -29,11 +29,27 @@ describe('Routine trigger persistence parity', () => {
     createActiveUsageTrigger({
       requiredActiveMs: 40 * 60_000,
       naturalBreakCredit: { idleDurationMs: 5 * 60_000 },
+      protocolBreakCredit: { kind: 'Movement', minimumBreakMs: 3 * 60_000 },
     }),
   ])('round-trips %s without losing timing ownership', (trigger) => {
     const restored = deserializeRoutineTrigger(serializeRoutineTrigger(trigger));
     expect(restored).toEqual(trigger);
     expect(restored?.timingOwner).toBe(trigger.timingOwner);
+  });
+
+  it('rejects an unknown persisted protocol-break capability instead of guessing from the routine name', () => {
+    expect(() =>
+      deserializeRoutineTrigger(
+        JSON.stringify({
+          type: 'ActiveUsage',
+          timingOwner: 'local-runtime',
+          requiredActiveMs: 1_000,
+          anchor: 'last-satisfied',
+          naturalBreakCredit: null,
+          protocolBreakCredit: { kind: 'Drink', minimumBreakMs: 1_000 },
+        }),
+      ),
+    ).toThrow('ActiveUsage.protocolBreakCredit.kind is invalid');
   });
 
   it('round-trips temporary snooze as runtime state without a trigger rewrite', () => {
@@ -44,25 +60,31 @@ describe('Routine trigger persistence parity', () => {
       reason: '20 more minutes',
     });
 
-    expect(deserializeRoutineTemporaryOverride(serializeRoutineTemporaryOverride(override)))
-      .toEqual(override);
+    expect(
+      deserializeRoutineTemporaryOverride(serializeRoutineTemporaryOverride(override)),
+    ).toEqual(override);
   });
 
   it('rejects invalid persisted trigger data instead of casting across the trust boundary', () => {
-    expect(() => deserializeRoutineTrigger(JSON.stringify({
-      type: 'WallClock',
-      localTime: '99:99',
-      timeZone: 'Asia/Tokyo',
-      recurrence: {
-        startDate: '2026-08-25',
-        frequency: 'daily',
-        interval: 1,
-        byWeekday: [],
-        count: null,
-        until: null,
-      },
-    }))).toThrow('Invalid local time');
-    expect(() => deserializeRoutineTrigger(JSON.stringify({ type: 'Protocol' })))
-      .toThrow('Unsupported persisted RoutineTrigger type');
+    expect(() =>
+      deserializeRoutineTrigger(
+        JSON.stringify({
+          type: 'WallClock',
+          localTime: '99:99',
+          timeZone: 'Asia/Tokyo',
+          recurrence: {
+            startDate: '2026-08-25',
+            frequency: 'daily',
+            interval: 1,
+            byWeekday: [],
+            count: null,
+            until: null,
+          },
+        }),
+      ),
+    ).toThrow('Invalid local time');
+    expect(() => deserializeRoutineTrigger(JSON.stringify({ type: 'Protocol' }))).toThrow(
+      'Unsupported persisted RoutineTrigger type',
+    );
   });
 });

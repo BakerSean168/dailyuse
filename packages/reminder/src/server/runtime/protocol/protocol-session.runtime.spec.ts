@@ -64,7 +64,10 @@ describe('ProtocolSession persistence/recovery runtime (ROUTINE-4201)', () => {
       phaseKind: 'ShortBreak',
       breakDurationMs: 10 * minute,
     });
-    expect((await store.findById({ identityId: 'identity-1', sessionId: 'session-1' }))?.currentPhase?.kind).toBe('Focus');
+    expect(
+      (await store.findById({ identityId: 'identity-1', sessionId: 'session-1' }))?.currentPhase
+        ?.kind,
+    ).toBe('Focus');
   });
 
   it('recovers crash-during-focus and crash-during-break from persisted deadlines', async () => {
@@ -139,6 +142,43 @@ describe('ProtocolSession persistence/recovery runtime (ROUTINE-4201)', () => {
       'ShortBreak',
       'ShortBreak',
     ]);
+  });
+
+  it('credits deadline-owned breaks crossed by a late pause after persistence', async () => {
+    const store = createInMemoryProtocolSessionStore();
+    const creditBreak = vi.fn();
+    const runtime = createProtocolSessionRuntime({
+      store,
+      protocolBreakCreditRuntime: { creditBreak, listHistory: () => [] },
+    });
+    await runtime.persistNewSession(createRunningSession());
+
+    const receipt = await runtime.transition({
+      identityId: 'identity-1',
+      sessionId: 'session-1',
+      action: 'pause',
+      at: asInstant(t0 + 65 * minute),
+    });
+
+    expect(receipt).toMatchObject({
+      action: 'pause',
+      state: 'Paused',
+      advancedPhaseCount: 2,
+    });
+    expect(creditBreak).toHaveBeenCalledTimes(1);
+    expect(creditBreak.mock.calls[0]?.[0]).toMatchObject({
+      factId: 'session-1:1:break:ShortBreak',
+      phaseKind: 'ShortBreak',
+      breakDurationMs: 10 * minute,
+      completedAt: t0 + 60 * minute,
+    });
+    expect(
+      (await store.findById({ identityId: 'identity-1', sessionId: 'session-1' }))?.snapshot(),
+    ).toMatchObject({
+      state: 'Paused',
+      currentPlanIndex: 2,
+      pausedRemainingMs: 45 * minute,
+    });
   });
 
   it('catches up multiple missed deadlines and persists completion once', async () => {

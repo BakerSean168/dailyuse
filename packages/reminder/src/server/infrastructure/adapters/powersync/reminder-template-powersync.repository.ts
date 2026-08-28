@@ -17,7 +17,6 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
   constructor(private readonly db: IElectronDatabase) {}
 
   async save(template: ReminderTemplate): Promise<void> {
-    const data = PowerSyncReminderTemplateMapper.toPersistence(template);
     const pendingDomainEvents = template.domainEvents.map((event) => event.eventType);
 
     logger.info('[Reminder][Repo] Saving template', {

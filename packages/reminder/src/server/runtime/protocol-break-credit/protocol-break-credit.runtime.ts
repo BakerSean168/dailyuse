@@ -3,10 +3,11 @@ import type {
   ProtocolPhaseKind,
   ProtocolPhasePlanEntry,
   ProtocolSessionSnapshot,
+  RoutineBreakCreditKind,
 } from '../../domain/routine';
 import type { ActiveUsageRuntime, ActiveUsageSatisfactionReceipt } from '../active-usage';
 
-export type AmbientBreakRoutineKind = 'Stand' | 'Eye' | 'Movement';
+export type AmbientBreakRoutineKind = RoutineBreakCreditKind;
 export type ProtocolBreakCapability = 'stand' | 'screen-rest' | 'movement';
 
 export const AMBIENT_BREAK_CAPABILITY: Readonly<
@@ -91,6 +92,8 @@ export interface CreateProtocolBreakCreditRuntimeOptions {
   readonly activeUsage: ActiveUsageRuntime;
   readonly registrations: readonly AmbientBreakCreditRegistration[];
   readonly restoredHistory?: readonly ProtocolAmbientSatisfactionHistory[];
+  /** Correlates a satisfied ActiveUsage occurrence with presentation/runtime cleanup. */
+  readonly onRoutineSatisfied?: (entry: ProtocolAmbientSatisfactionHistory) => void;
 }
 
 function assertPositiveFinite(value: number, field: string): void {
@@ -234,6 +237,7 @@ export function createProtocolBreakCreditRuntime(
         };
         history.push(entry);
         credited.push(entry);
+        options.onRoutineSatisfied?.(entry);
       }
       processedFacts.add(fact.factId);
       return { factId: fact.factId, duplicate: false, credited, skipped };

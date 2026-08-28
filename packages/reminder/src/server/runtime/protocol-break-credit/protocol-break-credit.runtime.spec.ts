@@ -221,6 +221,47 @@ describe('ProtocolBreakCreditRuntime (ROUTINE-4203)', () => {
     ambient.activeUsage.stop();
   });
 
+  it('publishes the exact satisfied ActiveUsage occurrence for presentation cleanup', () => {
+    const ambient = ambientHarness();
+    ambient.activeUsage.advance(asInstant(Number(t0) + 40 * minute));
+    const onRoutineSatisfied = vi.fn();
+    const runtime = createProtocolBreakCreditRuntime({
+      activeUsage: ambient.activeUsage,
+      registrations: [
+        { identityId: 'identity-1', routineId: 'stand', kind: 'Stand', minimumBreakMs: minute },
+      ],
+      onRoutineSatisfied,
+    });
+    const fact: ProtocolBreakCompletionFact = {
+      factId: 'session-callback:1:break:ShortBreak',
+      identityId: 'identity-1',
+      sessionId: 'session-callback',
+      protocolId: 'study-50-10',
+      phaseKey: '1:break:ShortBreak',
+      phaseId: 'break',
+      phaseKind: 'ShortBreak',
+      cycle: 1,
+      breakStartedAt: asInstant(Number(t0) + 40 * minute),
+      completedAt: asInstant(Number(t0) + 50 * minute),
+      breakDurationMs: 10 * minute,
+      capabilities: ['stand'],
+    };
+
+    runtime.creditBreak(fact);
+    expect(onRoutineSatisfied).toHaveBeenCalledOnce();
+    expect(onRoutineSatisfied).toHaveBeenCalledWith(
+      expect.objectContaining({
+        routineId: 'stand',
+        satisfiedAt: fact.completedAt,
+        activeUsage: expect.objectContaining({
+          occurrenceKey: 'routine:stand:active-usage:1',
+          nextGeneration: 2,
+        }),
+      }),
+    );
+    ambient.activeUsage.stop();
+  });
+
   it('records protocol-to-ambient correlation history and deduplicates replayed break facts', () => {
     const ambient = ambientHarness();
     ambient.activeUsage.advance(asInstant(Number(t0) + 40 * minute));
