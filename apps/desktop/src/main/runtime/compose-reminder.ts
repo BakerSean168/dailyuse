@@ -58,6 +58,7 @@ import {
 } from '@memoflow/reminder/electron';
 import {
   createInterventionRuntime,
+  type ProtocolBreakCreditRuntime,
   type InterventionRuntime,
 } from '@memoflow/reminder/routine-runtime';
 
@@ -70,6 +71,8 @@ export interface ComposeReminderDesktopDependencies {
   readonly db: IElectronDatabase;
   /** Reminder-owned durable NotificationRequested writer; Scheduler never receives it. */
   readonly notificationRequestedWriter: NotificationRequestedWriterPort;
+  /** Optional per-profile sink for protocol break completion credit. */
+  readonly protocolBreakCreditRuntime?: ProtocolBreakCreditRuntime;
 }
 
 /**
@@ -89,6 +92,7 @@ export interface ComposedReminderDesktop {
   readonly scheduleProjectionSource: ReminderScheduleProjectionSource;
   /** Per-profile local Routine intervention truth shared by occurrence coordinators and InterventionWindow. */
   readonly interventionRuntime: InterventionRuntime;
+  readonly protocolBreakCreditRuntime?: ProtocolBreakCreditRuntime;
 }
 
 /**
@@ -161,5 +165,6 @@ export function composeReminder(
     scheduleExecutionSource,
     scheduleProjectionSource,
     interventionRuntime: createInterventionRuntime(),
+    protocolBreakCreditRuntime: dependencies.protocolBreakCreditRuntime,
   };
 }

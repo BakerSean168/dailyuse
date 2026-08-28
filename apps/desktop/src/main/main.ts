@@ -178,7 +178,10 @@ async function registerBusinessModules(
   // Closing/hiding the window never owns session termination; all state commands go
   // through ProtocolSessionRuntime and its optimistic-versioned PowerSync store.
   const protocolSessionStore = new PowerSyncProtocolSessionStore(db);
-  const protocolSessionRuntime = createProtocolSessionRuntime({ store: protocolSessionStore });
+  const protocolSessionRuntime = createProtocolSessionRuntime({
+    store: protocolSessionStore,
+    protocolBreakCreditRuntime: reminderComposed.protocolBreakCreditRuntime,
+  });
   const focusWindowHost = new ElectronFocusWindowHost();
   const focusWindowController = createFocusWindowController({
     store: protocolSessionStore,
