@@ -24,6 +24,8 @@ export default {
   },
   "action": {
     "markAllRead": "全部标为已读",
+    "openRelated": "打开相关内容",
+    "retry": "重试",
     "enableNotification": "开启通知",
     "dismiss": "知道了"
   },

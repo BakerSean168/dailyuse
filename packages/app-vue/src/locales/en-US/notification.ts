@@ -24,6 +24,8 @@ export default {
   },
   "action": {
     "markAllRead": "Mark all as read",
+    "openRelated": "Open related item",
+    "retry": "Try again",
     "enableNotification": "Enable notifications",
     "dismiss": "Got it"
   },

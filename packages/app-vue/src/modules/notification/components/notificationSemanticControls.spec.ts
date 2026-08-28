@@ -27,6 +27,7 @@ const i18n = createI18n({
       common: { close: 'Close' },
       notification: {
         item: { priorityVital: 'Vital', priorityImportant: 'Important' },
+        action: { openRelated: 'Open related item' },
       },
     },
   },
@@ -63,6 +64,28 @@ describe('notification semantic controls', () => {
     expect(action.element.tagName).toBe('BUTTON');
     expect(action.attributes('type')).toBe('button');
     expect(action.attributes('aria-label')).toBe('Build finished');
+  });
+
+  it('renders Fact context without exposing delivery internals', () => {
+    const wrapper = mount(NotificationItem, {
+      props: {
+        notification: {
+          ...notification,
+          topic: 'Task completed',
+          category: 'Task',
+          relatedEntityType: 'Task',
+          relatedEntityId: 'task-42',
+          navigationIntent: { route: '/tasks/task-42' },
+        },
+      },
+      global: { plugins: [i18n] },
+    });
+
+    expect(wrapper.text()).toContain('Task completed');
+    expect(wrapper.text()).toContain('task-42');
+    expect(wrapper.text()).toContain('Open related item');
+    expect(wrapper.text()).not.toContain('Delivered');
+    expect(wrapper.find('[data-testid="notification-item"]').element.tagName).toBe('BUTTON');
   });
 
   it('keeps toast content and close as separate named buttons', () => {
