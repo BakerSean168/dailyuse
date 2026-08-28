@@ -17,6 +17,7 @@ export {
 } from './composables';
 export {
   useNotificationPreferences,
+  NOTIFICATION_PREFERENCE_GROUPS,
   NOTIFICATION_PREFERENCE_MODULES,
 } from './composables/useNotificationPreferences';
 

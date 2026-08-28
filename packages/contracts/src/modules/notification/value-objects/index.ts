@@ -52,10 +52,12 @@ export { NotificationType } from './notification-type';
 export { NotificationCategory } from './notification-category';
 
 export {
+  NotificationWorkflowKey,
   NotificationPreferenceControl,
   NotificationDndBehavior,
 } from './notification-workflow';
 export type {
+  NotificationWorkflowKey as NotificationWorkflowKeyValue,
   NotificationWorkflowChannelCapabilityDTO,
   NotificationWorkflowDefinitionDTO,
   NotificationGlobalChannelPreferencesDTO,

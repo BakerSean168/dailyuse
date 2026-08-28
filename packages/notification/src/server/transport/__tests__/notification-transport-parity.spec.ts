@@ -155,7 +155,7 @@ const malformedCleanup = { beforeDays: 0, category: 'Task' };
 
 const validPreferences = {
   globalChannels: { InApp: true },
-  workflowOverrides: { 'task.deadline': { Desktop: true } },
+  workflowOverrides: { 'task.deadline': { Desktop: true, InApp: null } },
 };
 const malformedPreferences = {
   doNotDisturb: { enabled: true, startTime: '', endTime: '', daysOfWeek: [9] },

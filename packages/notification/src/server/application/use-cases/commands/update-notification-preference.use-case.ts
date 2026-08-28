@@ -21,13 +21,20 @@ export class UpdateNotificationPreferenceUseCase {
     const preference = await this.preferenceRepository.getOrCreate(identityId);
 
     for (const [channel, enabled] of Object.entries(input.globalChannels ?? {})) {
-      if (enabled !== undefined) {
+      if (enabled === null) {
+        preference.clearGlobalChannel(channel as NotificationChannelType);
+      } else if (enabled !== undefined) {
         preference.setGlobalChannel(channel as NotificationChannelType, enabled);
       }
     }
     for (const [workflowKey, channels] of Object.entries(input.workflowOverrides ?? {})) {
       for (const [channel, enabled] of Object.entries(channels)) {
-        if (enabled !== undefined) {
+        if (enabled === null) {
+          preference.clearWorkflowChannelOverride(
+            workflowKey,
+            channel as NotificationChannelType,
+          );
+        } else if (enabled !== undefined) {
           preference.setWorkflowChannelOverride(
             workflowKey,
             channel as NotificationChannelType,

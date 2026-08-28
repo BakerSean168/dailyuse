@@ -2,6 +2,7 @@ import {
   NotificationChannelType,
   NotificationDndBehavior,
   NotificationPreferenceControl,
+  NotificationWorkflowKey,
   type NotificationWorkflowChannelCapabilityDTO,
   type NotificationWorkflowDefinitionDTO,
 } from '@memoflow/contracts/notification';
@@ -23,8 +24,8 @@ const USER_CONFIGURABLE_SUPPRESS: NotificationWorkflowChannelCapabilityDTO = {
  * bypass: each protected workflow + channel is named here and declares its DND behavior.
  */
 const READ_ONLY_WORKFLOWS: Readonly<Record<string, NotificationWorkflowDefinitionDTO>> = {
-  'system.account-security': {
-    workflowKey: 'system.account-security',
+  [NotificationWorkflowKey.SystemAccountSecurity]: {
+    workflowKey: NotificationWorkflowKey.SystemAccountSecurity,
     topic: 'account.security',
     channels: {
       [NotificationChannelType.InApp]: {

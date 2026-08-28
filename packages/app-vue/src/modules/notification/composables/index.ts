@@ -6,7 +6,10 @@ export { useNotificationUnreadQuery } from './useNotificationUnreadQuery';
 export { useNotificationMutations } from './useNotificationMutations';
 export {
   useNotificationPreferences,
+  NOTIFICATION_PREFERENCE_GROUPS,
   NOTIFICATION_PREFERENCE_MODULES,
+  type NotificationPreferenceGroupDescriptor,
+  type NotificationPreferenceMode,
   type NotificationPreferenceModule,
-  type PreferenceChannelFlag,
+  type NotificationPreferenceWorkflowDescriptor,
 } from './useNotificationPreferences';

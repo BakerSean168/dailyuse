@@ -9,12 +9,13 @@ import type { NotificationServerDTO } from '../aggregates/notification-server';
 import { NotificationChannelType } from '../value-objects/notification-channel-type';
 
 const ChannelPreferenceFlagsSchema = z.object({
-  InApp: z.boolean().optional(),
-  Email: z.boolean().optional(),
-  Push: z.boolean().optional(),
-  Desktop: z.boolean().optional(),
-  Sms: z.boolean().optional(),
-  Webhook: z.boolean().optional(),
+  // null clears the explicit preference and inherits from the preceding layer.
+  InApp: z.boolean().nullable().optional(),
+  Email: z.boolean().nullable().optional(),
+  Push: z.boolean().nullable().optional(),
+  Desktop: z.boolean().nullable().optional(),
+  Sms: z.boolean().nullable().optional(),
+  Webhook: z.boolean().nullable().optional(),
 });
 
 /** User-owned layers only: global channel choice and workflow-specific overrides. */

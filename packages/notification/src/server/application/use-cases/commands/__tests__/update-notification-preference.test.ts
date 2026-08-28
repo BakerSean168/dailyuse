@@ -48,6 +48,39 @@ describe('UpdateNotificationPreferenceUseCase', () => {
     expect(preference.getWorkflowChannelOverride('goal.progress', NotificationChannelType.Email)).toBe(true);
   });
 
+  it('clears explicit channel preferences with null while preserving unrelated values', async () => {
+    const identityId = anIdentityId();
+    const preference = NotificationPreference.create({ identityId });
+    preference.setGlobalChannel(NotificationChannelType.InApp, false);
+    preference.setGlobalChannel(NotificationChannelType.Email, true);
+    preference.setWorkflowChannelOverride(
+      'task.general',
+      NotificationChannelType.InApp,
+      true,
+    );
+    preference.setWorkflowChannelOverride(
+      'goal.general',
+      NotificationChannelType.InApp,
+      false,
+    );
+    vi.mocked(preferenceRepo.getOrCreate).mockResolvedValue(preference);
+
+    const result = await useCase.execute(identityId, {
+      globalChannels: { InApp: null },
+      workflowOverrides: { 'task.general': { InApp: null } },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(preference.getGlobalChannel(NotificationChannelType.InApp)).toBeUndefined();
+    expect(preference.getGlobalChannel(NotificationChannelType.Email)).toBe(true);
+    expect(
+      preference.getWorkflowChannelOverride('task.general', NotificationChannelType.InApp),
+    ).toBeUndefined();
+    expect(
+      preference.getWorkflowChannelOverride('goal.general', NotificationChannelType.InApp),
+    ).toBe(false);
+  });
+
   it('persists DND and rate-limit policy configuration', async () => {
     const identityId = anIdentityId();
     const preference = NotificationPreference.create({ identityId });

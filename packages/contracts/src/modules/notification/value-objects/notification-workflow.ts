@@ -1,5 +1,23 @@
 import type { NotificationChannelType } from './notification-channel-type';
 
+/**
+ * Stable built-in workflow identities shared by policy and presentation.
+ *
+ * Labels remain presentation-owned; this contract only prevents server/client
+ * drift around the durable workflow keys that carry product semantics.
+ */
+export const NotificationWorkflowKey = {
+  TaskGeneral: 'task.general',
+  GoalGeneral: 'goal.general',
+  ScheduleGeneral: 'schedule.general',
+  ReminderGeneral: 'reminder.general',
+  AccountGeneral: 'account.general',
+  SystemGeneral: 'system.general',
+  SystemAccountSecurity: 'system.account-security',
+} as const;
+export type NotificationWorkflowKey =
+  (typeof NotificationWorkflowKey)[keyof typeof NotificationWorkflowKey];
+
 export const NotificationPreferenceControl = {
   UserConfigurable: 'user_configurable',
   ReadOnly: 'read_only',
