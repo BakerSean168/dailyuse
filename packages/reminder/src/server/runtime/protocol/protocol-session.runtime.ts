@@ -205,7 +205,26 @@ export function createProtocolSessionRuntime(
           });
         }
 
-        const advancedPhaseCount = session.advanceDuePhases(at);
+        // Capture every deadline-owned break before advancing it. A single
+        // recovery can cross several phases, so credit each intermediate
+        // break from its pre-transition snapshot rather than only the final
+        // phase (or bypassing credit altogether).
+        const breakFacts: NonNullable<ReturnType<typeof buildProtocolBreakCompletionFact>>[] = [];
+        let advancedPhaseCount = 0;
+        while (
+          session.status === 'Running' &&
+          session.snapshot().phaseDeadline != null &&
+          Number(at) >= Number(session.snapshot().phaseDeadline)
+        ) {
+          const beforePhase = session.snapshot();
+          const deadline = beforePhase.phaseDeadline!;
+          const fact = options.protocolBreakCreditRuntime
+            ? buildProtocolBreakCompletionFact({ session: beforePhase, completedAt: deadline })
+            : null;
+          session.completeCurrentPhase(deadline);
+          advancedPhaseCount += 1;
+          if (fact) breakFacts.push(fact);
+        }
         if (advancedPhaseCount === 0) {
           return receiptFor({
             action: 'recover',
@@ -220,6 +239,7 @@ export function createProtocolSessionRuntime(
 
         try {
           const persistence = await options.store.save(session, before.version);
+          for (const fact of breakFacts) options.protocolBreakCreditRuntime?.creditBreak(fact);
           return receiptFor({
             action: 'recover',
             status: 'applied',

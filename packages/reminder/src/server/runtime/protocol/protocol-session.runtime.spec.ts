@@ -118,6 +118,29 @@ describe('ProtocolSession persistence/recovery runtime (ROUTINE-4201)', () => {
     });
   });
 
+  it('credits every break crossed by deadline catch-up', async () => {
+    const store = createInMemoryProtocolSessionStore();
+    const creditBreak = vi.fn();
+    const runtime = createProtocolSessionRuntime({
+      store,
+      protocolBreakCreditRuntime: { creditBreak, listHistory: () => [] },
+    });
+    await runtime.persistNewSession(createRunningSession());
+
+    const receipt = await runtime.recoverSession({
+      identityId: 'identity-1',
+      sessionId: 'session-1',
+      at: asInstant(t0 + 120 * minute),
+    });
+
+    expect(receipt.advancedPhaseCount).toBe(4);
+    expect(creditBreak).toHaveBeenCalledTimes(2);
+    expect(creditBreak.mock.calls.map(([fact]) => fact.phaseKind)).toEqual([
+      'ShortBreak',
+      'ShortBreak',
+    ]);
+  });
+
   it('catches up multiple missed deadlines and persists completion once', async () => {
     const store = createInMemoryProtocolSessionStore();
     const runtime = createProtocolSessionRuntime({ store });
