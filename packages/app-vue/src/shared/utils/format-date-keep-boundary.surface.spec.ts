@@ -51,12 +51,13 @@ describe('Product date presentation boundary', () => {
     expect(goalDetail).toContain('emptyNotSet');
   });
 
-  it('keeps Task date formatting in the presentation mapper rather than the detail view', () => {
+  it('keeps Task date formatting behind the canonical presentation and Product Time helpers', () => {
     expect(taskPresentation).toContain('formatProductDate');
     expect(taskPresentation).toContain('formattedCreatedAt');
-    expect(taskDetail).toContain('formattedCreatedAt');
+    expect(taskDetail).toContain('formatProductDate');
     expect(taskDetail).not.toMatch(/function formatDate\b/);
     expect(taskDetail).not.toContain('new Date(');
+    expect(taskDetail).not.toContain('toLocaleDateString');
   });
 
   it('keeps other date surfaces on Product Time helpers', () => {

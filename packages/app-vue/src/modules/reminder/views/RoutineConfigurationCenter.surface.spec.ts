@@ -2,8 +2,10 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
+const packageRoot = resolve(__dirname, '../../../..');
+
 function read(relativePath: string): string {
-  return readFileSync(resolve(process.cwd(), 'packages/app-vue', relativePath), 'utf8');
+  return readFileSync(resolve(packageRoot, relativePath), 'utf8');
 }
 
 describe('ROUTINE-5301 configuration-center surface', () => {
