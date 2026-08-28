@@ -64,6 +64,9 @@ import {
   type ProtocolBreakCreditRuntime,
   type InterventionRuntime,
   type AmbientBreakCreditRegistration,
+  type ActiveUsageRuntime,
+  type ActiveUsageRoutineRegistration,
+  type RoutineActivitySensorRuntime,
 } from '@memoflow/reminder/routine-runtime';
 import type { IdleSensorPort } from '@memoflow/reminder/routine-runtime';
 import { WindowsIdleSensorAdapter } from '../modules/routine/windows-idle-sensor.adapter';
@@ -101,6 +104,14 @@ export interface ComposedReminderDesktop {
   /** Per-profile local Routine intervention truth shared by occurrence coordinators and InterventionWindow. */
   readonly interventionRuntime: InterventionRuntime;
   readonly protocolBreakCreditRuntime: ProtocolBreakCreditRuntime;
+  /** Per-profile activity sensor runtime and active-usage truth. */
+  readonly activityRuntime: RoutineActivitySensorRuntime;
+  readonly activeUsageRuntime: ActiveUsageRuntime;
+  /** Register one ambient routine in both correlated runtimes. */
+  readonly registerProtocolBreakRoutine: (input: {
+    readonly credit: AmbientBreakCreditRegistration;
+    readonly activeUsage: ActiveUsageRoutineRegistration;
+  }) => void;
 }
 
 /**
@@ -168,16 +179,32 @@ export function composeReminder(
 
   const interventionRuntime = createInterventionRuntime();
   const idleSensor = dependencies.idleSensor ?? new WindowsIdleSensorAdapter({ idleThresholdMs: 5 * 60_000 });
-  const activityRuntime = createActiveUsageRuntime({
-    activitySensor: createRoutineActivitySensorRuntime({ idleSensor, idleThresholdMs: 5 * 60_000 }),
+  const activityRuntime = createRoutineActivitySensorRuntime({ idleSensor, idleThresholdMs: 5 * 60_000 });
+  const activeUsageRuntime = createActiveUsageRuntime({
+    activitySensor: activityRuntime,
     onOccurrenceDue: () => {},
   });
   const protocolBreakCreditRuntime =
     dependencies.protocolBreakCreditRuntime ??
     createProtocolBreakCreditRuntime({
-      activeUsage: activityRuntime,
+      activeUsage: activeUsageRuntime,
       registrations: dependencies.protocolBreakRegistrations ?? [],
     });
+  const registerProtocolBreakRoutine = (input: {
+    readonly credit: AmbientBreakCreditRegistration;
+    readonly activeUsage: ActiveUsageRoutineRegistration;
+  }): void => {
+    if (!protocolBreakCreditRuntime.register) {
+      throw new TypeError('Protocol break credit runtime does not support registration');
+    }
+    protocolBreakCreditRuntime.register(input.credit);
+    try {
+      activeUsageRuntime.registerRoutine(input.activeUsage);
+    } catch (error) {
+      protocolBreakCreditRuntime.unregister?.(input.credit.identityId, input.credit.routineId);
+      throw error;
+    }
+  };
 
   return {
     module: createReminderElectronModule({ instance }),
@@ -187,5 +214,8 @@ export function composeReminder(
     scheduleProjectionSource,
     interventionRuntime,
     protocolBreakCreditRuntime,
+    activityRuntime,
+    activeUsageRuntime,
+    registerProtocolBreakRoutine,
   };
 }
