@@ -8,6 +8,17 @@ export default {
     "priorityVital": "Urgent",
     "priorityImportant": "Important"
   },
+  "category": {
+    "task": "Tasks", "goal": "Goals", "schedule": "Schedule", "reminder": "Reminders",
+    "account": "Account", "system": "System", "other": "Notifications", "general": "Notifications"
+  },
+  "workflow": {
+    "system.account-security": "Account security",
+    "task.reminder": "Task reminder", "task.goal": "Task and goal update",
+    "goal.reminder": "Goal reminder", "routine.reminder": "Routine reminder",
+    "reminder.general": "Reminder", "category.general": "Notification"
+  },
+  "entity": { "task": "Task", "goal": "Goal", "schedule": "Schedule", "reminder": "Reminder", "routine": "Routine" },
   "bell": {
     "title": "Notifications",
     "unreadCount": "{count} unread notifications"

@@ -8,6 +8,17 @@ export default {
     "priorityVital": "紧急",
     "priorityImportant": "重要"
   },
+  "category": {
+    "task": "任务", "goal": "目标", "schedule": "日程", "reminder": "提醒",
+    "account": "账户", "system": "系统", "other": "通知", "general": "通知"
+  },
+  "workflow": {
+    "system.account-security": "账户安全",
+    "task.reminder": "任务提醒", "task.goal": "任务与目标更新",
+    "goal.reminder": "目标提醒", "routine.reminder": "例行提醒",
+    "reminder.general": "提醒", "category.general": "通知"
+  },
+  "entity": { "task": "任务", "goal": "目标", "schedule": "日程", "reminder": "提醒", "routine": "例行事项" },
   "bell": {
     "title": "通知",
     "unreadCount": "{count} 条未读通知"
