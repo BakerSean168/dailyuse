@@ -368,6 +368,12 @@ export type RepositoryExplorer = $Result.DefaultSelection<Prisma.$RepositoryExpl
  */
 export type RepositoryStatistic = $Result.DefaultSelection<Prisma.$RepositoryStatisticPayload>
 /**
+ * Model KnowledgeRepositoryInstallationIntent
+ * Short-lived, identity-bound GitHub App installation orchestration intent.
+ * Only a SHA-256 hash of the provider state is persisted; no raw state or token is stored.
+ */
+export type KnowledgeRepositoryInstallationIntent = $Result.DefaultSelection<Prisma.$KnowledgeRepositoryInstallationIntentPayload>
+/**
  * Model KnowledgeRepositoryConnection
  * GitHub App installation bound to one explicitly selected knowledge repository.
  * This authorization is independent from AuthOAuthBinding login credentials.
@@ -1323,6 +1329,16 @@ export class PrismaClient<
   get repositoryStatistic(): Prisma.RepositoryStatisticDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.knowledgeRepositoryInstallationIntent`: Exposes CRUD operations for the **KnowledgeRepositoryInstallationIntent** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more KnowledgeRepositoryInstallationIntents
+    * const knowledgeRepositoryInstallationIntents = await prisma.knowledgeRepositoryInstallationIntent.findMany()
+    * ```
+    */
+  get knowledgeRepositoryInstallationIntent(): Prisma.KnowledgeRepositoryInstallationIntentDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.knowledgeRepositoryConnection`: Exposes CRUD operations for the **KnowledgeRepositoryConnection** model.
     * Example usage:
     * ```ts
@@ -2074,6 +2090,7 @@ export namespace Prisma {
     ResourceReference: 'ResourceReference',
     RepositoryExplorer: 'RepositoryExplorer',
     RepositoryStatistic: 'RepositoryStatistic',
+    KnowledgeRepositoryInstallationIntent: 'KnowledgeRepositoryInstallationIntent',
     KnowledgeRepositoryConnection: 'KnowledgeRepositoryConnection',
     GithubWebhookDelivery: 'GithubWebhookDelivery',
     KnowledgeNoteProjection: 'KnowledgeNoteProjection',
@@ -2114,7 +2131,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "activityLedger" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "cloudAuthUser" | "cloudAuthSession" | "cloudAuthProviderAccount" | "cloudAuthVerification" | "cloudAuthDeviceCode" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "rule" | "ruleRevision" | "habit" | "habitOccurrence" | "habitCheckIn" | "habitStreakProjection" | "label" | "goalLabel" | "taskLabel" | "notification" | "notificationChannel" | "notificationHistory" | "notificationDeliveryDecisionRecord" | "notificationPreference" | "notificationTemplate" | "notificationDispatchOutbox" | "relation" | "outboxMessage" | "inboxReceipt" | "projectionCursor" | "accountClosureOperation" | "operationAuditLog" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "reminderOccurrence" | "routineDefinition" | "routineProfile" | "routineProfileMembership" | "routineProtocolDefinition" | "routineProtocolSession" | "routineOccurrence" | "routineTemporaryOverride" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "knowledgeRepositoryConnection" | "githubWebhookDelivery" | "knowledgeNoteProjection" | "knowledgeAttachmentProjection" | "knowledgeAttachmentContentCache" | "knowledgeWriteRequest" | "knowledgeRepositoryLease" | "schedule" | "scheduleTask" | "schedulingReconcileOperation" | "scheduleExecution" | "scheduleStatistic" | "scheduleLease" | "scheduleRebuildOutbox" | "scheduleDomainEventOutbox" | "scheduleEventConsumerReceipt" | "scheduleEventDeliveryLog" | "userSetting" | "taskTemplate" | "taskInstance" | "taskGoalOutbox" | "taskTemplateHistory" | "taskStatistic" | "walletAccount" | "walletTransaction"
+      modelProps: "account" | "activityLedger" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "cloudAuthUser" | "cloudAuthSession" | "cloudAuthProviderAccount" | "cloudAuthVerification" | "cloudAuthDeviceCode" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "rule" | "ruleRevision" | "habit" | "habitOccurrence" | "habitCheckIn" | "habitStreakProjection" | "label" | "goalLabel" | "taskLabel" | "notification" | "notificationChannel" | "notificationHistory" | "notificationDeliveryDecisionRecord" | "notificationPreference" | "notificationTemplate" | "notificationDispatchOutbox" | "relation" | "outboxMessage" | "inboxReceipt" | "projectionCursor" | "accountClosureOperation" | "operationAuditLog" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "reminderOccurrence" | "routineDefinition" | "routineProfile" | "routineProfileMembership" | "routineProtocolDefinition" | "routineProtocolSession" | "routineOccurrence" | "routineTemporaryOverride" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "knowledgeRepositoryInstallationIntent" | "knowledgeRepositoryConnection" | "githubWebhookDelivery" | "knowledgeNoteProjection" | "knowledgeAttachmentProjection" | "knowledgeAttachmentContentCache" | "knowledgeWriteRequest" | "knowledgeRepositoryLease" | "schedule" | "scheduleTask" | "schedulingReconcileOperation" | "scheduleExecution" | "scheduleStatistic" | "scheduleLease" | "scheduleRebuildOutbox" | "scheduleDomainEventOutbox" | "scheduleEventConsumerReceipt" | "scheduleEventDeliveryLog" | "userSetting" | "taskTemplate" | "taskInstance" | "taskGoalOutbox" | "taskTemplateHistory" | "taskStatistic" | "walletAccount" | "walletTransaction"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -7224,6 +7241,80 @@ export namespace Prisma {
           }
         }
       }
+      KnowledgeRepositoryInstallationIntent: {
+        payload: Prisma.$KnowledgeRepositoryInstallationIntentPayload<ExtArgs>
+        fields: Prisma.KnowledgeRepositoryInstallationIntentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload>
+          }
+          findFirst: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload>
+          }
+          findMany: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload>[]
+          }
+          create: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload>
+          }
+          createMany: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload>[]
+          }
+          delete: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload>
+          }
+          update: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload>
+          }
+          deleteMany: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload>[]
+          }
+          upsert: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload>
+          }
+          aggregate: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateKnowledgeRepositoryInstallationIntent>
+          }
+          groupBy: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<KnowledgeRepositoryInstallationIntentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.KnowledgeRepositoryInstallationIntentCountArgs<ExtArgs>
+            result: $Utils.Optional<KnowledgeRepositoryInstallationIntentCountAggregateOutputType> | number
+          }
+        }
+      }
       KnowledgeRepositoryConnection: {
         payload: Prisma.$KnowledgeRepositoryConnectionPayload<ExtArgs>
         fields: Prisma.KnowledgeRepositoryConnectionFieldRefs
@@ -9251,6 +9342,7 @@ export namespace Prisma {
     resourceReference?: ResourceReferenceOmit
     repositoryExplorer?: RepositoryExplorerOmit
     repositoryStatistic?: RepositoryStatisticOmit
+    knowledgeRepositoryInstallationIntent?: KnowledgeRepositoryInstallationIntentOmit
     knowledgeRepositoryConnection?: KnowledgeRepositoryConnectionOmit
     githubWebhookDelivery?: GithubWebhookDeliveryOmit
     knowledgeNoteProjection?: KnowledgeNoteProjectionOmit
@@ -9404,6 +9496,7 @@ export namespace Prisma {
     resources: number
     repositoryResources: number
     knowledgeRepositoryConnections: number
+    knowledgeRepositoryInstallationIntents: number
     knowledgeWriteRequests: number
   }
 
@@ -9456,6 +9549,7 @@ export namespace Prisma {
     resources?: boolean | AccountCountOutputTypeCountResourcesArgs
     repositoryResources?: boolean | AccountCountOutputTypeCountRepositoryResourcesArgs
     knowledgeRepositoryConnections?: boolean | AccountCountOutputTypeCountKnowledgeRepositoryConnectionsArgs
+    knowledgeRepositoryInstallationIntents?: boolean | AccountCountOutputTypeCountKnowledgeRepositoryInstallationIntentsArgs
     knowledgeWriteRequests?: boolean | AccountCountOutputTypeCountKnowledgeWriteRequestsArgs
   }
 
@@ -9804,6 +9898,13 @@ export namespace Prisma {
    */
   export type AccountCountOutputTypeCountKnowledgeRepositoryConnectionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: KnowledgeRepositoryConnectionWhereInput
+  }
+
+  /**
+   * AccountCountOutputType without action
+   */
+  export type AccountCountOutputTypeCountKnowledgeRepositoryInstallationIntentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KnowledgeRepositoryInstallationIntentWhereInput
   }
 
   /**
@@ -11139,6 +11240,7 @@ export namespace Prisma {
     resources?: boolean | Account$resourcesArgs<ExtArgs>
     repositoryResources?: boolean | Account$repositoryResourcesArgs<ExtArgs>
     knowledgeRepositoryConnections?: boolean | Account$knowledgeRepositoryConnectionsArgs<ExtArgs>
+    knowledgeRepositoryInstallationIntents?: boolean | Account$knowledgeRepositoryInstallationIntentsArgs<ExtArgs>
     knowledgeWriteRequests?: boolean | Account$knowledgeWriteRequestsArgs<ExtArgs>
     _count?: boolean | AccountCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["account"]>
@@ -11264,6 +11366,7 @@ export namespace Prisma {
     resources?: boolean | Account$resourcesArgs<ExtArgs>
     repositoryResources?: boolean | Account$repositoryResourcesArgs<ExtArgs>
     knowledgeRepositoryConnections?: boolean | Account$knowledgeRepositoryConnectionsArgs<ExtArgs>
+    knowledgeRepositoryInstallationIntents?: boolean | Account$knowledgeRepositoryInstallationIntentsArgs<ExtArgs>
     knowledgeWriteRequests?: boolean | Account$knowledgeWriteRequestsArgs<ExtArgs>
     _count?: boolean | AccountCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -11334,6 +11437,7 @@ export namespace Prisma {
       resources: Prisma.$ResourcePayload<ExtArgs>[]
       repositoryResources: Prisma.$RepositoryResourcePayload<ExtArgs>[]
       knowledgeRepositoryConnections: Prisma.$KnowledgeRepositoryConnectionPayload<ExtArgs>[]
+      knowledgeRepositoryInstallationIntents: Prisma.$KnowledgeRepositoryInstallationIntentPayload<ExtArgs>[]
       knowledgeWriteRequests: Prisma.$KnowledgeWriteRequestPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -11805,6 +11909,7 @@ export namespace Prisma {
     resources<T extends Account$resourcesArgs<ExtArgs> = {}>(args?: Subset<T, Account$resourcesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     repositoryResources<T extends Account$repositoryResourcesArgs<ExtArgs> = {}>(args?: Subset<T, Account$repositoryResourcesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RepositoryResourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     knowledgeRepositoryConnections<T extends Account$knowledgeRepositoryConnectionsArgs<ExtArgs> = {}>(args?: Subset<T, Account$knowledgeRepositoryConnectionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KnowledgeRepositoryConnectionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    knowledgeRepositoryInstallationIntents<T extends Account$knowledgeRepositoryInstallationIntentsArgs<ExtArgs> = {}>(args?: Subset<T, Account$knowledgeRepositoryInstallationIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     knowledgeWriteRequests<T extends Account$knowledgeWriteRequestsArgs<ExtArgs> = {}>(args?: Subset<T, Account$knowledgeWriteRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KnowledgeWriteRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -13554,6 +13659,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: KnowledgeRepositoryConnectionScalarFieldEnum | KnowledgeRepositoryConnectionScalarFieldEnum[]
+  }
+
+  /**
+   * Account.knowledgeRepositoryInstallationIntents
+   */
+  export type Account$knowledgeRepositoryInstallationIntentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KnowledgeRepositoryInstallationIntent
+     */
+    select?: KnowledgeRepositoryInstallationIntentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KnowledgeRepositoryInstallationIntent
+     */
+    omit?: KnowledgeRepositoryInstallationIntentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeRepositoryInstallationIntentInclude<ExtArgs> | null
+    where?: KnowledgeRepositoryInstallationIntentWhereInput
+    orderBy?: KnowledgeRepositoryInstallationIntentOrderByWithRelationInput | KnowledgeRepositoryInstallationIntentOrderByWithRelationInput[]
+    cursor?: KnowledgeRepositoryInstallationIntentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: KnowledgeRepositoryInstallationIntentScalarFieldEnum | KnowledgeRepositoryInstallationIntentScalarFieldEnum[]
   }
 
   /**
@@ -94498,6 +94627,1212 @@ export namespace Prisma {
 
 
   /**
+   * Model KnowledgeRepositoryInstallationIntent
+   */
+
+  export type AggregateKnowledgeRepositoryInstallationIntent = {
+    _count: KnowledgeRepositoryInstallationIntentCountAggregateOutputType | null
+    _min: KnowledgeRepositoryInstallationIntentMinAggregateOutputType | null
+    _max: KnowledgeRepositoryInstallationIntentMaxAggregateOutputType | null
+  }
+
+  export type KnowledgeRepositoryInstallationIntentMinAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    stateHash: string | null
+    routeKey: string | null
+    clientKind: string | null
+    returnPath: string | null
+    status: string | null
+    installationId: string | null
+    providerAccountId: string | null
+    setupAction: string | null
+    expiresAt: Date | null
+    callbackReceivedAt: Date | null
+    finalizedAt: Date | null
+    consumedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type KnowledgeRepositoryInstallationIntentMaxAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    stateHash: string | null
+    routeKey: string | null
+    clientKind: string | null
+    returnPath: string | null
+    status: string | null
+    installationId: string | null
+    providerAccountId: string | null
+    setupAction: string | null
+    expiresAt: Date | null
+    callbackReceivedAt: Date | null
+    finalizedAt: Date | null
+    consumedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type KnowledgeRepositoryInstallationIntentCountAggregateOutputType = {
+    id: number
+    identityId: number
+    stateHash: number
+    routeKey: number
+    clientKind: number
+    returnPath: number
+    status: number
+    installationId: number
+    providerAccountId: number
+    setupAction: number
+    expiresAt: number
+    callbackReceivedAt: number
+    finalizedAt: number
+    consumedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type KnowledgeRepositoryInstallationIntentMinAggregateInputType = {
+    id?: true
+    identityId?: true
+    stateHash?: true
+    routeKey?: true
+    clientKind?: true
+    returnPath?: true
+    status?: true
+    installationId?: true
+    providerAccountId?: true
+    setupAction?: true
+    expiresAt?: true
+    callbackReceivedAt?: true
+    finalizedAt?: true
+    consumedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type KnowledgeRepositoryInstallationIntentMaxAggregateInputType = {
+    id?: true
+    identityId?: true
+    stateHash?: true
+    routeKey?: true
+    clientKind?: true
+    returnPath?: true
+    status?: true
+    installationId?: true
+    providerAccountId?: true
+    setupAction?: true
+    expiresAt?: true
+    callbackReceivedAt?: true
+    finalizedAt?: true
+    consumedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type KnowledgeRepositoryInstallationIntentCountAggregateInputType = {
+    id?: true
+    identityId?: true
+    stateHash?: true
+    routeKey?: true
+    clientKind?: true
+    returnPath?: true
+    status?: true
+    installationId?: true
+    providerAccountId?: true
+    setupAction?: true
+    expiresAt?: true
+    callbackReceivedAt?: true
+    finalizedAt?: true
+    consumedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type KnowledgeRepositoryInstallationIntentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which KnowledgeRepositoryInstallationIntent to aggregate.
+     */
+    where?: KnowledgeRepositoryInstallationIntentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of KnowledgeRepositoryInstallationIntents to fetch.
+     */
+    orderBy?: KnowledgeRepositoryInstallationIntentOrderByWithRelationInput | KnowledgeRepositoryInstallationIntentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: KnowledgeRepositoryInstallationIntentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` KnowledgeRepositoryInstallationIntents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` KnowledgeRepositoryInstallationIntents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned KnowledgeRepositoryInstallationIntents
+    **/
+    _count?: true | KnowledgeRepositoryInstallationIntentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+    **/
+    _min?: KnowledgeRepositoryInstallationIntentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+    **/
+    _max?: KnowledgeRepositoryInstallationIntentMaxAggregateInputType
+  }
+
+  export type GetKnowledgeRepositoryInstallationIntentAggregateType<T extends KnowledgeRepositoryInstallationIntentAggregateArgs> = {
+        [P in keyof T & keyof AggregateKnowledgeRepositoryInstallationIntent]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateKnowledgeRepositoryInstallationIntent[P]>
+      : GetScalarType<T[P], AggregateKnowledgeRepositoryInstallationIntent[P]>
+  }
+
+
+
+
+  export type KnowledgeRepositoryInstallationIntentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KnowledgeRepositoryInstallationIntentWhereInput
+    orderBy?: KnowledgeRepositoryInstallationIntentOrderByWithAggregationInput | KnowledgeRepositoryInstallationIntentOrderByWithAggregationInput[]
+    by: KnowledgeRepositoryInstallationIntentScalarFieldEnum[] | KnowledgeRepositoryInstallationIntentScalarFieldEnum
+    having?: KnowledgeRepositoryInstallationIntentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: KnowledgeRepositoryInstallationIntentCountAggregateInputType | true
+    _min?: KnowledgeRepositoryInstallationIntentMinAggregateInputType
+    _max?: KnowledgeRepositoryInstallationIntentMaxAggregateInputType
+  }
+
+  export type KnowledgeRepositoryInstallationIntentGroupByOutputType = {
+    id: string
+    identityId: string
+    stateHash: string
+    routeKey: string
+    clientKind: string
+    returnPath: string
+    status: string
+    installationId: string | null
+    providerAccountId: string | null
+    setupAction: string | null
+    expiresAt: Date
+    callbackReceivedAt: Date | null
+    finalizedAt: Date | null
+    consumedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: KnowledgeRepositoryInstallationIntentCountAggregateOutputType | null
+    _min: KnowledgeRepositoryInstallationIntentMinAggregateOutputType | null
+    _max: KnowledgeRepositoryInstallationIntentMaxAggregateOutputType | null
+  }
+
+  type GetKnowledgeRepositoryInstallationIntentGroupByPayload<T extends KnowledgeRepositoryInstallationIntentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<KnowledgeRepositoryInstallationIntentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof KnowledgeRepositoryInstallationIntentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], KnowledgeRepositoryInstallationIntentGroupByOutputType[P]>
+            : GetScalarType<T[P], KnowledgeRepositoryInstallationIntentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type KnowledgeRepositoryInstallationIntentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    stateHash?: boolean
+    routeKey?: boolean
+    clientKind?: boolean
+    returnPath?: boolean
+    status?: boolean
+    installationId?: boolean
+    providerAccountId?: boolean
+    setupAction?: boolean
+    expiresAt?: boolean
+    callbackReceivedAt?: boolean
+    finalizedAt?: boolean
+    consumedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["knowledgeRepositoryInstallationIntent"]>
+
+  export type KnowledgeRepositoryInstallationIntentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    stateHash?: boolean
+    routeKey?: boolean
+    clientKind?: boolean
+    returnPath?: boolean
+    status?: boolean
+    installationId?: boolean
+    providerAccountId?: boolean
+    setupAction?: boolean
+    expiresAt?: boolean
+    callbackReceivedAt?: boolean
+    finalizedAt?: boolean
+    consumedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["knowledgeRepositoryInstallationIntent"]>
+
+  export type KnowledgeRepositoryInstallationIntentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    stateHash?: boolean
+    routeKey?: boolean
+    clientKind?: boolean
+    returnPath?: boolean
+    status?: boolean
+    installationId?: boolean
+    providerAccountId?: boolean
+    setupAction?: boolean
+    expiresAt?: boolean
+    callbackReceivedAt?: boolean
+    finalizedAt?: boolean
+    consumedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["knowledgeRepositoryInstallationIntent"]>
+
+  export type KnowledgeRepositoryInstallationIntentSelectScalar = {
+    id?: boolean
+    identityId?: boolean
+    stateHash?: boolean
+    routeKey?: boolean
+    clientKind?: boolean
+    returnPath?: boolean
+    status?: boolean
+    installationId?: boolean
+    providerAccountId?: boolean
+    setupAction?: boolean
+    expiresAt?: boolean
+    callbackReceivedAt?: boolean
+    finalizedAt?: boolean
+    consumedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type KnowledgeRepositoryInstallationIntentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "stateHash" | "routeKey" | "clientKind" | "returnPath" | "status" | "installationId" | "providerAccountId" | "setupAction" | "expiresAt" | "callbackReceivedAt" | "finalizedAt" | "consumedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["knowledgeRepositoryInstallationIntent"]>
+  export type KnowledgeRepositoryInstallationIntentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+  export type KnowledgeRepositoryInstallationIntentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+  export type KnowledgeRepositoryInstallationIntentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+
+  export type $KnowledgeRepositoryInstallationIntentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "KnowledgeRepositoryInstallationIntent"
+    objects: {
+      account: Prisma.$AccountPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      identityId: string
+      stateHash: string
+      routeKey: string
+      clientKind: string
+      returnPath: string
+      status: string
+      installationId: string | null
+      providerAccountId: string | null
+      setupAction: string | null
+      expiresAt: Date
+      callbackReceivedAt: Date | null
+      finalizedAt: Date | null
+      consumedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["knowledgeRepositoryInstallationIntent"]>
+    composites: {}
+  }
+
+  type KnowledgeRepositoryInstallationIntentGetPayload<S extends boolean | null | undefined | KnowledgeRepositoryInstallationIntentDefaultArgs> = $Result.GetResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload, S>
+
+  type KnowledgeRepositoryInstallationIntentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<KnowledgeRepositoryInstallationIntentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: KnowledgeRepositoryInstallationIntentCountAggregateInputType | true
+    }
+
+  export interface KnowledgeRepositoryInstallationIntentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['KnowledgeRepositoryInstallationIntent'], meta: { name: 'KnowledgeRepositoryInstallationIntent' } }
+    /**
+     * Find zero or one KnowledgeRepositoryInstallationIntent that matches the filter.
+     * @param {KnowledgeRepositoryInstallationIntentFindUniqueArgs} args - Arguments to find a KnowledgeRepositoryInstallationIntent
+     * @example
+     * // Get one KnowledgeRepositoryInstallationIntent
+     * const knowledgeRepositoryInstallationIntent = await prisma.knowledgeRepositoryInstallationIntent.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends KnowledgeRepositoryInstallationIntentFindUniqueArgs>(args: SelectSubset<T, KnowledgeRepositoryInstallationIntentFindUniqueArgs<ExtArgs>>): Prisma__KnowledgeRepositoryInstallationIntentClient<$Result.GetResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one KnowledgeRepositoryInstallationIntent that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {KnowledgeRepositoryInstallationIntentFindUniqueOrThrowArgs} args - Arguments to find a KnowledgeRepositoryInstallationIntent
+     * @example
+     * // Get one KnowledgeRepositoryInstallationIntent
+     * const knowledgeRepositoryInstallationIntent = await prisma.knowledgeRepositoryInstallationIntent.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends KnowledgeRepositoryInstallationIntentFindUniqueOrThrowArgs>(args: SelectSubset<T, KnowledgeRepositoryInstallationIntentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__KnowledgeRepositoryInstallationIntentClient<$Result.GetResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first KnowledgeRepositoryInstallationIntent that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KnowledgeRepositoryInstallationIntentFindFirstArgs} args - Arguments to find a KnowledgeRepositoryInstallationIntent
+     * @example
+     * // Get one KnowledgeRepositoryInstallationIntent
+     * const knowledgeRepositoryInstallationIntent = await prisma.knowledgeRepositoryInstallationIntent.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends KnowledgeRepositoryInstallationIntentFindFirstArgs>(args?: SelectSubset<T, KnowledgeRepositoryInstallationIntentFindFirstArgs<ExtArgs>>): Prisma__KnowledgeRepositoryInstallationIntentClient<$Result.GetResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first KnowledgeRepositoryInstallationIntent that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KnowledgeRepositoryInstallationIntentFindFirstOrThrowArgs} args - Arguments to find a KnowledgeRepositoryInstallationIntent
+     * @example
+     * // Get one KnowledgeRepositoryInstallationIntent
+     * const knowledgeRepositoryInstallationIntent = await prisma.knowledgeRepositoryInstallationIntent.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends KnowledgeRepositoryInstallationIntentFindFirstOrThrowArgs>(args?: SelectSubset<T, KnowledgeRepositoryInstallationIntentFindFirstOrThrowArgs<ExtArgs>>): Prisma__KnowledgeRepositoryInstallationIntentClient<$Result.GetResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more KnowledgeRepositoryInstallationIntents that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KnowledgeRepositoryInstallationIntentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all KnowledgeRepositoryInstallationIntents
+     * const knowledgeRepositoryInstallationIntents = await prisma.knowledgeRepositoryInstallationIntent.findMany()
+     *
+     * // Get first 10 KnowledgeRepositoryInstallationIntents
+     * const knowledgeRepositoryInstallationIntents = await prisma.knowledgeRepositoryInstallationIntent.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const knowledgeRepositoryInstallationIntentWithIdOnly = await prisma.knowledgeRepositoryInstallationIntent.findMany({ select: { id: true } })
+     *
+     */
+    findMany<T extends KnowledgeRepositoryInstallationIntentFindManyArgs>(args?: SelectSubset<T, KnowledgeRepositoryInstallationIntentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a KnowledgeRepositoryInstallationIntent.
+     * @param {KnowledgeRepositoryInstallationIntentCreateArgs} args - Arguments to create a KnowledgeRepositoryInstallationIntent.
+     * @example
+     * // Create one KnowledgeRepositoryInstallationIntent
+     * const KnowledgeRepositoryInstallationIntent = await prisma.knowledgeRepositoryInstallationIntent.create({
+     *   data: {
+     *     // ... data to create a KnowledgeRepositoryInstallationIntent
+     *   }
+     * })
+     *
+     */
+    create<T extends KnowledgeRepositoryInstallationIntentCreateArgs>(args: SelectSubset<T, KnowledgeRepositoryInstallationIntentCreateArgs<ExtArgs>>): Prisma__KnowledgeRepositoryInstallationIntentClient<$Result.GetResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many KnowledgeRepositoryInstallationIntents.
+     * @param {KnowledgeRepositoryInstallationIntentCreateManyArgs} args - Arguments to create many KnowledgeRepositoryInstallationIntents.
+     * @example
+     * // Create many KnowledgeRepositoryInstallationIntents
+     * const knowledgeRepositoryInstallationIntent = await prisma.knowledgeRepositoryInstallationIntent.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends KnowledgeRepositoryInstallationIntentCreateManyArgs>(args?: SelectSubset<T, KnowledgeRepositoryInstallationIntentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many KnowledgeRepositoryInstallationIntents and returns the data saved in the database.
+     * @param {KnowledgeRepositoryInstallationIntentCreateManyAndReturnArgs} args - Arguments to create many KnowledgeRepositoryInstallationIntents.
+     * @example
+     * // Create many KnowledgeRepositoryInstallationIntents
+     * const knowledgeRepositoryInstallationIntent = await prisma.knowledgeRepositoryInstallationIntent.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many KnowledgeRepositoryInstallationIntents and only return the `id`
+     * const knowledgeRepositoryInstallationIntentWithIdOnly = await prisma.knowledgeRepositoryInstallationIntent.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends KnowledgeRepositoryInstallationIntentCreateManyAndReturnArgs>(args?: SelectSubset<T, KnowledgeRepositoryInstallationIntentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a KnowledgeRepositoryInstallationIntent.
+     * @param {KnowledgeRepositoryInstallationIntentDeleteArgs} args - Arguments to delete one KnowledgeRepositoryInstallationIntent.
+     * @example
+     * // Delete one KnowledgeRepositoryInstallationIntent
+     * const KnowledgeRepositoryInstallationIntent = await prisma.knowledgeRepositoryInstallationIntent.delete({
+     *   where: {
+     *     // ... filter to delete one KnowledgeRepositoryInstallationIntent
+     *   }
+     * })
+     *
+     */
+    delete<T extends KnowledgeRepositoryInstallationIntentDeleteArgs>(args: SelectSubset<T, KnowledgeRepositoryInstallationIntentDeleteArgs<ExtArgs>>): Prisma__KnowledgeRepositoryInstallationIntentClient<$Result.GetResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one KnowledgeRepositoryInstallationIntent.
+     * @param {KnowledgeRepositoryInstallationIntentUpdateArgs} args - Arguments to update one KnowledgeRepositoryInstallationIntent.
+     * @example
+     * // Update one KnowledgeRepositoryInstallationIntent
+     * const knowledgeRepositoryInstallationIntent = await prisma.knowledgeRepositoryInstallationIntent.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends KnowledgeRepositoryInstallationIntentUpdateArgs>(args: SelectSubset<T, KnowledgeRepositoryInstallationIntentUpdateArgs<ExtArgs>>): Prisma__KnowledgeRepositoryInstallationIntentClient<$Result.GetResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more KnowledgeRepositoryInstallationIntents.
+     * @param {KnowledgeRepositoryInstallationIntentDeleteManyArgs} args - Arguments to filter KnowledgeRepositoryInstallationIntents to delete.
+     * @example
+     * // Delete a few KnowledgeRepositoryInstallationIntents
+     * const { count } = await prisma.knowledgeRepositoryInstallationIntent.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends KnowledgeRepositoryInstallationIntentDeleteManyArgs>(args?: SelectSubset<T, KnowledgeRepositoryInstallationIntentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more KnowledgeRepositoryInstallationIntents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KnowledgeRepositoryInstallationIntentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many KnowledgeRepositoryInstallationIntents
+     * const knowledgeRepositoryInstallationIntent = await prisma.knowledgeRepositoryInstallationIntent.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends KnowledgeRepositoryInstallationIntentUpdateManyArgs>(args: SelectSubset<T, KnowledgeRepositoryInstallationIntentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more KnowledgeRepositoryInstallationIntents and returns the data updated in the database.
+     * @param {KnowledgeRepositoryInstallationIntentUpdateManyAndReturnArgs} args - Arguments to update many KnowledgeRepositoryInstallationIntents.
+     * @example
+     * // Update many KnowledgeRepositoryInstallationIntents
+     * const knowledgeRepositoryInstallationIntent = await prisma.knowledgeRepositoryInstallationIntent.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more KnowledgeRepositoryInstallationIntents and only return the `id`
+     * const knowledgeRepositoryInstallationIntentWithIdOnly = await prisma.knowledgeRepositoryInstallationIntent.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    updateManyAndReturn<T extends KnowledgeRepositoryInstallationIntentUpdateManyAndReturnArgs>(args: SelectSubset<T, KnowledgeRepositoryInstallationIntentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one KnowledgeRepositoryInstallationIntent.
+     * @param {KnowledgeRepositoryInstallationIntentUpsertArgs} args - Arguments to update or create a KnowledgeRepositoryInstallationIntent.
+     * @example
+     * // Update or create a KnowledgeRepositoryInstallationIntent
+     * const knowledgeRepositoryInstallationIntent = await prisma.knowledgeRepositoryInstallationIntent.upsert({
+     *   create: {
+     *     // ... data to create a KnowledgeRepositoryInstallationIntent
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the KnowledgeRepositoryInstallationIntent we want to update
+     *   }
+     * })
+     */
+    upsert<T extends KnowledgeRepositoryInstallationIntentUpsertArgs>(args: SelectSubset<T, KnowledgeRepositoryInstallationIntentUpsertArgs<ExtArgs>>): Prisma__KnowledgeRepositoryInstallationIntentClient<$Result.GetResult<Prisma.$KnowledgeRepositoryInstallationIntentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of KnowledgeRepositoryInstallationIntents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KnowledgeRepositoryInstallationIntentCountArgs} args - Arguments to filter KnowledgeRepositoryInstallationIntents to count.
+     * @example
+     * // Count the number of KnowledgeRepositoryInstallationIntents
+     * const count = await prisma.knowledgeRepositoryInstallationIntent.count({
+     *   where: {
+     *     // ... the filter for the KnowledgeRepositoryInstallationIntents we want to count
+     *   }
+     * })
+    **/
+    count<T extends KnowledgeRepositoryInstallationIntentCountArgs>(
+      args?: Subset<T, KnowledgeRepositoryInstallationIntentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], KnowledgeRepositoryInstallationIntentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a KnowledgeRepositoryInstallationIntent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KnowledgeRepositoryInstallationIntentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends KnowledgeRepositoryInstallationIntentAggregateArgs>(args: Subset<T, KnowledgeRepositoryInstallationIntentAggregateArgs>): Prisma.PrismaPromise<GetKnowledgeRepositoryInstallationIntentAggregateType<T>>
+
+    /**
+     * Group by KnowledgeRepositoryInstallationIntent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KnowledgeRepositoryInstallationIntentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+    **/
+    groupBy<
+      T extends KnowledgeRepositoryInstallationIntentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: KnowledgeRepositoryInstallationIntentGroupByArgs['orderBy'] }
+        : { orderBy?: KnowledgeRepositoryInstallationIntentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, KnowledgeRepositoryInstallationIntentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetKnowledgeRepositoryInstallationIntentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the KnowledgeRepositoryInstallationIntent model
+   */
+  readonly fields: KnowledgeRepositoryInstallationIntentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for KnowledgeRepositoryInstallationIntent.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__KnowledgeRepositoryInstallationIntentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the KnowledgeRepositoryInstallationIntent model
+   */
+  interface KnowledgeRepositoryInstallationIntentFieldRefs {
+    readonly id: FieldRef<"KnowledgeRepositoryInstallationIntent", 'String'>
+    readonly identityId: FieldRef<"KnowledgeRepositoryInstallationIntent", 'String'>
+    readonly stateHash: FieldRef<"KnowledgeRepositoryInstallationIntent", 'String'>
+    readonly routeKey: FieldRef<"KnowledgeRepositoryInstallationIntent", 'String'>
+    readonly clientKind: FieldRef<"KnowledgeRepositoryInstallationIntent", 'String'>
+    readonly returnPath: FieldRef<"KnowledgeRepositoryInstallationIntent", 'String'>
+    readonly status: FieldRef<"KnowledgeRepositoryInstallationIntent", 'String'>
+    readonly installationId: FieldRef<"KnowledgeRepositoryInstallationIntent", 'String'>
+    readonly providerAccountId: FieldRef<"KnowledgeRepositoryInstallationIntent", 'String'>
+    readonly setupAction: FieldRef<"KnowledgeRepositoryInstallationIntent", 'String'>
+    readonly expiresAt: FieldRef<"KnowledgeRepositoryInstallationIntent", 'DateTime'>
+    readonly callbackReceivedAt: FieldRef<"KnowledgeRepositoryInstallationIntent", 'DateTime'>
+    readonly finalizedAt: FieldRef<"KnowledgeRepositoryInstallationIntent", 'DateTime'>
+    readonly consumedAt: FieldRef<"KnowledgeRepositoryInstallationIntent", 'DateTime'>
+    readonly createdAt: FieldRef<"KnowledgeRepositoryInstallationIntent", 'DateTime'>
+    readonly updatedAt: FieldRef<"KnowledgeRepositoryInstallationIntent", 'DateTime'>
+  }
+
+
+  // Custom InputTypes
+  /**
+   * KnowledgeRepositoryInstallationIntent findUnique
+   */
+  export type KnowledgeRepositoryInstallationIntentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KnowledgeRepositoryInstallationIntent
+     */
+    select?: KnowledgeRepositoryInstallationIntentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KnowledgeRepositoryInstallationIntent
+     */
+    omit?: KnowledgeRepositoryInstallationIntentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeRepositoryInstallationIntentInclude<ExtArgs> | null
+    /**
+     * Filter, which KnowledgeRepositoryInstallationIntent to fetch.
+     */
+    where: KnowledgeRepositoryInstallationIntentWhereUniqueInput
+  }
+
+  /**
+   * KnowledgeRepositoryInstallationIntent findUniqueOrThrow
+   */
+  export type KnowledgeRepositoryInstallationIntentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KnowledgeRepositoryInstallationIntent
+     */
+    select?: KnowledgeRepositoryInstallationIntentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KnowledgeRepositoryInstallationIntent
+     */
+    omit?: KnowledgeRepositoryInstallationIntentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeRepositoryInstallationIntentInclude<ExtArgs> | null
+    /**
+     * Filter, which KnowledgeRepositoryInstallationIntent to fetch.
+     */
+    where: KnowledgeRepositoryInstallationIntentWhereUniqueInput
+  }
+
+  /**
+   * KnowledgeRepositoryInstallationIntent findFirst
+   */
+  export type KnowledgeRepositoryInstallationIntentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KnowledgeRepositoryInstallationIntent
+     */
+    select?: KnowledgeRepositoryInstallationIntentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KnowledgeRepositoryInstallationIntent
+     */
+    omit?: KnowledgeRepositoryInstallationIntentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeRepositoryInstallationIntentInclude<ExtArgs> | null
+    /**
+     * Filter, which KnowledgeRepositoryInstallationIntent to fetch.
+     */
+    where?: KnowledgeRepositoryInstallationIntentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of KnowledgeRepositoryInstallationIntents to fetch.
+     */
+    orderBy?: KnowledgeRepositoryInstallationIntentOrderByWithRelationInput | KnowledgeRepositoryInstallationIntentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for KnowledgeRepositoryInstallationIntents.
+     */
+    cursor?: KnowledgeRepositoryInstallationIntentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` KnowledgeRepositoryInstallationIntents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` KnowledgeRepositoryInstallationIntents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of KnowledgeRepositoryInstallationIntents.
+     */
+    distinct?: KnowledgeRepositoryInstallationIntentScalarFieldEnum | KnowledgeRepositoryInstallationIntentScalarFieldEnum[]
+  }
+
+  /**
+   * KnowledgeRepositoryInstallationIntent findFirstOrThrow
+   */
+  export type KnowledgeRepositoryInstallationIntentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KnowledgeRepositoryInstallationIntent
+     */
+    select?: KnowledgeRepositoryInstallationIntentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KnowledgeRepositoryInstallationIntent
+     */
+    omit?: KnowledgeRepositoryInstallationIntentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeRepositoryInstallationIntentInclude<ExtArgs> | null
+    /**
+     * Filter, which KnowledgeRepositoryInstallationIntent to fetch.
+     */
+    where?: KnowledgeRepositoryInstallationIntentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of KnowledgeRepositoryInstallationIntents to fetch.
+     */
+    orderBy?: KnowledgeRepositoryInstallationIntentOrderByWithRelationInput | KnowledgeRepositoryInstallationIntentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for KnowledgeRepositoryInstallationIntents.
+     */
+    cursor?: KnowledgeRepositoryInstallationIntentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` KnowledgeRepositoryInstallationIntents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` KnowledgeRepositoryInstallationIntents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of KnowledgeRepositoryInstallationIntents.
+     */
+    distinct?: KnowledgeRepositoryInstallationIntentScalarFieldEnum | KnowledgeRepositoryInstallationIntentScalarFieldEnum[]
+  }
+
+  /**
+   * KnowledgeRepositoryInstallationIntent findMany
+   */
+  export type KnowledgeRepositoryInstallationIntentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KnowledgeRepositoryInstallationIntent
+     */
+    select?: KnowledgeRepositoryInstallationIntentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KnowledgeRepositoryInstallationIntent
+     */
+    omit?: KnowledgeRepositoryInstallationIntentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeRepositoryInstallationIntentInclude<ExtArgs> | null
+    /**
+     * Filter, which KnowledgeRepositoryInstallationIntents to fetch.
+     */
+    where?: KnowledgeRepositoryInstallationIntentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of KnowledgeRepositoryInstallationIntents to fetch.
+     */
+    orderBy?: KnowledgeRepositoryInstallationIntentOrderByWithRelationInput | KnowledgeRepositoryInstallationIntentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing KnowledgeRepositoryInstallationIntents.
+     */
+    cursor?: KnowledgeRepositoryInstallationIntentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` KnowledgeRepositoryInstallationIntents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` KnowledgeRepositoryInstallationIntents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of KnowledgeRepositoryInstallationIntents.
+     */
+    distinct?: KnowledgeRepositoryInstallationIntentScalarFieldEnum | KnowledgeRepositoryInstallationIntentScalarFieldEnum[]
+  }
+
+  /**
+   * KnowledgeRepositoryInstallationIntent create
+   */
+  export type KnowledgeRepositoryInstallationIntentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KnowledgeRepositoryInstallationIntent
+     */
+    select?: KnowledgeRepositoryInstallationIntentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KnowledgeRepositoryInstallationIntent
+     */
+    omit?: KnowledgeRepositoryInstallationIntentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeRepositoryInstallationIntentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a KnowledgeRepositoryInstallationIntent.
+     */
+    data: XOR<KnowledgeRepositoryInstallationIntentCreateInput, KnowledgeRepositoryInstallationIntentUncheckedCreateInput>
+  }
+
+  /**
+   * KnowledgeRepositoryInstallationIntent createMany
+   */
+  export type KnowledgeRepositoryInstallationIntentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many KnowledgeRepositoryInstallationIntents.
+     */
+    data: KnowledgeRepositoryInstallationIntentCreateManyInput | KnowledgeRepositoryInstallationIntentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * KnowledgeRepositoryInstallationIntent createManyAndReturn
+   */
+  export type KnowledgeRepositoryInstallationIntentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KnowledgeRepositoryInstallationIntent
+     */
+    select?: KnowledgeRepositoryInstallationIntentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the KnowledgeRepositoryInstallationIntent
+     */
+    omit?: KnowledgeRepositoryInstallationIntentOmit<ExtArgs> | null
+    /**
+     * The data used to create many KnowledgeRepositoryInstallationIntents.
+     */
+    data: KnowledgeRepositoryInstallationIntentCreateManyInput | KnowledgeRepositoryInstallationIntentCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeRepositoryInstallationIntentIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * KnowledgeRepositoryInstallationIntent update
+   */
+  export type KnowledgeRepositoryInstallationIntentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KnowledgeRepositoryInstallationIntent
+     */
+    select?: KnowledgeRepositoryInstallationIntentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KnowledgeRepositoryInstallationIntent
+     */
+    omit?: KnowledgeRepositoryInstallationIntentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeRepositoryInstallationIntentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a KnowledgeRepositoryInstallationIntent.
+     */
+    data: XOR<KnowledgeRepositoryInstallationIntentUpdateInput, KnowledgeRepositoryInstallationIntentUncheckedUpdateInput>
+    /**
+     * Choose, which KnowledgeRepositoryInstallationIntent to update.
+     */
+    where: KnowledgeRepositoryInstallationIntentWhereUniqueInput
+  }
+
+  /**
+   * KnowledgeRepositoryInstallationIntent updateMany
+   */
+  export type KnowledgeRepositoryInstallationIntentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update KnowledgeRepositoryInstallationIntents.
+     */
+    data: XOR<KnowledgeRepositoryInstallationIntentUpdateManyMutationInput, KnowledgeRepositoryInstallationIntentUncheckedUpdateManyInput>
+    /**
+     * Filter which KnowledgeRepositoryInstallationIntents to update
+     */
+    where?: KnowledgeRepositoryInstallationIntentWhereInput
+    /**
+     * Limit how many KnowledgeRepositoryInstallationIntents to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * KnowledgeRepositoryInstallationIntent updateManyAndReturn
+   */
+  export type KnowledgeRepositoryInstallationIntentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KnowledgeRepositoryInstallationIntent
+     */
+    select?: KnowledgeRepositoryInstallationIntentSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the KnowledgeRepositoryInstallationIntent
+     */
+    omit?: KnowledgeRepositoryInstallationIntentOmit<ExtArgs> | null
+    /**
+     * The data used to update KnowledgeRepositoryInstallationIntents.
+     */
+    data: XOR<KnowledgeRepositoryInstallationIntentUpdateManyMutationInput, KnowledgeRepositoryInstallationIntentUncheckedUpdateManyInput>
+    /**
+     * Filter which KnowledgeRepositoryInstallationIntents to update
+     */
+    where?: KnowledgeRepositoryInstallationIntentWhereInput
+    /**
+     * Limit how many KnowledgeRepositoryInstallationIntents to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeRepositoryInstallationIntentIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * KnowledgeRepositoryInstallationIntent upsert
+   */
+  export type KnowledgeRepositoryInstallationIntentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KnowledgeRepositoryInstallationIntent
+     */
+    select?: KnowledgeRepositoryInstallationIntentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KnowledgeRepositoryInstallationIntent
+     */
+    omit?: KnowledgeRepositoryInstallationIntentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeRepositoryInstallationIntentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the KnowledgeRepositoryInstallationIntent to update in case it exists.
+     */
+    where: KnowledgeRepositoryInstallationIntentWhereUniqueInput
+    /**
+     * In case the KnowledgeRepositoryInstallationIntent found by the `where` argument doesn't exist, create a new KnowledgeRepositoryInstallationIntent with this data.
+     */
+    create: XOR<KnowledgeRepositoryInstallationIntentCreateInput, KnowledgeRepositoryInstallationIntentUncheckedCreateInput>
+    /**
+     * In case the KnowledgeRepositoryInstallationIntent was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<KnowledgeRepositoryInstallationIntentUpdateInput, KnowledgeRepositoryInstallationIntentUncheckedUpdateInput>
+  }
+
+  /**
+   * KnowledgeRepositoryInstallationIntent delete
+   */
+  export type KnowledgeRepositoryInstallationIntentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KnowledgeRepositoryInstallationIntent
+     */
+    select?: KnowledgeRepositoryInstallationIntentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KnowledgeRepositoryInstallationIntent
+     */
+    omit?: KnowledgeRepositoryInstallationIntentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeRepositoryInstallationIntentInclude<ExtArgs> | null
+    /**
+     * Filter which KnowledgeRepositoryInstallationIntent to delete.
+     */
+    where: KnowledgeRepositoryInstallationIntentWhereUniqueInput
+  }
+
+  /**
+   * KnowledgeRepositoryInstallationIntent deleteMany
+   */
+  export type KnowledgeRepositoryInstallationIntentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which KnowledgeRepositoryInstallationIntents to delete
+     */
+    where?: KnowledgeRepositoryInstallationIntentWhereInput
+    /**
+     * Limit how many KnowledgeRepositoryInstallationIntents to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * KnowledgeRepositoryInstallationIntent without action
+   */
+  export type KnowledgeRepositoryInstallationIntentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KnowledgeRepositoryInstallationIntent
+     */
+    select?: KnowledgeRepositoryInstallationIntentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KnowledgeRepositoryInstallationIntent
+     */
+    omit?: KnowledgeRepositoryInstallationIntentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KnowledgeRepositoryInstallationIntentInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model KnowledgeRepositoryConnection
    */
 
@@ -126211,6 +127546,28 @@ export namespace Prisma {
   export type RepositoryStatisticScalarFieldEnum = (typeof RepositoryStatisticScalarFieldEnum)[keyof typeof RepositoryStatisticScalarFieldEnum]
 
 
+  export const KnowledgeRepositoryInstallationIntentScalarFieldEnum: {
+    id: 'id',
+    identityId: 'identityId',
+    stateHash: 'stateHash',
+    routeKey: 'routeKey',
+    clientKind: 'clientKind',
+    returnPath: 'returnPath',
+    status: 'status',
+    installationId: 'installationId',
+    providerAccountId: 'providerAccountId',
+    setupAction: 'setupAction',
+    expiresAt: 'expiresAt',
+    callbackReceivedAt: 'callbackReceivedAt',
+    finalizedAt: 'finalizedAt',
+    consumedAt: 'consumedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type KnowledgeRepositoryInstallationIntentScalarFieldEnum = (typeof KnowledgeRepositoryInstallationIntentScalarFieldEnum)[keyof typeof KnowledgeRepositoryInstallationIntentScalarFieldEnum]
+
+
   export const KnowledgeRepositoryConnectionScalarFieldEnum: {
     id: 'id',
     identityId: 'identityId',
@@ -126971,6 +128328,7 @@ export namespace Prisma {
     resources?: ResourceListRelationFilter
     repositoryResources?: RepositoryResourceListRelationFilter
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionListRelationFilter
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentListRelationFilter
     knowledgeWriteRequests?: KnowledgeWriteRequestListRelationFilter
   }
 
@@ -127049,6 +128407,7 @@ export namespace Prisma {
     resources?: ResourceOrderByRelationAggregateInput
     repositoryResources?: RepositoryResourceOrderByRelationAggregateInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionOrderByRelationAggregateInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentOrderByRelationAggregateInput
     knowledgeWriteRequests?: KnowledgeWriteRequestOrderByRelationAggregateInput
   }
 
@@ -127130,6 +128489,7 @@ export namespace Prisma {
     resources?: ResourceListRelationFilter
     repositoryResources?: RepositoryResourceListRelationFilter
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionListRelationFilter
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentListRelationFilter
     knowledgeWriteRequests?: KnowledgeWriteRequestListRelationFilter
   }, "id" | "emailAddress">
 
@@ -133596,6 +134956,116 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"RepositoryStatistic"> | Date | string
   }
 
+  export type KnowledgeRepositoryInstallationIntentWhereInput = {
+    AND?: KnowledgeRepositoryInstallationIntentWhereInput | KnowledgeRepositoryInstallationIntentWhereInput[]
+    OR?: KnowledgeRepositoryInstallationIntentWhereInput[]
+    NOT?: KnowledgeRepositoryInstallationIntentWhereInput | KnowledgeRepositoryInstallationIntentWhereInput[]
+    id?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    identityId?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    stateHash?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    routeKey?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    clientKind?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    returnPath?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    status?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    installationId?: StringNullableFilter<"KnowledgeRepositoryInstallationIntent"> | string | null
+    providerAccountId?: StringNullableFilter<"KnowledgeRepositoryInstallationIntent"> | string | null
+    setupAction?: StringNullableFilter<"KnowledgeRepositoryInstallationIntent"> | string | null
+    expiresAt?: DateTimeFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string
+    callbackReceivedAt?: DateTimeNullableFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string | null
+    finalizedAt?: DateTimeNullableFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string | null
+    consumedAt?: DateTimeNullableFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string | null
+    createdAt?: DateTimeFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string
+    updatedAt?: DateTimeFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+  }
+
+  export type KnowledgeRepositoryInstallationIntentOrderByWithRelationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    stateHash?: SortOrder
+    routeKey?: SortOrder
+    clientKind?: SortOrder
+    returnPath?: SortOrder
+    status?: SortOrder
+    installationId?: SortOrderInput | SortOrder
+    providerAccountId?: SortOrderInput | SortOrder
+    setupAction?: SortOrderInput | SortOrder
+    expiresAt?: SortOrder
+    callbackReceivedAt?: SortOrderInput | SortOrder
+    finalizedAt?: SortOrderInput | SortOrder
+    consumedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    account?: AccountOrderByWithRelationInput
+  }
+
+  export type KnowledgeRepositoryInstallationIntentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    stateHash?: string
+    AND?: KnowledgeRepositoryInstallationIntentWhereInput | KnowledgeRepositoryInstallationIntentWhereInput[]
+    OR?: KnowledgeRepositoryInstallationIntentWhereInput[]
+    NOT?: KnowledgeRepositoryInstallationIntentWhereInput | KnowledgeRepositoryInstallationIntentWhereInput[]
+    identityId?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    routeKey?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    clientKind?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    returnPath?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    status?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    installationId?: StringNullableFilter<"KnowledgeRepositoryInstallationIntent"> | string | null
+    providerAccountId?: StringNullableFilter<"KnowledgeRepositoryInstallationIntent"> | string | null
+    setupAction?: StringNullableFilter<"KnowledgeRepositoryInstallationIntent"> | string | null
+    expiresAt?: DateTimeFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string
+    callbackReceivedAt?: DateTimeNullableFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string | null
+    finalizedAt?: DateTimeNullableFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string | null
+    consumedAt?: DateTimeNullableFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string | null
+    createdAt?: DateTimeFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string
+    updatedAt?: DateTimeFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+  }, "id" | "stateHash">
+
+  export type KnowledgeRepositoryInstallationIntentOrderByWithAggregationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    stateHash?: SortOrder
+    routeKey?: SortOrder
+    clientKind?: SortOrder
+    returnPath?: SortOrder
+    status?: SortOrder
+    installationId?: SortOrderInput | SortOrder
+    providerAccountId?: SortOrderInput | SortOrder
+    setupAction?: SortOrderInput | SortOrder
+    expiresAt?: SortOrder
+    callbackReceivedAt?: SortOrderInput | SortOrder
+    finalizedAt?: SortOrderInput | SortOrder
+    consumedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: KnowledgeRepositoryInstallationIntentCountOrderByAggregateInput
+    _max?: KnowledgeRepositoryInstallationIntentMaxOrderByAggregateInput
+    _min?: KnowledgeRepositoryInstallationIntentMinOrderByAggregateInput
+  }
+
+  export type KnowledgeRepositoryInstallationIntentScalarWhereWithAggregatesInput = {
+    AND?: KnowledgeRepositoryInstallationIntentScalarWhereWithAggregatesInput | KnowledgeRepositoryInstallationIntentScalarWhereWithAggregatesInput[]
+    OR?: KnowledgeRepositoryInstallationIntentScalarWhereWithAggregatesInput[]
+    NOT?: KnowledgeRepositoryInstallationIntentScalarWhereWithAggregatesInput | KnowledgeRepositoryInstallationIntentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    identityId?: StringWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    stateHash?: StringWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    routeKey?: StringWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    clientKind?: StringWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    returnPath?: StringWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    status?: StringWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    installationId?: StringNullableWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | string | null
+    providerAccountId?: StringNullableWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | string | null
+    setupAction?: StringNullableWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | string | null
+    expiresAt?: DateTimeWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string
+    callbackReceivedAt?: DateTimeNullableWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string | null
+    finalizedAt?: DateTimeNullableWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string | null
+    consumedAt?: DateTimeNullableWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string
+  }
+
   export type KnowledgeRepositoryConnectionWhereInput = {
     AND?: KnowledgeRepositoryConnectionWhereInput | KnowledgeRepositoryConnectionWhereInput[]
     OR?: KnowledgeRepositoryConnectionWhereInput[]
@@ -136278,6 +137748,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -136355,6 +137826,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -136432,6 +137904,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -136509,6 +137982,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -143789,6 +145263,138 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type KnowledgeRepositoryInstallationIntentCreateInput = {
+    id: string
+    stateHash: string
+    routeKey: string
+    clientKind: string
+    returnPath: string
+    status?: string
+    installationId?: string | null
+    providerAccountId?: string | null
+    setupAction?: string | null
+    expiresAt: Date | string
+    callbackReceivedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    account: AccountCreateNestedOneWithoutKnowledgeRepositoryInstallationIntentsInput
+  }
+
+  export type KnowledgeRepositoryInstallationIntentUncheckedCreateInput = {
+    id: string
+    identityId: string
+    stateHash: string
+    routeKey: string
+    clientKind: string
+    returnPath: string
+    status?: string
+    installationId?: string | null
+    providerAccountId?: string | null
+    setupAction?: string | null
+    expiresAt: Date | string
+    callbackReceivedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KnowledgeRepositoryInstallationIntentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    stateHash?: StringFieldUpdateOperationsInput | string
+    routeKey?: StringFieldUpdateOperationsInput | string
+    clientKind?: StringFieldUpdateOperationsInput | string
+    returnPath?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    installationId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    setupAction?: NullableStringFieldUpdateOperationsInput | string | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callbackReceivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    account?: AccountUpdateOneRequiredWithoutKnowledgeRepositoryInstallationIntentsNestedInput
+  }
+
+  export type KnowledgeRepositoryInstallationIntentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    stateHash?: StringFieldUpdateOperationsInput | string
+    routeKey?: StringFieldUpdateOperationsInput | string
+    clientKind?: StringFieldUpdateOperationsInput | string
+    returnPath?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    installationId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    setupAction?: NullableStringFieldUpdateOperationsInput | string | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callbackReceivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KnowledgeRepositoryInstallationIntentCreateManyInput = {
+    id: string
+    identityId: string
+    stateHash: string
+    routeKey: string
+    clientKind: string
+    returnPath: string
+    status?: string
+    installationId?: string | null
+    providerAccountId?: string | null
+    setupAction?: string | null
+    expiresAt: Date | string
+    callbackReceivedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KnowledgeRepositoryInstallationIntentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    stateHash?: StringFieldUpdateOperationsInput | string
+    routeKey?: StringFieldUpdateOperationsInput | string
+    clientKind?: StringFieldUpdateOperationsInput | string
+    returnPath?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    installationId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    setupAction?: NullableStringFieldUpdateOperationsInput | string | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callbackReceivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KnowledgeRepositoryInstallationIntentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    stateHash?: StringFieldUpdateOperationsInput | string
+    routeKey?: StringFieldUpdateOperationsInput | string
+    clientKind?: StringFieldUpdateOperationsInput | string
+    returnPath?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    installationId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    setupAction?: NullableStringFieldUpdateOperationsInput | string | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callbackReceivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type KnowledgeRepositoryConnectionCreateInput = {
     id: string
     githubUserId: string
@@ -147252,6 +148858,12 @@ export namespace Prisma {
     none?: KnowledgeRepositoryConnectionWhereInput
   }
 
+  export type KnowledgeRepositoryInstallationIntentListRelationFilter = {
+    every?: KnowledgeRepositoryInstallationIntentWhereInput
+    some?: KnowledgeRepositoryInstallationIntentWhereInput
+    none?: KnowledgeRepositoryInstallationIntentWhereInput
+  }
+
   export type KnowledgeWriteRequestListRelationFilter = {
     every?: KnowledgeWriteRequestWhereInput
     some?: KnowledgeWriteRequestWhereInput
@@ -147452,6 +149064,10 @@ export namespace Prisma {
   }
 
   export type KnowledgeRepositoryConnectionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type KnowledgeRepositoryInstallationIntentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -151684,6 +153300,63 @@ export namespace Prisma {
     _max?: NestedBigIntFilter<$PrismaModel>
   }
 
+  export type KnowledgeRepositoryInstallationIntentCountOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    stateHash?: SortOrder
+    routeKey?: SortOrder
+    clientKind?: SortOrder
+    returnPath?: SortOrder
+    status?: SortOrder
+    installationId?: SortOrder
+    providerAccountId?: SortOrder
+    setupAction?: SortOrder
+    expiresAt?: SortOrder
+    callbackReceivedAt?: SortOrder
+    finalizedAt?: SortOrder
+    consumedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type KnowledgeRepositoryInstallationIntentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    stateHash?: SortOrder
+    routeKey?: SortOrder
+    clientKind?: SortOrder
+    returnPath?: SortOrder
+    status?: SortOrder
+    installationId?: SortOrder
+    providerAccountId?: SortOrder
+    setupAction?: SortOrder
+    expiresAt?: SortOrder
+    callbackReceivedAt?: SortOrder
+    finalizedAt?: SortOrder
+    consumedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type KnowledgeRepositoryInstallationIntentMinOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    stateHash?: SortOrder
+    routeKey?: SortOrder
+    clientKind?: SortOrder
+    returnPath?: SortOrder
+    status?: SortOrder
+    installationId?: SortOrder
+    providerAccountId?: SortOrder
+    setupAction?: SortOrder
+    expiresAt?: SortOrder
+    callbackReceivedAt?: SortOrder
+    finalizedAt?: SortOrder
+    consumedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type GithubWebhookDeliveryListRelationFilter = {
     every?: GithubWebhookDeliveryWhereInput
     some?: GithubWebhookDeliveryWhereInput
@@ -153796,6 +155469,13 @@ export namespace Prisma {
     connect?: KnowledgeRepositoryConnectionWhereUniqueInput | KnowledgeRepositoryConnectionWhereUniqueInput[]
   }
 
+  export type KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput = {
+    create?: XOR<KnowledgeRepositoryInstallationIntentCreateWithoutAccountInput, KnowledgeRepositoryInstallationIntentUncheckedCreateWithoutAccountInput> | KnowledgeRepositoryInstallationIntentCreateWithoutAccountInput[] | KnowledgeRepositoryInstallationIntentUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: KnowledgeRepositoryInstallationIntentCreateOrConnectWithoutAccountInput | KnowledgeRepositoryInstallationIntentCreateOrConnectWithoutAccountInput[]
+    createMany?: KnowledgeRepositoryInstallationIntentCreateManyAccountInputEnvelope
+    connect?: KnowledgeRepositoryInstallationIntentWhereUniqueInput | KnowledgeRepositoryInstallationIntentWhereUniqueInput[]
+  }
+
   export type KnowledgeWriteRequestCreateNestedManyWithoutAccountInput = {
     create?: XOR<KnowledgeWriteRequestCreateWithoutAccountInput, KnowledgeWriteRequestUncheckedCreateWithoutAccountInput> | KnowledgeWriteRequestCreateWithoutAccountInput[] | KnowledgeWriteRequestUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: KnowledgeWriteRequestCreateOrConnectWithoutAccountInput | KnowledgeWriteRequestCreateOrConnectWithoutAccountInput[]
@@ -154185,6 +155865,13 @@ export namespace Prisma {
     connectOrCreate?: KnowledgeRepositoryConnectionCreateOrConnectWithoutAccountInput | KnowledgeRepositoryConnectionCreateOrConnectWithoutAccountInput[]
     createMany?: KnowledgeRepositoryConnectionCreateManyAccountInputEnvelope
     connect?: KnowledgeRepositoryConnectionWhereUniqueInput | KnowledgeRepositoryConnectionWhereUniqueInput[]
+  }
+
+  export type KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput = {
+    create?: XOR<KnowledgeRepositoryInstallationIntentCreateWithoutAccountInput, KnowledgeRepositoryInstallationIntentUncheckedCreateWithoutAccountInput> | KnowledgeRepositoryInstallationIntentCreateWithoutAccountInput[] | KnowledgeRepositoryInstallationIntentUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: KnowledgeRepositoryInstallationIntentCreateOrConnectWithoutAccountInput | KnowledgeRepositoryInstallationIntentCreateOrConnectWithoutAccountInput[]
+    createMany?: KnowledgeRepositoryInstallationIntentCreateManyAccountInputEnvelope
+    connect?: KnowledgeRepositoryInstallationIntentWhereUniqueInput | KnowledgeRepositoryInstallationIntentWhereUniqueInput[]
   }
 
   export type KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput = {
@@ -154986,6 +156673,20 @@ export namespace Prisma {
     deleteMany?: KnowledgeRepositoryConnectionScalarWhereInput | KnowledgeRepositoryConnectionScalarWhereInput[]
   }
 
+  export type KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<KnowledgeRepositoryInstallationIntentCreateWithoutAccountInput, KnowledgeRepositoryInstallationIntentUncheckedCreateWithoutAccountInput> | KnowledgeRepositoryInstallationIntentCreateWithoutAccountInput[] | KnowledgeRepositoryInstallationIntentUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: KnowledgeRepositoryInstallationIntentCreateOrConnectWithoutAccountInput | KnowledgeRepositoryInstallationIntentCreateOrConnectWithoutAccountInput[]
+    upsert?: KnowledgeRepositoryInstallationIntentUpsertWithWhereUniqueWithoutAccountInput | KnowledgeRepositoryInstallationIntentUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: KnowledgeRepositoryInstallationIntentCreateManyAccountInputEnvelope
+    set?: KnowledgeRepositoryInstallationIntentWhereUniqueInput | KnowledgeRepositoryInstallationIntentWhereUniqueInput[]
+    disconnect?: KnowledgeRepositoryInstallationIntentWhereUniqueInput | KnowledgeRepositoryInstallationIntentWhereUniqueInput[]
+    delete?: KnowledgeRepositoryInstallationIntentWhereUniqueInput | KnowledgeRepositoryInstallationIntentWhereUniqueInput[]
+    connect?: KnowledgeRepositoryInstallationIntentWhereUniqueInput | KnowledgeRepositoryInstallationIntentWhereUniqueInput[]
+    update?: KnowledgeRepositoryInstallationIntentUpdateWithWhereUniqueWithoutAccountInput | KnowledgeRepositoryInstallationIntentUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: KnowledgeRepositoryInstallationIntentUpdateManyWithWhereWithoutAccountInput | KnowledgeRepositoryInstallationIntentUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: KnowledgeRepositoryInstallationIntentScalarWhereInput | KnowledgeRepositoryInstallationIntentScalarWhereInput[]
+  }
+
   export type KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput = {
     create?: XOR<KnowledgeWriteRequestCreateWithoutAccountInput, KnowledgeWriteRequestUncheckedCreateWithoutAccountInput> | KnowledgeWriteRequestCreateWithoutAccountInput[] | KnowledgeWriteRequestUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: KnowledgeWriteRequestCreateOrConnectWithoutAccountInput | KnowledgeWriteRequestCreateOrConnectWithoutAccountInput[]
@@ -155750,6 +157451,20 @@ export namespace Prisma {
     update?: KnowledgeRepositoryConnectionUpdateWithWhereUniqueWithoutAccountInput | KnowledgeRepositoryConnectionUpdateWithWhereUniqueWithoutAccountInput[]
     updateMany?: KnowledgeRepositoryConnectionUpdateManyWithWhereWithoutAccountInput | KnowledgeRepositoryConnectionUpdateManyWithWhereWithoutAccountInput[]
     deleteMany?: KnowledgeRepositoryConnectionScalarWhereInput | KnowledgeRepositoryConnectionScalarWhereInput[]
+  }
+
+  export type KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<KnowledgeRepositoryInstallationIntentCreateWithoutAccountInput, KnowledgeRepositoryInstallationIntentUncheckedCreateWithoutAccountInput> | KnowledgeRepositoryInstallationIntentCreateWithoutAccountInput[] | KnowledgeRepositoryInstallationIntentUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: KnowledgeRepositoryInstallationIntentCreateOrConnectWithoutAccountInput | KnowledgeRepositoryInstallationIntentCreateOrConnectWithoutAccountInput[]
+    upsert?: KnowledgeRepositoryInstallationIntentUpsertWithWhereUniqueWithoutAccountInput | KnowledgeRepositoryInstallationIntentUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: KnowledgeRepositoryInstallationIntentCreateManyAccountInputEnvelope
+    set?: KnowledgeRepositoryInstallationIntentWhereUniqueInput | KnowledgeRepositoryInstallationIntentWhereUniqueInput[]
+    disconnect?: KnowledgeRepositoryInstallationIntentWhereUniqueInput | KnowledgeRepositoryInstallationIntentWhereUniqueInput[]
+    delete?: KnowledgeRepositoryInstallationIntentWhereUniqueInput | KnowledgeRepositoryInstallationIntentWhereUniqueInput[]
+    connect?: KnowledgeRepositoryInstallationIntentWhereUniqueInput | KnowledgeRepositoryInstallationIntentWhereUniqueInput[]
+    update?: KnowledgeRepositoryInstallationIntentUpdateWithWhereUniqueWithoutAccountInput | KnowledgeRepositoryInstallationIntentUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: KnowledgeRepositoryInstallationIntentUpdateManyWithWhereWithoutAccountInput | KnowledgeRepositoryInstallationIntentUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: KnowledgeRepositoryInstallationIntentScalarWhereInput | KnowledgeRepositoryInstallationIntentScalarWhereInput[]
   }
 
   export type KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput = {
@@ -158777,6 +160492,20 @@ export namespace Prisma {
     upsert?: AccountUpsertWithoutRepositoryStatisticsInput
     connect?: AccountWhereUniqueInput
     update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutRepositoryStatisticsInput, AccountUpdateWithoutRepositoryStatisticsInput>, AccountUncheckedUpdateWithoutRepositoryStatisticsInput>
+  }
+
+  export type AccountCreateNestedOneWithoutKnowledgeRepositoryInstallationIntentsInput = {
+    create?: XOR<AccountCreateWithoutKnowledgeRepositoryInstallationIntentsInput, AccountUncheckedCreateWithoutKnowledgeRepositoryInstallationIntentsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutKnowledgeRepositoryInstallationIntentsInput
+    connect?: AccountWhereUniqueInput
+  }
+
+  export type AccountUpdateOneRequiredWithoutKnowledgeRepositoryInstallationIntentsNestedInput = {
+    create?: XOR<AccountCreateWithoutKnowledgeRepositoryInstallationIntentsInput, AccountUncheckedCreateWithoutKnowledgeRepositoryInstallationIntentsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutKnowledgeRepositoryInstallationIntentsInput
+    upsert?: AccountUpsertWithoutKnowledgeRepositoryInstallationIntentsInput
+    connect?: AccountWhereUniqueInput
+    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutKnowledgeRepositoryInstallationIntentsInput, AccountUpdateWithoutKnowledgeRepositoryInstallationIntentsInput>, AccountUncheckedUpdateWithoutKnowledgeRepositoryInstallationIntentsInput>
   }
 
   export type AccountCreateNestedOneWithoutKnowledgeRepositoryConnectionsInput = {
@@ -162347,6 +164076,52 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type KnowledgeRepositoryInstallationIntentCreateWithoutAccountInput = {
+    id: string
+    stateHash: string
+    routeKey: string
+    clientKind: string
+    returnPath: string
+    status?: string
+    installationId?: string | null
+    providerAccountId?: string | null
+    setupAction?: string | null
+    expiresAt: Date | string
+    callbackReceivedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KnowledgeRepositoryInstallationIntentUncheckedCreateWithoutAccountInput = {
+    id: string
+    stateHash: string
+    routeKey: string
+    clientKind: string
+    returnPath: string
+    status?: string
+    installationId?: string | null
+    providerAccountId?: string | null
+    setupAction?: string | null
+    expiresAt: Date | string
+    callbackReceivedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KnowledgeRepositoryInstallationIntentCreateOrConnectWithoutAccountInput = {
+    where: KnowledgeRepositoryInstallationIntentWhereUniqueInput
+    create: XOR<KnowledgeRepositoryInstallationIntentCreateWithoutAccountInput, KnowledgeRepositoryInstallationIntentUncheckedCreateWithoutAccountInput>
+  }
+
+  export type KnowledgeRepositoryInstallationIntentCreateManyAccountInputEnvelope = {
+    data: KnowledgeRepositoryInstallationIntentCreateManyAccountInput | KnowledgeRepositoryInstallationIntentCreateManyAccountInput[]
+    skipDuplicates?: boolean
+  }
+
   export type KnowledgeWriteRequestCreateWithoutAccountInput = {
     id: string
     requestId: string
@@ -164503,6 +166278,44 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"KnowledgeRepositoryConnection"> | Date | string | null
   }
 
+  export type KnowledgeRepositoryInstallationIntentUpsertWithWhereUniqueWithoutAccountInput = {
+    where: KnowledgeRepositoryInstallationIntentWhereUniqueInput
+    update: XOR<KnowledgeRepositoryInstallationIntentUpdateWithoutAccountInput, KnowledgeRepositoryInstallationIntentUncheckedUpdateWithoutAccountInput>
+    create: XOR<KnowledgeRepositoryInstallationIntentCreateWithoutAccountInput, KnowledgeRepositoryInstallationIntentUncheckedCreateWithoutAccountInput>
+  }
+
+  export type KnowledgeRepositoryInstallationIntentUpdateWithWhereUniqueWithoutAccountInput = {
+    where: KnowledgeRepositoryInstallationIntentWhereUniqueInput
+    data: XOR<KnowledgeRepositoryInstallationIntentUpdateWithoutAccountInput, KnowledgeRepositoryInstallationIntentUncheckedUpdateWithoutAccountInput>
+  }
+
+  export type KnowledgeRepositoryInstallationIntentUpdateManyWithWhereWithoutAccountInput = {
+    where: KnowledgeRepositoryInstallationIntentScalarWhereInput
+    data: XOR<KnowledgeRepositoryInstallationIntentUpdateManyMutationInput, KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountInput>
+  }
+
+  export type KnowledgeRepositoryInstallationIntentScalarWhereInput = {
+    AND?: KnowledgeRepositoryInstallationIntentScalarWhereInput | KnowledgeRepositoryInstallationIntentScalarWhereInput[]
+    OR?: KnowledgeRepositoryInstallationIntentScalarWhereInput[]
+    NOT?: KnowledgeRepositoryInstallationIntentScalarWhereInput | KnowledgeRepositoryInstallationIntentScalarWhereInput[]
+    id?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    identityId?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    stateHash?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    routeKey?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    clientKind?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    returnPath?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    status?: StringFilter<"KnowledgeRepositoryInstallationIntent"> | string
+    installationId?: StringNullableFilter<"KnowledgeRepositoryInstallationIntent"> | string | null
+    providerAccountId?: StringNullableFilter<"KnowledgeRepositoryInstallationIntent"> | string | null
+    setupAction?: StringNullableFilter<"KnowledgeRepositoryInstallationIntent"> | string | null
+    expiresAt?: DateTimeFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string
+    callbackReceivedAt?: DateTimeNullableFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string | null
+    finalizedAt?: DateTimeNullableFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string | null
+    consumedAt?: DateTimeNullableFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string | null
+    createdAt?: DateTimeFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string
+    updatedAt?: DateTimeFilter<"KnowledgeRepositoryInstallationIntent"> | Date | string
+  }
+
   export type KnowledgeWriteRequestUpsertWithWhereUniqueWithoutAccountInput = {
     where: KnowledgeWriteRequestWhereUniqueInput
     update: XOR<KnowledgeWriteRequestUpdateWithoutAccountInput, KnowledgeWriteRequestUncheckedUpdateWithoutAccountInput>
@@ -164618,6 +166431,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -164694,6 +166508,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -164786,6 +166601,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -164862,6 +166678,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -164938,6 +166755,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -165014,6 +166832,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -165134,6 +166953,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -165210,6 +167030,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -165302,6 +167123,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -165378,6 +167200,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -165501,6 +167324,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -165577,6 +167401,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -165690,6 +167515,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -165766,6 +167592,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -165858,6 +167685,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -165934,6 +167762,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -166010,6 +167839,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -166086,6 +167916,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -166178,6 +168009,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -166254,6 +168086,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -166330,6 +168163,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -166406,6 +168240,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -166498,6 +168333,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -166574,6 +168410,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -166650,6 +168487,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -166726,6 +168564,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -166818,6 +168657,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -166894,6 +168734,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -166970,6 +168811,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -167046,6 +168888,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -167138,6 +168981,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -167214,6 +169058,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -167394,6 +169239,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -167470,6 +169316,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -167659,6 +169506,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -167735,6 +169583,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -168075,6 +169924,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -168151,6 +170001,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -168259,6 +170110,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -168335,6 +170187,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -168449,6 +170302,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -168525,6 +170379,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -168672,6 +170527,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -168748,6 +170604,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -168915,6 +170772,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -168991,6 +170849,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -169130,6 +170989,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -169206,6 +171066,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -169319,6 +171180,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -169395,6 +171257,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -169520,6 +171383,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -169596,6 +171460,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -169711,6 +171576,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -169787,6 +171653,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -170014,6 +171881,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -170090,6 +171958,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -171176,6 +173045,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -171252,6 +173122,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -171393,6 +173264,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -171469,6 +173341,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -171847,6 +173720,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -171923,6 +173797,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -172053,6 +173928,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -172129,6 +174005,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -172237,6 +174114,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -172313,6 +174191,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -172483,6 +174362,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -172559,6 +174439,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -172725,6 +174606,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -172801,6 +174683,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -173014,6 +174897,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -173090,6 +174974,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -173465,6 +175350,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -173541,6 +175427,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -173713,6 +175600,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -173789,6 +175677,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -173865,6 +175754,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -173941,6 +175831,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -174100,6 +175991,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -174176,6 +176068,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -174325,6 +176218,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -174401,6 +176295,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -174560,6 +176455,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -174636,6 +176532,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -174992,6 +176889,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -175068,6 +176966,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -175233,6 +177132,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -175309,6 +177209,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -175385,6 +177286,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -175461,6 +177363,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -175553,6 +177456,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -175629,6 +177533,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -175861,6 +177766,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -175937,6 +177843,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -176134,6 +178041,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -176210,6 +178118,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -176333,6 +178242,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -176409,6 +178319,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -176597,6 +178508,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -176673,6 +178585,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -176765,6 +178678,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -176841,6 +178755,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -177024,6 +178939,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -177100,6 +179016,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -177273,6 +179190,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -177349,6 +179267,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -177532,6 +179451,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -177608,6 +179528,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -177781,6 +179702,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -177857,6 +179779,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -177949,6 +179872,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -178025,6 +179949,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -178101,6 +180026,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -178177,6 +180103,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -178360,6 +180287,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -178436,6 +180364,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -178609,6 +180538,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -178685,6 +180615,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -178777,6 +180708,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -178853,6 +180785,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -179020,6 +180953,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -179096,6 +181030,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -179285,6 +181220,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -179361,6 +181297,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -179437,6 +181374,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -179513,6 +181451,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -179711,6 +181650,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -179787,6 +181727,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -179919,6 +181860,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -179995,6 +181937,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -180114,6 +182057,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -180190,6 +182134,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -180282,6 +182227,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -180358,6 +182304,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -180512,6 +182459,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -180588,6 +182536,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -180738,6 +182687,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -180814,6 +182764,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -180941,6 +182892,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -181017,6 +182969,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -181109,6 +183062,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -181185,6 +183139,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -181302,6 +183257,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -181378,6 +183334,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -181518,6 +183475,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -181594,6 +183552,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -181725,6 +183684,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -181801,6 +183761,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -181910,6 +183871,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -181986,6 +183948,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -182117,6 +184080,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -182193,6 +184157,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -182269,6 +184234,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -182345,6 +184311,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -182625,6 +184592,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -182701,6 +184669,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -182841,6 +184810,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -182917,6 +184887,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -183131,6 +185102,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -183207,6 +185179,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -183395,6 +185368,7 @@ export namespace Prisma {
     folders?: FolderCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -183471,6 +185445,7 @@ export namespace Prisma {
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -183614,6 +185589,7 @@ export namespace Prisma {
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -183690,6 +185666,7 @@ export namespace Prisma {
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -183865,6 +185842,7 @@ export namespace Prisma {
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -183941,6 +185919,7 @@ export namespace Prisma {
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -184180,6 +186159,7 @@ export namespace Prisma {
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -184256,6 +186236,7 @@ export namespace Prisma {
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -184747,6 +186728,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -184823,6 +186805,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -184966,6 +186949,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -185042,6 +187026,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -185175,6 +187160,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -185251,6 +187237,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -185343,6 +187330,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -185385,6 +187373,331 @@ export namespace Prisma {
     userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
     repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
     repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
+    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
+    relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
+    walletAccounts?: WalletAccountUncheckedUpdateManyWithoutAccountNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutAccount_identityNestedInput
+    activityLedger?: ActivityLedgerUncheckedUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderOccurrences?: ReminderOccurrenceUncheckedUpdateManyWithoutAccountNestedInput
+    routineOccurrences?: RoutineOccurrenceUncheckedUpdateManyWithoutAccountNestedInput
+    notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedUpdateManyWithoutAccountNestedInput
+    aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
+  }
+
+  export type AccountCreateWithoutKnowledgeRepositoryInstallationIntentsInput = {
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    cloudUser: CloudAuthUserCreateNestedOneWithoutAccountInput
+    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
+    goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
+    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
+    routineDefinitions?: RoutineDefinitionCreateNestedManyWithoutAccountInput
+    routineTemporaryOverrides?: RoutineTemporaryOverrideCreateNestedManyWithoutAccountInput
+    routineProfiles?: RoutineProfileCreateNestedManyWithoutAccountInput
+    routineProfileMemberships?: RoutineProfileMembershipCreateNestedManyWithoutAccountInput
+    routineProtocolDefinitions?: RoutineProtocolDefinitionCreateNestedManyWithoutAccountInput
+    routineProtocolSessions?: RoutineProtocolSessionCreateNestedManyWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
+    habits?: HabitCreateNestedManyWithoutAccountInput
+    relations?: RelationCreateNestedManyWithoutAccountInput
+    walletAccounts?: WalletAccountCreateNestedManyWithoutAccountInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutAccount_identityInput
+    activityLedger?: ActivityLedgerCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
+    notifications?: NotificationCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
+    reminderOccurrences?: ReminderOccurrenceCreateNestedManyWithoutAccountInput
+    routineOccurrences?: RoutineOccurrenceCreateNestedManyWithoutAccountInput
+    notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxCreateNestedManyWithoutAccountInput
+    aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
+    folders?: FolderCreateNestedManyWithoutIdentityInput
+    resources?: ResourceCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
+  }
+
+  export type AccountUncheckedCreateWithoutKnowledgeRepositoryInstallationIntentsInput = {
+    id: string
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
+    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
+    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
+    routineDefinitions?: RoutineDefinitionUncheckedCreateNestedManyWithoutAccountInput
+    routineTemporaryOverrides?: RoutineTemporaryOverrideUncheckedCreateNestedManyWithoutAccountInput
+    routineProfiles?: RoutineProfileUncheckedCreateNestedManyWithoutAccountInput
+    routineProfileMemberships?: RoutineProfileMembershipUncheckedCreateNestedManyWithoutAccountInput
+    routineProtocolDefinitions?: RoutineProtocolDefinitionUncheckedCreateNestedManyWithoutAccountInput
+    routineProtocolSessions?: RoutineProtocolSessionUncheckedCreateNestedManyWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
+    habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
+    relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
+    walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutAccountInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutAccount_identityInput
+    activityLedger?: ActivityLedgerUncheckedCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
+    reminderOccurrences?: ReminderOccurrenceUncheckedCreateNestedManyWithoutAccountInput
+    routineOccurrences?: RoutineOccurrenceUncheckedCreateNestedManyWithoutAccountInput
+    notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedCreateNestedManyWithoutAccountInput
+    aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
+    folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
+  }
+
+  export type AccountCreateOrConnectWithoutKnowledgeRepositoryInstallationIntentsInput = {
+    where: AccountWhereUniqueInput
+    create: XOR<AccountCreateWithoutKnowledgeRepositoryInstallationIntentsInput, AccountUncheckedCreateWithoutKnowledgeRepositoryInstallationIntentsInput>
+  }
+
+  export type AccountUpsertWithoutKnowledgeRepositoryInstallationIntentsInput = {
+    update: XOR<AccountUpdateWithoutKnowledgeRepositoryInstallationIntentsInput, AccountUncheckedUpdateWithoutKnowledgeRepositoryInstallationIntentsInput>
+    create: XOR<AccountCreateWithoutKnowledgeRepositoryInstallationIntentsInput, AccountUncheckedCreateWithoutKnowledgeRepositoryInstallationIntentsInput>
+    where?: AccountWhereInput
+  }
+
+  export type AccountUpdateToOneWithWhereWithoutKnowledgeRepositoryInstallationIntentsInput = {
+    where?: AccountWhereInput
+    data: XOR<AccountUpdateWithoutKnowledgeRepositoryInstallationIntentsInput, AccountUncheckedUpdateWithoutKnowledgeRepositoryInstallationIntentsInput>
+  }
+
+  export type AccountUpdateWithoutKnowledgeRepositoryInstallationIntentsInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cloudUser?: CloudAuthUserUpdateOneRequiredWithoutAccountNestedInput
+    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
+    goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
+    routineDefinitions?: RoutineDefinitionUpdateManyWithoutAccountNestedInput
+    routineTemporaryOverrides?: RoutineTemporaryOverrideUpdateManyWithoutAccountNestedInput
+    routineProfiles?: RoutineProfileUpdateManyWithoutAccountNestedInput
+    routineProfileMemberships?: RoutineProfileMembershipUpdateManyWithoutAccountNestedInput
+    routineProtocolDefinitions?: RoutineProtocolDefinitionUpdateManyWithoutAccountNestedInput
+    routineProtocolSessions?: RoutineProtocolSessionUpdateManyWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
+    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
+    habits?: HabitUpdateManyWithoutAccountNestedInput
+    relations?: RelationUpdateManyWithoutAccountNestedInput
+    walletAccounts?: WalletAccountUpdateManyWithoutAccountNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutAccount_identityNestedInput
+    activityLedger?: ActivityLedgerUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
+    reminderOccurrences?: ReminderOccurrenceUpdateManyWithoutAccountNestedInput
+    routineOccurrences?: RoutineOccurrenceUpdateManyWithoutAccountNestedInput
+    notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUpdateManyWithoutAccountNestedInput
+    aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
+  }
+
+  export type AccountUncheckedUpdateWithoutKnowledgeRepositoryInstallationIntentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    routineDefinitions?: RoutineDefinitionUncheckedUpdateManyWithoutAccountNestedInput
+    routineTemporaryOverrides?: RoutineTemporaryOverrideUncheckedUpdateManyWithoutAccountNestedInput
+    routineProfiles?: RoutineProfileUncheckedUpdateManyWithoutAccountNestedInput
+    routineProfileMemberships?: RoutineProfileMembershipUncheckedUpdateManyWithoutAccountNestedInput
+    routineProtocolDefinitions?: RoutineProtocolDefinitionUncheckedUpdateManyWithoutAccountNestedInput
+    routineProtocolSessions?: RoutineProtocolSessionUncheckedUpdateManyWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
@@ -185495,6 +187808,7 @@ export namespace Prisma {
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -185571,6 +187885,7 @@ export namespace Prisma {
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -185851,6 +188166,7 @@ export namespace Prisma {
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -185927,6 +188243,7 @@ export namespace Prisma {
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -186595,6 +188912,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutKnowledgeWriteRequestsInput = {
@@ -186671,6 +188989,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutKnowledgeWriteRequestsInput = {
@@ -186816,6 +189135,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutKnowledgeWriteRequestsInput = {
@@ -186892,6 +189212,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type KnowledgeRepositoryConnectionUpsertWithoutWriteRequestsInput = {
@@ -187026,6 +189347,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -187102,6 +189424,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -187194,6 +189517,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -187270,6 +189594,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -187380,6 +189705,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -187456,6 +189782,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -187564,6 +189891,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -187640,6 +189968,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -187716,6 +190045,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -187792,6 +190122,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -187884,6 +190215,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -187960,6 +190292,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -188036,6 +190369,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -188112,6 +190446,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -188291,6 +190626,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -188367,6 +190703,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -188536,6 +190873,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -188612,6 +190950,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -188704,6 +191043,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -188780,6 +191120,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -188856,6 +191197,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -188932,6 +191274,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -189024,6 +191367,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -189100,6 +191444,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -189176,6 +191521,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -189252,6 +191598,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -189477,6 +191824,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -189553,6 +191901,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -189727,6 +192076,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -189803,6 +192153,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -189989,6 +192340,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -190065,6 +192417,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -190241,6 +192594,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -190317,6 +192671,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -190503,6 +192858,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -190579,6 +192935,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -190755,6 +193112,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -190831,6 +193189,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -190923,6 +193282,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -190999,6 +193359,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -191075,6 +193436,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -191151,6 +193513,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -191277,6 +193640,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -191353,6 +193717,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -191470,6 +193835,7 @@ export namespace Prisma {
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
   }
 
@@ -191546,6 +193912,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -191669,6 +194036,7 @@ export namespace Prisma {
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
   }
 
@@ -191745,6 +194113,7 @@ export namespace Prisma {
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
     knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
     knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -192526,6 +194895,24 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+  }
+
+  export type KnowledgeRepositoryInstallationIntentCreateManyAccountInput = {
+    id: string
+    stateHash: string
+    routeKey: string
+    clientKind: string
+    returnPath: string
+    status?: string
+    installationId?: string | null
+    providerAccountId?: string | null
+    setupAction?: string | null
+    expiresAt: Date | string
+    callbackReceivedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type KnowledgeWriteRequestCreateManyAccountInput = {
@@ -194975,6 +197362,60 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type KnowledgeRepositoryInstallationIntentUpdateWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    stateHash?: StringFieldUpdateOperationsInput | string
+    routeKey?: StringFieldUpdateOperationsInput | string
+    clientKind?: StringFieldUpdateOperationsInput | string
+    returnPath?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    installationId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    setupAction?: NullableStringFieldUpdateOperationsInput | string | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callbackReceivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KnowledgeRepositoryInstallationIntentUncheckedUpdateWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    stateHash?: StringFieldUpdateOperationsInput | string
+    routeKey?: StringFieldUpdateOperationsInput | string
+    clientKind?: StringFieldUpdateOperationsInput | string
+    returnPath?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    installationId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    setupAction?: NullableStringFieldUpdateOperationsInput | string | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callbackReceivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    stateHash?: StringFieldUpdateOperationsInput | string
+    routeKey?: StringFieldUpdateOperationsInput | string
+    clientKind?: StringFieldUpdateOperationsInput | string
+    returnPath?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    installationId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    setupAction?: NullableStringFieldUpdateOperationsInput | string | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callbackReceivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type KnowledgeWriteRequestUpdateWithoutAccountInput = {

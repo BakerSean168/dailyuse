@@ -53,6 +53,30 @@ describe('envSchema LOCAL_VALIDATION', () => {
   });
 });
 
+describe('envSchema GitHub installation routing', () => {
+  const required = { JWT_SECRET: 'local-validation-secret-at-least-32-characters' };
+
+  it('accepts bounded lowercase environment route keys', () => {
+    expect(
+      envSchema.parse({
+        ...required,
+        GITHUB_INSTALLATION_ROUTE_KEY: 'staging-1',
+        GITHUB_INSTALLATION_ROUTE_TARGETS:
+          'dev=https://api.example.test,prod=https://api.example.com',
+      }),
+    ).toMatchObject({ GITHUB_INSTALLATION_ROUTE_KEY: 'staging-1' });
+  });
+
+  it.each(['Staging', 'staging/one', '-staging', 'staging-', 'staging_one'])(
+    'rejects unsafe route key %s',
+    (routeKey) => {
+      expect(() =>
+        envSchema.parse({ ...required, GITHUB_INSTALLATION_ROUTE_KEY: routeKey }),
+      ).toThrow();
+    },
+  );
+});
+
 describe('envSchema remote origins require HTTPS', () => {
   const required = { JWT_SECRET: 'local-validation-secret-at-least-32-characters' };
 

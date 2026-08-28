@@ -31,8 +31,25 @@ export const KnowledgeRepositoryLifecycleErrorCodes = {
 export type KnowledgeRepositoryLifecycleErrorCode =
   (typeof KnowledgeRepositoryLifecycleErrorCodes)[keyof typeof KnowledgeRepositoryLifecycleErrorCodes];
 
+export const KnowledgeRepositoryInstallationClientKindSchema = z.enum(['web', 'desktop']);
+export type KnowledgeRepositoryInstallationClientKind = z.infer<
+  typeof KnowledgeRepositoryInstallationClientKindSchema
+>;
+
+export const KnowledgeRepositoryInstallationIntentStatusSchema = z.enum([
+  'Pending',
+  'CallbackReceived',
+  'Finalized',
+  'Consumed',
+  'Expired',
+]);
+export type KnowledgeRepositoryInstallationIntentStatus = z.infer<
+  typeof KnowledgeRepositoryInstallationIntentStatusSchema
+>;
+
 export const StartKnowledgeRepositoryInstallationSchema = z.object({
   returnUrl: z.string().url().optional(),
+  clientKind: KnowledgeRepositoryInstallationClientKindSchema.optional(),
 });
 
 export type StartKnowledgeRepositoryInstallationReq = z.infer<
@@ -59,6 +76,7 @@ export const GitHubInstallationRepositorySchema = z.object({
 export type GitHubInstallationRepositoryDTO = z.infer<typeof GitHubInstallationRepositorySchema>;
 
 export const StartKnowledgeRepositoryInstallationResponseSchema = z.object({
+  intentId: z.string().min(1),
   installationUrl: z.string().url(),
   expiresAt: z.number(),
 });
@@ -84,6 +102,17 @@ export const CompleteKnowledgeRepositoryInstallationResponseSchema = z.object({
   repositories: z.array(GitHubInstallationRepositorySchema),
   returnUrl: z.string().nullable(),
 });
+
+export const KnowledgeRepositoryInstallationIntentStatusResponseSchema = z.object({
+  intentId: z.string().min(1),
+  status: KnowledgeRepositoryInstallationIntentStatusSchema,
+  clientKind: KnowledgeRepositoryInstallationClientKindSchema,
+  expiresAt: z.number(),
+  installationId: z.string().min(1).nullable(),
+});
+export type KnowledgeRepositoryInstallationIntentStatusResponse = z.infer<
+  typeof KnowledgeRepositoryInstallationIntentStatusResponseSchema
+>;
 
 // Residual 699: response dual body retired — OpenAPI + transport use ResponseSchema only.
 export type CompleteKnowledgeRepositoryInstallationRes = z.infer<

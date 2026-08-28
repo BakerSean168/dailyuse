@@ -26,6 +26,8 @@ describe('RepositoryHttpAdapter knowledge repository connections', () => {
       installationId: 'installation-1',
       setupAction: 'install',
     });
+    await adapter.getKnowledgeRepositoryInstallationIntentStatus('intent/1');
+    await adapter.finalizeKnowledgeRepositoryInstallationIntent('intent/1');
     await adapter.listKnowledgeRepositoryConnections();
     await adapter.connectKnowledgeRepository({
       installationId: 'installation-1',
@@ -58,8 +60,16 @@ describe('RepositoryHttpAdapter knowledge repository connections', () => {
         setupAction: 'install',
       },
     );
+    expect(httpClient.get).toHaveBeenCalledWith(
+      '/repositories/knowledge-connections/installations/intents/intent%2F1',
+    );
+    expect(httpClient.post).toHaveBeenNthCalledWith(
+      3,
+      '/repositories/knowledge-connections/installations/intents/intent%2F1/finalize',
+      {},
+    );
     expect(httpClient.get).toHaveBeenCalledWith('/repositories/knowledge-connections');
-    expect(httpClient.post).toHaveBeenNthCalledWith(3, '/repositories/knowledge-connections', {
+    expect(httpClient.post).toHaveBeenNthCalledWith(4, '/repositories/knowledge-connections', {
       installationId: 'installation-1',
       githubRepositoryId: 'repository-1',
     });
@@ -68,7 +78,7 @@ describe('RepositoryHttpAdapter knowledge repository connections', () => {
       { params: { purgeCloudData: true } },
     );
     expect(httpClient.post).toHaveBeenNthCalledWith(
-      4,
+      5,
       '/repositories/knowledge-connections/connection%2F1/desktop-token',
     );
   });
@@ -134,7 +144,10 @@ describe('RepositoryHttpAdapter knowledge repository connections', () => {
 
 describe('RepositoryHttpAdapter retired surface', () => {
   it('does not keep hard-fail stubs for retired CRUD methods', () => {
-    const adapter = new RepositoryHttpAdapter(createResultHttpClientStub()) as Record<string, unknown>;
+    const adapter = new RepositoryHttpAdapter(createResultHttpClientStub()) as Record<
+      string,
+      unknown
+    >;
     for (const method of [
       'getCurrentRepository',
       'listResources',
@@ -148,4 +161,3 @@ describe('RepositoryHttpAdapter retired surface', () => {
     }
   });
 });
-

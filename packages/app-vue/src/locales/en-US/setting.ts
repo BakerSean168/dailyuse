@@ -48,6 +48,8 @@ export default {
     "loadFailed": "Failed to load knowledge repository connections",
     "startFailed": "Unable to start GitHub App installation",
     "completeFailed": "GitHub App installation validation failed. Start the connection again.",
+    "installationPending": "GitHub installation has not completed yet. Finish the installation in GitHub and try again.",
+    "installationExpired": "GitHub installation expired. Start the connection again.",
     "connectFailed": "Failed to connect the GitHub knowledge repository",
     "disconnectFailed": "Failed to disconnect the GitHub knowledge repository",
     "disconnectTitle": "Disconnect the GitHub knowledge repository?",

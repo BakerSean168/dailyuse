@@ -11,7 +11,7 @@ import {
   type GitHubAppInstallationInventory,
   type IGitHubAppClient,
 } from '../ports/github-app-client.port';
-import { InMemoryKnowledgeRepositoryInstallationStateStore } from '../../infrastructure/services/in-memory-knowledge-repository-installation-state-store';
+import { InMemoryKnowledgeRepositoryInstallationIntentRepository } from '../../infrastructure/services/in-memory-knowledge-repository-installation-intent.repository';
 import { KnowledgeRepositoryConnectionService } from './knowledge-repository-connection.service';
 
 class MemoryConnectionRepository implements IKnowledgeRepositoryConnectionRepository {
@@ -116,19 +116,29 @@ function createService(
   cloudDataPurger?: IKnowledgeRepositoryCloudDataPurger,
 ) {
   const repository = new MemoryConnectionRepository();
-  const stateStore = new InMemoryKnowledgeRepositoryInstallationStateStore(
-    600_000,
-    () => 1_750_000_000_000,
-  );
+  const installationIntentRepository =
+    new InMemoryKnowledgeRepositoryInstallationIntentRepository();
   return {
     repository,
-    stateStore,
+    installationIntentRepository,
     github,
     service: new KnowledgeRepositoryConnectionService({
       appSlug: 'memoflow-test',
       connectionRepository: repository,
+      connectionWriteTransactionRunner: {
+        run: (work) =>
+          work({
+            connectionRepository: repository,
+            installationIntentRepository,
+          }),
+      },
       githubAppClient: github,
-      stateStore,
+      installationIntentRepository,
+      installationRouting: {
+        routeKey: 'dev',
+        webOrigin: 'https://app.example.test',
+        routeTargets: { staging: 'https://staging-api.example.test' },
+      },
       cloudDataPurger,
       now: () => 1_750_000_000_000,
     }),
@@ -152,14 +162,15 @@ async function completeInstallation(
 }
 
 describe('KnowledgeRepositoryConnectionService', () => {
-  it('issues and consumes an identity-bound one-time installation state', async () => {
+  it('issues a durable identity-bound installation state without letting another identity consume it', async () => {
     const { service } = createService();
     const started = await service.startInstallation('identity-1', {
       returnUrl: 'https://app.example.test/settings/repository',
     });
     if (!started.ok) throw new Error('expected ok');
+    expect(started.data.intentId).toMatch(/^knowledge-install-intent-/);
     expect(started.data.installationUrl).toContain(
-      'https://github.com/apps/memoflow-test/installations/new?state=',
+      'https://github.com/apps/memoflow-test/installations/new?state=mfi1.dev.',
     );
     const state = new URL(started.data.installationUrl).searchParams.get('state')!;
 
@@ -173,6 +184,88 @@ describe('KnowledgeRepositoryConnectionService', () => {
       service.completeInstallation('identity-1', {
         state,
         installationId: 'installation-1',
+      }),
+    ).resolves.toMatchObject({ ok: true, data: { installationId: 'installation-1' } });
+  });
+
+  it('records a public setup callback but refuses connect until the original identity finalizes', async () => {
+    const { service } = createService();
+    const started = await service.startInstallation('identity-1', {
+      clientKind: 'web',
+      returnUrl: 'https://app.example.test/settings?tab=repository',
+    });
+    if (!started.ok) throw new Error('expected ok');
+    const state = new URL(started.data.installationUrl).searchParams.get('state')!;
+
+    const setup = await service.receiveInstallationSetup({
+      state,
+      installationId: 'installation-1',
+      setupAction: 'install',
+    });
+    expect(setup).toMatchObject({
+      ok: true,
+      data: {
+        kind: 'web',
+        intentId: started.data.intentId,
+        location: expect.stringContaining(`installation_intent=${started.data.intentId}`),
+      },
+    });
+
+    await expect(
+      service.connect('identity-1', {
+        installationId: 'installation-1',
+        githubRepositoryId: 'repository-1',
+      }),
+    ).resolves.toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
+
+    await expect(
+      service.finalizeInstallationIntent('identity-2', started.data.intentId),
+    ).resolves.toMatchObject({ ok: false, error: { code: 'NOT_FOUND' } });
+    await expect(
+      service.finalizeInstallationIntent('identity-1', started.data.intentId),
+    ).resolves.toMatchObject({ ok: true, data: { installationId: 'installation-1' } });
+    await expect(
+      service.connect('identity-1', {
+        installationId: 'installation-1',
+        githubRepositoryId: 'repository-1',
+      }),
+    ).resolves.toMatchObject({ ok: true });
+  });
+
+  it('routes a foreign environment setup only through the configured API allowlist', async () => {
+    const github = createGithubClient();
+    const { service } = createService(github);
+    const foreignState =
+      'mfi1.staging.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_';
+
+    await expect(
+      service.receiveInstallationSetup({
+        state: foreignState,
+        installationId: 'installation-9',
+        setupAction: 'update',
+      }),
+    ).resolves.toMatchObject({
+      ok: true,
+      data: {
+        kind: 'redirect',
+        location: expect.stringContaining(
+          'https://staging-api.example.test/api/v1/repositories/knowledge-connections/installations/setup?',
+        ),
+      },
+    });
+    expect(github.getInstallationInventory).not.toHaveBeenCalled();
+
+    const unknownState = foreignState.replace('mfi1.staging.', 'mfi1.preview.');
+    await expect(
+      service.receiveInstallationSetup({ state: unknownState, installationId: 'installation-9' }),
+    ).resolves.toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
+  });
+
+  it('rejects an installation return URL outside the configured MemoFlow Web origin', async () => {
+    const { service } = createService();
+    await expect(
+      service.startInstallation('identity-1', {
+        returnUrl: 'https://evil.example/settings?tab=repository',
       }),
     ).resolves.toMatchObject({ ok: false, error: { code: 'VALIDATION_ERROR' } });
   });

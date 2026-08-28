@@ -6,6 +6,7 @@ import type {
   DisconnectKnowledgeRepositoryConnectionRes,
   KnowledgeRepositoryConnectionClientDTO,
   KnowledgeRepositoryInstallationTokenRes,
+  KnowledgeRepositoryInstallationIntentStatusResponse,
   KnowledgeRepositoryContentState,
   KnowledgeRepositoryReconciliationPreview,
   ListKnowledgeRepositoryConnectionsRes,
@@ -78,6 +79,24 @@ export class KnowledgeRepositoryRemoteGateway {
       method: 'POST',
       body: request,
     });
+  }
+
+  async getKnowledgeRepositoryInstallationIntentStatus(
+    intentId: string,
+  ): Promise<Result<KnowledgeRepositoryInstallationIntentStatusResponse>> {
+    return this.request(
+      `/repositories/knowledge-connections/installations/intents/${encodeURIComponent(intentId)}`,
+      { method: 'GET' },
+    );
+  }
+
+  async finalizeKnowledgeRepositoryInstallationIntent(
+    intentId: string,
+  ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>> {
+    return this.request(
+      `/repositories/knowledge-connections/installations/intents/${encodeURIComponent(intentId)}/finalize`,
+      { method: 'POST', body: {} },
+    );
   }
 
   async listKnowledgeRepositoryConnections(): Promise<

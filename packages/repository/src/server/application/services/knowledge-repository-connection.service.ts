@@ -9,6 +9,8 @@ import type {
   KnowledgeRepositoryConnectionClientDTO,
   KnowledgeRepositoryConnectionServerDTO,
   KnowledgeRepositoryContentState,
+  KnowledgeRepositoryInstallationClientKind,
+  KnowledgeRepositoryInstallationIntentStatusResponse,
   KnowledgeRepositoryFirstReconciliationAction,
   KnowledgeRepositoryReconciliationPreview,
   ListKnowledgeRepositoryConnectionsRes,
@@ -20,11 +22,21 @@ import { KnowledgeRepositoryLifecycleErrorCodes } from '@memoflow/contracts/repo
 import type {
   GitHubAppInstallationInventory,
   IGitHubAppClient,
-  IKnowledgeRepositoryInstallationStateStore,
 } from '../ports/github-app-client.port';
 import { GitHubAppClientFailureError } from '../ports/github-app-client.port';
 import type { IKnowledgeRepositoryConnectionRepository } from '../ports/knowledge-repository-connection.repository';
+import type { IKnowledgeRepositoryConnectionWriteTransactionRunner } from '../ports/knowledge-repository-connection-write-transaction.runner';
 import type { IKnowledgeRepositoryCloudDataPurger } from '../ports/knowledge-repository-cloud-data-purger.port';
+import type { IKnowledgeRepositoryInstallationIntentRepository } from '../ports/knowledge-repository-installation-intent.repository';
+import type {
+  KnowledgeRepositoryInstallationSetupRequest,
+  KnowledgeRepositoryInstallationSetupResolution,
+} from '../ports/knowledge-repository-connection.service.port';
+import {
+  createKnowledgeRepositoryInstallationState,
+  hashKnowledgeRepositoryInstallationState,
+  parseKnowledgeRepositoryInstallationStateRouteKey,
+} from './knowledge-repository-installation-state';
 
 function firstReconciliationAction(
   localState: KnowledgeRepositoryContentState,
@@ -42,12 +54,66 @@ function firstReconciliationAction(
   return 'ManualResolutionRequired';
 }
 
+const DEFAULT_INSTALLATION_RETURN_PATH = '/settings?tab=repository';
+const INSTALLATION_INTENT_TTL_MS = 10 * 60 * 1000;
+const INSTALLATION_SETUP_PATH = '/api/v1/repositories/knowledge-connections/installations/setup';
+
+export interface KnowledgeRepositoryInstallationRoutingConfig {
+  routeKey: string;
+  webOrigin: string;
+  routeTargets?: Readonly<Record<string, string>>;
+}
+
+function normalizeOrigin(value: string): string {
+  return new URL(value).origin;
+}
+
+function normalizeReturnPath(returnUrl: string | undefined, webOrigin: string): string | null {
+  if (!returnUrl) return DEFAULT_INSTALLATION_RETURN_PATH;
+  try {
+    const url = new URL(returnUrl);
+    if (url.origin !== normalizeOrigin(webOrigin)) return null;
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return null;
+  }
+}
+
+function buildWebReturnUrl(webOrigin: string, returnPath: string, intentId: string): string {
+  const url = new URL(returnPath, `${normalizeOrigin(webOrigin)}/`);
+  url.searchParams.set('installation_intent', intentId);
+  return url.toString();
+}
+
+class KnowledgeRepositoryConnectionCommitError extends Error {
+  constructor(
+    readonly code: 'FORBIDDEN' | 'CONFLICT',
+    message: string,
+  ) {
+    super(message);
+    this.name = 'KnowledgeRepositoryConnectionCommitError';
+  }
+}
+
+function buildSetupRouteUrl(
+  apiBaseUrl: string,
+  request: KnowledgeRepositoryInstallationSetupRequest,
+): string {
+  const url = new URL(INSTALLATION_SETUP_PATH, `${normalizeOrigin(apiBaseUrl)}/`);
+  url.searchParams.set('state', request.state);
+  url.searchParams.set('installation_id', request.installationId);
+  if (request.setupAction) url.searchParams.set('setup_action', request.setupAction);
+  return url.toString();
+}
+
 export interface KnowledgeRepositoryConnectionServiceOptions {
   appSlug: string;
   connectionRepository: IKnowledgeRepositoryConnectionRepository;
+  connectionWriteTransactionRunner: IKnowledgeRepositoryConnectionWriteTransactionRunner;
   cloudDataPurger?: IKnowledgeRepositoryCloudDataPurger;
   githubAppClient: IGitHubAppClient;
-  stateStore: IKnowledgeRepositoryInstallationStateStore;
+  installationIntentRepository: IKnowledgeRepositoryInstallationIntentRepository;
+  installationRouting: KnowledgeRepositoryInstallationRoutingConfig;
   now?: () => number;
 }
 
@@ -62,11 +128,192 @@ export class KnowledgeRepositoryConnectionService {
     identityId: string,
     request: StartKnowledgeRepositoryInstallationReq,
   ): Promise<Result<StartKnowledgeRepositoryInstallationRes>> {
-    const issued = this.options.stateStore.issue(identityId, request.returnUrl);
-    const search = new URLSearchParams({ state: issued.state });
+    const returnPath = normalizeReturnPath(
+      request.returnUrl,
+      this.options.installationRouting.webOrigin,
+    );
+    if (!returnPath) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: 'GitHub installation return URL must use the configured MemoFlow Web origin',
+      });
+    }
+
+    try {
+      const now = this.now();
+      const expiresAt = now + INSTALLATION_INTENT_TTL_MS;
+      const intentId = `knowledge-install-intent-${randomUUID()}`;
+      const state = createKnowledgeRepositoryInstallationState(
+        this.options.installationRouting.routeKey,
+      );
+      const clientKind: KnowledgeRepositoryInstallationClientKind = request.clientKind ?? 'web';
+      await this.options.installationIntentRepository.create({
+        id: intentId,
+        identityId,
+        stateHash: state.stateHash,
+        routeKey: state.routeKey,
+        clientKind,
+        returnPath,
+        expiresAt,
+        createdAt: now,
+      });
+      const search = new URLSearchParams({ state: state.state });
+      return ok({
+        intentId,
+        installationUrl: `https://github.com/apps/${encodeURIComponent(this.options.appSlug)}/installations/new?${search.toString()}`,
+        expiresAt,
+      });
+    } catch (error) {
+      return fail({
+        code: 'SERVICE_UNAVAILABLE',
+        message: error instanceof Error ? error.message : 'GitHub installation start failed',
+      });
+    }
+  }
+
+  async receiveInstallationSetup(
+    request: KnowledgeRepositoryInstallationSetupRequest,
+  ): Promise<Result<KnowledgeRepositoryInstallationSetupResolution>> {
+    const routeKey = parseKnowledgeRepositoryInstallationStateRouteKey(request.state);
+    if (!routeKey) {
+      return fail({ code: 'VALIDATION_ERROR', message: 'GitHub installation state is invalid' });
+    }
+
+    if (routeKey !== this.options.installationRouting.routeKey) {
+      const target = this.options.installationRouting.routeTargets?.[routeKey];
+      if (!target) {
+        return fail({
+          code: 'FORBIDDEN',
+          message: 'GitHub installation state targets an unconfigured environment',
+        });
+      }
+      return ok({ kind: 'redirect', location: buildSetupRouteUrl(target, request) });
+    }
+
+    const stateHash = hashKnowledgeRepositoryInstallationState(request.state);
+    const intent = await this.options.installationIntentRepository.findByStateHash(stateHash);
+    if (!intent || intent.routeKey !== routeKey) {
+      return fail({ code: 'VALIDATION_ERROR', message: 'GitHub installation state is invalid' });
+    }
+    if (intent.expiresAt <= this.now()) {
+      return fail({ code: 'VALIDATION_ERROR', message: 'GitHub installation state has expired' });
+    }
+
+    const inventoryResult = await this.getValidInstallationInventory(request.installationId);
+    if (!inventoryResult.ok) return inventoryResult;
+    const callback = await this.options.installationIntentRepository.recordCallback({
+      stateHash,
+      installationId: request.installationId,
+      providerAccountId: inventoryResult.data.accountId,
+      setupAction: request.setupAction ?? 'install',
+      now: this.now(),
+    });
+    if (callback.kind === 'not_found' || callback.kind === 'expired') {
+      return fail({ code: 'VALIDATION_ERROR', message: 'GitHub installation state is invalid' });
+    }
+    if (callback.kind === 'conflict') {
+      return fail({
+        code: 'CONFLICT',
+        message: 'GitHub installation state was already used by another installation',
+      });
+    }
+
+    const resolvedIntent = callback.intent;
+    if (resolvedIntent.clientKind === 'desktop') {
+      return ok({
+        kind: 'desktop',
+        intentId: resolvedIntent.id,
+        expiresAt: resolvedIntent.expiresAt,
+      });
+    }
     return ok({
-      installationUrl: `https://github.com/apps/${encodeURIComponent(this.options.appSlug)}/installations/new?${search.toString()}`,
-      expiresAt: issued.expiresAt,
+      kind: 'web',
+      intentId: resolvedIntent.id,
+      location: buildWebReturnUrl(
+        this.options.installationRouting.webOrigin,
+        resolvedIntent.returnPath,
+        resolvedIntent.id,
+      ),
+    });
+  }
+
+  async getInstallationIntentStatus(
+    identityId: string,
+    intentId: string,
+  ): Promise<Result<KnowledgeRepositoryInstallationIntentStatusResponse>> {
+    const intent = await this.options.installationIntentRepository.findByIdForIdentity(
+      identityId,
+      intentId,
+    );
+    if (!intent) {
+      return fail({ code: 'NOT_FOUND', message: 'GitHub installation intent was not found' });
+    }
+    return ok({
+      intentId: intent.id,
+      status:
+        intent.expiresAt <= this.now() && intent.status !== 'Consumed' ? 'Expired' : intent.status,
+      clientKind: intent.clientKind,
+      expiresAt: intent.expiresAt,
+      installationId: intent.installationId,
+    });
+  }
+
+  async finalizeInstallationIntent(
+    identityId: string,
+    intentId: string,
+  ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>> {
+    const intent = await this.options.installationIntentRepository.findByIdForIdentity(
+      identityId,
+      intentId,
+    );
+    if (!intent) {
+      return fail({ code: 'NOT_FOUND', message: 'GitHub installation intent was not found' });
+    }
+    if (intent.expiresAt <= this.now()) {
+      return fail({ code: 'VALIDATION_ERROR', message: 'GitHub installation intent has expired' });
+    }
+    if (!intent.installationId || !intent.providerAccountId) {
+      return fail({
+        code: 'CONFLICT',
+        message: 'GitHub installation callback has not been received yet',
+      });
+    }
+    if (intent.status !== 'CallbackReceived' && intent.status !== 'Finalized') {
+      return fail({
+        code: 'CONFLICT',
+        message: 'GitHub installation intent cannot be finalized from its current state',
+      });
+    }
+
+    const inventoryResult = await this.getValidInstallationInventory(intent.installationId);
+    if (!inventoryResult.ok) return inventoryResult;
+    if (inventoryResult.data.accountId !== intent.providerAccountId) {
+      return fail({
+        code: 'CONFLICT',
+        message: 'GitHub installation account changed before finalization',
+      });
+    }
+    const finalized = await this.options.installationIntentRepository.markFinalized({
+      identityId,
+      intentId,
+      installationId: intent.installationId,
+      providerAccountId: inventoryResult.data.accountId,
+      now: this.now(),
+    });
+    if (!finalized) {
+      return fail({
+        code: 'CONFLICT',
+        message: 'GitHub installation intent could not be finalized',
+      });
+    }
+    return ok({
+      installationId: intent.installationId,
+      githubAccountId: inventoryResult.data.accountId,
+      repositories: inventoryResult.data.repositories,
+      returnUrl: new URL(
+        finalized.returnPath,
+        `${normalizeOrigin(this.options.installationRouting.webOrigin)}/`,
+      ).toString(),
     });
   }
 
@@ -74,47 +321,47 @@ export class KnowledgeRepositoryConnectionService {
     identityId: string,
     request: CompleteKnowledgeRepositoryInstallationReq,
   ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>> {
-    const state = this.options.stateStore.consume(request.state);
-    if (!state || state.identityId !== identityId || state.expiresAt <= this.now()) {
+    const routeKey = parseKnowledgeRepositoryInstallationStateRouteKey(request.state);
+    if (!routeKey || routeKey !== this.options.installationRouting.routeKey) {
+      return fail({ code: 'VALIDATION_ERROR', message: 'GitHub installation state is invalid' });
+    }
+    const stateHash = hashKnowledgeRepositoryInstallationState(request.state);
+    const intent = await this.options.installationIntentRepository.findByStateHash(stateHash);
+    if (!intent || intent.identityId !== identityId || intent.expiresAt <= this.now()) {
       return fail({ code: 'VALIDATION_ERROR', message: 'GitHub installation state is invalid' });
     }
 
-    try {
-      const inventory = await this.options.githubAppClient.getInstallationInventory(
-        request.installationId,
-      );
-      if (inventory.suspended) {
-        return fail({ code: 'FORBIDDEN', message: 'GitHub App installation is suspended' });
-      }
-      if (inventory.contentsPermission !== 'write') {
-        return fail({
-          code: 'FORBIDDEN',
-          message: 'GitHub App installation requires Contents write permission',
-        });
-      }
-      this.options.stateStore.claimInstallation(identityId, request.installationId);
-      return ok({
-        installationId: request.installationId,
-        githubAccountId: inventory.accountId,
-        repositories: inventory.repositories,
-        returnUrl: state.returnUrl,
-      });
-    } catch (error) {
-      return fail({
-        code: 'SERVICE_UNAVAILABLE',
-        message: error instanceof Error ? error.message : 'GitHub installation lookup failed',
-      });
+    const inventoryResult = await this.getValidInstallationInventory(request.installationId);
+    if (!inventoryResult.ok) return inventoryResult;
+    const callback = await this.options.installationIntentRepository.recordCallback({
+      stateHash,
+      installationId: request.installationId,
+      providerAccountId: inventoryResult.data.accountId,
+      setupAction: request.setupAction ?? 'install',
+      now: this.now(),
+    });
+    if (callback.kind === 'not_found' || callback.kind === 'expired') {
+      return fail({ code: 'VALIDATION_ERROR', message: 'GitHub installation state is invalid' });
     }
+    if (callback.kind === 'conflict') {
+      return fail({ code: 'CONFLICT', message: 'GitHub installation state is already bound' });
+    }
+    return this.finalizeInstallationIntent(identityId, intent.id);
   }
 
   async connect(
     identityId: string,
     request: CreateKnowledgeRepositoryConnectionReq,
   ): Promise<Result<KnowledgeRepositoryConnectionClientDTO>> {
-    if (!this.options.stateStore.hasInstallationClaim(identityId, request.installationId)) {
+    const finalizedIntent = await this.options.installationIntentRepository.findUsableFinalized(
+      identityId,
+      request.installationId,
+      this.now(),
+    );
+    if (!finalizedIntent) {
       return fail({
         code: 'FORBIDDEN',
-        message: 'Complete the GitHub App installation flow before connecting a repository',
+        message: 'Finalize the GitHub App installation before connecting a repository',
       });
     }
 
@@ -150,40 +397,69 @@ export class KnowledgeRepositoryConnectionService {
         return fail({ code: 'FORBIDDEN', message: 'Contents write permission is required' });
       }
 
-      const existing = await this.options.connectionRepository.findByGithubRepositoryId(
-        repository.id,
-      );
-      if (existing && existing.identityId !== identityId && existing.deletedAt === null) {
-        return fail({
-          code: 'CONFLICT',
-          message: 'Repository is already connected to another account',
-        });
-      }
-
       const timestamp = this.now();
-      const connection: KnowledgeRepositoryConnectionServerDTO = {
-        id: existing?.id ?? `knowledge-connection-${randomUUID()}`,
-        identityId: identityId as KnowledgeRepositoryConnectionServerDTO['identityId'],
-        githubUserId: inventory.accountId,
-        githubRepositoryId: repository.id,
-        githubRepositoryFullName: repository.fullName,
-        installationId: request.installationId,
-        defaultBranch: repository.defaultBranch,
-        status: 'Active',
-        lastSyncedCommitSha: existing?.lastSyncedCommitSha ?? null,
-        lastProjectedCommitSha: existing?.lastProjectedCommitSha ?? null,
-        lastErrorCode: null,
-        lastErrorMessage: null,
-        version: (existing?.version ?? 0) + 1,
-        createdAt:
-          existing?.createdAt ?? (timestamp as KnowledgeRepositoryConnectionServerDTO['createdAt']),
-        updatedAt: timestamp as KnowledgeRepositoryConnectionServerDTO['updatedAt'],
-        deletedAt: null,
-      };
-      await this.options.connectionRepository.save(connection);
-      this.options.stateStore.releaseInstallationClaim(identityId, request.installationId);
+      const connection = await this.options.connectionWriteTransactionRunner.run(
+        async ({ connectionRepository, installationIntentRepository }) => {
+          const transactionalIntent = await installationIntentRepository.findUsableFinalized(
+            identityId,
+            request.installationId,
+            timestamp,
+          );
+          if (!transactionalIntent || transactionalIntent.id !== finalizedIntent.id) {
+            throw new KnowledgeRepositoryConnectionCommitError(
+              'FORBIDDEN',
+              'GitHub installation intent is no longer available for connection',
+            );
+          }
+
+          const existing = await connectionRepository.findByGithubRepositoryId(repository.id);
+          if (existing && existing.identityId !== identityId) {
+            throw new KnowledgeRepositoryConnectionCommitError(
+              'CONFLICT',
+              'Repository is already associated with another account',
+            );
+          }
+
+          const next: KnowledgeRepositoryConnectionServerDTO = {
+            id: existing?.id ?? `knowledge-connection-${randomUUID()}`,
+            identityId: identityId as KnowledgeRepositoryConnectionServerDTO['identityId'],
+            githubUserId: inventory.accountId,
+            githubRepositoryId: repository.id,
+            githubRepositoryFullName: repository.fullName,
+            installationId: request.installationId,
+            defaultBranch: repository.defaultBranch,
+            status: 'Active',
+            lastSyncedCommitSha: existing?.lastSyncedCommitSha ?? null,
+            lastProjectedCommitSha: existing?.lastProjectedCommitSha ?? null,
+            lastErrorCode: null,
+            lastErrorMessage: null,
+            version: (existing?.version ?? 0) + 1,
+            createdAt:
+              existing?.createdAt ??
+              (timestamp as KnowledgeRepositoryConnectionServerDTO['createdAt']),
+            updatedAt: timestamp as KnowledgeRepositoryConnectionServerDTO['updatedAt'],
+            deletedAt: null,
+          };
+          await connectionRepository.save(next);
+          const consumed = await installationIntentRepository.markConsumed({
+            identityId,
+            intentId: transactionalIntent.id,
+            now: timestamp,
+          });
+          if (!consumed) {
+            throw new KnowledgeRepositoryConnectionCommitError(
+              'CONFLICT',
+              'GitHub installation intent was consumed concurrently',
+            );
+          }
+          return next;
+        },
+      );
       return ok(this.toClient(connection));
     } catch (error) {
+      if (error instanceof KnowledgeRepositoryConnectionCommitError) {
+        return fail({ code: error.code, message: error.message });
+      }
       return fail({
         code: 'SERVICE_UNAVAILABLE',
         message: error instanceof Error ? error.message : 'GitHub repository connection failed',
@@ -440,6 +716,29 @@ export class KnowledgeRepositoryConnectionService {
         code: 'SERVICE_UNAVAILABLE',
         message:
           error instanceof Error ? error.message : 'GitHub repository HEAD confirmation failed',
+      });
+    }
+  }
+
+  private async getValidInstallationInventory(
+    installationId: string,
+  ): Promise<Result<GitHubAppInstallationInventory>> {
+    try {
+      const inventory = await this.options.githubAppClient.getInstallationInventory(installationId);
+      if (inventory.suspended) {
+        return fail({ code: 'FORBIDDEN', message: 'GitHub App installation is suspended' });
+      }
+      if (inventory.contentsPermission !== 'write') {
+        return fail({
+          code: 'FORBIDDEN',
+          message: 'GitHub App installation requires Contents write permission',
+        });
+      }
+      return ok(inventory);
+    } catch (error) {
+      return fail({
+        code: 'SERVICE_UNAVAILABLE',
+        message: error instanceof Error ? error.message : 'GitHub installation lookup failed',
       });
     }
   }

@@ -7,6 +7,7 @@ import type {
   ConfirmKnowledgeRepositoryHeadReq,
   CreateKnowledgeRepositoryConnectionReq,
   KnowledgeRepositoryInstallationTokenRes,
+  KnowledgeRepositoryInstallationIntentStatusResponse,
   KnowledgeRepositoryConnectionClientDTO,
   ListKnowledgeRepositoryConnectionsRes,
   StartKnowledgeRepositoryInstallationReq,
@@ -45,6 +46,25 @@ export interface RepositoryApplicationPort {
   completeKnowledgeRepositoryInstallation(
     ctx: Context,
     request: CompleteKnowledgeRepositoryInstallationReq,
+  ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>>;
+  receiveGithubInstallationSetup(request: {
+    state: string;
+    installationId: string;
+    setupAction?: 'install' | 'update';
+  }): Promise<
+    Result<
+      | { kind: 'redirect'; location: string }
+      | { kind: 'web'; location: string; intentId: string }
+      | { kind: 'desktop'; intentId: string; expiresAt: number }
+    >
+  >;
+  getKnowledgeRepositoryInstallationIntentStatus(
+    ctx: Context,
+    intentId: string,
+  ): Promise<Result<KnowledgeRepositoryInstallationIntentStatusResponse>>;
+  finalizeKnowledgeRepositoryInstallationIntent(
+    ctx: Context,
+    intentId: string,
   ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>>;
   listKnowledgeRepositoryConnections(
     ctx: Context,

@@ -5,12 +5,13 @@ import type {
 } from '@memoflow/contracts/repository';
 import type { IKnowledgeRepositoryConnectionRepository } from '../../../application/ports/knowledge-repository-connection.repository';
 
+type KnowledgeRepositoryConnectionDb = Pick<PrismaClient, 'knowledgeRepositoryConnection'>;
 type ConnectionRow = Awaited<
-  ReturnType<PrismaClient['knowledgeRepositoryConnection']['findUnique']>
+  ReturnType<KnowledgeRepositoryConnectionDb['knowledgeRepositoryConnection']['findUnique']>
 >;
 
 export class KnowledgeRepositoryConnectionPrismaRepository implements IKnowledgeRepositoryConnectionRepository {
-  constructor(private readonly db: PrismaClient) {}
+  constructor(private readonly db: KnowledgeRepositoryConnectionDb) {}
 
   async findById(id: string): Promise<KnowledgeRepositoryConnectionServerDTO | null> {
     return this.toDTO(await this.db.knowledgeRepositoryConnection.findUnique({ where: { id } }));

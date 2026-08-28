@@ -15,6 +15,7 @@ import {
   type CreateKnowledgeRepositoryConnectionReq,
   type KnowledgeRepositoryConnectionClientDTO,
   type KnowledgeRepositoryInstallationTokenRes,
+  type KnowledgeRepositoryInstallationIntentStatusResponse,
   type KnowledgeRepositoryReconciliationPreview,
   type ListKnowledgeRepositoryConnectionsRes,
   type StartKnowledgeRepositoryInstallationReq,
@@ -50,6 +51,14 @@ export interface KnowledgeRepositoryConnectionUseCases {
   completeKnowledgeRepositoryInstallation(
     ctx: Context,
     request: CompleteKnowledgeRepositoryInstallationReq,
+  ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>>;
+  getKnowledgeRepositoryInstallationIntentStatus(
+    ctx: Context,
+    intentId: string,
+  ): Promise<Result<KnowledgeRepositoryInstallationIntentStatusResponse>>;
+  finalizeKnowledgeRepositoryInstallationIntent(
+    ctx: Context,
+    intentId: string,
   ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>>;
   listKnowledgeRepositoryConnections(
     ctx: Context,
@@ -142,6 +151,20 @@ export class KnowledgeRepositoryConnectionController {
       });
     }
     return this.useCases.completeKnowledgeRepositoryInstallation(ctx, parsed.data);
+  }
+
+  async getInstallationIntentStatus(ctx: Context, intentId: string) {
+    if (!intentId) {
+      return fail({ code: 'VALIDATION_ERROR', message: 'installation intent id is required' });
+    }
+    return this.useCases.getKnowledgeRepositoryInstallationIntentStatus(ctx, intentId);
+  }
+
+  async finalizeInstallationIntent(ctx: Context, intentId: string) {
+    if (!intentId) {
+      return fail({ code: 'VALIDATION_ERROR', message: 'installation intent id is required' });
+    }
+    return this.useCases.finalizeKnowledgeRepositoryInstallationIntent(ctx, intentId);
   }
 
   async listConnections(ctx: Context) {

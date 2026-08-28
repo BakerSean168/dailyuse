@@ -22,6 +22,7 @@ import type {
   CreateKnowledgeRepositoryConnectionReq,
   KnowledgeRepositoryConnectionClientDTO,
   KnowledgeRepositoryInstallationTokenRes,
+  KnowledgeRepositoryInstallationIntentStatusResponse,
   KnowledgeRepositoryReconciliationPreview,
   ListKnowledgeRepositoryConnectionsRes,
   StartKnowledgeRepositoryInstallationReq,
@@ -52,6 +53,12 @@ export interface IRepositoryApiClient {
   ): Promise<Result<StartKnowledgeRepositoryInstallationRes>>;
   completeKnowledgeRepositoryInstallation(
     request: CompleteKnowledgeRepositoryInstallationReq,
+  ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>>;
+  getKnowledgeRepositoryInstallationIntentStatus(
+    intentId: string,
+  ): Promise<Result<KnowledgeRepositoryInstallationIntentStatusResponse>>;
+  finalizeKnowledgeRepositoryInstallationIntent(
+    intentId: string,
   ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>>;
   listKnowledgeRepositoryConnections(): Promise<Result<ListKnowledgeRepositoryConnectionsRes>>;
   connectKnowledgeRepository(
