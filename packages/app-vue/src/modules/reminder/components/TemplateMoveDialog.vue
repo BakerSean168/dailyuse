@@ -73,7 +73,7 @@
           </div>
 
           <!-- Warning Alert -->
-          <Alert v-if="moveToRoot" variant="destructive">
+          <Alert v-if="moveToRoot">
             <AlertCircle class="h-4 w-4" />
             <AlertTitle>{{ t('reminder.templateMove.warning') }}</AlertTitle>
             <AlertDescription>
@@ -107,16 +107,9 @@
                   {{ getGroupStatus(selectedGroupId) }}</span
                 >
               </div>
-              <div class="flex items-center gap-2">
-                <Folder class="h-4 w-4 text-muted-foreground" />
-                <span
-                  >{{ t('reminder.templateMove.controlMode') }}
-                  {{ getGroupControlMode(selectedGroupId) }}</span
-                >
-              </div>
               <div class="flex items-start gap-2">
-                <Info class="mt-0.5 h-4 w-4 text-muted-foreground" />
-                <span>{{ getGroupPolicyText(selectedGroupId) }}</span>
+                <ShieldCheck class="mt-0.5 h-4 w-4 text-muted-foreground" />
+                <span>{{ getProfilePolicyText(selectedGroupId) }}</span>
               </div>
             </div>
           </Card>
@@ -161,6 +154,7 @@ import {
   CheckCircle2,
   Loader2,
   FolderOpen,
+  ShieldCheck,
 } from '@lucide/vue';
 import {
   Dialog,
@@ -170,7 +164,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@memoflow/ui-vue-shadcn';
-import { getGroupPolicyText as getGroupPolicySummary } from '../presentation/lifecycle-presentation';
+import {
+  getProfilePolicyText as getProfilePolicySummary,
+  isProfileGateOpen,
+} from '../presentation/lifecycle-presentation';
 import { Button } from '@memoflow/ui-vue-shadcn';
 import { Label } from '@memoflow/ui-vue-shadcn';
 import { Badge } from '@memoflow/ui-vue-shadcn';
@@ -238,25 +235,21 @@ const getGroupName = (groupId: string): string => {
 };
 
 const getGroupStatus = (groupId: string): string => {
-  const group = props.groups.find((g) => g.id === groupId);
-  return group?.enabled ? t('reminder.templateMove.enabled') : t('reminder.templateMove.disabled');
+  const profile = props.groups.find((group) => group.id === groupId);
+  return profile && isProfileGateOpen(profile)
+    ? t('reminder.templateMove.enabled')
+    : t('reminder.templateMove.disabled');
 };
 
 const getGroupTemplateCount = (groupId: string): number => {
   return props.templates.filter((t) => t.groupId === groupId).length;
 };
 
-const getGroupControlMode = (groupId: string): string => {
-  const group = props.groups.find((g) => g.id === groupId);
-  if (!group) return t('reminder.templateMove.unknown');
-  return group.controlMode === 'Group'
-    ? t('reminder.templateMove.controlModeGroup')
-    : t('reminder.templateMove.controlModeIndividual');
-};
-
-const getGroupPolicyText = (groupId: string): string => {
-  const group = props.groups.find((g) => g.id === groupId);
-  return group ? getGroupPolicySummary(t, group) : t('reminder.templateMove.defaultPolicyText');
+const getProfilePolicyText = (groupId: string): string => {
+  const profile = props.groups.find((group) => group.id === groupId);
+  return profile
+    ? getProfilePolicySummary(t, profile)
+    : t('reminder.templateMove.defaultPolicyText');
 };
 
 const getGroupIcon = (icon?: string) => {
@@ -270,16 +263,12 @@ const previewText = computed(() => {
   }
   if (!selectedGroupId.value) return '';
 
-  const group = props.groups.find((item) => item.id === selectedGroupId.value);
-  if (!group) return '';
+  const profile = props.groups.find((item) => item.id === selectedGroupId.value);
+  if (!profile) return '';
 
-  if (group.controlMode === 'Group') {
-    return group.enabled
-      ? t('reminder.templateMove.previewGroupEnabled')
-      : t('reminder.templateMove.previewGroupPaused');
-  }
-
-  return t('reminder.templateMove.previewIndividual');
+  return isProfileGateOpen(profile)
+    ? t('reminder.templateMove.previewProfileEnabled')
+    : t('reminder.templateMove.previewProfilePaused');
 });
 
 const handleMoveToRootChange = (value: boolean | 'indeterminate') => {

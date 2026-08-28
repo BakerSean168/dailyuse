@@ -12,6 +12,7 @@ import type {
 } from '@memoflow/contracts/reminder';
 import ReminderLinearView from './ReminderLinearView.vue';
 import { toast } from 'vue-sonner';
+import enReminder from '../../../locales/en-US/reminder';
 
 const templatesRef = ref<ReminderTemplateClientDTO[]>([]);
 const groupsRef = ref<ReminderGroupClientDTO[]>([]);
@@ -30,6 +31,7 @@ vi.mock('../composables/useReminder', () => ({
     groups: computed(() => groupsRef.value),
     isLoading: computed(() => false),
     isSaving: computed(() => false),
+    error: computed(() => null),
     preferences: computed(() => preferencesRef.value),
     fetchTemplates,
     fetchGroups,
@@ -43,8 +45,8 @@ vi.mock('../composables/useReminder', () => ({
     updateGroup: vi.fn(),
     deleteGroup: vi.fn(),
     toggleGroup: vi.fn(),
-    switchGroupControlMode: vi.fn(),
     updatePreferences,
+    reloadReminderScene: vi.fn(),
   }),
 }));
 
@@ -155,57 +157,7 @@ const i18n = createI18n({
   locale: 'en-US',
   messages: {
     'en-US': {
-      reminder: {
-        title: 'Reminders',
-        action: {
-          createReminder: 'Create reminder',
-          createGroup: 'Create group',
-          pauseGroup: 'Pause group',
-          enableGroup: 'Enable group',
-          switchToIndividual: 'Switch to individual',
-          switchToGroup: 'Switch to group',
-        },
-        linear: {
-          allReminders: 'All reminders',
-          templateTitle: 'Templates',
-          masterSwitch: 'Master switch',
-          searchPlaceholder: 'Search',
-          groupEnabled: 'Group enabled',
-          groupPaused: 'Group paused',
-          globalPausedTitle: 'The master reminder switch is off',
-          globalPausedDescription: 'All reminders are paused by the master switch.',
-          reEnableGlobal: 'Enable again',
-          templateCount: 'Template count',
-          templateCountValue: '{count} templates',
-          currentStatus: 'Current status',
-          currentStatusValue: '{count} active',
-          sidebarGlobalPaused: '{count} reminders paused by master switch',
-          sidebarGroupPaused: '{count} reminders paused by group rule',
-        },
-        lifecycle: {
-          groupControlModeGroup: 'Group-controlled',
-          groupControlModeIndividual: 'Template-controlled',
-          groupPolicyGroupEnabled: 'Group switch decides whether reminders run.',
-          groupPolicyGroupPaused: 'The group is paused, so every reminder in it stays paused.',
-          groupPolicyIndividual: 'Templates in this group keep their own self switch control.',
-        },
-        status: {
-          loading: 'Loading',
-        },
-        empty: 'Empty',
-        emptyDescription: 'No reminders',
-        toast: {
-          globalReminderEnabled: 'enabled',
-          globalReminderPaused: 'paused',
-          templateEnabled: 'template enabled',
-          templatePaused: 'paused',
-          groupEnabled: 'group enabled',
-          groupPaused: 'group paused',
-          groupControlModeUpdated: 'updated',
-          templateMoved: 'Reminder moved',
-          templateMovedToRoot: 'Reminder moved back to root',
-        },
-      },
+      reminder: enReminder,
       common: {
         delete: 'Delete',
         cancel: 'Cancel',
@@ -324,7 +276,7 @@ function createPreferences(
     updatedAt: 0,
     bestTimeSlotsText: '',
     worstTimeSlotsText: '',
-    summaryText: 'Global reminders are enabled.',
+    summaryText: 'The Routine master gate is open.',
     ...overrides,
   };
 }
@@ -378,26 +330,30 @@ describe('ReminderLinearView', () => {
     ];
     preferencesRef.value = createPreferences({
       globalReminderEnabled: false,
-      summaryText: 'All reminders are paused by the master switch.',
+      summaryText: 'All Routine execution is paused by the master gate.',
     });
 
     const wrapper = mountView();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(wrapper.text()).toContain('The master reminder switch is off');
-    expect(wrapper.text()).toContain('All reminders are paused by the master switch.');
-    expect(wrapper.text()).toContain('1 reminders paused by master switch');
+    expect(wrapper.get('[data-testid="routine-configuration-summary"]').text()).toContain(
+      'Routine configuration center',
+    );
+    expect(wrapper.text()).toContain('this page does not run sessions');
+    expect(wrapper.text()).toContain('The Routine master gate is closed');
+    expect(wrapper.text()).toContain('All Routine execution is paused by the master gate.');
+    expect(wrapper.text()).toContain('1 routines paused by the master gate');
 
     const groupButton = wrapper.get(`[data-testid="reminder-group-${groupsRef.value[0]?.id}"]`);
     expect(groupButton.text()).toContain('Focus');
-    expect(groupButton.text()).toContain('1 reminders paused by master switch');
+    expect(groupButton.text()).toContain('1 routines paused by the master gate');
 
     await groupButton.trigger('click');
     await nextTick();
 
-    expect(wrapper.text()).toContain('Group switch decides whether reminders run.');
-    expect(wrapper.text()).toContain('2 templates');
-    expect(wrapper.text()).toContain('1 active');
+    expect(wrapper.text()).toContain('This Profile allows its members to be evaluated.');
+    expect(wrapper.text()).toContain('2 routines');
+    expect(wrapper.text()).toContain('1 running');
   });
 
   it('shows root move toast and refreshes selected template when move succeeds', async () => {
@@ -471,7 +427,7 @@ describe('ReminderLinearView', () => {
     await nextTick();
 
     expect(moveTemplateToGroup).toHaveBeenCalledWith('template-1', null);
-    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Reminder moved back to root');
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Routine removed from Profile');
     expect(wrapper.find('[data-stub="selected-template-card"]').text()).toBe('root');
   });
 
@@ -539,7 +495,7 @@ describe('ReminderLinearView', () => {
     expect(wrapper.find('[data-stub="selected-template-card"]').text()).toBe('self-off|paused');
   });
 
-  it('shows paused toast when a template stays overridden by group control', async () => {
+  it('preserves the paused effective result while a Profile gate is closed', async () => {
     const toggledTemplate = createTemplate({
       id: 'template-1' as ReminderTemplateClientDTO['id'],
       selfEnabled: false,
@@ -563,7 +519,7 @@ describe('ReminderLinearView', () => {
     await vm.handleToggleEnabled({ id: 'template-1' as ReminderTemplateClientDTO['id'] });
 
     expect(toggleTemplate).toHaveBeenCalledWith('template-1');
-    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('paused');
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Routine paused');
   });
 
   it('shows enabled toast when global reminder is turned back on', async () => {
@@ -580,6 +536,6 @@ describe('ReminderLinearView', () => {
     await vm.handleToggleGlobalReminder(true);
 
     expect(updatePreferences).toHaveBeenCalledWith({ globalReminderEnabled: true });
-    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('enabled');
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Routine master gate opened');
   });
 });
