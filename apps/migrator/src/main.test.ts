@@ -34,6 +34,7 @@ describe('migrator interface', () => {
       'retire legacy AI runtime state',
       'prepare goal-record source correlation',
       'prepare editor-workspace natural key',
+      'prepare notification preference hierarchy',
       'reconcile Prisma schema',
       'prepare AI provider default invariant',
       'ensure Task goal-binding constraint',

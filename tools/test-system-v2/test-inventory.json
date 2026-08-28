@@ -5373,6 +5373,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/database/src/schema/notification-preference-hierarchy.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/database/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/database/src/schema/task-goal-binding-constraint.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10439,7 +10447,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 5
+      "fileCount": 6
     },
     {
       "id": "packages/domain-shared/vitest.config.ts",
@@ -11418,7 +11426,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 985,
+    "unit": 986,
     "integration": 31,
     "smoke": 3,
     "boundary-ipc": 9,

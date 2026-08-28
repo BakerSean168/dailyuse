@@ -35,7 +35,7 @@ MemoFlow 保留 ADR-034 已确定的产品边界：
 4. `finalize` 必须由创建 intent 的已认证 MemoFlow identity 调用；finalize 后才获得短期 repository-selection claim。
 5. `connect` 只接受该 identity 的、未过期、已 finalize 的 installation intent；成功后 intent 进入 `Consumed`。
 6. Web 使用浏览器 redirect 回原环境并 finalize；Desktop 使用外部浏览器 + API polling/finalize，不要求外部浏览器持有 MemoFlow Web session，也不要求 Electron deep link。
-7. dev + staging 可共用 `Memoflow Dev Test` GitHub App，但通过 route key 定向到各自独立 API/DB；prod 使用独立 GitHub App/private key，同时复用同一代码与协议。
+7. dev + staging 可共用 `MemoFlow Dev Test` GitHub App，但通过 route key 定向到各自独立 API/DB；prod 使用独立 GitHub App/private key，同时复用同一代码与协议。
 8. Setup Gateway 只允许 server-configured route targets 和 relative return paths，禁止客户端任意 origin/open redirect。
 
 ## 1. Current system map
@@ -153,7 +153,7 @@ shared implementation
   GitHubInstallationIntent + SetupGateway
         |
         +-- non-production runtime
-        |     GitHub App: Memoflow Dev Test
+        |     GitHub App: MemoFlow Dev Test
         |     routeKey dev     -> dev API / DB
         |     routeKey staging -> staging API / DB
         |

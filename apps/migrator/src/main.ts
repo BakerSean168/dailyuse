@@ -94,15 +94,19 @@ export function createMigrationCommands(workspaceRoot: string): Command[] {
         label: 'prepare editor-workspace natural key',
       },
       {
+        executable: process.execPath,
+        args: [resolve(runtimeScripts, 'prepare-notification-preference-hierarchy.js')],
+        cwd: databaseRoot,
+        label: 'prepare notification preference hierarchy',
+      },
+      {
         executable: prismaBin,
         args: [
           'db',
           'push',
           '--config',
           './prisma/prisma.config.ts',
-          ...(process.env.MIGRATOR_ACCEPT_DATA_LOSS === '1'
-            ? ['--accept-data-loss']
-            : []),
+          ...(process.env.MIGRATOR_ACCEPT_DATA_LOSS === '1' ? ['--accept-data-loss'] : []),
         ],
         cwd: databaseRoot,
         label: 'reconcile Prisma schema',

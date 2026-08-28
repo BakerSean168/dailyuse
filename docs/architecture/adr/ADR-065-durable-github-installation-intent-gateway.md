@@ -141,7 +141,7 @@ GitHub callback 到达 gateway 后只记录 `CallbackReceived` 并显示“可�
 Non-production：
 
 ```text
-Memoflow Dev Test GitHub App
+MemoFlow Dev Test GitHub App
   dev routeKey     -> dev API/DB
   staging routeKey -> staging API/DB
 ```

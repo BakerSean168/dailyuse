@@ -118,7 +118,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "packages/database",
-        "command": "tsx ./scripts/prepare-ai-knowledge-index-pgvector.ts && tsx ./scripts/prepare-ai-vnext-runtime-state-retirement.ts && prisma db push --config ./prisma/prisma.config.ts"
+        "command": "tsx ./scripts/prepare-ai-knowledge-index-pgvector.ts && tsx ./scripts/prepare-ai-vnext-runtime-state-retirement.ts && tsx ./scripts/prepare-notification-preference-hierarchy.ts && prisma db push --config ./prisma/prisma.config.ts"
       },
       "cache": false
     },
@@ -151,6 +151,14 @@
       "options": {
         "cwd": "packages/database",
         "command": "tsx ./scripts/prepare-goal-record-source-correlation.ts"
+      },
+      "cache": false
+    },
+    "notification-preference-hierarchy-bootstrap": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/database",
+        "command": "tsx ./scripts/prepare-notification-preference-hierarchy.ts"
       },
       "cache": false
     }
