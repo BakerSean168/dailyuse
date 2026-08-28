@@ -92,6 +92,13 @@
                 {{ formData.description?.length || 0 }}/200
               </p>
             </div>
+
+            <div
+              class="rounded-lg border bg-muted/40 px-4 py-3 text-xs leading-5 text-muted-foreground"
+              data-testid="routine-profile-gate-hint"
+            >
+              {{ t('reminder.groupDialog.gateHint') }}
+            </div>
           </div>
 
           <!-- Appearance -->
@@ -155,38 +162,6 @@
               </p>
             </div>
           </div>
-
-          <!-- Control Mode -->
-          <div class="space-y-3">
-            <div class="flex items-center gap-2 mb-3">
-              <Settings class="h-5 w-5 text-primary" />
-              <h3 class="text-sm font-semibold">
-                {{ t('reminder.groupDialog.sectionControlMode') }}
-              </h3>
-            </div>
-            <Separator />
-
-            <RadioGroup v-model="formData.controlMode">
-              <div class="flex items-start space-x-3 space-y-0 p-4 border rounded-lg">
-                <RadioGroupItem value="Individual" id="individual" />
-                <Label for="individual" class="flex-1 cursor-pointer">
-                  <div class="font-medium">{{ t('reminder.groupDialog.controlIndividual') }}</div>
-                  <div class="text-xs text-muted-foreground">
-                    {{ t('reminder.groupDialog.controlIndividualDesc') }}
-                  </div>
-                </Label>
-              </div>
-              <div class="flex items-start space-x-3 space-y-0 p-4 border rounded-lg">
-                <RadioGroupItem value="Group" id="group" />
-                <Label for="group" class="flex-1 cursor-pointer">
-                  <div class="font-medium">{{ t('reminder.groupDialog.controlGroup') }}</div>
-                  <div class="text-xs text-muted-foreground">
-                    {{ t('reminder.groupDialog.controlGroupDesc') }}
-                  </div>
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
         </div>
       </div>
 
@@ -213,7 +188,6 @@ import type {
 import {
   Info,
   Palette,
-  Settings,
   Folder,
   Briefcase,
   Home,
@@ -237,7 +211,6 @@ import { Button } from '@memoflow/ui-vue-shadcn';
 import { Input } from '@memoflow/ui-vue-shadcn';
 import { Label } from '@memoflow/ui-vue-shadcn';
 import { Textarea } from '@memoflow/ui-vue-shadcn';
-import { RadioGroup, RadioGroupItem } from '@memoflow/ui-vue-shadcn';
 import { Separator } from '@memoflow/ui-vue-shadcn';
 import { Popover, PopoverContent, PopoverTrigger } from '@memoflow/ui-vue-shadcn';
 
@@ -264,7 +237,6 @@ const formData = reactive({
   description: '',
   icon: 'mdi-folder',
   color: '#2196F3',
-  controlMode: 'Individual' as CreateReminderGroupReq['controlMode'],
   order: 0,
 });
 
@@ -305,7 +277,6 @@ const resetForm = () => {
   formData.description = '';
   formData.icon = 'mdi-folder';
   formData.color = '#2196F3';
-  formData.controlMode = 'Individual';
   formData.order = 0;
 };
 
@@ -314,7 +285,6 @@ const fillForm = (group: ReminderGroupClientDTO) => {
   formData.description = group.description || '';
   formData.icon = group.icon || 'mdi-folder';
   formData.color = group.color || '#2196F3';
-  formData.controlMode = group.controlMode;
   formData.order = group.order || 0;
 };
 
@@ -352,7 +322,6 @@ const handleSave = async () => {
     description: formData.description?.trim() || undefined,
     color: formData.color,
     icon: formData.icon,
-    controlMode: formData.controlMode,
     order: formData.order,
   };
 

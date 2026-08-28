@@ -7,12 +7,12 @@ import type {
 import {
   getGlobalSwitchLabel,
   getGroupActiveStatusLabel,
-  getGroupControlModeText,
-  getGroupPolicyText,
-  getGroupControlModeLabel,
-  getGroupSidebarSummary,
-  getGroupSwitchLabel,
   getGroupTemplateCountLabel,
+  getProfileGateLabel,
+  getProfileGateStateLabel,
+  getProfileMembershipLabel,
+  getProfilePolicyText,
+  getProfileSidebarSummary,
   getTemplateEffectiveResultLabel,
   getTemplateEffectiveStatusLabel,
   getTemplateLifecycleBadgeText,
@@ -20,6 +20,7 @@ import {
   getTemplateSelfSwitchLabel,
   getTemplateSelfSwitchShortLabel,
   getTemplateTriggerLabel,
+  isProfileGateOpen,
 } from './lifecycle-presentation';
 
 const i18n = createI18n({
@@ -29,36 +30,35 @@ const i18n = createI18n({
     'en-US': {
       reminder: {
         linear: {
-          templateCountValue: '{count} templates',
-          currentStatusValue: '{count} active',
-          sidebarGlobalPaused: '{count} reminders paused by master switch',
-          sidebarGroupPaused: '{count} reminders paused by group rule',
+          routineCountValue: '{count} routines',
+          runningCountValue: '{count} running',
+          sidebarGlobalPaused: '{count} routines paused by the master gate',
+          sidebarProfilePaused: '{count} routines paused by this Profile gate',
         },
         lifecycle: {
-          sourceGlobal: 'Controlled by the master switch',
-          sourceGroup: 'Controlled by the group',
-          sourceTemplateInGroup: 'Controlled by the template inside the group',
-          sourceTemplateAtRoot: 'Controlled by the root template switch',
-          badgeGlobalPaused: 'Paused globally',
-          badgeGroupControlled: 'Group-controlled',
-          badgeSelfControlled: 'Self-controlled',
+          sourceGlobal: 'Paused by the Routine master gate',
+          sourceProfile: 'Paused by the Profile gate; Routine state preserved',
+          sourceRoutineInProfile: 'Routine-owned state inside a Profile',
+          sourceRoutineWithoutProfile: 'Routine-owned state without a Profile',
+          badgeGlobalPaused: 'Master gate closed',
+          badgeProfilePaused: 'Profile gate closed',
+          badgeRoutineOwned: 'Routine-owned',
           statusRunning: 'Running',
           statusPaused: 'Paused',
-          resultRunningNow: 'Running now',
-          resultPausedNow: 'Paused now',
-          selfEnabledVerbose: 'Template self switch is enabled',
-          selfPausedVerbose: 'Template self switch is paused',
+          resultRunningNow: 'Eligible to run',
+          resultPausedNow: 'Not currently eligible',
+          routineEnabledVerbose: 'Routine’s own switch is enabled',
+          routinePausedVerbose: 'Routine’s own switch is paused',
           enabledShort: 'Enabled',
           pausedShort: 'Paused',
-          globalPausedAll: 'Paused for all reminders',
-          noGroup: 'No group',
-          groupControlModeGroup: 'Group-controlled',
-          groupControlModeIndividual: 'Template-controlled',
-          groupEnabled: 'Group enabled',
-          groupPaused: 'Group paused',
-          groupPolicyGroupEnabled: 'Group switch decides whether reminders run.',
-          groupPolicyGroupPaused: 'The group is paused, so every reminder in it stays paused.',
-          groupPolicyIndividual: 'Templates in this group keep their own self switch control.',
+          globalPausedAll: 'Master gate closed for all Routines',
+          noProfile: 'No Profile',
+          profileGateOpen: 'Profile gate open',
+          profileGateClosed: 'Profile gate closed',
+          profilePolicyOpen:
+            'This Profile allows its members to be evaluated. Each Routine keeps and applies its own switch.',
+          profilePolicyClosed:
+            'This Profile pauses member execution without changing any Routine’s own switch.',
         },
         templateDetail: {
           notConfigured: 'Not configured',
@@ -76,7 +76,7 @@ function createTemplate(
   overrides: Partial<ReminderTemplateClientDTO> = {},
 ): ReminderTemplateClientDTO {
   return {
-    id: 'template-1' as ReminderTemplateClientDTO['id'],
+    id: 'routine-1' as ReminderTemplateClientDTO['id'],
     identityId: 'identity-1' as ReminderTemplateClientDTO['identityId'],
     name: 'Morning review',
     description: null,
@@ -103,7 +103,7 @@ function createTemplate(
     selfEnabled: true,
     status: 'Active',
     effectiveEnabled: true,
-    groupId: 'group-1' as ReminderTemplateClientDTO['groupId'],
+    groupId: 'profile-1' as ReminderTemplateClientDTO['groupId'],
     groupName: 'Focus',
     importanceLevel: 'Moderate',
     tags: [],
@@ -126,7 +126,7 @@ function createTemplate(
     lastTriggeredText: null,
     controlledByGroup: false,
     lifecycleSource: 'template',
-    effectiveEnabledReason: 'Template controls itself.',
+    effectiveEnabledReason: 'Routine owns its switch.',
     groupControlMode: 'Individual',
     groupEnabled: true,
     globalReminderEnabled: true,
@@ -134,14 +134,15 @@ function createTemplate(
   } as ReminderTemplateClientDTO;
 }
 
-function createGroup(overrides: Partial<ReminderGroupClientDTO> = {}): ReminderGroupClientDTO {
+function createProfile(overrides: Partial<ReminderGroupClientDTO> = {}): ReminderGroupClientDTO {
   return {
-    id: 'group-1' as ReminderGroupClientDTO['id'],
+    id: 'profile-1' as ReminderGroupClientDTO['id'],
     identityId: 'identity-1' as ReminderGroupClientDTO['identityId'],
     name: 'Focus',
     description: null,
     color: null,
     icon: null,
+    // Compatibility metadata must not affect Profile gate presentation.
     controlMode: 'Group',
     enabled: true,
     status: 'Active',
@@ -152,93 +153,90 @@ function createGroup(overrides: Partial<ReminderGroupClientDTO> = {}): ReminderG
       pausedTemplates: 1,
       selfEnabledTemplates: 1,
       selfPausedTemplates: 1,
-      templateCountText: '2 templates',
-      activeStatusText: '1 active',
+      templateCountText: '2 routines',
+      activeStatusText: '1 running',
     },
     version: 1,
     createdAt: 0,
     updatedAt: 0,
     deletedAt: null,
     displayName: 'Focus',
-    controlModeText: 'Group control',
+    controlModeText: 'legacy',
     statusText: 'Enabled',
-    templateCountText: '2 templates',
-    activeStatusText: '1 active',
-    controlDescription: 'Group decides the final state.',
-    effectiveTemplatePolicyText: 'Group switch decides whether reminders run.',
+    templateCountText: '2 routines',
+    activeStatusText: '1 running',
+    controlDescription: 'legacy',
     ...overrides,
   } as ReminderGroupClientDTO;
 }
 
 describe('lifecyclePresentation', () => {
-  it('maps template lifecycle summary and badge text', () => {
+  it('describes master, Profile, and Routine-owned lifecycle sources', () => {
     expect(getTemplateLifecycleSummary(t, createTemplate({ lifecycleSource: 'global' }))).toBe(
-      'Controlled by the master switch',
+      'Paused by the Routine master gate',
     );
     expect(getTemplateLifecycleBadgeText(t, createTemplate({ lifecycleSource: 'global' }))).toBe(
-      'Paused globally',
+      'Master gate closed',
     );
     expect(getTemplateLifecycleSummary(t, createTemplate({ lifecycleSource: 'group' }))).toBe(
-      'Controlled by the group',
+      'Paused by the Profile gate; Routine state preserved',
     );
     expect(getTemplateLifecycleBadgeText(t, createTemplate({ lifecycleSource: 'group' }))).toBe(
-      'Group-controlled',
+      'Profile gate closed',
     );
     expect(
       getTemplateLifecycleSummary(
         t,
         createTemplate({ lifecycleSource: 'template', groupName: null, groupId: null }),
       ),
-    ).toBe('Controlled by the root template switch');
+    ).toBe('Routine-owned state without a Profile');
   });
 
-  it('maps effective status and switch labels', () => {
-    const pausedTemplate = createTemplate({
+  it('models a Profile as a gate independent of legacy ControlMode', () => {
+    const openLegacyGroup = createProfile({ controlMode: 'Group' });
+    const openLegacyIndividual = createProfile({ controlMode: 'Individual' });
+    const closed = createProfile({ enabled: false, status: 'Paused' });
+
+    expect(isProfileGateOpen(openLegacyGroup)).toBe(true);
+    expect(isProfileGateOpen(openLegacyIndividual)).toBe(true);
+    expect(getProfileGateLabel(t, openLegacyGroup)).toBe('Profile gate open');
+    expect(getProfilePolicyText(t, openLegacyGroup)).toBe(
+      'This Profile allows its members to be evaluated. Each Routine keeps and applies its own switch.',
+    );
+    expect(getProfilePolicyText(t, openLegacyIndividual)).toBe(
+      getProfilePolicyText(t, openLegacyGroup),
+    );
+    expect(isProfileGateOpen(closed)).toBe(false);
+    expect(getProfileGateLabel(t, closed)).toBe('Profile gate closed');
+    expect(getProfilePolicyText(t, closed)).toBe(
+      'This Profile pauses member execution without changing any Routine’s own switch.',
+    );
+  });
+
+  it('keeps Routine-owned state distinct from effective eligibility', () => {
+    const pausedRoutine = createTemplate({
       effectiveEnabled: false,
       selfEnabled: false,
       globalReminderEnabled: false,
-      groupControlMode: null,
       groupEnabled: null,
       groupId: null,
       groupName: null,
     });
 
-    expect(getTemplateEffectiveStatusLabel(t, pausedTemplate)).toBe('Paused');
-    expect(getTemplateEffectiveResultLabel(t, pausedTemplate)).toBe('Paused now');
-    expect(getTemplateSelfSwitchLabel(t, pausedTemplate)).toBe('Template self switch is paused');
-    expect(getTemplateSelfSwitchShortLabel(t, pausedTemplate)).toBe('Paused');
-    expect(getGlobalSwitchLabel(t, pausedTemplate)).toBe('Paused for all reminders');
-    expect(getGroupControlModeLabel(t, pausedTemplate)).toBe('No group');
-    expect(getGroupSwitchLabel(t, pausedTemplate)).toBe('No group');
+    expect(getTemplateEffectiveStatusLabel(t, pausedRoutine)).toBe('Paused');
+    expect(getTemplateEffectiveResultLabel(t, pausedRoutine)).toBe('Not currently eligible');
+    expect(getTemplateSelfSwitchLabel(t, pausedRoutine)).toBe('Routine’s own switch is paused');
+    expect(getTemplateSelfSwitchShortLabel(t, pausedRoutine)).toBe('Paused');
+    expect(getGlobalSwitchLabel(t, pausedRoutine)).toBe('Master gate closed for all Routines');
+    expect(getProfileMembershipLabel(t, pausedRoutine)).toBe('No Profile');
+    expect(getProfileGateStateLabel(t, pausedRoutine)).toBe('No Profile');
   });
 
-  it('maps group display labels and trigger summaries', () => {
-    expect(getGroupControlModeText(t, createGroup({ controlMode: 'Group' }))).toBe(
-      'Group-controlled',
-    );
-    expect(getGroupPolicyText(t, createGroup({ controlMode: 'Group', enabled: true }))).toBe(
-      'Group switch decides whether reminders run.',
-    );
-    expect(getGroupPolicyText(t, createGroup({ controlMode: 'Group', enabled: false }))).toBe(
-      'The group is paused, so every reminder in it stays paused.',
-    );
-    expect(getGroupPolicyText(t, createGroup({ controlMode: 'Individual' }))).toBe(
-      'Templates in this group keep their own self switch control.',
-    );
-    expect(getGroupTemplateCountLabel(t, createGroup())).toBe('2 templates');
-    expect(getGroupActiveStatusLabel(t, createGroup())).toBe('1 active');
-    expect(
-      getTemplateTriggerLabel(
-        t,
-        createTemplate({
-          trigger: {
-            type: 'FixedTime',
-            fixedTime: { time: '09:00', timezone: null },
-            interval: null,
-          },
-        }),
-      ),
-    ).toBe('At 09:00');
+  it('formats Profile summaries, counts, and supported compatibility triggers', () => {
+    const profile = createProfile();
+    expect(getGroupTemplateCountLabel(t, profile)).toBe('2 routines');
+    expect(getGroupActiveStatusLabel(t, profile)).toBe('1 running');
+    expect(getTemplateTriggerLabel(t, createTemplate())).toBe('At 09:00');
     expect(
       getTemplateTriggerLabel(
         t,
@@ -251,48 +249,26 @@ describe('lifecyclePresentation', () => {
         }),
       ),
     ).toBe('Every 30 minutes');
-  });
-
-  it('prioritizes global and group pauses in sidebar summaries', () => {
-    const group = createGroup();
 
     expect(
-      getGroupSidebarSummary(t, group, [
+      getProfileSidebarSummary(t, profile, [
         createTemplate({
-          id: 'a' as ReminderTemplateClientDTO['id'],
-          groupId: group.id,
+          id: 'global-paused' as ReminderTemplateClientDTO['id'],
+          groupId: profile.id,
           lifecycleSource: 'global',
           effectiveEnabled: false,
         }),
-        createTemplate({
-          id: 'b' as ReminderTemplateClientDTO['id'],
-          groupId: group.id,
-          lifecycleSource: 'template',
-          effectiveEnabled: true,
-        }),
       ]),
-    ).toBe('1 reminders paused by master switch');
-
+    ).toBe('1 routines paused by the master gate');
     expect(
-      getGroupSidebarSummary(t, group, [
+      getProfileSidebarSummary(t, profile, [
         createTemplate({
-          id: 'a' as ReminderTemplateClientDTO['id'],
-          groupId: group.id,
+          id: 'profile-paused' as ReminderTemplateClientDTO['id'],
+          groupId: profile.id,
           lifecycleSource: 'group',
           effectiveEnabled: false,
         }),
       ]),
-    ).toBe('1 reminders paused by group rule');
-
-    expect(
-      getGroupSidebarSummary(t, group, [
-        createTemplate({
-          id: 'a' as ReminderTemplateClientDTO['id'],
-          groupId: group.id,
-          lifecycleSource: 'template',
-          effectiveEnabled: true,
-        }),
-      ]),
-    ).toBe('Group switch decides whether reminders run.');
+    ).toBe('1 routines paused by this Profile gate');
   });
 });

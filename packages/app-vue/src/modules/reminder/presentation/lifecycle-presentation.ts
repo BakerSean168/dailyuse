@@ -13,18 +13,24 @@ export type ReminderScheduleState =
   | 'failed'
   | 'unscheduled';
 
+type ProfileGate = Pick<ReminderGroupClientDTO, 'enabled' | 'status'>;
+
+export function isProfileGateOpen(profile: ProfileGate): boolean {
+  return profile.enabled && profile.status === 'Active';
+}
+
 export function getTemplateLifecycleSummary(t: Translate, template: ReminderTemplateClientDTO) {
   if (template.lifecycleSource === 'global') return t('reminder.lifecycle.sourceGlobal');
-  if (template.lifecycleSource === 'group') return t('reminder.lifecycle.sourceGroup');
+  if (template.lifecycleSource === 'group') return t('reminder.lifecycle.sourceProfile');
   return template.groupName
-    ? t('reminder.lifecycle.sourceTemplateInGroup')
-    : t('reminder.lifecycle.sourceTemplateAtRoot');
+    ? t('reminder.lifecycle.sourceRoutineInProfile')
+    : t('reminder.lifecycle.sourceRoutineWithoutProfile');
 }
 
 export function getTemplateLifecycleBadgeText(t: Translate, template: ReminderTemplateClientDTO) {
   if (template.lifecycleSource === 'global') return t('reminder.lifecycle.badgeGlobalPaused');
-  if (template.lifecycleSource === 'group') return t('reminder.lifecycle.badgeGroupControlled');
-  return t('reminder.lifecycle.badgeSelfControlled');
+  if (template.lifecycleSource === 'group') return t('reminder.lifecycle.badgeProfilePaused');
+  return t('reminder.lifecycle.badgeRoutineOwned');
 }
 
 export function getTemplateEffectiveStatusLabel(t: Translate, template: ReminderTemplateClientDTO) {
@@ -41,8 +47,8 @@ export function getTemplateEffectiveResultLabel(t: Translate, template: Reminder
 
 export function getTemplateSelfSwitchLabel(t: Translate, template: ReminderTemplateClientDTO) {
   return template.selfEnabled
-    ? t('reminder.lifecycle.selfEnabledVerbose')
-    : t('reminder.lifecycle.selfPausedVerbose');
+    ? t('reminder.lifecycle.routineEnabledVerbose')
+    : t('reminder.lifecycle.routinePausedVerbose');
 }
 
 export function getTemplateSelfSwitchShortLabel(t: Translate, template: ReminderTemplateClientDTO) {
@@ -57,53 +63,41 @@ export function getGlobalSwitchLabel(t: Translate, template: ReminderTemplateCli
     : t('reminder.lifecycle.globalPausedAll');
 }
 
-export function getGroupControlModeLabel(t: Translate, template: ReminderTemplateClientDTO) {
-  if (!template.groupControlMode) return t('reminder.lifecycle.noGroup');
-  return template.groupControlMode === 'Group'
-    ? t('reminder.lifecycle.groupControlModeGroup')
-    : t('reminder.lifecycle.groupControlModeIndividual');
+export function getProfileMembershipLabel(t: Translate, template: ReminderTemplateClientDTO) {
+  return template.groupName ?? t('reminder.lifecycle.noProfile');
 }
 
-export function getGroupSwitchLabel(t: Translate, template: ReminderTemplateClientDTO) {
-  if (template.groupEnabled === null) return t('reminder.lifecycle.noGroup');
+export function getProfileGateStateLabel(t: Translate, template: ReminderTemplateClientDTO) {
+  if (template.groupEnabled === null) return t('reminder.lifecycle.noProfile');
   return template.groupEnabled
-    ? t('reminder.lifecycle.groupEnabled')
-    : t('reminder.lifecycle.groupPaused');
+    ? t('reminder.lifecycle.profileGateOpen')
+    : t('reminder.lifecycle.profileGateClosed');
 }
 
-export function getGroupControlModeText(
-  t: Translate,
-  group: Pick<ReminderGroupClientDTO, 'controlMode'>,
-) {
-  return group.controlMode === 'Group'
-    ? t('reminder.lifecycle.groupControlModeGroup')
-    : t('reminder.lifecycle.groupControlModeIndividual');
+export function getProfileGateLabel(t: Translate, profile: ProfileGate) {
+  return isProfileGateOpen(profile)
+    ? t('reminder.lifecycle.profileGateOpen')
+    : t('reminder.lifecycle.profileGateClosed');
 }
 
-export function getGroupPolicyText(
-  t: Translate,
-  group: Pick<ReminderGroupClientDTO, 'controlMode' | 'enabled'>,
-) {
-  if (group.controlMode === 'Group') {
-    return group.enabled
-      ? t('reminder.lifecycle.groupPolicyGroupEnabled')
-      : t('reminder.lifecycle.groupPolicyGroupPaused');
-  }
-  return t('reminder.lifecycle.groupPolicyIndividual');
+export function getProfilePolicyText(t: Translate, profile: ProfileGate) {
+  return isProfileGateOpen(profile)
+    ? t('reminder.lifecycle.profilePolicyOpen')
+    : t('reminder.lifecycle.profilePolicyClosed');
 }
 
 export function getGroupTemplateCountLabel(
   t: Translate,
   group: Pick<ReminderGroupClientDTO, 'stats'>,
 ) {
-  return t('reminder.linear.templateCountValue', { count: group.stats.totalTemplates });
+  return t('reminder.linear.routineCountValue', { count: group.stats.totalTemplates });
 }
 
 export function getGroupActiveStatusLabel(
   t: Translate,
   group: Pick<ReminderGroupClientDTO, 'stats'>,
 ) {
-  return t('reminder.linear.currentStatusValue', { count: group.stats.activeTemplates });
+  return t('reminder.linear.runningCountValue', { count: group.stats.activeTemplates });
 }
 
 export function getTemplateTriggerLabel(t: Translate, template: ReminderTemplateClientDTO) {
@@ -179,26 +173,26 @@ export function getTemplateScheduleStateLabel(
   return t(`reminder.schedule.state.${getTemplateScheduleState(template, now)}`);
 }
 
-export function getGroupSidebarSummary(
+export function getProfileSidebarSummary(
   t: Translate,
-  group: Pick<ReminderGroupClientDTO, 'id' | 'controlMode' | 'enabled'>,
-  templates: Array<
+  profile: Pick<ReminderGroupClientDTO, 'id' | 'enabled' | 'status'>,
+  routines: Array<
     Pick<ReminderTemplateClientDTO, 'groupId' | 'lifecycleSource' | 'effectiveEnabled'>
   >,
 ) {
-  const scopedTemplates = templates.filter((template) => template.groupId === group.id);
-  const pausedByGlobal = scopedTemplates.filter(
-    (template) => template.lifecycleSource === 'global',
+  const scopedRoutines = routines.filter((routine) => routine.groupId === profile.id);
+  const pausedByGlobal = scopedRoutines.filter(
+    (routine) => routine.lifecycleSource === 'global',
   ).length;
-  const pausedByGroup = scopedTemplates.filter(
-    (template) => template.lifecycleSource === 'group' && !template.effectiveEnabled,
+  const pausedByProfile = scopedRoutines.filter(
+    (routine) => routine.lifecycleSource === 'group' && !routine.effectiveEnabled,
   ).length;
 
   if (pausedByGlobal > 0) {
     return t('reminder.linear.sidebarGlobalPaused', { count: pausedByGlobal });
   }
-  if (pausedByGroup > 0) {
-    return t('reminder.linear.sidebarGroupPaused', { count: pausedByGroup });
+  if (pausedByProfile > 0) {
+    return t('reminder.linear.sidebarProfilePaused', { count: pausedByProfile });
   }
-  return getGroupPolicyText(t, group);
+  return getProfilePolicyText(t, profile);
 }

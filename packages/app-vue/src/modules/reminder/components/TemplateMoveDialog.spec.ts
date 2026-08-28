@@ -9,6 +9,7 @@ import type {
   ReminderTemplateClientDTO,
 } from '@memoflow/contracts/reminder';
 import TemplateMoveDialog from './TemplateMoveDialog.vue';
+import enReminder from '../../../locales/en-US/reminder';
 
 vi.mock('@memoflow/ui-vue-shadcn', async () => {
   const vue = await import('vue');
@@ -128,49 +129,7 @@ const i18n = createI18n({
   locale: 'en-US',
   messages: {
     'en-US': {
-      reminder: {
-        templateMove: {
-          title: 'Move reminder',
-          description: 'Choose a new group or move this reminder back to root.',
-          currentTemplate: 'Current template',
-          currentGroup: 'Current group:',
-          targetGroup: 'Target group',
-          selectTargetGroup: 'Choose group',
-          current: 'Current',
-          removeFromAllGroups: 'Move to root',
-          warning: 'Warning',
-          warningDescription: 'The reminder will leave all groups.',
-          targetGroupInfo: 'Target group info',
-          name: 'Name:',
-          templates: 'Templates:',
-          status: 'Status:',
-          controlMode: 'Control mode:',
-          controlModeGroup: 'Group control',
-          controlModeIndividual: 'Individual control',
-          previewTitle: 'After move',
-          defaultPolicyText:
-            'This group decides the final reminder state according to its current control mode.',
-          previewRoot:
-            'After moving to root, the reminder will return to its own self switch control.',
-          previewGroupEnabled:
-            'After moving, the group will control the reminder and it will take effect immediately.',
-          previewGroupPaused:
-            'After moving, the group will control the reminder and it will stay paused because the group is paused.',
-          previewIndividual: 'After moving, the reminder will keep its own self switch control.',
-          cancel: 'Cancel',
-          move: 'Move',
-          none: 'None',
-          unknownGroup: 'Unknown group',
-          unknown: 'Unknown',
-          enabled: 'Enabled',
-          disabled: 'Disabled',
-        },
-        lifecycle: {
-          groupPolicyGroupEnabled: 'Group switch decides whether reminders run.',
-          groupPolicyGroupPaused: 'The group is paused, so every reminder in it stays paused.',
-          groupPolicyIndividual: 'Templates in this group keep their own self switch control.',
-        },
-      },
+      reminder: enReminder,
     },
   },
 });
@@ -328,11 +287,11 @@ describe('TemplateMoveDialog', () => {
     await nextTick();
 
     expect(wrapper.text()).toContain(
-      'After moving to root, the reminder will return to its own self switch control.',
+      'The Routine will keep its own switch and no longer depend on a Profile gate.',
     );
 
     const buttons = wrapper.findAll('button');
-    const moveButton = buttons.find((button) => button.text().includes('Move'));
+    const moveButton = buttons.find((button) => button.text().includes('Update membership'));
     expect(moveButton).toBeDefined();
 
     await moveButton!.trigger('click');
@@ -351,13 +310,15 @@ describe('TemplateMoveDialog', () => {
     await selectButton.trigger('click');
     await nextTick();
 
-    expect(wrapper.text()).toContain('Templates in this group keep their own self switch control.');
     expect(wrapper.text()).toContain(
-      'After moving, the reminder will keep its own self switch control.',
+      'This Profile allows its members to be evaluated. Each Routine keeps and applies its own switch.',
+    );
+    expect(wrapper.text()).toContain(
+      'The Profile gate is open. The Routine still runs only when its own switch and the master gate allow it.',
     );
 
     const buttons = wrapper.findAll('button');
-    const moveButton = buttons.find((button) => button.text().includes('Move'));
+    const moveButton = buttons.find((button) => button.text().includes('Update membership'));
     expect(moveButton).toBeDefined();
 
     await moveButton!.trigger('click');
@@ -366,7 +327,7 @@ describe('TemplateMoveDialog', () => {
     expect(wrapper.emitted('closed')).toHaveLength(1);
   });
 
-  it('shows paused preview when moving into a paused group-controlled group', async () => {
+  it('shows a preserved-state preview when moving into a paused Profile', async () => {
     const wrapper = mountDialog({
       groups: [
         createGroup(),
@@ -387,7 +348,7 @@ describe('TemplateMoveDialog', () => {
     await nextTick();
 
     expect(wrapper.text()).toContain(
-      'After moving, the group will control the reminder and it will stay paused because the group is paused.',
+      'The Profile gate is closed. The Routine’s own switch is preserved and will be evaluated again when the Profile reactivates.',
     );
   });
 });
