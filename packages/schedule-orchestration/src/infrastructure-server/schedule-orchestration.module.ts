@@ -51,9 +51,8 @@ export function createScheduleOrchestrationModule(
       }),
       createGoalProjectionRuntime({
         source: options.goalProjection.source,
-        scheduleTaskRepository: options.goalProjection.scheduleTaskRepository,
+        schedulingPort,
         goalEvents: createTypedEventSubscriber<GoalScheduleProjectionEventMap>(eventBus),
-        scheduleEvents,
       }),
       createReminderProjectionRuntime({
         source: options.reminderProjection.source,

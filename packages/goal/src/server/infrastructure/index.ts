@@ -64,6 +64,5 @@ export {
   type GoalScheduleProjectionEventMap,
   type GoalScheduleProjectionHandlers,
   type GoalScheduleProjectionPlan,
-  type GoalScheduleProjectionSelection,
   type GoalScheduleProjectionSource,
 } from './schedule-projection-source';

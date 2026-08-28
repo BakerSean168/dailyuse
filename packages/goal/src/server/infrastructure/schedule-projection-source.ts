@@ -1,74 +1,39 @@
-import type { GoalEventMap, GoalServerDTO, ReminderTrigger } from '@memoflow/contracts/goal';
-import { GoalStatus, ReminderTriggerType } from '@memoflow/contracts/goal';
-import { SourceModule, TaskPriority, Timezone } from '@memoflow/contracts/schedule';
-import { ScheduleTask } from '@memoflow/schedule';
+import type {
+  GoalEventMap,
+  GoalServerDTO,
+  ReminderTrigger,
+  ReminderTriggerType,
+} from '@memoflow/contracts/goal';
+import { GoalStatus, ReminderTriggerType as GoalReminderTriggerType } from '@memoflow/contracts/goal';
+import type { ScheduledIntent, SchedulingOwner } from '@memoflow/contracts/schedule';
+import { buildSchedulingKey } from '@memoflow/contracts/schedule';
+import { asInstant, defaultTime, type TimeFacade } from '@memoflow/time';
 import type { IGoalRepository } from '../domain';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+export const GOAL_REMINDER_HANDLER_KEY = 'goal.reminder.fire';
+export const GOAL_REMINDER_PAYLOAD_VERSION = 1;
+const GOAL_SCHEDULING_OWNER_TYPE = 'goal';
 
-function calculateTriggerAt(goal: GoalServerDTO, trigger: ReminderTrigger): number | null {
-  if (trigger.type === ReminderTriggerType.RemainingDays) {
-    if (!goal.dueDate) {
-      return null;
-    }
-    return goal.dueDate - trigger.value * DAY_MS;
-  }
-
-  if (trigger.type === ReminderTriggerType.TimeProgressPercentage) {
-    if (!goal.startDate || !goal.dueDate || goal.dueDate <= goal.startDate) {
-      return null;
-    }
-    return goal.startDate + (goal.dueDate - goal.startDate) * (trigger.value / 100);
-  }
-
-  return null;
-}
-
-/**
- * Residual 1177 keep-boundary: goal schedule-projection buildTaskName — Goal + ReminderTrigger domain.
- * RemainingDays / TimeProgressPercentage wording; not task template Relative/Absolute naming.
- * Soft residual 1177: task schedule-projection buildTaskName stays template+trigger domain-specific (no force-merge).
- */
-function buildTaskName(goal: GoalServerDTO, trigger: ReminderTrigger): string {
-  if (trigger.type === ReminderTriggerType.RemainingDays) {
-    return `${goal.name} · 剩余 ${trigger.value} 天提醒`;
-  }
-  return `${goal.name} · 进度 ${trigger.value}% 提醒`;
-}
-
-function buildTaskDescription(goal: GoalServerDTO, trigger: ReminderTrigger): string {
-  if (trigger.type === ReminderTriggerType.RemainingDays) {
-    return `Goal reminder for ${goal.name} when ${trigger.value} day(s) remain`;
-  }
-  return `Goal reminder for ${goal.name} at ${trigger.value}% time progress`;
-}
-
-function shouldScheduleGoal(goal: GoalServerDTO): boolean {
-  return (
-    goal.status === GoalStatus.Active &&
-    !goal.archivedAt &&
-    !goal.completedAt &&
-    !goal.deletedAt &&
-    !!goal.reminderConfig?.enabled &&
-    goal.reminderConfig.triggers.some((trigger) => trigger.enabled)
-  );
-}
-
-export interface GoalScheduleProjectionSelection {
-  readonly sourceModule: SourceModule;
-  readonly identityId: string;
-  readonly sourceEntityId?: string;
-  matches(task: ScheduleTask): boolean;
+export interface GoalReminderScheduledPayload {
+  readonly goalId: string;
+  readonly goalName: string;
+  readonly triggerType: ReminderTriggerType;
+  readonly triggerValue: number;
+  readonly startDate: number | null;
+  readonly dueDate: number;
+  readonly reminderTime: number;
 }
 
 export interface GoalScheduleProjectionPlan {
-  readonly selection: GoalScheduleProjectionSelection;
-  readonly nextTasks: readonly ScheduleTask[];
+  readonly owner: SchedulingOwner;
+  readonly desired: readonly ScheduledIntent<GoalReminderScheduledPayload>[];
 }
 
 export interface GoalScheduleProjectionSource {
   buildGoalPlan(goalId: string, identityId: string): Promise<GoalScheduleProjectionPlan>;
-  buildGoalDeletionSelection(goalId: string, identityId: string): GoalScheduleProjectionSelection;
+  buildGoalOwner(goalId: string, identityId: string): SchedulingOwner;
+  /** Full source scan used by startup reconcile / lost-event repair. */
+  listGoalRefs?(): Promise<Array<{ goalId: string; identityId: string }>>;
 }
 
 export interface GoalScheduleProjectionHandlers {
@@ -80,6 +45,7 @@ export type GoalScheduleProjectionEventMap = Pick<
   GoalEventMap,
   | 'goal:created'
   | 'goal:updated'
+  | 'goal:status-changed'
   | 'goal:schedule-time-changed'
   | 'goal:reminder-config-changed'
   | 'goal:completed'
@@ -87,87 +53,140 @@ export type GoalScheduleProjectionEventMap = Pick<
   | 'goal:deleted'
 >;
 
-function selectGoalProjection(goalId: string, identityId: string): GoalScheduleProjectionSelection {
-  return {
-    sourceModule: SourceModule.Goal,
-    sourceEntityId: goalId,
-    identityId,
-    matches(task) {
-      return task.sourceEntityId === goalId;
-    },
-  };
+export const goalScheduleProjectionEventNames = [
+  'goal:created',
+  'goal:updated',
+  'goal:status-changed',
+  'goal:schedule-time-changed',
+  'goal:reminder-config-changed',
+  'goal:completed',
+  'goal:archived',
+  'goal:deleted',
+] as const satisfies readonly (keyof GoalScheduleProjectionEventMap)[];
+
+function calculateTriggerAt(
+  goal: GoalServerDTO,
+  trigger: ReminderTrigger,
+  time: Pick<TimeFacade, 'engine'>,
+): number | null {
+  if (trigger.type === GoalReminderTriggerType.RemainingDays) {
+    if (goal.dueDate == null || !Number.isFinite(trigger.value)) return null;
+    return Number(time.engine.addDays(asInstant(Number(goal.dueDate)), -trigger.value));
+  }
+
+  if (trigger.type === GoalReminderTriggerType.TimeProgressPercentage) {
+    if (
+      goal.startDate == null ||
+      goal.dueDate == null ||
+      goal.dueDate <= goal.startDate ||
+      !Number.isFinite(trigger.value)
+    ) {
+      return null;
+    }
+    return Math.round(goal.startDate + (goal.dueDate - goal.startDate) * (trigger.value / 100));
+  }
+
+  return null;
+}
+
+function buildIntentName(goal: GoalServerDTO, trigger: ReminderTrigger): string {
+  if (trigger.type === GoalReminderTriggerType.RemainingDays) {
+    return `${goal.name} · 剩余 ${trigger.value} 天提醒`;
+  }
+  return `${goal.name} · 进度 ${trigger.value}% 提醒`;
+}
+
+function triggerIdentity(trigger: ReminderTrigger): string {
+  if (trigger.type === GoalReminderTriggerType.RemainingDays) {
+    return `remaining-days:${String(trigger.value)}`;
+  }
+  return `time-progress:${String(trigger.value)}`;
+}
+
+function shouldScheduleGoal(goal: GoalServerDTO): boolean {
+  return (
+    goal.status === GoalStatus.Active &&
+    goal.archivedAt == null &&
+    goal.completedAt == null &&
+    goal.deletedAt == null &&
+    goal.dueDate != null &&
+    !!goal.reminderConfig?.enabled &&
+    goal.reminderConfig.triggers.some((trigger) => trigger.enabled)
+  );
+}
+
+function goalOwner(goalId: string, identityId: string): SchedulingOwner {
+  return { identityId, type: GOAL_SCHEDULING_OWNER_TYPE, id: goalId };
 }
 
 export function createGoalScheduleProjectionSource(deps: {
   goalRepository: IGoalRepository;
+  time?: Pick<TimeFacade, 'now' | 'engine'>;
 }): GoalScheduleProjectionSource {
+  const time = deps.time ?? defaultTime;
+
   return {
+    buildGoalOwner(goalId, identityId) {
+      return goalOwner(goalId, identityId);
+    },
+
+    async listGoalRefs() {
+      const refs = await deps.goalRepository.findAllGoalRefs();
+      return refs.map((ref) => ({ goalId: ref.id, identityId: ref.identityId }));
+    },
+
     async buildGoalPlan(goalId, identityId) {
+      const owner = goalOwner(goalId, identityId);
       const goal = await deps.goalRepository.findByIdForIdentity(identityId, goalId, {
         includeChildren: true,
       });
-      if (!goal) {
-        return {
-          selection: selectGoalProjection(goalId, identityId),
-          nextTasks: [],
-        };
-      }
+      if (!goal) return { owner, desired: [] };
 
       const goalDTO = goal.toServerDTO(true);
-      const selection = selectGoalProjection(goalId, String(goalDTO.identityId));
-      if (!shouldScheduleGoal(goalDTO) || !goalDTO.reminderConfig) {
-        return {
-          selection,
-          nextTasks: [],
-        };
+      const canonicalOwner = goalOwner(goalId, String(goalDTO.identityId));
+      if (!shouldScheduleGoal(goalDTO) || !goalDTO.reminderConfig || goalDTO.dueDate == null) {
+        return { owner: canonicalOwner, desired: [] };
       }
 
-      const triggers = goalDTO.reminderConfig.triggers.filter((trigger) => trigger.enabled);
-      const now = Date.now();
-      const nextTasks = triggers
-        .map((trigger) => {
-          const triggerAt = calculateTriggerAt(goalDTO, trigger);
-          if (triggerAt === null || triggerAt <= now) {
-            return null;
-          }
+      const now = Number(time.now());
+      const desiredByKey = new Map<string, ScheduledIntent<GoalReminderScheduledPayload>>();
 
-          return ScheduleTask.create({
-            identityId: String(goalDTO.identityId),
-            name: buildTaskName(goalDTO, trigger),
-            description: buildTaskDescription(goalDTO, trigger),
-            sourceModule: SourceModule.Goal,
-            sourceEntityId: goalDTO.id,
-            schedule: {
-              cronExpression: null,
-              timezone: Timezone.Shanghai,
-              startDate: new Date(triggerAt).toISOString(),
-              endDate: null,
-              maxExecutions: 1,
-            },
-            metadata: {
-              payload: {
-                goalId: goalDTO.id,
-                goalTitle: goalDTO.name,
-                triggerType: trigger.type,
-                triggerValue: trigger.value,
-                triggerAt,
-              },
-              tags: ['goal', 'goal-reminder', `trigger:${trigger.type}`],
-              priority: TaskPriority.Normal,
-              timeout: null,
-            },
-          });
-        })
-        .filter((task): task is ScheduleTask => task !== null);
+      for (const trigger of goalDTO.reminderConfig.triggers.filter((candidate) => candidate.enabled)) {
+        const runAt = calculateTriggerAt(goalDTO, trigger, time);
+        if (runAt === null || runAt <= now) continue;
 
-      return {
-        selection,
-        nextTasks,
-      };
-    },
+        const schedulingKey = buildSchedulingKey(
+          'goal.reminder',
+          goalDTO.id,
+          triggerIdentity(trigger),
+        );
+        if (desiredByKey.has(schedulingKey)) continue;
 
-    buildGoalDeletionSelection(goalId, identityId) {
-      return selectGoalProjection(goalId, identityId);
+        desiredByKey.set(schedulingKey, {
+          schedulingKey,
+          handlerKey: GOAL_REMINDER_HANDLER_KEY,
+          runAt,
+          payloadVersion: GOAL_REMINDER_PAYLOAD_VERSION,
+          payload: {
+            goalId: goalDTO.id,
+            goalName: goalDTO.name,
+            triggerType: trigger.type,
+            triggerValue: trigger.value,
+            startDate: goalDTO.startDate,
+            dueDate: goalDTO.dueDate,
+            reminderTime: runAt,
+          },
+          sourceRevision: String(goalDTO.version),
+          priority: 'normal',
+          timeoutMs: null,
+          observability: {
+            name: buildIntentName(goalDTO, trigger),
+            tags: ['goal', 'goal-reminder', `trigger:${trigger.type}`],
+          },
+        });
+      }
+
+      return { owner: canonicalOwner, desired: [...desiredByKey.values()] };
     },
   };
 }
@@ -182,6 +201,8 @@ export function createGoalScheduleProjectionEventHandlers(
   return {
     'goal:created': async (event) => handlers.upsertGoal(event.goal.id, String(event.identityId)),
     'goal:updated': async (event) => handlers.upsertGoal(event.goal.id, String(event.identityId)),
+    'goal:status-changed': async (event) =>
+      handlers.upsertGoal(event.goal.id, String(event.identityId)),
     'goal:schedule-time-changed': async (event) =>
       handlers.upsertGoal(event.goal.id, String(event.identityId)),
     'goal:reminder-config-changed': async (event) =>

@@ -102,6 +102,11 @@ export class GoalPowerSyncRepository
     return (this.db as GoalPowerSyncDatabase).writeTransaction(work);
   }
 
+  async findAllGoalRefs(): Promise<Array<{ id: string; identityId: string }>> {
+    // Local PowerSync host does not perform cross-user startup reconciliation.
+    return [];
+  }
+
   async findByIdForIdentity(
     identityId: string,
     id: string,

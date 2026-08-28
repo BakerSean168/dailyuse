@@ -64,6 +64,9 @@ export interface IGoalRepository {
   ): Promise<Goal | null>;
 
   /** Load identity-scoped goals using derived system views. */
+  /** Lightweight source scan for startup scheduling reconciliation. */
+  findAllGoalRefs(): Promise<Array<{ id: string; identityId: string }>>;
+
   findByIdentityId(
     identityId: string,
     options?: {

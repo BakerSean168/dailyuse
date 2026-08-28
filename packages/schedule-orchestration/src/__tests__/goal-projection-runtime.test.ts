@@ -1,35 +1,72 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SourceModule } from '@memoflow/contracts/schedule';
-import type { ScheduleEventMap } from '@memoflow/contracts/schedule';
-import type { GoalScheduleProjectionEventMap, GoalScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
-import type { IScheduleTaskRepository } from '@memoflow/schedule';
-import { ScheduleTask } from '@memoflow/schedule';
-import type { Publisher, Subscriber } from '@memoflow/utils/domain';
+import type {
+  ScheduledIntent,
+  SchedulingOwner,
+  SchedulingPort,
+  SchedulingReconcileReceipt,
+} from '@memoflow/contracts/schedule';
+import type {
+  GoalReminderScheduledPayload,
+  GoalScheduleProjectionEventMap,
+  GoalScheduleProjectionSource,
+} from '@memoflow/goal/schedule-projection';
+import type { Subscriber } from '@memoflow/utils/domain';
 import { createGoalProjectionRuntime } from '../runtime/goal-projection-runtime';
 
-function createScheduleTask(goalId: string, name: string) {
-  return ScheduleTask.create({
-    identityId: 'IdentityId_goal-owner',
-    name,
-    sourceModule: SourceModule.Goal,
-    sourceEntityId: goalId,
-    schedule: {
-      cronExpression: null,
-      timezone: 'Asia/Shanghai',
-      startDate: new Date('2030-01-10T08:45:00.000Z').toISOString(),
-      endDate: null,
-      maxExecutions: 1,
-    },
-    metadata: {
-      payload: { goalId },
-      tags: ['goal'],
-      priority: 'Normal',
-      timeout: null,
-    },
-  });
+function owner(id = 'GoalId_goal-1'): SchedulingOwner {
+  return { identityId: 'IdentityId_goal-owner', type: 'goal', id };
 }
 
-function createGoalEventsHarness(): {
+function intent(): ScheduledIntent<GoalReminderScheduledPayload> {
+  return {
+    schedulingKey: 'sk:v1:test',
+    handlerKey: 'goal.reminder.fire',
+    runAt: Date.UTC(2030, 0, 13),
+    payloadVersion: 1,
+    payload: {
+      goalId: 'GoalId_goal-1',
+      goalName: 'Launch 1.0',
+      triggerType: 'RemainingDays',
+      triggerValue: 7,
+      startDate: Date.UTC(2030, 0, 1),
+      dueDate: Date.UTC(2030, 0, 20),
+      reminderTime: Date.UTC(2030, 0, 13),
+    },
+  };
+}
+
+function receipt(target: SchedulingOwner, desiredCount: number): SchedulingReconcileReceipt {
+  return {
+    operationId: `op:${target.id}`,
+    owner: target,
+    status: 'succeeded',
+    desiredCount,
+    createdCount: desiredCount,
+    updatedCount: 0,
+    deletedCount: 0,
+    unchangedCount: 0,
+    startedAt: 1,
+    finishedAt: 2,
+  };
+}
+
+function schedulingHarness() {
+  const reconciles: Array<{ owner: SchedulingOwner; desired: readonly ScheduledIntent[] }> = [];
+  const removals: SchedulingOwner[] = [];
+  const port: SchedulingPort = {
+    async reconcile(target, desired) {
+      reconciles.push({ owner: target, desired });
+      return receipt(target, desired.length);
+    },
+    async removeOwner(target) {
+      removals.push(target);
+      return receipt(target, 0);
+    },
+  };
+  return { port, reconciles, removals };
+}
+
+function eventHarness(): {
   subscriber: Subscriber<GoalScheduleProjectionEventMap>;
   emit<K extends keyof GoalScheduleProjectionEventMap>(
     event: K,
@@ -38,110 +75,111 @@ function createGoalEventsHarness(): {
 } {
   const handlers = new Map<
     keyof GoalScheduleProjectionEventMap,
-    Set<(payload: GoalScheduleProjectionEventMap[keyof GoalScheduleProjectionEventMap]) => void>
+    Set<(payload: GoalScheduleProjectionEventMap[keyof GoalScheduleProjectionEventMap]) => void | Promise<void>>
   >();
-
   return {
     subscriber: {
       on(event, handler) {
-        const existing = handlers.get(event) ?? new Set();
-        existing.add(handler as never);
-        handlers.set(event, existing);
+        const set = handlers.get(event) ?? new Set();
+        set.add(handler as never);
+        handlers.set(event, set);
       },
       off(event, handler) {
         handlers.get(event)?.delete(handler as never);
       },
     },
     async emit(event, payload) {
-      const activeHandlers = Array.from(handlers.get(event) ?? []);
-      await Promise.all(activeHandlers.map((handler) => Promise.resolve(handler(payload))));
+      await Promise.all(Array.from(handlers.get(event) ?? []).map((handler) => handler(payload)));
     },
   };
 }
 
-function createScheduleEventsHarness(): {
-  publisher: Publisher<Pick<ScheduleEventMap, 'schedule:task-deleted'>>;
-  sent: Array<{ event: 'schedule:task-deleted'; payload: { taskId: string } }>;
-} {
-  const sent: Array<{ event: 'schedule:task-deleted'; payload: { taskId: string } }> = [];
-
+function source(overrides: Partial<GoalScheduleProjectionSource> = {}): GoalScheduleProjectionSource {
   return {
-    publisher: {
-      send(event, payload) {
-        sent.push({ event, payload });
-      },
-    },
-    sent,
+    buildGoalPlan: vi.fn(async (goalId, identityId) => ({
+      owner: { identityId, type: 'goal', id: goalId },
+      desired: [intent()],
+    })),
+    buildGoalOwner: vi.fn((goalId, identityId) => ({ identityId, type: 'goal', id: goalId })),
+    ...overrides,
   };
 }
 
-describe('goal projection runtime', () => {
-  it('rebuilds matching schedule tasks on goal:updated', async () => {
-    const existingMatchingTask = createScheduleTask('GoalId_goal-1', 'Old');
-    const existingUnrelatedTask = createScheduleTask('GoalId_goal-2', 'Other');
-    const nextTask = createScheduleTask('GoalId_goal-1', 'Next');
-    const goalEvents = createGoalEventsHarness();
-    const scheduleEvents = createScheduleEventsHarness();
-
-    const scheduleTaskRepository: IScheduleTaskRepository = {
-      save: vi.fn(),
-      findById: vi.fn(),
-      findByIdForIdentity: vi.fn(),
-      deleteById: vi.fn(),
-      findByIdentityId: vi.fn(),
-      findBySourceModule: vi.fn(),
-      findBySourceEntity: vi
-        .fn()
-        .mockResolvedValue([existingMatchingTask, existingUnrelatedTask]),
-      findByStatus: vi.fn(),
-      findEnabled: vi.fn(),
-      findDueTasksForExecution: vi.fn(),
-      query: vi.fn(),
-      count: vi.fn(),
-      saveBatch: vi.fn().mockResolvedValue(undefined),
-      deleteBatch: vi.fn().mockResolvedValue(undefined),
-      withTransaction: vi.fn(),
-    };
-
-    const source: GoalScheduleProjectionSource = {
-      buildGoalPlan: vi.fn().mockResolvedValue({
-        selection: {
-          sourceModule: SourceModule.Goal,
-          identityId: 'IdentityId_goal-owner',
-          sourceEntityId: 'GoalId_goal-1',
-          matches(task: ScheduleTask) {
-            return task.sourceEntityId === 'GoalId_goal-1';
-          },
-        },
-        nextTasks: [nextTask],
-      }),
-      buildGoalDeletionSelection: vi.fn(),
-    };
-
+describe('goal projection runtime -> SchedulingPort', () => {
+  it('reconciles on Goal update/status changes', async () => {
+    const events = eventHarness();
+    const scheduling = schedulingHarness();
+    const projection = source();
     const runtime = createGoalProjectionRuntime({
-      source,
-      scheduleTaskRepository,
-      goalEvents: goalEvents.subscriber,
-      scheduleEvents: scheduleEvents.publisher,
+      source: projection,
+      schedulingPort: scheduling.port,
+      goalEvents: events.subscriber,
     });
+    await runtime.start();
 
-    runtime.start();
-    await goalEvents.emit('goal:updated', {
+    await events.emit('goal:updated', {
       identityId: 'IdentityId_goal-owner',
       goal: { id: 'GoalId_goal-1' },
     } as never);
+    await events.emit('goal:status-changed', {
+      identityId: 'IdentityId_goal-owner',
+      goal: { id: 'GoalId_goal-1' },
+      previousStatus: 'Active',
+      newStatus: 'Abandoned',
+    } as never);
 
-    expect(source.buildGoalPlan).toHaveBeenCalledWith('GoalId_goal-1', 'IdentityId_goal-owner');
-    expect(scheduleTaskRepository.deleteBatch).toHaveBeenCalledWith(
-      existingMatchingTask.identityId,
-      [existingMatchingTask.id],
-    );
-    expect(scheduleTaskRepository.saveBatch).toHaveBeenCalledWith([nextTask]);
-    expect(scheduleEvents.sent).toEqual([
-      {
-        event: 'schedule:task-deleted',
-        payload: { taskId: existingMatchingTask.id },
-      },
+    expect(projection.buildGoalPlan).toHaveBeenCalledTimes(2);
+    expect(scheduling.reconciles).toHaveLength(2);
+    expect(scheduling.removals).toHaveLength(0);
+  });
+
+  it('removes the entire Goal owner on complete/archive/delete', async () => {
+    const events = eventHarness();
+    const scheduling = schedulingHarness();
+    const projection = source();
+    const runtime = createGoalProjectionRuntime({
+      source: projection,
+      schedulingPort: scheduling.port,
+      goalEvents: events.subscriber,
+    });
+    await runtime.start();
+
+    for (const event of ['goal:completed', 'goal:archived', 'goal:deleted'] as const) {
+      await events.emit(event, {
+        identityId: 'IdentityId_goal-owner',
+        goal: { id: 'GoalId_goal-1' },
+      } as never);
+    }
+
+    expect(scheduling.removals).toEqual([owner(), owner(), owner()]);
+  });
+
+  it('repairs lost events with startup reconcile and unsubscribes on stop', async () => {
+    const events = eventHarness();
+    const scheduling = schedulingHarness();
+    const projection = source({
+      listGoalRefs: vi.fn().mockResolvedValue([
+        { goalId: 'GoalId_goal-1', identityId: 'IdentityId_goal-owner' },
+        { goalId: 'GoalId_goal-2', identityId: 'IdentityId_goal-owner' },
+      ]),
+    });
+    const runtime = createGoalProjectionRuntime({
+      source: projection,
+      schedulingPort: scheduling.port,
+      goalEvents: events.subscriber,
+    });
+
+    await runtime.start();
+    expect(scheduling.reconciles.map((entry) => entry.owner.id)).toEqual([
+      'GoalId_goal-1',
+      'GoalId_goal-2',
     ]);
+
+    await runtime.stop();
+    await events.emit('goal:updated', {
+      identityId: 'IdentityId_goal-owner',
+      goal: { id: 'GoalId_goal-1' },
+    } as never);
+    expect(scheduling.reconciles).toHaveLength(2);
   });
 });

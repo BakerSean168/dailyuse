@@ -128,6 +128,11 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
 
   // ================= Read Operations =================
 
+  async findAllGoalRefs(): Promise<Array<{ id: string; identityId: string }>> {
+    const rows = await this.prisma.goal.findMany({ select: { id: true, identityId: true } });
+    return rows.map((row) => ({ id: row.id, identityId: row.identityId }));
+  }
+
   async findByIdForIdentity(
     identityId: string,
     id: string,

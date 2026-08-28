@@ -19,15 +19,16 @@ describe('buildTaskName keep-boundary (residual 1177)', () => {
     'utf8',
   );
 
-  it('owns Residual 1177 keep-boundary markers on goal domain buildTaskName', () => {
-    expect(goal).toContain('Residual 1177 keep-boundary');
-    expect(goal).toMatch(/function buildTaskName\b/);
+  it('keeps Goal neutral intent observability naming inside the Goal-owned projector', () => {
+    expect(goal).toMatch(/function buildIntentName\b/);
     expect(goal).toContain('GoalServerDTO');
     expect(goal).toContain('ReminderTrigger');
     expect(goal).toContain('RemainingDays');
     expect(goal).toContain('剩余');
     expect(goal).toContain('进度');
-    const body = goal.match(/function buildTaskName\([\s\S]*?\n\}/)?.[0] ?? '';
+    expect(goal).toContain('observability:');
+    expect(goal).not.toContain('ScheduleTask');
+    const body = goal.match(/function buildIntentName\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(body).toContain('goal.name');
     expect(body).toContain('trigger.value');
     expect(body).not.toContain('template.name');
@@ -104,10 +105,10 @@ describe('buildTaskName keep-boundary (residual 1177)', () => {
     ).toBe('写报告 · 定时提醒');
   });
 
-  it('documents residual 1177 lock intent without claiming §13.2 complete', () => {
-    const self = readFileSync(resolve(dir, 'build-task-name-keep-boundary.surface.spec.ts'), 'utf8');
-    expect(self).toContain('Residual 1177');
-    expect(self).toContain('Does not flip §13.2 checkboxes');
-    expect(self).toContain('keep-boundary');
+  it('prevents the retired Goal ScheduleTask naming boundary from being resurrected', () => {
+    expect(goal).not.toContain('buildTaskName');
+    expect(goal).not.toContain('Residual 1177 keep-boundary');
+    expect(goal).not.toContain('SourceModule.Goal');
+    expect(goal).not.toContain('Timezone.Shanghai');
   });
 });
