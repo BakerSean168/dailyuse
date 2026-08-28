@@ -28,6 +28,9 @@ const i18n = createI18n({
       notification: {
         item: { priorityVital: 'Vital', priorityImportant: 'Important' },
         action: { openRelated: 'Open related item' },
+        category: { task: 'Tasks', system: 'System' },
+        workflow: { 'task.reminder': 'Task reminder' },
+        entity: { task: 'Task' },
       },
     },
   },
@@ -71,7 +74,8 @@ describe('notification semantic controls', () => {
       props: {
         notification: {
           ...notification,
-          topic: 'Task completed',
+          topic: 'task.reminder',
+          workflowKey: 'task.reminder',
           category: 'Task',
           relatedEntityType: 'Task',
           relatedEntityId: 'task-42',
@@ -81,8 +85,10 @@ describe('notification semantic controls', () => {
       global: { plugins: [i18n] },
     });
 
-    expect(wrapper.text()).toContain('Task completed');
-    expect(wrapper.text()).toContain('task-42');
+    expect(wrapper.text()).toContain('Task reminder');
+    expect(wrapper.text()).toContain('Task');
+    expect(wrapper.text()).not.toContain('task.reminder');
+    expect(wrapper.text()).not.toContain('task-42');
     expect(wrapper.text()).toContain('Open related item');
     expect(wrapper.text()).not.toContain('Delivered');
     expect(wrapper.find('[data-testid="notification-item"]').element.tagName).toBe('BUTTON');

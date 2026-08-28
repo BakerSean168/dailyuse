@@ -133,6 +133,7 @@ import { useNotificationUnreadQuery } from '../composables/useNotificationUnread
 import { useNotificationMutations } from '../composables/useNotificationMutations';
 import { useNotificationStore } from '../stores/notification-store';
 import type { NotificationClientDTO } from '@memoflow/contracts/notification';
+import { resolveNotificationDestination } from '../desktop/notification-click-navigation';
 
 const { notifications, isLoading, isError, error, refetch } = useNotificationListQuery();
 const { unreadCount, hasUnread } = useNotificationUnreadQuery();
@@ -163,8 +164,7 @@ function handleNotificationClick(notification: NotificationClientDTO) {
   if (!notification.isRead) {
     markAsRead.mutate(notification.id);
   }
-  const intent = notification.navigationIntent;
-  if (intent?.route) void router.push({ path: intent.route, query: intent.params });
+  void router.push(resolveNotificationDestination(notification)).catch(() => undefined);
 }
 
 async function handleMarkRead(id: string) {

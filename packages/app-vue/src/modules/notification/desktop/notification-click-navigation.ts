@@ -27,12 +27,15 @@ const CATEGORY_ROUTE: Record<string, string> = {
   Reminder: '/reminders',
   Account: '/notifications',
   System: '/notifications',
+  task: '/tasks', goal: '/goals', schedule: '/schedule', reminder: '/reminders',
+  account: '/notifications', system: '/notifications', other: '/notifications',
 };
 
 interface ClickedPayload {
   notificationId?: string;
   notificationType?: string;
   notificationCategory?: string;
+  category?: string;
   navigationIntent?: NotificationNavigationIntentDTO | null;
   route?: string;
   params?: Record<string, string>;
@@ -46,17 +49,14 @@ function isNavigationIntent(value: unknown): value is NotificationNavigationInte
   );
 }
 
-function resolveRoute(payload: ClickedPayload): string {
+export function resolveNotificationDestination(
+  payload: Pick<ClickedPayload, 'navigationIntent' | 'notificationCategory' | 'category'>,
+): { path: string; query?: Record<string, string> } {
   if (payload.navigationIntent && isNavigationIntent(payload.navigationIntent)) {
-    return payload.navigationIntent.route;
+    return { path: payload.navigationIntent.route, query: payload.navigationIntent.params };
   }
-  if (typeof payload.route === 'string' && payload.route) {
-    return payload.route;
-  }
-  if (payload.notificationCategory) {
-    return CATEGORY_ROUTE[payload.notificationCategory] ?? '/notifications';
-  }
-  return '/notifications';
+  const category = payload.notificationCategory ?? payload.category;
+  return { path: CATEGORY_ROUTE[category ?? ''] ?? '/notifications' };
 }
 
 export function createNotificationClickNavigation(
@@ -67,16 +67,16 @@ export function createNotificationClickNavigation(
 
   const handleClick = (...args: unknown[]): void => {
     const payload = (args[0] ?? {}) as ClickedPayload;
-    const route = resolveRoute(payload);
+    const destination = resolveNotificationDestination(payload);
     logger.info('[Notification] Click navigation', {
       notificationId: payload.notificationId,
-      route,
+      route: destination,
     });
-    void router.push(route).catch((error) => {
+    void router.push(destination).catch((error) => {
       // Internal developer surface: the raw navigation failure stays in the log
       // via String() coercion (never assigned to user-visible state).
       logger.error('[Notification] Click navigation failed', {
-        route,
+        route: destination,
         error: String(error),
       });
     });

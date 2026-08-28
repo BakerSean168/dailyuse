@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import { RendererEventChannels } from '@memoflow/contracts/electron';
-import { createNotificationClickNavigation } from './notification-click-navigation';
+import { createNotificationClickNavigation, resolveNotificationDestination } from './notification-click-navigation';
 
 function makeRouter() {
   return createRouter({
@@ -45,6 +45,19 @@ describe('createNotificationClickNavigation (R3 收尾)', () => {
 
     await router.isReady();
     expect(router.currentRoute.value.path).toBe('/goals/g-1');
+    expect(resolveNotificationDestination({ navigationIntent: { route: '/goals/g-1', params: { tab: 'open' } } })).toEqual({
+      path: '/goals/g-1', query: { tab: 'open' },
+    });
+  });
+
+  it('contains navigation failures', async () => {
+    const router = makeRouter();
+    const bridge = makeBridge() as ReturnType<typeof makeBridge> & { emit(ch: string, ...a: unknown[]): void };
+    const nav = createNotificationClickNavigation(router, () => bridge as never);
+    nav.start();
+    vi.spyOn(router, 'push').mockRejectedValueOnce(new Error('internal route detail'));
+    expect(() => bridge.emit(RendererEventChannels.NOTIFICATION_CLICKED, { notificationId: 'n-fail' })).not.toThrow();
+    await Promise.resolve();
   });
 
   it('falls back to category landing route', async () => {

@@ -64,12 +64,10 @@
         </p>
 
         <div class="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-          <Badge variant="outline" class="font-normal">{{ notification.category }}</Badge>
-          <span v-if="notification.topic" class="truncate">{{ notification.topic }}</span>
-          <span v-if="notification.relatedEntityType && notification.relatedEntityId">
-            · {{ notification.relatedEntityType }} #{{ notification.relatedEntityId }}
-          </span>
-          <span v-if="notification.navigationIntent?.route" class="text-primary">
+          <Badge variant="outline" class="font-normal">{{ presentation.categoryLabel }}</Badge>
+          <span class="truncate">{{ presentation.workflowLabel }}</span>
+          <span v-if="presentation.relatedEntityLabel"> · {{ presentation.relatedEntityLabel }}</span>
+          <span v-if="hasExternalDestination" class="text-primary">
             · {{ t('notification.action.openRelated') }}
           </span>
         </div>
@@ -106,6 +104,8 @@ import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
+import { presentNotification } from '../presentation/notification-presentation';
+import { resolveNotificationDestination } from '../desktop/notification-click-navigation';
 
 interface Props {
   notification: NotificationClientDTO;
@@ -114,6 +114,11 @@ interface Props {
 const props = defineProps<Props>();
 
 const { t } = useI18n();
+const presentation = computed(() => presentNotification(props.notification, t));
+const hasExternalDestination = computed(() => {
+  const destination = resolveNotificationDestination(props.notification);
+  return destination.path !== '/notifications';
+});
 
 const emit = defineEmits<{
   click: [notification: NotificationClientDTO];
