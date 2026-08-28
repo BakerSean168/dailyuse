@@ -6984,6 +6984,16 @@
       ]
     },
     {
+      "path": "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-preference-schema-migration.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/notification/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/notification/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-reliable-operation.integration.test.ts",
       "primarySuite": "integration",
       "collectors": [
@@ -10527,7 +10537,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 43
+      "fileCount": 44
     },
     {
       "id": "packages/notification/vitest.integration.config.ts",
@@ -10541,7 +10551,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 43
+      "fileCount": 44
     },
     {
       "id": "packages/patterns/vitest.config.ts",
@@ -11185,6 +11195,7 @@
       "packages/notification/src/server/infrastructure/adapters/powersync/__tests__/notification-requested-writer.powersync.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-ownership.surface.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-preference-ownership.surface.spec.ts",
+      "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-preference-schema-migration.surface.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-template-ownership.surface.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/mappers/__tests__/notification-preference-prisma.mapper.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/mappers/notification-prisma.mapper.spec.ts",
@@ -11407,7 +11418,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 984,
+    "unit": 985,
     "integration": 31,
     "smoke": 3,
     "boundary-ipc": 9,

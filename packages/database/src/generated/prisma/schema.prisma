@@ -936,8 +936,8 @@ model NotificationDeliveryDecisionRecord {
 model NotificationPreference {
   id                String    @id
   identityId        String    @unique @map("identity_id")
-  globalChannels    String    @map("global_channels")
-  workflowOverrides String    @map("workflow_overrides")
+  globalChannels    String    @default("{}") @map("global_channels")
+  workflowOverrides String    @default("{}") @map("workflow_overrides")
   doNotDisturb      String?   @map("do_not_disturb")
   rateLimit         String?   @map("rate_limit")
   version           Int       @default(1)

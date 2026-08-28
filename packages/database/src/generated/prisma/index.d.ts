@@ -141613,8 +141613,8 @@ export namespace Prisma {
   export type NotificationPreferenceCreateInput = {
     id: string
     identityId: string
-    globalChannels: string
-    workflowOverrides: string
+    globalChannels?: string
+    workflowOverrides?: string
     doNotDisturb?: string | null
     rateLimit?: string | null
     version?: number
@@ -141626,8 +141626,8 @@ export namespace Prisma {
   export type NotificationPreferenceUncheckedCreateInput = {
     id: string
     identityId: string
-    globalChannels: string
-    workflowOverrides: string
+    globalChannels?: string
+    workflowOverrides?: string
     doNotDisturb?: string | null
     rateLimit?: string | null
     version?: number
@@ -141665,8 +141665,8 @@ export namespace Prisma {
   export type NotificationPreferenceCreateManyInput = {
     id: string
     identityId: string
-    globalChannels: string
-    workflowOverrides: string
+    globalChannels?: string
+    workflowOverrides?: string
     doNotDisturb?: string | null
     rateLimit?: string | null
     version?: number
