@@ -3491,6 +3491,14 @@
       ]
     },
     {
+      "path": "packages/app-vue/src/modules/notification/views/NotificationListPage.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/notification/views/notificationPanelAdaptation.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -3566,6 +3574,14 @@
     },
     {
       "path": "packages/app-vue/src/modules/reminder/views/ReminderLinearView.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/reminder/views/RoutineConfigurationCenter.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -3891,6 +3907,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/modules/task/components/TaskOccurrenceRow.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/task/components/TaskTemplateForm/TaskTemplateForm.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -4022,6 +4046,14 @@
     },
     {
       "path": "packages/app-vue/src/modules/task/utils/format-task-duration.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/app-vue/src/modules/task/utils/task-occurrence-presentation.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/app-vue/vitest.config.ts"
@@ -10325,7 +10357,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 196
+      "fileCount": 200
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -11359,7 +11391,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 979,
+    "unit": 983,
     "integration": 30,
     "smoke": 3,
     "boundary-ipc": 9,
