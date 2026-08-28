@@ -66,7 +66,9 @@
         <div class="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
           <Badge variant="outline" class="font-normal">{{ presentation.categoryLabel }}</Badge>
           <span class="truncate">{{ presentation.workflowLabel }}</span>
-          <span v-if="presentation.relatedEntityLabel"> · {{ presentation.relatedEntityLabel }}</span>
+          <span v-if="presentation.relatedEntityLabel">
+            · {{ presentation.relatedEntityLabel }}</span
+          >
           <span v-if="hasExternalDestination" class="text-primary">
             · {{ t('notification.action.openRelated') }}
           </span>
@@ -105,7 +107,7 @@ import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import { presentNotification } from '../presentation/notification-presentation';
-import { resolveNotificationDestination } from '../desktop/notification-click-navigation';
+import { hasNotificationExternalDestination } from '../desktop/notification-click-navigation';
 
 interface Props {
   notification: NotificationClientDTO;
@@ -115,10 +117,9 @@ const props = defineProps<Props>();
 
 const { t } = useI18n();
 const presentation = computed(() => presentNotification(props.notification, t));
-const hasExternalDestination = computed(() => {
-  const destination = resolveNotificationDestination(props.notification);
-  return destination.path !== '/notifications';
-});
+const hasExternalDestination = computed(() =>
+  hasNotificationExternalDestination(props.notification),
+);
 
 const emit = defineEmits<{
   click: [notification: NotificationClientDTO];

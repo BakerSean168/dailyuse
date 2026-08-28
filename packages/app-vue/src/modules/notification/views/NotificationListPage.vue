@@ -63,7 +63,13 @@
     >
       <div class="mx-auto max-w-4xl">
         <!-- 加载 = 行骨架（§0.3 禁整页 spinner） -->
-        <div v-if="isLoading" class="space-y-3 py-2" data-testid="notification-list-skeleton">
+        <div
+          v-if="isLoading"
+          class="space-y-3 py-2"
+          data-testid="notification-list-skeleton"
+          role="status"
+          :aria-label="t('notification.loading')"
+        >
           <div v-for="i in 6" :key="i" class="flex items-start gap-3 px-2 py-2">
             <Skeleton class="mt-1 h-2 w-2 rounded-full" />
             <div class="flex-1 space-y-1.5">
@@ -79,7 +85,7 @@
           data-testid="notifications-error-state"
           role="alert"
         >
-          <p class="text-sm text-muted-foreground">{{ error ?? t('notification.error.fetchFailed') }}</p>
+          <p class="text-sm text-muted-foreground">{{ t('notification.error.fetchFailed') }}</p>
           <Button variant="outline" size="sm" data-testid="notifications-retry" @click="refetch">
             {{ t('notification.action.retry') }}
           </Button>
@@ -135,7 +141,7 @@ import { useNotificationStore } from '../stores/notification-store';
 import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 import { resolveNotificationDestination } from '../desktop/notification-click-navigation';
 
-const { notifications, isLoading, isError, error, refetch } = useNotificationListQuery();
+const { notifications, isLoading, isError, refetch } = useNotificationListQuery();
 const { unreadCount, hasUnread } = useNotificationUnreadQuery();
 const { markAsRead, markAllAsRead, dismiss } = useNotificationMutations();
 
