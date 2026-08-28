@@ -84,8 +84,8 @@ export interface ComposedNotification {
  *
  * Wire order:
  * 1. createNotificationPrismaRepositories(db) — select the Prisma adapters.
- * 2. createNotificationDurableRuntime({ notificationRepository, reliableAdapter,
- *    channelCapabilities }) — build the module-owned durable runtime from the
+ * 2. createNotificationDurableRuntime({ notificationRepository, preferenceRepository,
+ *    closureChecker, reliableAdapter, channelCapabilities }) — build the module-owned durable runtime from the
  *    host capability selection.
  * 3. createNotificationModule({ ...repositories, closureChecker, durableRuntime,
  *    runtimeContributions: [durableRuntime], auditRepository }) — assemble the
@@ -95,8 +95,8 @@ export interface ComposedNotification {
  *
  * 接线顺序：
  * 1. createNotificationPrismaRepositories(db) —— 选择 Prisma 适配器。
- * 2. createNotificationDurableRuntime({ notificationRepository, reliableAdapter,
- *    channelCapabilities }) —— 依据宿主能力选择构建模块自有 durable runtime。
+ * 2. createNotificationDurableRuntime({ notificationRepository, preferenceRepository,
+ *    closureChecker, reliableAdapter, channelCapabilities }) —— 依据宿主能力选择构建模块自有 durable runtime。
  * 3. createNotificationModule({ ...repositories, closureChecker, durableRuntime,
  *    runtimeContributions: [durableRuntime], auditRepository }) —— 装配与传输无关的
  *    通知实例。
@@ -119,6 +119,8 @@ export function composeNotification(
 
   const durableRuntime = createNotificationDurableRuntime({
     notificationRepository: repositories.notificationRepository,
+    preferenceRepository: repositories.notificationPreferenceRepository,
+    closureChecker: dependencies.closureChecker,
     reliableAdapter: repositories.reliableAdapter,
     channelCapabilities: Array.from(dependencies.channelCapabilities),
   });

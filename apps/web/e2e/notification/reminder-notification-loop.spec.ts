@@ -58,16 +58,48 @@ test.describe('Reminder notification closed loop', () => {
     await expect(unreadItems).toHaveCount(2, { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
     await expect(page.getByTestId('notification-unread-badge')).toContainText('2');
 
+    const clickedNotification = notifications[0]!;
     const firstNotification = page.locator(
-      `[data-testid="notification-item"][data-notification-id="${notifications[0]!.id}"]`,
+      `[data-testid="notification-item"][data-notification-id="${clickedNotification.id}"]`,
     );
     await firstNotification.click();
-    await expect(firstNotification).toHaveAttribute('data-read-state', 'read');
-    await expect(unreadItems).toHaveCount(1);
+    await expect(page).toHaveURL(/\/reminders$/);
+
+    // Clicking a Reminder notification owns two behaviors: mark only that Fact as
+    // read, then navigate to the related Reminder surface. Prove the read mutation
+    // independently before returning to Notification Center so navigation cannot
+    // masquerade as an empty unread list.
+    await expect
+      .poll(
+        async () => {
+          const response = await page.request.get(`${API_CONFIG.API_PREFIX}/notifications`, {
+            headers,
+          });
+          const data = await expectApiData<{
+            notifications: Array<{ id: string; title: string; isRead: boolean }>;
+          }>(response);
+          const scoped = data.notifications.filter((notification) =>
+            reminderTitles.includes(notification.title),
+          );
+          return {
+            clickedRead: scoped.find((notification) => notification.id === clickedNotification.id)
+              ?.isRead,
+            unread: scoped.filter((notification) => !notification.isRead).length,
+          };
+        },
+        { timeout: 10_000, intervals: [200, 500, 1_000] },
+      )
+      .toEqual({ clickedRead: true, unread: 1 });
+
+    await page.goto('/notifications', { waitUntil: 'domcontentloaded' });
+    const remainingUnreadItems = page.locator(
+      '[data-testid="notification-item"][data-read-state="unread"]',
+    );
+    await expect(remainingUnreadItems).toHaveCount(1, { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
     await expect(page.getByTestId('notification-unread-badge')).toContainText('1');
 
     await page.getByTestId('mark-all-read-button').click();
-    await expect(unreadItems).toHaveCount(0);
+    await expect(remainingUnreadItems).toHaveCount(0);
     await expect(page.getByTestId('notification-unread-badge')).toHaveCount(0);
     await expect(page.getByTestId('mark-all-read-button')).toBeDisabled();
     await page.getByTestId('notification-filter-unread').click();

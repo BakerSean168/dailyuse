@@ -97,6 +97,8 @@ describe('composeNotification assembly order', () => {
     const repoSet = createNotificationPrismaRepositories.mock.results[0].value;
     expect(createNotificationDurableRuntime).toHaveBeenCalledWith({
       notificationRepository: repoSet.notificationRepository,
+      preferenceRepository: repoSet.notificationPreferenceRepository,
+      closureChecker,
       reliableAdapter: repoSet.reliableAdapter,
       channelCapabilities: Array.from(channelCapabilities),
     });

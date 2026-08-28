@@ -1,8 +1,8 @@
 <template>
   <section
+    ref="plannerRootRef"
     class="planner-calendar relative h-full min-h-0 overflow-hidden bg-background"
     data-testid="schedule-fullcalendar"
-    data-scroll-host="schedule-calendar"
     :aria-busy="loading"
   >
     <FullCalendar ref="calendarRef" :options="calendarOptions">
@@ -18,7 +18,8 @@
             v-if="event.extendedProps.projection.displayMetadata.hasConflict"
             class="ml-1"
             aria-hidden="true"
-          >⚠</span>
+            >⚠</span
+          >
         </div>
       </template>
     </FullCalendar>
@@ -91,13 +92,26 @@ const emit = defineEmits<{
   (e: 'select-range', range: { start: number; end: number; allDay: boolean }): void;
 }>();
 
+const plannerRootRef = ref<HTMLElement | null>(null);
 const calendarRef = ref<{ getApi(): CalendarApi } | null>(null);
+const lastVisibleRangeKey = ref<string | null>(null);
 
 const fullCalendarView: Record<PlannerCalendarView, string> = {
   day: 'timeGridDay',
   week: 'timeGridWeek',
   month: 'dayGridMonth',
 };
+
+function markCalendarScrollHost(): void {
+  requestAnimationFrame(() => {
+    const root = plannerRootRef.value;
+    if (!root) return;
+    const scrollHost =
+      root.querySelector<HTMLElement>('.fc-scroller-liquid-absolute') ??
+      root.querySelector<HTMLElement>('.fc-scroller');
+    scrollHost?.setAttribute('data-testid', 'schedule-calendar-scroll-host');
+  });
+}
 
 function projectionToEvent(projection: CalendarEventProjection): EventInput {
   return {
@@ -129,7 +143,9 @@ function plannerViewFromFullCalendar(type: string): PlannerCalendarView {
 
 async function applyMutation(
   kind: 'move' | 'resize',
-  info: Parameters<NonNullable<CalendarOptions['eventDrop']>>[0] | Parameters<NonNullable<CalendarOptions['eventResize']>>[0],
+  info:
+    | Parameters<NonNullable<CalendarOptions['eventDrop']>>[0]
+    | Parameters<NonNullable<CalendarOptions['eventResize']>>[0],
 ): Promise<void> {
   const outcome = await applyFullCalendarPlannerMutation(
     kind,
@@ -160,13 +176,21 @@ const calendarOptions = computed<CalendarOptions>(() => ({
   slotMaxTime: '24:00:00',
   eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
   events: props.projections.map(projectionToEvent),
+  viewDidMount() {
+    markCalendarScrollHost();
+  },
   datesSet(info) {
-    emit('range-change', {
+    markCalendarScrollHost();
+    const range: PlannerVisibleRange = {
       start: info.start.getTime(),
       end: Math.max(info.start.getTime(), info.end.getTime() - 1),
       title: info.view.title,
       view: plannerViewFromFullCalendar(info.view.type),
-    });
+    };
+    const rangeKey = `${range.view}:${range.start}:${range.end}:${range.title}`;
+    if (lastVisibleRangeKey.value === rangeKey) return;
+    lastVisibleRangeKey.value = rangeKey;
+    emit('range-change', range);
   },
   eventClick(info) {
     const projection = projectionOf(info.event);
