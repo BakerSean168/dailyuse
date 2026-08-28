@@ -63,6 +63,17 @@
           {{ notification.content }}
         </p>
 
+        <div class="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+          <Badge variant="outline" class="font-normal">{{ notification.category }}</Badge>
+          <span v-if="notification.topic" class="truncate">{{ notification.topic }}</span>
+          <span v-if="notification.relatedEntityType && notification.relatedEntityId">
+            · {{ notification.relatedEntityType }} #{{ notification.relatedEntityId }}
+          </span>
+          <span v-if="notification.navigationIntent?.route" class="text-primary">
+            · {{ t('notification.action.openRelated') }}
+          </span>
+        </div>
+
         <p
           :class="[
             'mt-1 text-xs transition-colors',
