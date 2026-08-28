@@ -35,6 +35,8 @@ describe('migrator interface', () => {
       'prepare goal-record source correlation',
       'prepare editor-workspace natural key',
       'prepare notification preference hierarchy',
+      'prepare vNext unique constraints',
+      'migrate legacy authentication to Better Auth',
       'reconcile Prisma schema',
       'prepare AI provider default invariant',
       'ensure Task goal-binding constraint',

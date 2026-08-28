@@ -118,7 +118,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "packages/database",
-        "command": "tsx ./scripts/prepare-ai-knowledge-index-pgvector.ts && tsx ./scripts/prepare-ai-vnext-runtime-state-retirement.ts && tsx ./scripts/prepare-notification-preference-hierarchy.ts && prisma db push --config ./prisma/prisma.config.ts"
+        "command": "tsx ./scripts/prepare-ai-knowledge-index-pgvector.ts && tsx ./scripts/prepare-ai-vnext-runtime-state-retirement.ts && tsx ./scripts/prepare-notification-preference-hierarchy.ts && tsx ./scripts/prepare-vnext-unique-constraints.ts && tsx ./scripts/prepare-legacy-cloud-auth-migration.ts && prisma db push --config ./prisma/prisma.config.ts"
       },
       "cache": false
     },
@@ -159,6 +159,22 @@
       "options": {
         "cwd": "packages/database",
         "command": "tsx ./scripts/prepare-notification-preference-hierarchy.ts"
+      },
+      "cache": false
+    },
+    "vnext-unique-constraints-bootstrap": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/database",
+        "command": "tsx ./scripts/prepare-vnext-unique-constraints.ts"
+      },
+      "cache": false
+    },
+    "legacy-cloud-auth-migration-bootstrap": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/database",
+        "command": "tsx ./scripts/prepare-legacy-cloud-auth-migration.ts"
       },
       "cache": false
     }

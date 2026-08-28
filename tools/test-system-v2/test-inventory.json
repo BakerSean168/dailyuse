@@ -4469,6 +4469,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/cloud-auth/src/server/password-compatibility.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/cloud-auth/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/contracts/src/electron/authenticated-ipc.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -5373,6 +5381,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/database/src/schema/legacy-cloud-auth-migration.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/database/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/database/src/schema/notification-preference-hierarchy.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -5382,6 +5398,14 @@
     },
     {
       "path": "packages/database/src/schema/task-goal-binding-constraint.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/database/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/database/src/schema/vnext-unique-constraints.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/database/vitest.config.ts"
@@ -10412,7 +10436,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 5
+      "fileCount": 6
     },
     {
       "id": "packages/contracts/vitest.config.ts",
@@ -10447,7 +10471,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 6
+      "fileCount": 8
     },
     {
       "id": "packages/domain-shared/vitest.config.ts",
@@ -11426,7 +11450,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 986,
+    "unit": 989,
     "integration": 31,
     "smoke": 3,
     "boundary-ipc": 9,
