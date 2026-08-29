@@ -24,7 +24,7 @@ export class MarkTaskInstanceMissedUseCase {
         if (!instance.canMarkMissed()) return error('VALIDATION_ERROR', 'Cannot mark this task instance missed');
         instance.markMissed(request?.reason);
         await repositories.instanceRepository.save(instance);
-        await reevaluateTaskPlanOutcome(repositories, identityId, String(instance.templateId));
+        await reevaluateTaskPlanOutcome(repositories, identityId, String(instance.templateId), instance.id);
         return ok({ instance: instance.toClientDTO() });
       });
     } catch (caughtError) {

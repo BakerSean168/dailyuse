@@ -93,6 +93,7 @@ function createPortStub(): TaskApplicationPort {
     markTaskInstanceMissed: fn({ instance: FAKE_INSTANCE }),
     startTaskInstance: fn(FAKE_INSTANCE),
     deleteTaskInstance: fn(null),
+    rescheduleTaskInstance: fn(FAKE_INSTANCE),
     getTaskTemplate: vi.fn(),
     listTaskTemplates: vi.fn(),
     listTaskInstancesByTemplate: vi.fn(),
@@ -184,6 +185,24 @@ const malformedComplete = { rating: 99 };
 const validSkip = { reason: 'Too tired' };
 const malformedSkip = { reason: 42 };
 
+const validReschedule = {
+  newTime: {
+    timeType: 'TimePoint' as const,
+    startDate: 1_787_860_800_000,
+    timePoint: 16 * 60,
+    timeRange: null,
+  },
+  expectedVersion: 3,
+};
+const malformedReschedule = {
+  newTime: {
+    timeType: 'TimePoint' as const,
+    startDate: null,
+    timePoint: 16 * 60,
+    timeRange: null,
+  },
+  expectedVersion: 3,
+};
 
 describe('task transport parity (Phase 4) — production registrations', () => {
   beforeEach(() => {
@@ -589,6 +608,27 @@ describe('task transport parity (Phase 4) — production registrations', () => {
         },
       ],
       [
+        'instance reschedule',
+        {
+          httpKey: 'instance POST /:id/reschedule',
+          ipcChannel: TaskChannels.INSTANCE_RESCHEDULE,
+          httpReq: { params: { id: INSTANCE_ID }, body: validReschedule },
+          ipcArgs: { instanceId: INSTANCE_ID, ...validReschedule },
+          validInvocation: { params: { id: INSTANCE_ID }, body: validReschedule },
+          malformedHttpReq: { params: { id: INSTANCE_ID }, body: malformedReschedule },
+          malformedIpcArgs: { instanceId: INSTANCE_ID, ...malformedReschedule },
+          assertPort: (port) => {
+            const mock = port.rescheduleTaskInstance as ReturnType<typeof vi.fn>;
+            expect(mock).toHaveBeenCalledTimes(2);
+            for (const call of mock.mock.calls) {
+              expect(call[0]).toBe(INSTANCE_ID);
+              expect(call[1]).toBe('identity-1');
+              expect(call[2]).toEqual(validReschedule);
+            }
+          },
+        },
+      ],
+      [
         'instance mark-missed',
         {
           httpKey: 'instance POST /:id/missed',
@@ -620,5 +660,4 @@ describe('task transport parity (Phase 4) — production registrations', () => {
       },
     );
   });
-
 });

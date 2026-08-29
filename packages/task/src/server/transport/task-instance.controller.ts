@@ -20,6 +20,7 @@ import type {
   CompleteTaskInstanceReq,
   MarkTaskInstanceMissedReq,
   SkipTaskInstanceReq,
+  RescheduleTaskInput,
 } from '@memoflow/contracts/task';
 import type { CompleteTaskInstanceUseCase } from '../application/use-cases/commands/complete-task-instance.use-case';
 import type { UncompleteTaskInstanceUseCase } from '../application/use-cases/commands/uncomplete-task-instance.use-case';
@@ -32,6 +33,7 @@ import type { ListTaskInstancesByTemplateUseCase } from '../application/use-case
 import type { SkipTaskInstanceUseCase } from '../application/use-cases/commands/skip-task-instance.use-case';
 import type { StartTaskInstanceUseCase } from '../application/use-cases/commands/start-task-instance.use-case';
 import type { MarkTaskInstanceMissedUseCase } from '../application/use-cases/commands/mark-task-instance-missed.use-case';
+import type { RescheduleTaskInstanceUseCase } from '../application/use-cases/commands/reschedule-task-instance.use-case';
 
 type TaskControllerFn<T extends (...args: never[]) => unknown> = (
   ...args: Parameters<T>
@@ -49,6 +51,7 @@ export interface TaskInstanceUseCases {
   markMissed: TaskControllerFn<MarkTaskInstanceMissedUseCase['execute']>;
   start: TaskControllerFn<StartTaskInstanceUseCase['execute']>;
   deleteInstance: TaskControllerFn<DeleteTaskInstanceUseCase['execute']>;
+  reschedule: TaskControllerFn<RescheduleTaskInstanceUseCase['execute']>;
 }
 
 /**
@@ -167,6 +170,15 @@ export class TaskInstanceController {
     return await this.useCases.start(id, ctx.identityId);
   }
 
+  /** Reschedule this occurrence only; identity is always host-injected. */
+  async rescheduleInstance(
+    id: string,
+    input: RescheduleTaskInput,
+    ctx: Context,
+  ): Promise<Result<TaskInstanceClientDTO>> {
+    return this.useCases.reschedule(id, ctx.identityId, input);
+  }
+
   /**
    * Delete instance
    */
@@ -178,6 +190,4 @@ export class TaskInstanceController {
     // Serialize as data:null (no Result.void / undefined dual-track).
     return ok(null);
   }
-
-
 }

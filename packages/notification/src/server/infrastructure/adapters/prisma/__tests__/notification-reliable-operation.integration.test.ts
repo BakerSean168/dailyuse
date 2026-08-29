@@ -1039,7 +1039,7 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
     await new Promise((resolve) => server.close(resolve as any));
   });
 
-  it('12. Cross-module W1 Reminder Outbox intent is consumed, FK/id created correctly and persisted', async () => {
+  it('12. Cross-module Reminder NotificationRequested is materialized, then dispatched with the real FK/id', async () => {
     // W1 cron trigger intent (0 9 * * *) is expressed via FixedTime trigger in the current contract
     const template = ReminderTemplate.create({
       identityId: identityId as any,
@@ -1140,13 +1140,14 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
       triggerTime,
     });
 
-    // Verify OutboxMessage pending
+    // Reminder owns only the business-level NotificationRequested handoff.
+    // Channel expansion stays inside Notification.
     const pendingOutbox = await prisma.outboxMessage.findFirst({
-      where: { identityId, messageType: 'notification.dispatch', status: 'pending' },
+      where: { identityId, messageType: 'notification.requested', status: 'pending' },
     });
     expect(pendingOutbox).not.toBeNull();
 
-    // Run Notification worker tick
+    // First tick materializes the Notification Fact + per-channel dispatch outbox.
     const mockDeliverer = {
       async deliver() {},
     };
@@ -1154,13 +1155,18 @@ describe('Notification Reliable Operation & Durable Dispatch Integration (W2)', 
     const runtime = createNotificationRuntimeContribution({
       environment: 'test',
       repository: notificationRepo,
+      preferenceRepository: preferenceRepo,
       reliableAdapter,
       deliverer: mockDeliverer,
     });
 
     await runtime.tick();
 
-    // Verify OutboxMessage is succeeded
+    // A second tick owns delivery because dispatch outboxes are Priority 1 and the
+    // NotificationRequested envelope is consumed in Priority 2 of the first tick.
+    await runtime.tick();
+
+    // Verify NotificationRequested shared outbox is succeeded
     const updatedOutbox = await prisma.outboxMessage.findUnique({
       where: { id: pendingOutbox!.id },
     });

@@ -39,6 +39,8 @@ class MockWebContents extends EventEmitter {
   readonly closeDevTools = vi.fn();
   readonly executeJavaScript = vi.fn();
   readonly insertCSS = vi.fn();
+  readonly isLoading = vi.fn(() => false);
+  readonly reload = vi.fn();
 }
 
 export class BrowserWindow extends EventEmitter {
@@ -53,7 +55,8 @@ export class BrowserWindow extends EventEmitter {
       ) ?? null,
   );
   static fromId = vi.fn(
-    (id: number) => browserWindows.find((window) => window.id === id && !window.isDestroyed()) ?? null,
+    (id: number) =>
+      browserWindows.find((window) => window.id === id && !window.isDestroyed()) ?? null,
   );
 
   readonly id = nextWindowId++;
@@ -93,6 +96,7 @@ export class BrowserWindow extends EventEmitter {
   readonly setBackgroundColor = vi.fn();
   readonly setIcon = vi.fn();
   readonly setMinimumSize = vi.fn();
+  readonly setProgressBar = vi.fn();
   readonly center = vi.fn();
   readonly reload = vi.fn();
 
@@ -109,6 +113,11 @@ export class BrowserWindow extends EventEmitter {
     this.focused = true;
   }
 
+  showInactive(): void {
+    this.visible = true;
+    this.focused = false;
+  }
+
   hide(): void {
     this.visible = false;
     this.focused = false;
@@ -122,6 +131,14 @@ export class BrowserWindow extends EventEmitter {
     if (this.destroyed) {
       return;
     }
+    const event = {
+      defaultPrevented: false,
+      preventDefault() {
+        this.defaultPrevented = true;
+      },
+    };
+    this.emit('close', event);
+    if (event.defaultPrevented) return;
     this.visible = false;
     this.destroyed = true;
     this.focused = false;
@@ -266,21 +283,18 @@ export const shell = {
   openPath: vi.fn(async () => ''),
 };
 
+const primaryDisplay = {
+  workArea: { x: 0, y: 0, width: 1920, height: 1080 },
+  workAreaSize: { width: 1920, height: 1080 },
+  bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+  scaleFactor: 1,
+};
+
 export const screen = {
-  getPrimaryDisplay: vi.fn(() => ({
-    workArea: { x: 0, y: 0, width: 1920, height: 1080 },
-    workAreaSize: { width: 1920, height: 1080 },
-    bounds: { x: 0, y: 0, width: 1920, height: 1080 },
-    scaleFactor: 1,
-  })),
-  getAllDisplays: vi.fn(() => [
-    {
-      workArea: { x: 0, y: 0, width: 1920, height: 1080 },
-      workAreaSize: { width: 1920, height: 1080 },
-      bounds: { x: 0, y: 0, width: 1920, height: 1080 },
-      scaleFactor: 1,
-    },
-  ]),
+  getPrimaryDisplay: vi.fn(() => primaryDisplay),
+  getAllDisplays: vi.fn(() => [primaryDisplay]),
+  getCursorScreenPoint: vi.fn(() => ({ x: 960, y: 540 })),
+  getDisplayNearestPoint: vi.fn(() => primaryDisplay),
 };
 
 export const Menu = {

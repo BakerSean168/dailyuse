@@ -18,6 +18,7 @@ import type {
   CompleteTaskInstanceReq,
   MarkTaskInstanceMissedReq,
   SkipTaskInstanceReq,
+  RescheduleTaskInput,
   GetTaskInstancesByRangeReq,
   TaskInstanceClientDTO,
   TaskTemplateClientDTO,
@@ -54,6 +55,7 @@ function taskTemplateFromDTO(dto: TaskTemplateClientDTO): TaskTemplate {
     importance: dto.importance,
     goalBinding: dto.goalBinding ? parseGoalBinding(dto.goalBinding) : null,
     tags: dto.tags ?? [],
+    labels: dto.labels ?? [],
     color: dto.color,
     status: dto.status,
     outcome: dto.outcome,
@@ -161,6 +163,7 @@ export class TaskClientService implements TaskClientPort {
     this.completeInstance = this.completeInstance.bind(this);
     this.skipInstance = this.skipInstance.bind(this);
     this.markInstanceMissed = this.markInstanceMissed.bind(this);
+    this.rescheduleInstance = this.rescheduleInstance.bind(this);
   }
 
   // ===== Task Template Operations =====
@@ -192,7 +195,6 @@ export class TaskClientService implements TaskClientPort {
     });
   }
 
-
   async getTemplate(id: string): Promise<Result<TaskTemplate>> {
     const result = await this.templateApi.getTaskTemplateById(id);
     return mapResult(result, (dto) => taskTemplateFromDTO(dto));
@@ -206,7 +208,6 @@ export class TaskClientService implements TaskClientPort {
   async deleteTemplate(id: string): Promise<Result<void>> {
     return this.templateApi.deleteTaskTemplate(id);
   }
-
 
   async activateTemplate(id: string): Promise<Result<TaskTemplate>> {
     const result = await this.templateApi.activateTaskTemplate(id);
@@ -320,6 +321,13 @@ export class TaskClientService implements TaskClientPort {
     return mapResult(result, (dto) => taskInstanceFromDTO(dto));
   }
 
+  async rescheduleInstance(
+    id: string,
+    request: RescheduleTaskInput,
+  ): Promise<Result<TaskInstance>> {
+    const result = await this.instanceApi.rescheduleTaskInstance(id, request);
+    return mapResult(result, (dto) => taskInstanceFromDTO(dto));
+  }
 }
 
 // ===== Factory =====

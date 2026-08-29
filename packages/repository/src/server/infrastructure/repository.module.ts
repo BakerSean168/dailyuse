@@ -21,8 +21,7 @@ import { createLogger } from '@memoflow/utils/logger';
 const logger = createLogger('RepositoryModule');
 
 export type RepositoryRuntimeContributionsInput =
-  | RepositoryModuleRuntimeContribution
-  | readonly RepositoryModuleRuntimeContribution[];
+  RepositoryModuleRuntimeContribution | readonly RepositoryModuleRuntimeContribution[];
 
 export interface RepositoryModuleDependencies {
   readonly runtimeContributions?: RepositoryRuntimeContributionsInput;
@@ -81,6 +80,16 @@ function buildApplicationPort(deps: RepositoryModuleDependencies): RepositoryApp
       connectionService
         ? connectionService.completeInstallation(ctx.identityId, request)
         : unavailable(),
+    receiveGithubInstallationSetup: async (request) =>
+      connectionService ? connectionService.receiveInstallationSetup(request) : unavailable(),
+    getKnowledgeRepositoryInstallationIntentStatus: async (ctx, intentId) =>
+      connectionService
+        ? connectionService.getInstallationIntentStatus(ctx.identityId, intentId)
+        : unavailable(),
+    finalizeKnowledgeRepositoryInstallationIntent: async (ctx, intentId) =>
+      connectionService
+        ? connectionService.finalizeInstallationIntent(ctx.identityId, intentId)
+        : unavailable(),
     listKnowledgeRepositoryConnections: async (ctx) =>
       connectionService ? connectionService.list(ctx.identityId) : unavailable(),
     connectKnowledgeRepository: async (ctx, request) =>
@@ -130,9 +139,7 @@ function buildApplicationPort(deps: RepositoryModuleDependencies): RepositoryApp
         ? projectionService.listNotes(ctx.identityId, request)
         : Promise.resolve(ok({ notes: [] })),
     getKnowledgeNoteProjection: async (ctx, projectionId) =>
-      projectionService
-        ? projectionService.getNote(ctx.identityId, projectionId)
-        : unavailable(),
+      projectionService ? projectionService.getNote(ctx.identityId, projectionId) : unavailable(),
     getKnowledgeNoteLinkGraph: async (ctx, projectionId, request) =>
       projectionService
         ? projectionService.getLinkGraph(ctx.identityId, projectionId, request)
@@ -146,9 +153,7 @@ function buildApplicationPort(deps: RepositoryModuleDependencies): RepositoryApp
         ? projectionService.getAttachmentContent(ctx.identityId, projectionId)
         : unavailable(),
     createConfirmedKnowledgeNote: async (ctx, request) =>
-      noteCommitService
-        ? noteCommitService.create(ctx.identityId, request)
-        : unavailable(),
+      noteCommitService ? noteCommitService.create(ctx.identityId, request) : unavailable(),
     updateKnowledgeNoteProjectionIndexStatus: async (ctx, request) =>
       projectionService
         ? projectionService.updateIndexStatus(ctx.identityId, request)
@@ -156,7 +161,9 @@ function buildApplicationPort(deps: RepositoryModuleDependencies): RepositoryApp
     ingestGithubWebhook: async (request) =>
       projectionService ? projectionService.ingest(request) : unavailable(),
     listKnowledgeWriteRequests: async (ctx, request) =>
-      projectionService ? projectionService.listWriteRequests(ctx.identityId, request) : unavailable(),
+      projectionService
+        ? projectionService.listWriteRequests(ctx.identityId, request)
+        : unavailable(),
     replayKnowledgeWriteRequestProjection: async (ctx, writeRequestId) => {
       if (!projectionService) return unavailable();
       if (!auditRepository) {

@@ -127,6 +127,24 @@ export const envSchema = z
       .preprocess(emptyStringToUndefined, z.string().min(32).optional())
       .describe('GitHub App webhook HMAC secret（至少 32 字符）'),
 
+    GITHUB_INSTALLATION_ROUTE_KEY: z
+      .preprocess(
+        emptyStringToUndefined,
+        z
+          .string()
+          .regex(/^[a-z0-9](?:[a-z0-9-]{0,30}[a-z0-9])?$/)
+          .optional(),
+      )
+      .describe(
+        'GitHub App installation intent environment route key (for example dev/staging/prod)',
+      ),
+
+    GITHUB_INSTALLATION_ROUTE_TARGETS: z
+      .preprocess(emptyStringToUndefined, z.string().optional())
+      .describe(
+        'Comma-separated allowlisted installation route targets: routeKey=https://api-origin',
+      ),
+
     // ========== CORS 配置 ==========
     CORS_ORIGIN: z
       .string()

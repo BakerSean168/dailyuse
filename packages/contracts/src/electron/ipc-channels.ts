@@ -21,6 +21,12 @@ export const TaskChannels = {
   INSTANCE_UNCOMPLETE: 'task:instance:uncomplete',
   INSTANCE_SKIP: 'task:instance:skip',
   INSTANCE_MARK_MISSED: 'task:instance:mark-missed',
+  INSTANCE_RESCHEDULE: 'task:reschedule-instance',
+} as const;
+
+export const LabelChannels = {
+  LIST: 'label:list',
+  CREATE: 'label:create',
 } as const;
 
 export const GoalChannels = {
@@ -201,6 +207,9 @@ export const RepositoryChannels = {
   KNOWLEDGE_CONNECTION_INSTALLATION_START: 'repository:knowledge-connection:installation:start',
   KNOWLEDGE_CONNECTION_INSTALLATION_COMPLETE:
     'repository:knowledge-connection:installation:complete',
+  KNOWLEDGE_CONNECTION_INSTALLATION_STATUS: 'repository:knowledge-connection:installation:status',
+  KNOWLEDGE_CONNECTION_INSTALLATION_FINALIZE:
+    'repository:knowledge-connection:installation:finalize',
   KNOWLEDGE_CONNECTION_LIST: 'repository:knowledge-connection:list',
   KNOWLEDGE_CONNECTION_CONNECT: 'repository:knowledge-connection:connect',
   KNOWLEDGE_CONNECTION_DISCONNECT: 'repository:knowledge-connection:disconnect',
@@ -298,4 +307,14 @@ export const WindowChannels = {
   CLOSE: 'window:close',
   GET_CONTROLS_STATE: 'window:get-controls-state',
   FOCUS_MAIN_WINDOW: 'window:focus-main-window',
+} as const;
+
+/** Routine-owned dedicated-window IPC. Kept separate from legacy ReminderChannels. */
+export const RoutineChannels = {
+  INTERVENTION_WINDOW_GET: 'routine:intervention-window:get',
+  INTERVENTION_WINDOW_COMMAND: 'routine:intervention-window:command',
+  INTERVENTION_WINDOW_PROJECTION: 'routine:intervention-window:projection',
+  FOCUS_WINDOW_GET: 'routine:focus-window:get',
+  FOCUS_WINDOW_COMMAND: 'routine:focus-window:command',
+  FOCUS_WINDOW_PROJECTION: 'routine:focus-window:projection',
 } as const;

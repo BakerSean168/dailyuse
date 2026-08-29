@@ -26,9 +26,9 @@ const i18n = createI18n({
       reminder: {
         lifecycle: {
           sourceGlobal: 'Controlled by the master switch',
-          sourceGroup: 'Currently controlled by the group',
-          sourceTemplateInGroup: 'Currently controlled by the template itself',
-          sourceTemplateAtRoot: 'Independent control at root',
+          sourceProfile: 'Paused by the Profile gate; Routine state preserved',
+          sourceRoutineInProfile: 'Routine-owned state inside a Profile',
+          sourceRoutineWithoutProfile: 'Routine-owned state without a Profile',
         },
         schedule: {
           trigger: 'Trigger time',
@@ -134,7 +134,7 @@ describe('GridTemplateItem schedule hierarchy', () => {
     expect(wrapper.get('[data-testid="reminder-schedule-state"]').text()).toBe('Upcoming');
     expect(wrapper.get('[data-testid="reminder-control-source"]').text()).toContain('Focus');
     expect(wrapper.text().indexOf('Trigger time')).toBeLessThan(
-      wrapper.text().indexOf('Currently controlled by the group'),
+      wrapper.text().indexOf('Paused by the Profile gate; Routine state preserved'),
     );
   });
 

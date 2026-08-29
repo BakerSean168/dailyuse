@@ -3,6 +3,7 @@ import type { ArchiveTaskTemplateUseCase } from './use-cases/commands/archive-ta
 import type { AbandonTaskPlanUseCase } from './use-cases/commands/abandon-task-plan.use-case';
 import type { BindTaskToGoalUseCase } from './use-cases/commands/bind-task-to-goal.use-case';
 import type { MarkTaskInstanceMissedUseCase } from './use-cases/commands/mark-task-instance-missed.use-case';
+import type { RescheduleTaskInstanceUseCase } from './use-cases/commands/reschedule-task-instance.use-case';
 import type { CompleteTaskInstanceUseCase } from './use-cases/commands/complete-task-instance.use-case';
 import type { UncompleteTaskInstanceUseCase } from './use-cases/commands/uncomplete-task-instance.use-case';
 import type { CreateTaskTemplateUseCase } from './use-cases/commands/create-task-template.use-case';
@@ -51,6 +52,7 @@ export interface TaskApplicationPort {
   markTaskInstanceMissed: TaskPortFn<MarkTaskInstanceMissedUseCase['execute']>;
   startTaskInstance: TaskPortFn<StartTaskInstanceUseCase['execute']>;
   deleteTaskInstance: TaskPortFn<DeleteTaskInstanceUseCase['execute']>;
+  rescheduleTaskInstance: TaskPortFn<RescheduleTaskInstanceUseCase['execute']>;
 
   // Instance queries
   getTaskInstance: TaskPortFn<GetTaskInstanceUseCase['execute']>;
@@ -58,5 +60,4 @@ export interface TaskApplicationPort {
   listTaskInstancesByTemplate: TaskPortFn<ListTaskInstancesByTemplateUseCase['execute']>;
   listTaskInstancesByStatus: TaskPortFn<ListTaskInstancesByStatusUseCase['execute']>;
   getTaskInstancesByDateRange: TaskPortFn<GetTaskInstancesByDateRangeUseCase['execute']>;
-
 }

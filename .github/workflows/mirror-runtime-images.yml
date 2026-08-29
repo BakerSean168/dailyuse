@@ -1,0 +1,87 @@
+name: Mirror Runtime Images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - tools/ci-cd-platform/runtime-image-mirrors.json
+      - .github/workflows/mirror-runtime-images.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: mirror-runtime-images
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    name: Mirror pinned runtime dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Login to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Install registry copy tooling
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends skopeo
+
+      - name: Mirror exact manifests and verify digest parity
+        env:
+          CHINA_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          CHINA_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          GLOBAL_NAMESPACE="${GITHUB_REPOSITORY_OWNER,,}"
+          AUTH_FILE="$HOME/.docker/config.json"
+
+          manifest_digest() {
+            skopeo inspect --raw --authfile "$AUTH_FILE" "docker://$1" \
+              | sha256sum \
+              | awk '{print "sha256:" $1}'
+          }
+
+          while IFS=$'\t' read -r name source tag platform; do
+            test -n "$name"
+            test -n "$source"
+            test -n "$tag"
+            test "$platform" = "linux/amd64"
+            china_ref="$CHINA_REGISTRY/$CHINA_NAMESPACE/$name:$tag"
+            global_ref="ghcr.io/$GLOBAL_NAMESPACE/$name:$tag"
+
+            skopeo copy --preserve-digests --authfile "$AUTH_FILE" \
+              "docker://$source" "docker://$china_ref"
+            skopeo copy --preserve-digests --authfile "$AUTH_FILE" \
+              "docker://$source" "docker://$global_ref"
+
+            source_digest="$(manifest_digest "$source")"
+            china_digest="$(manifest_digest "$china_ref")"
+            global_digest="$(manifest_digest "$global_ref")"
+            expected_digest="${source##*@}"
+
+            test "$source_digest" = "$expected_digest"
+            test "$china_digest" = "$source_digest"
+            test "$global_digest" = "$source_digest"
+            echo "$name: $source_digest" >> "$GITHUB_STEP_SUMMARY"
+          done < <(
+            node -e "const c=require('./tools/ci-cd-platform/runtime-image-mirrors.json'); for (const i of c.images) console.log([i.name,i.source,i.tag,i.platform].join('\\t'))"
+          )

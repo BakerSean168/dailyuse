@@ -638,7 +638,8 @@ export class NotificationReliableOperationPrismaAdapter implements NotificationR
   }
 
   /**
-   * Claim W1 cross-module `notification.dispatch` messages from shared OutboxMessage table.
+   * Claim W1 cross-module shared OutboxMessage rows (`notification.dispatch`
+   * and `notification.requested`) from the shared OutboxMessage table.
    *
    * A claim is a conditional write: only rows without an active lease
    * (`leaseExpiresAt IS NULL OR leaseExpiresAt < now`) may be claimed. On success the
@@ -660,7 +661,9 @@ export class NotificationReliableOperationPrismaAdapter implements NotificationR
 
     const candidates = await this.prisma.outboxMessage.findMany({
       where: {
-        messageType: 'notification.dispatch',
+        messageType: {
+          in: ['notification.dispatch', 'notification.requested'] as const,
+        },
         AND: [
           {
             OR: [

@@ -51,10 +51,8 @@ export type { IKnowledgeAttachmentProjectionRepository } from '../application/po
 export type { IKnowledgeAttachmentContentCache } from '../application/ports/knowledge-attachment-content-cache.port';
 export type { IKnowledgeRepositoryLeaseRepository } from '../application/ports/knowledge-repository-lease.repository';
 export type { IKnowledgeRepositoryCloudDataPurger } from '../application/ports/knowledge-repository-cloud-data-purger.port';
-export type {
-  IGitHubAppClient,
-  IKnowledgeRepositoryInstallationStateStore,
-} from '../application/ports/github-app-client.port';
+export type { IGitHubAppClient } from '../application/ports/github-app-client.port';
+export type { IKnowledgeRepositoryInstallationIntentRepository } from '../application/ports/knowledge-repository-installation-intent.repository';
 export type { IKnowledgeRepositoryConnectionService } from '../application/ports/knowledge-repository-connection.service.port';
 export type { IKnowledgeRepositoryProjectionService } from '../application/ports/knowledge-repository-projection.service.port';
 export type { IKnowledgeNoteCommitService } from '../application/ports/knowledge-note-commit.service.port';

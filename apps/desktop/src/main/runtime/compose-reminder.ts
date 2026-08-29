@@ -40,11 +40,14 @@
  */
 
 import type { IElectronDatabase } from '@memoflow/contracts/electron';
+import type { NotificationRequestedWriterPort } from '@memoflow/notification';
 import {
   createReminderModule,
   createReminderPowerSyncRepositories,
+  createReminderPowerSyncScheduleExecutionCommitPort,
   createReminderScheduleExecutionSource,
   createReminderScheduleProjectionSource,
+  loadPowerSyncRoutineLocalRegistrations,
   type ReminderApplicationPort,
   type IReminderTemplateRepository,
   type ReminderScheduleExecutionSource,
@@ -54,6 +57,21 @@ import {
   createReminderElectronModule,
   type ReminderElectronModuleDef,
 } from '@memoflow/reminder/electron';
+import {
+  createInterventionRuntime,
+  createActiveUsageRuntime,
+  createRoutineActivitySensorRuntime,
+  createProtocolBreakCreditRuntime,
+  type ProtocolBreakCreditRuntime,
+  type InterventionPolicy,
+  type InterventionRuntime,
+  type AmbientBreakCreditRegistration,
+  type ActiveUsageRuntime,
+  type ActiveUsageRoutineRegistration,
+  type RoutineActivitySensorRuntime,
+} from '@memoflow/reminder/routine-runtime';
+import type { IdleSensorPort } from '@memoflow/reminder/routine-runtime';
+import { WindowsIdleSensorAdapter } from '../modules/routine/windows-idle-sensor.adapter';
 
 /**
  * Dependencies the reminder composer needs from the desktop host runtime.
@@ -62,7 +80,24 @@ import {
 export interface ComposeReminderDesktopDependencies {
   /** PowerSync-backed desktop business database owned by the desktop main runtime. 桌面主进程持有的 PowerSync 桌面业务数据库。 */
   readonly db: IElectronDatabase;
+  /** Active profile owner used to project only this tenant's local Routine lanes. */
+  readonly identityId: string;
+  /** Reminder-owned durable NotificationRequested writer; Scheduler never receives it. */
+  readonly notificationRequestedWriter: NotificationRequestedWriterPort;
+  /** Optional per-profile sink for protocol break completion credit. */
+  readonly protocolBreakCreditRuntime?: ProtocolBreakCreditRuntime;
+  readonly idleSensor?: IdleSensorPort;
+  readonly protocolBreakRegistrations?: readonly AmbientBreakCreditRegistration[];
+  /** Presentation escalation timing only; method configuration will replace this default in ROUTINE-5301/5302. */
+  readonly interventionPolicy?: InterventionPolicy;
 }
+
+const DEFAULT_DESKTOP_INTERVENTION_POLICY: InterventionPolicy = {
+  gentleDurationMs: 2 * 60_000,
+  graceDurationMs: 3 * 60_000,
+  guidedDurationMs: 5 * 60_000,
+  strictEnabled: false,
+};
 
 /**
  * Composed reminder surface for the desktop host.
@@ -79,6 +114,24 @@ export interface ComposedReminderDesktop {
   readonly scheduleExecutionSource: ReminderScheduleExecutionSource;
   /** Schedule projection source built from the SAME repository set. 从同一仓储集合构建的 schedule projection source。 */
   readonly scheduleProjectionSource: ReminderScheduleProjectionSource;
+  /** Per-profile local Routine intervention truth shared by occurrence coordinators and InterventionWindow. */
+  readonly interventionRuntime: InterventionRuntime;
+  readonly protocolBreakCreditRuntime: ProtocolBreakCreditRuntime;
+  /** Per-profile activity sensor runtime and active-usage truth. */
+  readonly activityRuntime: RoutineActivitySensorRuntime;
+  readonly activeUsageRuntime: ActiveUsageRuntime;
+  /** Register one ActiveUsage routine and optional explicit protocol-break compatibility. */
+  readonly registerActiveUsageRoutine: (input: {
+    readonly activeUsage: ActiveUsageRoutineRegistration;
+    readonly credit?: AmbientBreakCreditRegistration | null;
+  }) => void;
+  /** Compatibility name retained for the ROUTINE-4203 composition seam. */
+  readonly registerProtocolBreakRoutine: (input: {
+    readonly credit: AmbientBreakCreditRegistration;
+    readonly activeUsage: ActiveUsageRoutineRegistration;
+  }) => void;
+  /** Reload durable vNext RoutineDefinition/Profile/Membership state for this profile. */
+  readonly refreshLocalRoutineRegistrations: () => Promise<void>;
 }
 
 /**
@@ -135,10 +188,99 @@ export function composeReminder(
   const reminderTemplateRepository = repositories.reminderTemplateRepository;
   const scheduleExecutionSource = createReminderScheduleExecutionSource({
     reminderTemplateRepository,
+    commitPort: createReminderPowerSyncScheduleExecutionCommitPort(
+      dependencies.db,
+      dependencies.notificationRequestedWriter,
+    ),
   });
   const scheduleProjectionSource = createReminderScheduleProjectionSource({
     reminderTemplateRepository,
   });
+
+  const interventionRuntime = createInterventionRuntime();
+  const interventionPolicy = {
+    ...DEFAULT_DESKTOP_INTERVENTION_POLICY,
+    ...(dependencies.interventionPolicy ?? {}),
+  };
+  const completeInterventionNaturally = (occurrenceKey: string, at: number): void => {
+    if (!interventionRuntime.getSnapshot(occurrenceKey)) return;
+    interventionRuntime.execute(occurrenceKey, { action: 'natural-stop', at });
+  };
+  const idleSensor =
+    dependencies.idleSensor ?? new WindowsIdleSensorAdapter({ idleThresholdMs: 5 * 60_000 });
+  const activityRuntime = createRoutineActivitySensorRuntime({
+    idleSensor,
+    idleThresholdMs: 5 * 60_000,
+  });
+  const activeUsageRuntime = createActiveUsageRuntime({
+    activitySensor: activityRuntime,
+    onOccurrenceDue: (event) => {
+      interventionRuntime.createDue({
+        identityId: event.identityId,
+        routineId: event.routineId,
+        occurrenceKey: event.occurrenceKey,
+        dueAt: event.dueAt,
+        policy: interventionPolicy,
+      });
+    },
+    onNaturalBreakSatisfied: (event) => {
+      completeInterventionNaturally(event.occurrenceKey, Number(event.satisfiedAt));
+    },
+  });
+  const protocolBreakCreditRuntime =
+    dependencies.protocolBreakCreditRuntime ??
+    createProtocolBreakCreditRuntime({
+      activeUsage: activeUsageRuntime,
+      registrations: dependencies.protocolBreakRegistrations ?? [],
+      onRoutineSatisfied: (entry) => {
+        completeInterventionNaturally(entry.activeUsage.occurrenceKey, Number(entry.satisfiedAt));
+      },
+    });
+  const locallyRegisteredRoutineIds = new Set<string>();
+  const registerActiveUsageRoutine = (input: {
+    readonly activeUsage: ActiveUsageRoutineRegistration;
+    readonly credit?: AmbientBreakCreditRegistration | null;
+  }): void => {
+    if (input.credit) {
+      if (!protocolBreakCreditRuntime.register) {
+        throw new TypeError('Protocol break credit runtime does not support registration');
+      }
+      protocolBreakCreditRuntime.register(input.credit);
+    }
+    try {
+      activeUsageRuntime.registerRoutine(input.activeUsage);
+    } catch (error) {
+      if (input.credit) {
+        protocolBreakCreditRuntime.unregister?.(input.credit.identityId, input.credit.routineId);
+      }
+      throw error;
+    }
+  };
+  const registerProtocolBreakRoutine = (input: {
+    readonly credit: AmbientBreakCreditRegistration;
+    readonly activeUsage: ActiveUsageRoutineRegistration;
+  }): void => registerActiveUsageRoutine(input);
+  const refreshLocalRoutineRegistrations = async (): Promise<void> => {
+    const snapshot = await loadPowerSyncRoutineLocalRegistrations(
+      dependencies.db,
+      dependencies.identityId,
+    );
+    for (const routineId of locallyRegisteredRoutineIds) {
+      activeUsageRuntime.unregisterRoutine(dependencies.identityId, routineId);
+      protocolBreakCreditRuntime.unregister?.(dependencies.identityId, routineId);
+    }
+    locallyRegisteredRoutineIds.clear();
+    const credits = new Map(
+      snapshot.protocolBreakCredits.map((credit) => [credit.routineId, credit] as const),
+    );
+    for (const activeUsage of snapshot.activeUsage) {
+      registerActiveUsageRoutine({
+        activeUsage,
+        credit: credits.get(activeUsage.routineId) ?? null,
+      });
+      locallyRegisteredRoutineIds.add(activeUsage.routineId);
+    }
+  };
 
   return {
     module: createReminderElectronModule({ instance }),
@@ -146,5 +288,12 @@ export function composeReminder(
     repositories: { reminderTemplateRepository },
     scheduleExecutionSource,
     scheduleProjectionSource,
+    interventionRuntime,
+    protocolBreakCreditRuntime,
+    activityRuntime,
+    activeUsageRuntime,
+    registerActiveUsageRoutine,
+    registerProtocolBreakRoutine,
+    refreshLocalRoutineRegistrations,
   };
 }

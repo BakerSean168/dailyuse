@@ -80,7 +80,6 @@ describe('ListTaskTemplatesUseCase', () => {
       }
     });
 
-
     it('should filter by goalId when provided (and no status)', async () => {
       await useCase.execute({
         identityId: testIdentityId,
@@ -107,6 +106,22 @@ describe('ListTaskTemplatesUseCase', () => {
       expect(templateRepo.findByIdentityId).toHaveBeenCalledWith(testIdentityId);
     });
 
+    it('delegates shared Label AND filtering to the repository', async () => {
+      const template = aOneTimeTask({ title: 'Work + AI' });
+      vi.mocked(templateRepo.findByLabelIdsAll).mockResolvedValue([template]);
+
+      const result = await useCase.execute({
+        identityId: testIdentityId,
+        labelIdsAll: ['label-work', 'label-ai'],
+      });
+
+      expect(result).toBeOk();
+      expect(templateRepo.findByLabelIdsAll).toHaveBeenCalledWith(testIdentityId, [
+        'label-work',
+        'label-ai',
+      ]);
+      expect(result.ok && result.data.templates.map((item) => item.name)).toEqual(['Work + AI']);
+    });
   });
 
   it('should return empty list when no templates found', async () => {

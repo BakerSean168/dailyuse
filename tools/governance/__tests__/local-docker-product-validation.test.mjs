@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 /*
  * This integration test intentionally exercises standalone workspace tooling
@@ -50,6 +51,18 @@ function healthyRuntime(overrides = {}) {
     ...overrides,
   };
 }
+
+describe('API Docker workspace closure', () => {
+  it('copies every direct workspace package needed by API production deploy', () => {
+    const dockerfile = readFileSync(new URL('../../../Dockerfile.api', import.meta.url), 'utf8');
+
+    expect(dockerfile).toContain('COPY packages/label/package.json ./packages/label/package.json');
+    expect(dockerfile).toContain('COPY packages/label ./packages/label');
+    expect(dockerfile).toContain(
+      '--filter @memoflow/api deploy --prod --ignore-scripts /prod/api',
+    );
+  });
+});
 
 describe('local Docker product validation evidence', () => {
   it('requires healthy listeners, exact compose port mappings, and current revisions', () => {

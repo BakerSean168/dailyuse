@@ -8,7 +8,10 @@
       data-testid="reminder-page-toolbar"
     >
       <div class="flex min-w-0 items-center gap-2">
-        <component :is="selectedGroup ? Folder : LayoutGrid" class="h-4 w-4 shrink-0 text-primary" />
+        <component
+          :is="selectedGroup ? Folder : LayoutGrid"
+          class="h-4 w-4 shrink-0 text-primary"
+        />
         <p
           data-testid="reminder-linear-heading"
           class="max-w-36 truncate text-sm font-medium @2xl/panel:max-w-52"
@@ -96,7 +99,7 @@
           <ActionableWrapper
             v-for="group in groups"
             :key="group.id"
-            :actions="getGroupActions(group)"
+            :actions="getProfileActions(group)"
             :show-more-button="false"
           >
             <button
@@ -118,7 +121,7 @@
                   </Badge>
                 </span>
                 <span class="mt-1 line-clamp-2 text-[11px] text-muted-foreground/90">
-                  {{ getSidebarGroupSummary(group) }}
+                  {{ getSidebarProfileSummary(group) }}
                 </span>
               </span>
             </button>
@@ -127,97 +130,162 @@
       </nav>
 
       <main class="flex min-h-0 min-w-0 flex-col overflow-hidden" data-testid="reminder-content">
-        <div class="min-h-0 flex-1 overflow-y-auto p-3 @2xl/panel:p-6" data-testid="reminder-scroll-host" data-scroll-host="reminder">
+        <div
+          class="min-h-0 flex-1 overflow-y-auto p-3 @2xl/panel:p-6"
+          data-testid="reminder-scroll-host"
+          data-scroll-host="reminder"
+        >
           <div class="mx-auto max-w-5xl">
-          <div
-            v-if="preferences && !preferences.globalReminderEnabled"
-            class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
-          >
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <p class="font-medium">{{ t('reminder.linear.globalPausedTitle') }}</p>
-                <p class="mt-1 text-xs text-amber-800">
-                  {{ preferences.summaryText || t('reminder.linear.globalPausedDescription') }}
+            <section
+              class="mb-4 rounded-2xl border bg-gradient-to-br from-primary/5 via-background to-background px-4 py-4"
+              data-testid="routine-configuration-summary"
+            >
+              <div
+                class="flex flex-col gap-3 @2xl/panel:flex-row @2xl/panel:items-start @2xl/panel:justify-between"
+              >
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <Sparkles class="h-4 w-4 text-primary" />
+                    <h1 class="text-sm font-semibold">
+                      {{ t('reminder.linear.configurationTitle') }}
+                    </h1>
+                  </div>
+                  <p class="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">
+                    {{ t('reminder.linear.configurationDescription') }}
+                  </p>
+                </div>
+                <div class="grid grid-cols-3 gap-2 text-center text-xs @2xl/panel:min-w-64">
+                  <div class="rounded-xl border bg-card px-2 py-2">
+                    <p class="font-semibold text-foreground">{{ templates.length }}</p>
+                    <p class="text-muted-foreground">{{ t('reminder.linear.routinesStat') }}</p>
+                  </div>
+                  <div class="rounded-xl border bg-card px-2 py-2">
+                    <p class="font-semibold text-foreground">{{ runningRoutineCount }}</p>
+                    <p class="text-muted-foreground">{{ t('reminder.linear.runningStat') }}</p>
+                  </div>
+                  <div class="rounded-xl border bg-card px-2 py-2">
+                    <p class="font-semibold text-foreground">{{ groups.length }}</p>
+                    <p class="text-muted-foreground">{{ t('reminder.linear.profilesStat') }}</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div
+              v-if="preferences && !preferences.globalReminderEnabled"
+              class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+            >
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="font-medium">{{ t('reminder.linear.globalPausedTitle') }}</p>
+                  <p class="mt-1 text-xs text-amber-800">
+                    {{ preferences.summaryText || t('reminder.linear.globalPausedDescription') }}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  class="border-amber-300 bg-transparent text-amber-900 hover:bg-amber-100"
+                  :disabled="isSaving"
+                  @click="handleToggleGlobalReminder(true)"
+                >
+                  {{ t('reminder.linear.reEnableGlobal') }}
+                </Button>
+              </div>
+            </div>
+
+            <div v-if="selectedGroup" class="mb-4 rounded-2xl border bg-card px-4 py-4 shadow-sm">
+              <div class="space-y-2">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h2 class="text-sm font-semibold text-foreground">{{ selectedGroup.name }}</h2>
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <Badge variant="outline" class="cursor-help">
+                        <ShieldCheck class="mr-1 h-3 w-3" />
+                        {{ getProfileGateLabel(t, selectedGroup) }}
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent class="max-w-xs text-xs leading-5">
+                      {{ getProfilePolicyText(t, selectedGroup) }}
+                    </TooltipContent>
+                  </Tooltip>
+                  <Badge :variant="isProfileGateOpen(selectedGroup) ? 'default' : 'secondary'">
+                    {{
+                      isProfileGateOpen(selectedGroup)
+                        ? t('reminder.linear.profileActive')
+                        : t('reminder.linear.profilePaused')
+                    }}
+                  </Badge>
+                </div>
+                <p class="text-xs leading-5 text-muted-foreground">
+                  {{ selectedGroup.description || t('reminder.linear.profileFallbackDescription') }}
+                </p>
+                <p class="rounded-lg bg-muted/50 px-3 py-2 text-xs leading-5 text-muted-foreground">
+                  {{ getProfilePolicyText(t, selectedGroup) }}
+                </p>
+                <!-- 统计压成一行内联数字（§8-5） -->
+                <p class="text-xs text-muted-foreground">
+                  {{ getGroupTemplateCountLabel(t, selectedGroup) }} ·
+                  {{ getGroupActiveStatusLabel(t, selectedGroup) }}
                 </p>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                class="border-amber-300 bg-transparent text-amber-900 hover:bg-amber-100"
-                :disabled="isSaving"
-                @click="handleToggleGlobalReminder(true)"
+            </div>
+
+            <div
+              v-if="isLoading"
+              class="flex h-[50vh] items-center justify-center text-muted-foreground"
+            >
+              {{ t('reminder.status.loading') }}
+            </div>
+
+            <div
+              v-else-if="error"
+              class="flex h-[50vh] flex-col items-center justify-center text-center"
+              data-testid="routine-configuration-error"
+            >
+              <div
+                class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive"
               >
-                {{ t('reminder.linear.reEnableGlobal') }}
+                <CircleAlert class="h-6 w-6" />
+              </div>
+              <h3 class="mb-1 text-lg font-medium text-foreground">
+                {{ t('reminder.error.configurationLoadFailed') }}
+              </h3>
+              <p class="max-w-md text-sm text-muted-foreground">{{ error }}</p>
+              <Button class="mt-4" size="sm" variant="outline" @click="reloadReminderScene">
+                <RefreshCw class="mr-2 h-4 w-4" />
+                {{ t('reminder.action.retry') }}
               </Button>
             </div>
-          </div>
 
-          <div v-if="selectedGroup" class="mb-4 rounded-2xl border bg-card px-4 py-4 shadow-sm">
-            <div class="space-y-2">
-              <div class="flex flex-wrap items-center gap-2">
-                <h2 class="text-sm font-semibold text-foreground">{{ selectedGroup.name }}</h2>
-                <Tooltip>
-                  <TooltipTrigger as-child>
-                    <Badge variant="outline" class="cursor-help">
-                      {{ getGroupControlModeText(t, selectedGroup) }}
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent class="max-w-xs text-xs leading-5">
-                    {{ getGroupPolicyText(t, selectedGroup) }}
-                  </TooltipContent>
-                </Tooltip>
-                <Badge :variant="selectedGroup.enabled ? 'default' : 'secondary'">
-                  {{
-                    selectedGroup.enabled
-                      ? t('reminder.linear.groupEnabled')
-                      : t('reminder.linear.groupPaused')
-                  }}
-                </Badge>
+            <div
+              v-else-if="filteredTemplates.length === 0"
+              class="flex h-[50vh] flex-col items-center justify-center text-muted-foreground"
+            >
+              <div
+                class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary"
+              >
+                <BellRing class="h-6 w-6 opacity-50" />
               </div>
-              <p v-if="selectedGroup.description" class="text-xs text-muted-foreground">
-                {{ selectedGroup.description }}
-              </p>
-              <!-- 统计压成一行内联数字（§8-5） -->
-              <p class="text-xs text-muted-foreground">
-                {{ getGroupTemplateCountLabel(t, selectedGroup) }} ·
-                {{ getGroupActiveStatusLabel(t, selectedGroup) }}
-              </p>
+              <h3 class="mb-1 text-lg font-medium text-foreground">{{ t('reminder.empty') }}</h3>
+              <p class="text-sm">{{ t('reminder.emptyDescription') }}</p>
             </div>
-          </div>
 
-          <div
-            v-if="isLoading"
-            class="flex h-[50vh] items-center justify-center text-muted-foreground"
-          >
-            {{ t('reminder.status.loading') }}
-          </div>
-
-          <div
-            v-else-if="filteredTemplates.length === 0"
-            class="flex h-[50vh] flex-col items-center justify-center text-muted-foreground"
-          >
-            <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
-              <BellRing class="h-6 w-6 opacity-50" />
+            <div
+              v-else
+              class="grid grid-cols-1 gap-3 @xl/panel:grid-cols-2 @3xl/panel:grid-cols-3 @5xl/panel:grid-cols-4"
+            >
+              <GridTemplateItem
+                v-for="tpl in filteredTemplates"
+                :key="tpl.id"
+                :item="tpl"
+                @click="handleTemplateClick"
+                @edit="handleEditTemplate"
+                @delete="handleDeleteTemplate"
+                @toggle-enabled="handleToggleEnabled"
+                @move="handleMoveTemplate"
+              />
             </div>
-            <h3 class="mb-1 text-lg font-medium text-foreground">{{ t('reminder.empty') }}</h3>
-            <p class="text-sm">{{ t('reminder.emptyDescription') }}</p>
-          </div>
-
-          <div
-            v-else
-            class="grid grid-cols-1 gap-3 @xl/panel:grid-cols-2 @3xl/panel:grid-cols-3 @5xl/panel:grid-cols-4"
-          >
-            <GridTemplateItem
-              v-for="tpl in filteredTemplates"
-              :key="tpl.id"
-              :item="tpl"
-              @click="handleTemplateClick"
-              @edit="handleEditTemplate"
-              @delete="handleDeleteTemplate"
-              @toggle-enabled="handleToggleEnabled"
-              @move="handleMoveTemplate"
-            />
-          </div>
           </div>
         </div>
       </main>
@@ -276,6 +344,10 @@ import {
   Pencil,
   Trash2,
   Power,
+  Sparkles,
+  ShieldCheck,
+  CircleAlert,
+  RefreshCw,
 } from '@lucide/vue';
 import {
   Badge,
@@ -287,7 +359,7 @@ import {
   TooltipTrigger,
   useConfirm,
 } from '@memoflow/ui-vue-shadcn';
-import { ActionableWrapper, menuLabel } from '../../../components/shared';
+import { ActionableWrapper } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import GridTemplateItem from '../components/GridTemplateItem.vue';
 import ReminderTemplateCard from '../components/ReminderTemplateCard.vue';
@@ -299,13 +371,13 @@ import { usePanelSurfaceStatus } from '../../../layouts/shell/usePanelSurfaceSta
 import type { PanelSurfaceStatus } from '../../../layouts/shell/useAppShellStore';
 import {
   getGroupActiveStatusLabel,
-  getGroupControlModeText,
-  getGroupPolicyText,
-  getGroupSidebarSummary,
+  getProfileGateLabel,
+  getProfilePolicyText,
+  getProfileSidebarSummary,
   getGroupTemplateCountLabel,
+  isProfileGateOpen,
 } from '../presentation/lifecycle-presentation';
 import type {
-  ControlMode,
   CreateReminderGroupReq,
   CreateReminderTemplateReq,
   ReminderGroupClientDTO,
@@ -319,6 +391,7 @@ const {
   groups,
   isLoading,
   isSaving,
+  error,
   preferences,
   fetchTemplates,
   fetchGroups,
@@ -332,8 +405,8 @@ const {
   updateGroup,
   deleteGroup,
   toggleGroup,
-  switchGroupControlMode,
   updatePreferences,
+  reloadReminderScene,
 } = useReminder();
 
 const { t } = useI18n();
@@ -382,9 +455,12 @@ const selectedGroup = computed(
 const currentViewLabel = computed(
   () => selectedGroup.value?.name ?? t('reminder.linear.allReminders'),
 );
+const runningRoutineCount = computed(
+  () => templates.value.filter((routine) => routine.effectiveEnabled).length,
+);
 
-function getSidebarGroupSummary(group: ReminderGroupClientDTO) {
-  return getGroupSidebarSummary(t, group, templates.value);
+function getSidebarProfileSummary(group: ReminderGroupClientDTO) {
+  return getProfileSidebarSummary(t, group, templates.value);
 }
 
 function handleTemplateClick(template: ReminderTemplateClientDTO) {
@@ -493,49 +569,38 @@ async function handleUpdateGroup(id: string, data: UpdateReminderGroupReq) {
   }
 }
 
-function getGroupActions(group: ReminderGroupClientDTO): MenuAction[] {
+function getProfileActions(profile: ReminderGroupClientDTO): MenuAction[] {
   return [
     {
-      key: 'toggleGroup',
-      label: group.enabled ? t('reminder.action.pauseGroup') : t('reminder.action.enableGroup'),
+      key: 'toggleProfile',
+      label: isProfileGateOpen(profile)
+        ? t('reminder.action.pauseProfile')
+        : t('reminder.action.activateProfile'),
       icon: Power,
       handler: async () => {
-        const result = await toggleGroup(group.id!);
+        const result = await toggleGroup(profile.id);
         if (result) {
           toast.success(
-            result.enabled ? t('reminder.toast.groupEnabled') : t('reminder.toast.groupPaused'),
+            isProfileGateOpen(result)
+              ? t('reminder.toast.profileActivated')
+              : t('reminder.toast.profilePaused'),
           );
         }
       },
     },
     {
-      key: 'switchControlMode',
-      label:
-        group.controlMode === 'Group'
-          ? t('reminder.action.switchToIndividual')
-          : t('reminder.action.switchToGroup'),
-      icon: Pencil,
-      handler: async () => {
-        const nextMode: ControlMode = group.controlMode === 'Group' ? 'Individual' : 'Group';
-        const result = await switchGroupControlMode(group.id, nextMode);
-        if (result) {
-          toast.success(t('reminder.toast.groupControlModeUpdated'));
-        }
-      },
-    },
-    {
       key: 'edit',
-      label: menuLabel('editGroup'),
+      label: t('reminder.action.editProfile'),
       icon: Pencil,
-      handler: () => handleEditGroup(group),
+      handler: () => handleEditGroup(profile),
     },
     {
       key: 'delete',
-      label: menuLabel('deleteGroup'),
+      label: t('reminder.action.deleteProfile'),
       icon: Trash2,
       destructive: true,
       separator: true,
-      handler: () => handleDeleteGroup(group),
+      handler: () => handleDeleteGroup(profile),
     },
   ];
 }

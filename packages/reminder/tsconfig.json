@@ -11,6 +11,7 @@
       "@memoflow/contracts": ["../contracts/src/index.ts"],
       "@memoflow/domain-shared": ["../domain-shared/src/index.ts"],
       "@memoflow/contracts/reminder": ["../contracts/src/modules/reminder/index.ts"],
+      "@memoflow/contracts/notification": ["../contracts/src/modules/notification/index.ts"],
       "@memoflow/contracts/result": ["../contracts/src/result/index.ts"],
       "@memoflow/contracts/shared": ["../contracts/src/shared/index.ts"],
       "@memoflow/contracts/primitives": ["../contracts/src/primitives/index.ts"],

@@ -92,6 +92,8 @@ test('release evidence builders produce one identity-bound canonical manifest', 
           RELEASE_CI_RUN_ID: '42',
           RELEASE_REGISTRY: 'registry.example.test',
           RELEASE_NAMESPACE: 'memoflow',
+          GLOBAL_REGISTRY: 'ghcr.io',
+          GLOBAL_NAMESPACE: 'bakersean168',
           RELEASE_IMMUTABLE_TAG: 'v1.2.3-abc123',
           API_DIGEST: 'sha256:api',
           MIGRATOR_DIGEST: 'sha256:migrator',
@@ -124,6 +126,16 @@ test('release evidence builders produce one identity-bound canonical manifest', 
     assert.equal(manifest.desktop.assets.length, 2);
     assert.equal(manifest.docker.images.api.digest, 'sha256:api');
     assert.deepEqual(manifest.docker.images.api.tags, ['v1.2.3', 'v1.2.3-abc123']);
+    assert.equal(
+      manifest.docker.images.api.distributions.china.repository,
+      'registry.example.test/memoflow/memoflow-api',
+    );
+    assert.equal(
+      manifest.docker.images.api.distributions.global.repository,
+      'ghcr.io/bakersean168/memoflow-api',
+    );
+    assert.equal(manifest.docker.images.api.distributions.china.digest, 'sha256:api');
+    assert.equal(manifest.docker.images.api.distributions.global.digest, 'sha256:api');
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }

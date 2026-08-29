@@ -2,11 +2,8 @@
  * TaskTemplate Aggregate Root - Client Interface
  */
 
-import type {
-  TaskTemplateId,
-  IdentityId,
-  TransferDate,
-} from '../../../primitives';
+import type { LabelClientDTO } from '../../label';
+import type { TaskTemplateId, IdentityId, TransferDate } from '../../../primitives';
 
 import type { TaskTemplateStatus } from '../value-objects/task-template-status';
 import type { TaskPlanOutcome } from '../value-objects/task-plan-outcome';
@@ -34,6 +31,7 @@ export interface TaskTemplateClientDTO {
 
   goalBinding: TaskGoalBindingDTO | null;
   tags: string[];
+  labels: LabelClientDTO[];
   color: string | null;
   status: TaskTemplateStatus;
   outcome: TaskPlanOutcome;

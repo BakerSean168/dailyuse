@@ -31,8 +31,14 @@ export function deserializeRoutineTrigger(raw: string | null): RoutineTrigger | 
           frequency: requireRecurrenceFrequency(recurrence.frequency),
           interval: requireNumber(recurrence.interval, 'WallClock.recurrence.interval'),
           byWeekday: requireWeekdays(recurrence.byWeekday),
-          count: recurrence.count == null ? null : requireNumber(recurrence.count, 'WallClock.recurrence.count'),
-          until: recurrence.until == null ? null : requireNumber(recurrence.until, 'WallClock.recurrence.until'),
+          count:
+            recurrence.count == null
+              ? null
+              : requireNumber(recurrence.count, 'WallClock.recurrence.count'),
+          until:
+            recurrence.until == null
+              ? null
+              : requireNumber(recurrence.until, 'WallClock.recurrence.until'),
         },
       });
     }
@@ -42,15 +48,36 @@ export function deserializeRoutineTrigger(raw: string | null): RoutineTrigger | 
         anchor: requireElapsedAnchor(parsed.anchor),
       });
     case 'ActiveUsage': {
-      const naturalBreak = parsed.naturalBreakCredit == null
-        ? null
-        : requireRecord(parsed.naturalBreakCredit, 'ActiveUsage.naturalBreakCredit');
+      const naturalBreak =
+        parsed.naturalBreakCredit == null
+          ? null
+          : requireRecord(parsed.naturalBreakCredit, 'ActiveUsage.naturalBreakCredit');
+      const protocolBreak =
+        parsed.protocolBreakCredit == null
+          ? null
+          : requireRecord(parsed.protocolBreakCredit, 'ActiveUsage.protocolBreakCredit');
       return createActiveUsageTrigger({
         requiredActiveMs: requireNumber(parsed.requiredActiveMs, 'ActiveUsage.requiredActiveMs'),
         anchor: requireActiveUsageAnchor(parsed.anchor),
-        naturalBreakCredit: naturalBreak == null
-          ? null
-          : { idleDurationMs: requireNumber(naturalBreak.idleDurationMs, 'ActiveUsage.naturalBreakCredit.idleDurationMs') },
+        naturalBreakCredit:
+          naturalBreak == null
+            ? null
+            : {
+                idleDurationMs: requireNumber(
+                  naturalBreak.idleDurationMs,
+                  'ActiveUsage.naturalBreakCredit.idleDurationMs',
+                ),
+              },
+        protocolBreakCredit:
+          protocolBreak == null
+            ? null
+            : {
+                kind: requireRoutineBreakCreditKind(protocolBreak.kind),
+                minimumBreakMs: requireNumber(
+                  protocolBreak.minimumBreakMs,
+                  'ActiveUsage.protocolBreakCredit.minimumBreakMs',
+                ),
+              },
       });
     }
     default:
@@ -113,7 +140,8 @@ function nullableInstant(value: unknown, field: string): number | null {
 }
 
 function requireRecurrenceFrequency(value: unknown): 'daily' | 'weekly' | 'monthly' | 'yearly' {
-  if (value === 'daily' || value === 'weekly' || value === 'monthly' || value === 'yearly') return value;
+  if (value === 'daily' || value === 'weekly' || value === 'monthly' || value === 'yearly')
+    return value;
   throw new TypeError('WallClock.recurrence.frequency is invalid');
 }
 
@@ -128,14 +156,26 @@ function requireWeekdays(value: unknown): Array<0 | 1 | 2 | 3 | 4 | 5 | 6> {
   });
 }
 
-function requireElapsedAnchor(value: unknown): 'routine-activation' | 'profile-activation' | 'last-satisfied' {
-  if (value === 'routine-activation' || value === 'profile-activation' || value === 'last-satisfied') return value;
+function requireElapsedAnchor(
+  value: unknown,
+): 'routine-activation' | 'profile-activation' | 'last-satisfied' {
+  if (
+    value === 'routine-activation' ||
+    value === 'profile-activation' ||
+    value === 'last-satisfied'
+  )
+    return value;
   throw new TypeError('Elapsed.anchor is invalid');
 }
 
 function requireActiveUsageAnchor(value: unknown): 'profile-activation' | 'last-satisfied' {
   if (value === 'profile-activation' || value === 'last-satisfied') return value;
   throw new TypeError('ActiveUsage.anchor is invalid');
+}
+
+function requireRoutineBreakCreditKind(value: unknown): 'Stand' | 'Eye' | 'Movement' {
+  if (value === 'Stand' || value === 'Eye' || value === 'Movement') return value;
+  throw new TypeError('ActiveUsage.protocolBreakCredit.kind is invalid');
 }
 
 function requireOverrideSource(value: unknown): 'user' | 'ai' | 'runtime' {

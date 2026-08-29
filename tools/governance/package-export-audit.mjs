@@ -37,7 +37,15 @@ const PACKAGE_SPECIFIC_SUBPATHS = {
   repository: ['./schema', './server'],
   'cloud-auth': ['./server'],
   notification: ['./commands', './schedule-execution', './server'],
-  reminder: ['./schema', './schedule-execution', './schedule-projection', './server'],
+  reminder: [
+    './schema',
+    './schedule-execution',
+    './schedule-execution/routine',
+    './schedule-projection',
+    './schedule-projection/routine',
+    './routine-runtime',
+    './server',
+  ],
   contracts: [
     './task',
     './goal',

@@ -24,7 +24,6 @@ export type RoutineTimingOwner = 'scheduler' | 'local-runtime';
 export const ROUTINE_TRIGGER_TYPES = ['WallClock', 'Elapsed', 'ActiveUsage'] as const;
 export type RoutineTriggerType = (typeof ROUTINE_TRIGGER_TYPES)[number];
 
-
 export interface WallClockRecurrence {
   startDate: Ymd;
   frequency: RecurrenceFrequency;
@@ -42,10 +41,7 @@ export interface WallClockTrigger {
   recurrence: WallClockRecurrence;
 }
 
-export type ElapsedAnchor =
-  | 'routine-activation'
-  | 'profile-activation'
-  | 'last-satisfied';
+export type ElapsedAnchor = 'routine-activation' | 'profile-activation' | 'last-satisfied';
 
 export interface ElapsedTrigger {
   type: 'Elapsed';
@@ -55,6 +51,9 @@ export interface ElapsedTrigger {
 }
 
 export type ActiveUsageAnchor = 'profile-activation' | 'last-satisfied';
+
+export const ROUTINE_BREAK_CREDIT_KINDS = ['Stand', 'Eye', 'Movement'] as const;
+export type RoutineBreakCreditKind = (typeof ROUTINE_BREAK_CREDIT_KINDS)[number];
 
 export interface ActiveUsageTrigger {
   type: 'ActiveUsage';
@@ -68,6 +67,15 @@ export interface ActiveUsageTrigger {
   naturalBreakCredit: {
     idleDurationMs: number;
     effect: 'satisfy-and-reset';
+  } | null;
+  /**
+   * Explicit semantic compatibility with completed protocol breaks. This is
+   * persisted inside trigger_json so local runtimes never infer capability or
+   * minimum acceptable break duration from a routine name.
+   */
+  protocolBreakCredit: {
+    kind: RoutineBreakCreditKind;
+    minimumBreakMs: number;
   } | null;
 }
 
@@ -147,10 +155,26 @@ export function createActiveUsageTrigger(input: {
   naturalBreakCredit?: {
     idleDurationMs: number;
   } | null;
+  protocolBreakCredit?: {
+    kind: RoutineBreakCreditKind;
+    minimumBreakMs: number;
+  } | null;
 }): ActiveUsageTrigger {
   assertPositiveFinite(input.requiredActiveMs, 'requiredActiveMs');
   if (input.naturalBreakCredit) {
-    assertPositiveFinite(input.naturalBreakCredit.idleDurationMs, 'naturalBreakCredit.idleDurationMs');
+    assertPositiveFinite(
+      input.naturalBreakCredit.idleDurationMs,
+      'naturalBreakCredit.idleDurationMs',
+    );
+  }
+  if (input.protocolBreakCredit) {
+    if (!ROUTINE_BREAK_CREDIT_KINDS.includes(input.protocolBreakCredit.kind)) {
+      throw new TypeError(`Invalid protocol break credit kind: ${input.protocolBreakCredit.kind}`);
+    }
+    assertPositiveFinite(
+      input.protocolBreakCredit.minimumBreakMs,
+      'protocolBreakCredit.minimumBreakMs',
+    );
   }
   return {
     type: 'ActiveUsage',
@@ -163,6 +187,7 @@ export function createActiveUsageTrigger(input: {
           effect: 'satisfy-and-reset',
         }
       : null,
+    protocolBreakCredit: input.protocolBreakCredit ? { ...input.protocolBreakCredit } : null,
   };
 }
 
@@ -360,10 +385,7 @@ export function migrateLegacyFixedTimeTrigger(input: {
   });
 }
 
-function normalizeInstant(
-  value: Instant | number | null,
-  field: string,
-): Instant | null {
+function normalizeInstant(value: Instant | number | null, field: string): Instant | null {
   if (value == null) return null;
   if (!Number.isFinite(Number(value))) {
     throw new TypeError(`${field} must be a finite epoch-ms Instant`);

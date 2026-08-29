@@ -37,11 +37,30 @@ function createApiStub(): RepositoryApplicationPort {
   return {
     startKnowledgeRepositoryInstallation: vi.fn(async () =>
       ok({
-        installationUrl: 'https://github.com/apps/memoflow/installations/new?state=state-1',
+        intentId: 'intent-1',
+        installationUrl:
+          'https://github.com/apps/memoflow/installations/new?state=mfi1.dev.state-1',
         expiresAt: 1_750_000_600_000,
       }),
     ),
     completeKnowledgeRepositoryInstallation: vi.fn(),
+    receiveGithubInstallationSetup: vi.fn(async () =>
+      ok({
+        kind: 'web' as const,
+        intentId: 'intent-1',
+        location: 'https://app.example.test/settings?tab=repository&installation_intent=intent-1',
+      }),
+    ),
+    getKnowledgeRepositoryInstallationIntentStatus: vi.fn(async () =>
+      ok({
+        intentId: 'intent-1',
+        status: 'CallbackReceived' as const,
+        clientKind: 'web' as const,
+        expiresAt: 1_750_000_600_000,
+        installationId: 'installation-1',
+      }),
+    ),
+    finalizeKnowledgeRepositoryInstallationIntent: vi.fn(),
     listKnowledgeRepositoryConnections: vi.fn(async () => ok({ connections: [] })),
     connectKnowledgeRepository: vi.fn(),
     disconnectKnowledgeRepository: vi.fn(async () => ok(null)),
@@ -129,6 +148,9 @@ function createResponse() {
   return {
     status: vi.fn().mockReturnThis(),
     json: vi.fn().mockReturnThis(),
+    type: vi.fn().mockReturnThis(),
+    send: vi.fn().mockReturnThis(),
+    redirect: vi.fn().mockReturnThis(),
   };
 }
 
@@ -144,6 +166,55 @@ describe('knowledge repository connection routes', () => {
     expect(paths).not.toContain('/:repoId/resources');
     expect(paths).not.toContain('/:repoId/folders');
     expect(paths).not.toContain('/:id');
+  });
+
+  it('accepts the public GitHub setup callback without auth and redirects only to the service-resolved location', async () => {
+    const api = createApiStub();
+    const router = registerKnowledgeRepositoryConnectionRoutes(api, { auth: passThrough });
+    const handler = getRouteHandler(router, 'get', '/knowledge-connections/installations/setup');
+    const res = createResponse();
+
+    await handler(
+      {
+        query: {
+          state: `mfi1.dev.${'a'.repeat(43)}`,
+          installation_id: 'installation-1',
+          setup_action: 'install',
+        },
+      },
+      res,
+    );
+
+    expect(api.receiveGithubInstallationSetup).toHaveBeenCalledWith({
+      state: `mfi1.dev.${'a'.repeat(43)}`,
+      installationId: 'installation-1',
+      setupAction: 'install',
+    });
+    expect(res.redirect).toHaveBeenCalledWith(
+      302,
+      'https://app.example.test/settings?tab=repository&installation_intent=intent-1',
+    );
+  });
+
+  it('renders a bounded Desktop completion page rather than granting repository access in the callback', async () => {
+    const api = createApiStub();
+    vi.mocked(api.receiveGithubInstallationSetup).mockResolvedValueOnce(
+      ok({ kind: 'desktop', intentId: 'intent-1', expiresAt: 1_750_000_600_000 }),
+    );
+    const router = registerKnowledgeRepositoryConnectionRoutes(api, { auth: passThrough });
+    const handler = getRouteHandler(router, 'get', '/knowledge-connections/installations/setup');
+    const res = createResponse();
+
+    await handler(
+      { query: { state: `mfi1.dev.${'b'.repeat(43)}`, installation_id: 'installation-1' } },
+      res,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.type).toHaveBeenCalledWith('html');
+    expect(res.send).toHaveBeenCalledWith(expect.stringContaining('return to MemoFlow Desktop'));
+    expect(api.finalizeKnowledgeRepositoryInstallationIntent).not.toHaveBeenCalled();
+    expect(api.connectKnowledgeRepository).not.toHaveBeenCalled();
   });
 
   it('forwards an explicit cloud-data purge choice on disconnect', async () => {

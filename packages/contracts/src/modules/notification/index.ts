@@ -15,6 +15,9 @@ export * from './value-objects';
 // ============ Domain Events ============
 export * from './domain/events';
 
+// ============ Integration ============
+export * from './integration';
+
 // ============ Protocol ============
 export * from './protocol';
 

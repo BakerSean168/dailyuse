@@ -213,6 +213,34 @@ model RepositoryStatistic {
   @@map("repository_statistics")
 }
 
+/// Short-lived, identity-bound GitHub App installation orchestration intent.
+/// Only a SHA-256 hash of the provider state is persisted; no raw state or token is stored.
+model KnowledgeRepositoryInstallationIntent {
+  id                 String    @id
+  identityId         String    @map("identity_id")
+  stateHash          String    @unique @map("state_hash")
+  routeKey           String    @map("route_key")
+  clientKind         String    @map("client_kind")
+  returnPath         String    @map("return_path")
+  status             String    @default("Pending")
+  installationId     String?   @map("installation_id")
+  providerAccountId  String?   @map("provider_account_id")
+  setupAction        String?   @map("setup_action")
+  expiresAt          DateTime  @map("expires_at")
+  callbackReceivedAt DateTime? @map("callback_received_at")
+  finalizedAt        DateTime? @map("finalized_at")
+  consumedAt         DateTime? @map("consumed_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId, status])
+  @@index([installationId, status])
+  @@index([expiresAt])
+  @@map("knowledge_repository_installation_intents")
+}
+
 /// GitHub App installation bound to one explicitly selected knowledge repository.
 /// This authorization is independent from AuthOAuthBinding login credentials.
 model KnowledgeRepositoryConnection {

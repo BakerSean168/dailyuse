@@ -278,6 +278,29 @@ export class ScheduleTaskPrismaRepository
     return tasks.map((task) => this.toDomain(task));
   }
 
+  async listSchedulingOwners(ownerType?: string): Promise<SchedulingOwner[]> {
+    const rows = await this.db.scheduleTask.findMany({
+      where: {
+        schedulingKey: { not: null },
+        ownerType: { not: null },
+        ownerId: { not: null },
+        ...(ownerType ? { ownerType } : {}),
+      },
+      select: {
+        identityId: true,
+        ownerType: true,
+        ownerId: true,
+      },
+      distinct: ['identityId', 'ownerType', 'ownerId'],
+    });
+
+    return rows.map((row) => ({
+      identityId: row.identityId,
+      type: row.ownerType as string,
+      id: row.ownerId as string,
+    }));
+  }
+
   async appendSchedulingReconcileReceipt(receipt: SchedulingReconcileReceipt): Promise<void> {
     await this.db.schedulingReconcileOperation.create({
       data: {

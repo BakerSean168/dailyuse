@@ -1,4 +1,5 @@
 import { TaskPlanOutcome, TaskTemplateStatus } from '@memoflow/contracts/task';
+import type { TaskInstanceId } from '@memoflow/contracts/primitives';
 import { TaskPlanOutcomeEvaluator } from '../../../domain/services/task-plan-outcome-evaluator';
 import type { TaskWriteRepositories } from './task-write-support';
 
@@ -12,6 +13,7 @@ export async function reevaluateTaskPlanOutcome(
   repositories: TaskWriteRepositories,
   identityId: string,
   templateId: string,
+  triggeringTaskInstanceId: TaskInstanceId,
 ): Promise<boolean> {
   if (!repositories.templateRepository) return false;
   const template = await repositories.templateRepository.findByIdForIdentity(identityId, templateId);
@@ -24,7 +26,10 @@ export async function reevaluateTaskPlanOutcome(
     (next !== TaskPlanOutcome.Open && template.status !== TaskTemplateStatus.Closed);
   if (next === template.outcome && !needsLifecycleRepair) return false;
 
-  template.applyPlanOutcome(next as typeof TaskPlanOutcome.Open | typeof TaskPlanOutcome.Succeeded | typeof TaskPlanOutcome.Failed);
+  template.applyPlanOutcome(
+    next as typeof TaskPlanOutcome.Open | typeof TaskPlanOutcome.Succeeded | typeof TaskPlanOutcome.Failed,
+    { triggeringTaskInstanceId },
+  );
   await repositories.templateRepository.save(template);
   return true;
 }

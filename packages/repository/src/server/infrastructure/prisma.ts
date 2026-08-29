@@ -20,17 +20,15 @@ import {
 } from './repository.module';
 import { resolveRepositoryStorageBaseDir } from './storage-config';
 import { KnowledgeRepositoryConnectionService } from '../application/services/knowledge-repository-connection.service';
-import type {
-  IGitHubAppClient,
-  IKnowledgeRepositoryInstallationStateStore,
-} from '../application/ports/github-app-client.port';
+import type { IGitHubAppClient } from '../application/ports/github-app-client.port';
 import type { IKnowledgeRepositoryCloudDataPurger } from '../application/ports/knowledge-repository-cloud-data-purger.port';
 import type { IKnowledgeRepositoryConnectionService } from '../application/ports/knowledge-repository-connection.service.port';
 import type { IKnowledgeRepositoryProjectionService } from '../application/ports/knowledge-repository-projection.service.port';
 import type { IKnowledgeNoteCommitService } from '../application/ports/knowledge-note-commit.service.port';
 import { GitHubAppClient } from './services/github-app-client';
-import { InMemoryKnowledgeRepositoryInstallationStateStore } from './services/in-memory-knowledge-repository-installation-state-store';
 import { KnowledgeRepositoryConnectionPrismaRepository } from './adapters/prisma/knowledge-repository-connection-prisma.repository';
+import { KnowledgeRepositoryInstallationIntentPrismaRepository } from './adapters/prisma/knowledge-repository-installation-intent-prisma.repository';
+import { KnowledgeRepositoryConnectionWritePrismaTransactionRunner } from './adapters/prisma/knowledge-repository-connection-write-prisma-transaction.runner';
 import { GithubWebhookDeliveryPrismaRepository } from './adapters/prisma/github-webhook-delivery-prisma.repository';
 import { KnowledgeNoteProjectionPrismaRepository } from './adapters/prisma/knowledge-note-projection-prisma.repository';
 import { KnowledgeAttachmentProjectionPrismaRepository } from './adapters/prisma/knowledge-attachment-projection-prisma.repository';
@@ -39,9 +37,14 @@ import { KnowledgeWriteRequestPrismaRepository } from './adapters/prisma/knowled
 import { KnowledgeRepositoryLeasePrismaRepository } from './adapters/prisma/knowledge-repository-lease-prisma.repository';
 import { KnowledgeRepositoryProjectionService } from '../application/services/knowledge-repository-projection.service';
 import { KnowledgeNoteCommitService } from '../application/services/knowledge-note-commit.service';
-import { PrismaOperationAuditRepository, globalUnifiedOperationMetrics } from '@memoflow/patterns/operations';
+import {
+  PrismaOperationAuditRepository,
+  globalUnifiedOperationMetrics,
+} from '@memoflow/patterns/operations';
 import type { OperationAuditRepository } from '@memoflow/patterns/operations';
 import type { IKnowledgeRepositoryConnectionRepository } from '../application/ports/knowledge-repository-connection.repository';
+import type { IKnowledgeRepositoryInstallationIntentRepository } from '../application/ports/knowledge-repository-installation-intent.repository';
+import type { KnowledgeRepositoryInstallationRoutingConfig } from '../application/services/knowledge-repository-connection.service';
 import type {
   IGithubWebhookDeliveryRepository,
   IKnowledgeNoteProjectionRepository,
@@ -65,9 +68,10 @@ export interface GithubAppConfig {
   readonly appSlug: string;
   readonly privateKey: string;
   readonly webhookSecret: string;
+  readonly installationRouting: KnowledgeRepositoryInstallationRoutingConfig;
   readonly apiBaseUrl?: string;
   readonly client?: IGitHubAppClient;
-  readonly stateStore?: IKnowledgeRepositoryInstallationStateStore;
+  readonly installationIntentRepository?: IKnowledgeRepositoryInstallationIntentRepository;
 }
 
 /**
@@ -83,6 +87,8 @@ export interface GithubAppConfig {
  */
 export interface RepositoryPrismaRepositorySet {
   readonly connectionRepository: IKnowledgeRepositoryConnectionRepository;
+  readonly installationIntentRepository: IKnowledgeRepositoryInstallationIntentRepository;
+  readonly connectionWriteTransactionRunner: KnowledgeRepositoryConnectionWritePrismaTransactionRunner;
   readonly deliveryRepository: IGithubWebhookDeliveryRepository;
   readonly noteProjectionRepository: IKnowledgeNoteProjectionRepository;
   readonly attachmentProjectionRepository: IKnowledgeAttachmentProjectionRepository;
@@ -114,9 +120,15 @@ export function createFsStorageAdapter(baseDir?: string): FsStorageAdapter {
  * @returns Repository set backed by the Prisma adapters.
  *          返回基于 Prisma 适配器的仓储集合。
  */
-export function createRepositoryPrismaRepositories(db: PrismaClient): RepositoryPrismaRepositorySet {
+export function createRepositoryPrismaRepositories(
+  db: PrismaClient,
+): RepositoryPrismaRepositorySet {
   return {
     connectionRepository: new KnowledgeRepositoryConnectionPrismaRepository(db),
+    installationIntentRepository: new KnowledgeRepositoryInstallationIntentPrismaRepository(db),
+    connectionWriteTransactionRunner: new KnowledgeRepositoryConnectionWritePrismaTransactionRunner(
+      db,
+    ),
     deliveryRepository: new GithubWebhookDeliveryPrismaRepository(db),
     noteProjectionRepository: new KnowledgeNoteProjectionPrismaRepository(db),
     attachmentProjectionRepository: new KnowledgeAttachmentProjectionPrismaRepository(db),
@@ -191,9 +203,11 @@ export function createRepositoryPrismaRuntimeContributions(
       ? new KnowledgeRepositoryConnectionService({
           appSlug: githubApp.appSlug,
           connectionRepository,
+          connectionWriteTransactionRunner: repositories.connectionWriteTransactionRunner,
           githubAppClient,
-          stateStore:
-            githubApp.stateStore ?? new InMemoryKnowledgeRepositoryInstallationStateStore(),
+          installationIntentRepository:
+            githubApp.installationIntentRepository ?? repositories.installationIntentRepository,
+          installationRouting: githubApp.installationRouting,
           cloudDataPurger: deps.knowledgeRepositoryCloudDataPurger,
         })
       : null;
@@ -217,7 +231,11 @@ export function createRepositoryPrismaRuntimeContributions(
         })
       : null;
   const knowledgeNoteCommitService =
-    githubApp && connectionRepository && githubAppClient && projectionRepository && deps.closureChecker
+    githubApp &&
+    connectionRepository &&
+    githubAppClient &&
+    projectionRepository &&
+    deps.closureChecker
       ? new KnowledgeNoteCommitService({
           connectionRepository,
           projectionRepository,

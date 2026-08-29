@@ -4,12 +4,9 @@ import type {
 } from '../../../domain/repositories/i-task-instance-repository';
 import type { IElectronDatabaseTransaction } from '@memoflow/contracts/electron';
 import { TaskInstance } from '../../../domain/aggregates/task-instance';
+import { OptimisticConcurrencyError } from '../../../domain/errors/optimistic-concurrency.error';
 import type { TaskInstanceStatus } from '@memoflow/contracts/task';
-import {
-  AggregateRepositoryBase,
-  createEventBusAdapter,
-  type IEventBus,
-} from '@memoflow/patterns';
+import { AggregateRepositoryBase, createEventBusAdapter, type IEventBus } from '@memoflow/patterns';
 import { eventBus } from '@memoflow/utils/domain';
 import {
   PowerSyncTaskInstanceMapper,
@@ -31,8 +28,8 @@ export class PowerSyncTaskInstanceRepository
 
   protected async persist(instance: TaskInstance): Promise<void> {
     const data = PowerSyncTaskInstanceMapper.toPersistence(instance);
-    const existing = await this.db.getOptional<{ id: string }>(
-      'SELECT id FROM task_instances WHERE id = ? LIMIT 1',
+    const existing = await this.db.getOptional<{ id: string; version: number }>(
+      'SELECT id, version FROM task_instances WHERE id = ? LIMIT 1',
       [data.id],
     );
 
@@ -48,7 +45,8 @@ export class PowerSyncTaskInstanceRepository
     }
 
     if (existing) {
-      await this.db.execute(
+      const expectedVersion = data.version - 1;
+      const updated = await this.db.execute(
         `UPDATE task_instances
          SET template_id = ?,
              identity_id = ?,
@@ -63,7 +61,7 @@ export class PowerSyncTaskInstanceRepository
              version = ?,
              updated_at = ?,
              deleted_at = ?
-         WHERE id = ?`,
+         WHERE id = ? AND identity_id = ? AND version = ?`,
         [
           data.templateId,
           data.identityId,
@@ -79,8 +77,22 @@ export class PowerSyncTaskInstanceRepository
           data.updatedAt,
           data.deletedAt,
           data.id,
+          data.identityId,
+          expectedVersion,
         ],
       );
+      if (updated.rowsAffected !== 1) {
+        const current = await this.db.getOptional<{ version: number }>(
+          'SELECT version FROM task_instances WHERE id = ? AND identity_id = ? LIMIT 1',
+          [data.id, data.identityId],
+        );
+        throw new OptimisticConcurrencyError(
+          'TaskInstance',
+          String(data.id),
+          expectedVersion,
+          current?.version ?? existing.version,
+        );
+      }
     } else {
       await this.db.execute(
         `INSERT INTO task_instances (
@@ -182,10 +194,10 @@ export class PowerSyncTaskInstanceRepository
   }
 
   async deleteByTemplateId(templateId: string, identityId: string): Promise<void> {
-    await this.db.execute(
-      'DELETE FROM task_instances WHERE template_id = ? AND identity_id = ?',
-      [templateId, identityId],
-    );
+    await this.db.execute('DELETE FROM task_instances WHERE template_id = ? AND identity_id = ?', [
+      templateId,
+      identityId,
+    ]);
   }
 
   async countFutureInstances(

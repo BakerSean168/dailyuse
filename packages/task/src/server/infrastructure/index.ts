@@ -65,9 +65,20 @@ export {
   createTaskScheduleProjectionSource,
   createTaskScheduleProjectionEventHandlers,
   taskScheduleProjectionEventNames,
+  TASK_REMINDER_HANDLER_KEY,
+  TASK_REMINDER_PAYLOAD_VERSION,
   type TaskScheduleProjectionEventMap,
   type TaskScheduleProjectionHandlers,
   type TaskScheduleProjectionPlan,
-  type TaskScheduleProjectionSelection,
   type TaskScheduleProjectionSource,
+  type TaskReminderScheduledPayload,
 } from './schedule-projection-source';
+export {
+  createTaskReminderScheduledHandlerRegistration,
+  buildTaskReminderOperationId,
+  TaskReminderScheduledPayloadSchema,
+  TASK_REMINDER_BUSINESS_SOURCE,
+  TASK_REMINDER_WORKFLOW_KEY,
+  type CreateTaskReminderScheduledHandlerRegistrationDeps,
+  type TaskReminderSkipReason,
+} from './task-reminder-fire.handler';

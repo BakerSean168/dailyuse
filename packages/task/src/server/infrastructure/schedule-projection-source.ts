@@ -5,16 +5,81 @@ import type {
   TaskTemplateServerDTO,
 } from '@memoflow/contracts/task';
 import { TaskInstanceStatus, TaskTimeType } from '@memoflow/contracts/task';
-import { SourceModule, Timezone, mapImportanceToTaskPriority } from '@memoflow/contracts/schedule';
-import { ScheduleTask } from '@memoflow/schedule';
 import type {
-  ITaskInstanceRepository,
-  ITaskTemplateRepository,
-} from '../domain';
+  ScheduledIntent,
+  SchedulingOwner,
+  SchedulingPriority,
+} from '@memoflow/contracts/schedule';
+import { buildSchedulingKey } from '@memoflow/contracts/schedule';
+import type { ITaskInstanceRepository, ITaskTemplateRepository } from '../domain';
 
 const DEFAULT_ALL_DAY_REMINDER_MINUTES = 9 * 60;
+export const TASK_REMINDER_HANDLER_KEY = 'task.reminder.fire';
+export const TASK_REMINDER_PAYLOAD_VERSION = 1;
+export const TASK_SCHEDULING_OWNER_TYPE = 'task.template';
 
-/** Soft residual 1168: dual mapPriority retired onto contracts mapImportanceToTaskPriority sole. */
+export interface TaskReminderScheduledPayload {
+  readonly templateId: string;
+  readonly instanceId: string;
+  readonly occurrenceKey: string | null;
+  readonly taskTitle: string;
+  readonly reminderType: TaskReminderType;
+  readonly reminderValue: number | null;
+  readonly reminderUnit: ReminderTimeUnit | null;
+  readonly reminderAbsoluteTime: number | null;
+  readonly anchorTime: number;
+  readonly reminderTime: number;
+}
+
+export interface TaskScheduleProjectionPlan {
+  readonly owner: SchedulingOwner;
+  readonly desired: readonly ScheduledIntent<TaskReminderScheduledPayload>[];
+}
+
+export interface TaskScheduleProjectionSource {
+  buildTemplatePlan(templateId: string, identityId: string): Promise<TaskScheduleProjectionPlan>;
+  buildTemplateOwner(templateId: string, identityId: string): SchedulingOwner;
+  /** Full source scan used by startup reconcile / lost-event repair. */
+  listTemplateRefs(): Promise<Array<{ templateId: string; identityId: string }>>;
+}
+
+export interface TaskScheduleProjectionHandlers {
+  upsertTemplate(templateId: string, identityId: string): Promise<void>;
+  deleteTemplate(templateId: string, identityId: string): Promise<void>;
+}
+
+export type TaskScheduleProjectionEventMap = Pick<
+  TaskEventMap,
+  | 'task:created'
+  | 'task:updated'
+  | 'task:instance-generated'
+  | 'task:template-schedule-time-changed'
+  | 'task:template-recurrence-changed'
+  | 'task:template-resumed'
+  | 'task:deleted'
+  | 'task:template-paused'
+  | 'task:instance-completed'
+  | 'task:instance-skipped'
+  | 'task:instance-deleted'
+  | 'task:instance-uncompleted'
+  | 'task:rescheduled'
+>;
+
+export const taskScheduleProjectionEventNames = [
+  'task:created',
+  'task:updated',
+  'task:instance-generated',
+  'task:template-schedule-time-changed',
+  'task:template-recurrence-changed',
+  'task:template-resumed',
+  'task:deleted',
+  'task:template-paused',
+  'task:instance-completed',
+  'task:instance-skipped',
+  'task:instance-deleted',
+  'task:instance-uncompleted',
+  'task:rescheduled',
+] as const satisfies readonly (keyof TaskScheduleProjectionEventMap)[];
 
 function formatUnit(unit: ReminderTimeUnit): string {
   switch (unit) {
@@ -53,11 +118,16 @@ function getInstanceAnchorTime(instance: {
   const dayStart = instance.instanceDate;
 
   if (instance.timeConfig.timeType === TaskTimeType.TimePoint) {
-    return dayStart + (instance.timeConfig.timePoint ?? DEFAULT_ALL_DAY_REMINDER_MINUTES) * 60 * 1000;
+    return (
+      dayStart + (instance.timeConfig.timePoint ?? DEFAULT_ALL_DAY_REMINDER_MINUTES) * 60 * 1000
+    );
   }
 
   if (instance.timeConfig.timeType === TaskTimeType.TimeRange) {
-    return dayStart + (instance.timeConfig.timeRange?.start ?? DEFAULT_ALL_DAY_REMINDER_MINUTES) * 60 * 1000;
+    return (
+      dayStart +
+      (instance.timeConfig.timeRange?.start ?? DEFAULT_ALL_DAY_REMINDER_MINUTES) * 60 * 1000
+    );
   }
 
   return dayStart + DEFAULT_ALL_DAY_REMINDER_MINUTES * 60 * 1000;
@@ -87,15 +157,12 @@ function calculateReminderAt(
     return null;
   }
 
-  return getInstanceAnchorTime(instance) - convertUnitToMs(trigger.relativeValue, trigger.relativeUnit);
+  return (
+    getInstanceAnchorTime(instance) - convertUnitToMs(trigger.relativeValue, trigger.relativeUnit)
+  );
 }
 
-/**
- * Residual 1177 keep-boundary: task schedule-projection buildTaskName — Template + TaskReminder domain.
- * Relative pre-reminder / Absolute timed wording; not goal RemainingDays/progress naming.
- * Soft residual 1177: goal schedule-projection buildTaskName stays Goal+ReminderTrigger domain-specific (no force-merge).
- */
-function buildTaskName(
+function buildIntentName(
   template: TaskTemplateServerDTO,
   trigger: {
     type: TaskReminderType;
@@ -104,10 +171,13 @@ function buildTaskName(
     relativeUnit: ReminderTimeUnit | null;
   },
 ): string {
-  if (trigger.type === 'Relative' && trigger.relativeValue !== null && trigger.relativeUnit !== null) {
+  if (
+    trigger.type === 'Relative' &&
+    trigger.relativeValue !== null &&
+    trigger.relativeUnit !== null
+  ) {
     return `${template.name} · 提前 ${trigger.relativeValue}${formatUnit(trigger.relativeUnit)} 提醒`;
   }
-
   return `${template.name} · 定时提醒`;
 }
 
@@ -120,99 +190,34 @@ function shouldScheduleTemplate(template: TaskTemplateServerDTO): boolean {
   );
 }
 
-function isSchedulableInstance(instance: {
-  status: string;
-  deletedAt: number | null;
-}): boolean {
+function isSchedulableInstance(instance: { status: string; deletedAt: number | null }): boolean {
   return (
     instance.deletedAt === null &&
-    (instance.status === TaskInstanceStatus.Pending || instance.status === TaskInstanceStatus.InProgress)
+    (instance.status === TaskInstanceStatus.Pending ||
+      instance.status === TaskInstanceStatus.InProgress)
   );
 }
 
-export interface TaskScheduleProjectionSelection {
-  readonly sourceModule: SourceModule;
-  readonly identityId: string;
-  readonly sourceEntityId?: string;
-  matches(task: ScheduleTask): boolean;
+function taskOwner(templateId: string, identityId: string): SchedulingOwner {
+  return { identityId, type: TASK_SCHEDULING_OWNER_TYPE, id: templateId };
 }
 
-export interface TaskScheduleProjectionPlan {
-  readonly selection: TaskScheduleProjectionSelection;
-  readonly nextTasks: readonly ScheduleTask[];
+function reminderIdentity(trigger: {
+  type: TaskReminderType;
+  absoluteTime: number | null;
+  relativeValue: number | null;
+  relativeUnit: ReminderTimeUnit | null;
+}): string {
+  if (trigger.type === 'Absolute') {
+    return `absolute:${String(trigger.absoluteTime)}`;
+  }
+  return `relative:${String(trigger.relativeValue)}:${String(trigger.relativeUnit)}`;
 }
 
-export interface TaskScheduleProjectionSource {
-  buildTemplatePlan(templateId: string, identityId: string): Promise<TaskScheduleProjectionPlan>;
-  buildTemplateDeletionSelection(templateId: string, identityId: string): TaskScheduleProjectionSelection;
-  buildInstanceDeletionSelection(instanceId: string, identityId: string): TaskScheduleProjectionSelection;
-  /**
-   * 全量模板引用（R1-4 reconcile）。未提供时投影 runtime 跳过初次对账
-   * 并记录告警（宿主未实现全量扫描源）。
-   */
-  listTemplateRefs?(): Promise<Array<{ templateId: string; identityId: string }>>;
-}
-
-export interface TaskScheduleProjectionHandlers {
-  upsertTemplate(templateId: string, identityId: string): Promise<void>;
-  deleteTemplate(templateId: string, identityId: string): Promise<void>;
-  deleteInstance(instanceId: string, identityId: string): Promise<void>;
-}
-
-export type TaskScheduleProjectionEventMap = Pick<
-  TaskEventMap,
-  | 'task:created'
-  | 'task:updated'
-  | 'task:instance-generated'
-  | 'task:template-schedule-time-changed'
-  | 'task:template-recurrence-changed'
-  | 'task:template-resumed'
-  | 'task:deleted'
-  | 'task:template-paused'
-  | 'task:instance-completed'
-  | 'task:instance-skipped'
-  | 'task:instance-deleted'
->;
-
-export const taskScheduleProjectionEventNames = [
-  'task:created',
-  'task:updated',
-  'task:instance-generated',
-  'task:template-schedule-time-changed',
-  'task:template-recurrence-changed',
-  'task:template-resumed',
-  'task:deleted',
-  'task:template-paused',
-  'task:instance-completed',
-  'task:instance-skipped',
-  'task:instance-deleted',
-] as const satisfies readonly (keyof TaskScheduleProjectionEventMap)[];
-
-function selectTemplateProjection(
-  templateId: string,
-  identityId: string,
-): TaskScheduleProjectionSelection {
-  return {
-    sourceModule: SourceModule.Task,
-    identityId,
-    matches(task) {
-      return task.metadata.payload['templateId'] === templateId;
-    },
-  };
-}
-
-function selectInstanceProjection(
-  instanceId: string,
-  identityId: string,
-): TaskScheduleProjectionSelection {
-  return {
-    sourceModule: SourceModule.Task,
-    identityId,
-    sourceEntityId: instanceId,
-    matches(task) {
-      return task.sourceEntityId === instanceId;
-    },
-  };
+function neutralPriority(importance: string): SchedulingPriority {
+  if (importance === 'Vital') return 'urgent';
+  if (importance === 'Important') return 'high';
+  return 'normal';
 }
 
 export function createTaskScheduleProjectionSource(deps: {
@@ -220,31 +225,29 @@ export function createTaskScheduleProjectionSource(deps: {
   taskInstanceRepository: ITaskInstanceRepository;
 }): TaskScheduleProjectionSource {
   return {
+    buildTemplateOwner(templateId, identityId) {
+      return taskOwner(templateId, identityId);
+    },
+
     async listTemplateRefs() {
       const refs = await deps.taskTemplateRepository.findAllTemplateRefs();
       return refs.map((ref) => ({ templateId: ref.id, identityId: ref.identityId }));
     },
 
     async buildTemplatePlan(templateId, identityId) {
+      const owner = taskOwner(templateId, identityId);
       const template = await deps.taskTemplateRepository.findByIdForIdentity(
         identityId,
         templateId,
       );
       if (!template) {
-        return {
-          selection: selectTemplateProjection(templateId, identityId),
-          nextTasks: [],
-        };
+        return { owner, desired: [] };
       }
 
       const templateDTO = template.toServerDTO();
-      const selection = selectTemplateProjection(templateId, String(templateDTO.identityId));
-
+      const canonicalOwner = taskOwner(templateId, String(templateDTO.identityId));
       if (!shouldScheduleTemplate(templateDTO) || !templateDTO.reminderConfig) {
-        return {
-          selection,
-          nextTasks: [],
-        };
+        return { owner: canonicalOwner, desired: [] };
       }
 
       const instances = await deps.taskInstanceRepository.findByTemplateId(
@@ -252,62 +255,55 @@ export function createTaskScheduleProjectionSource(deps: {
         String(templateDTO.identityId),
       );
       const now = Date.now();
-      const nextTasks = instances
-        .filter(isSchedulableInstance)
-        .flatMap((instance) =>
-          templateDTO.reminderConfig!.triggers
-            .map((trigger) => {
-              const reminderAt = calculateReminderAt(instance, trigger);
-              if (reminderAt === null || reminderAt <= now) {
-                return null;
-              }
+      const desiredByKey = new Map<string, ScheduledIntent<TaskReminderScheduledPayload>>();
 
-              return ScheduleTask.create({
-                identityId: String(templateDTO.identityId),
-                name: buildTaskName(templateDTO, trigger),
-                description: templateDTO.description ?? undefined,
-                sourceModule: SourceModule.Task,
-                sourceEntityId: instance.id,
-                schedule: {
-                  cronExpression: null,
-                  timezone: Timezone.Shanghai,
-                  startDate: new Date(reminderAt).toISOString(),
-                  endDate: null,
-                  maxExecutions: 1,
-                },
-                metadata: {
-                  payload: {
-                    templateId: templateDTO.id,
-                    instanceId: instance.id,
-                    taskTitle: templateDTO.name,
-                    reminderType: trigger.type,
-                    reminderValue: trigger.relativeValue,
-                    reminderUnit: trigger.relativeUnit,
-                    reminderAbsoluteTime: trigger.absoluteTime,
-                    anchorTime: getInstanceAnchorTime(instance),
-                    reminderTime: reminderAt,
-                  },
-                  tags: ['task', 'task-reminder', `template:${templateDTO.id}`],
-                  priority: mapImportanceToTaskPriority(templateDTO.importance),
-                  timeout: null,
-                },
-              });
-            })
-            .filter((task): task is ScheduleTask => task !== null),
-        );
+      for (const instance of instances.filter(isSchedulableInstance)) {
+        const occurrenceIdentity = instance.occurrenceKey ?? instance.id;
+        const anchorTime = getInstanceAnchorTime(instance);
 
-      return {
-        selection,
-        nextTasks,
-      };
-    },
+        for (const trigger of templateDTO.reminderConfig.triggers) {
+          const reminderAt = calculateReminderAt(instance, trigger);
+          if (reminderAt === null || reminderAt <= now) continue;
 
-    buildTemplateDeletionSelection(templateId, identityId) {
-      return selectTemplateProjection(templateId, identityId);
-    },
+          const schedulingKey = buildSchedulingKey(
+            'task.reminder',
+            occurrenceIdentity,
+            reminderIdentity(trigger),
+          );
 
-    buildInstanceDeletionSelection(instanceId, identityId) {
-      return selectInstanceProjection(instanceId, identityId);
+          // Identical reminder semantics for the same occurrence are one logical
+          // invocation even if a malformed/legacy config contains duplicates.
+          if (desiredByKey.has(schedulingKey)) continue;
+
+          desiredByKey.set(schedulingKey, {
+            schedulingKey,
+            handlerKey: TASK_REMINDER_HANDLER_KEY,
+            runAt: reminderAt,
+            payloadVersion: TASK_REMINDER_PAYLOAD_VERSION,
+            payload: {
+              templateId: templateDTO.id,
+              instanceId: instance.id,
+              occurrenceKey: instance.occurrenceKey,
+              taskTitle: templateDTO.name,
+              reminderType: trigger.type,
+              reminderValue: trigger.relativeValue,
+              reminderUnit: trigger.relativeUnit,
+              reminderAbsoluteTime: trigger.absoluteTime,
+              anchorTime,
+              reminderTime: reminderAt,
+            },
+            sourceRevision: `${templateDTO.version}:${instance.version}`,
+            priority: neutralPriority(templateDTO.importance),
+            timeoutMs: null,
+            observability: {
+              name: buildIntentName(templateDTO, trigger),
+              tags: ['task', 'task-reminder', `template:${templateDTO.id}`],
+            },
+          });
+        }
+      }
+
+      return { owner: canonicalOwner, desired: [...desiredByKey.values()] };
     },
   };
 }
@@ -315,7 +311,9 @@ export function createTaskScheduleProjectionSource(deps: {
 export function createTaskScheduleProjectionEventHandlers(
   handlers: TaskScheduleProjectionHandlers,
 ): {
-  [K in keyof TaskScheduleProjectionEventMap]: (event: TaskScheduleProjectionEventMap[K]) => Promise<void>;
+  [K in keyof TaskScheduleProjectionEventMap]: (
+    event: TaskScheduleProjectionEventMap[K],
+  ) => Promise<void>;
 } {
   return {
     'task:created': async (event) =>
@@ -335,10 +333,14 @@ export function createTaskScheduleProjectionEventHandlers(
     'task:template-paused': async (event) =>
       handlers.deleteTemplate(event.taskTemplateId, String(event.identityId)),
     'task:instance-completed': async (event) =>
-      handlers.deleteInstance(event.taskInstanceId, String(event.identityId)),
+      handlers.upsertTemplate(event.taskTemplateId, String(event.identityId)),
     'task:instance-skipped': async (event) =>
-      handlers.deleteInstance(event.taskInstanceId, String(event.identityId)),
+      handlers.upsertTemplate(event.taskTemplateId, String(event.identityId)),
     'task:instance-deleted': async (event) =>
-      handlers.deleteInstance(event.taskInstanceId, String(event.identityId)),
+      handlers.upsertTemplate(event.taskTemplateId, String(event.identityId)),
+    'task:instance-uncompleted': async (event) =>
+      handlers.upsertTemplate(event.taskTemplateId, String(event.identityId)),
+    'task:rescheduled': async (event) =>
+      handlers.upsertTemplate(event.taskTemplateId, String(event.identityId)),
   };
 }

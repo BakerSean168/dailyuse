@@ -1,0 +1,72 @@
+---
+tags:
+  - analysis
+  - core-vnext
+  - release
+  - merge-readiness
+description: PR #281 的 v0.11 milestone merge-readiness、deferred scope 与 release gate 证据
+created: 2026-08-29T20:00:00+08:00
+updated: 2026-08-29T20:00:00+08:00
+---
+
+# Core vNext v0.11 Merge Readiness — PR #281
+
+## Decision
+
+**Recommendation: merge after this documentation-only closure commit passes exact-head CI.**
+
+The implementation baseline reviewed before the closure-only diff is `439fdc315a6ea595891c6041f318bd18db2b74cd`. At that SHA PR #281 was `MERGEABLE`, `CLEAN`, and the exact-head CI run `33238265083` completed successfully across required build/typecheck/unit/static/governance/verification/Web-flow/integration/coverage/performance/delivery-observation gates.
+
+No new runtime feature is introduced by the closure pass. Therefore the final merge gate is intentionally simple: this plan-truth diff must remain documentation-only and its new exact HEAD must pass required CI before PR #281 is merged.
+
+## v0.11 milestone accepted scope
+
+- Core vNext Waves 0–2 contract/domain/schema convergence.
+- Wave 3 durable Task/Goal/Routine scheduling, NotificationRequested, scheduler separation, settlement, and projection repair.
+- Wave 4 Routine local runtime/intervention/focus and FullCalendar Planner engine/owner-aware mutation cutover.
+- Web/Desktop primary Goal, Task, Routine, Planner, and Notification vNext surfaces.
+- Production clean rebuild and health acceptance.
+- Production GitHub App Web install → finalize → connect → real push webhook → projection acceptance.
+- Transactional email recovery through the existing Brevo SMTP configuration and real Better Auth sign-up path.
+- Exact-digest production application/runtime pinning and dual-registry release distribution contracts.
+
+## Verified merge blockers
+
+| Class | Result | Evidence |
+| --- | --- | --- |
+| P0 data-loss / broken primary path | none unresolved | production health + vNext vertical/reliability gates |
+| P1 architecture/contract bypass inside milestone | none unresolved | schedule-notification governance, boundary/integration oracles, exact-head CI |
+| Git conflict / stale branch | none | PR #281 mergeable + clean at reviewed baseline |
+| Uncommitted integration work | none | integration worktree clean at reviewed baseline |
+
+## Explicit post-v0.11 follow-up
+
+The following work remains real and is **not relabeled as completed**:
+
+- Routine method library (`ROUTINE-5302`).
+- AI Goal/Task/Routine/Planner/Notification parity (`AI-6101~6103`).
+- React/mobile Goal/Task/Notification parity (`MOBILE-6201/6202`).
+- Residual legacy/physical cleanup (`CLEAN-6301~6304`), including product-facing raw ScheduleTask remnants outside the already-governed normal Planner path.
+- pg-boss PoC (`POC-6401`).
+- Remaining full long-horizon failure/acceptance/docs closure that depends on deferred surfaces (`HARD-7101~7104`).
+- AI Provider Onboarding V2, tracked independently in its own active plan.
+
+Residual audit intentionally remains visible rather than being hidden by checkbox churn. Examples include React/mobile legacy cards/hooks and legacy Reminder/ScheduleTask compatibility surfaces. Those are follow-up debt, not newly discovered regressions in the already production-accepted Web/Desktop v0.11 path.
+
+## Release-only acceptance still required
+
+The durable GitHub installation gateway has one live acceptance item that cannot be honestly completed until a new Windows artifact exists:
+
+`Windows release package -> Desktop external browser -> GitHub installation -> polling/finalize -> repository inventory/connect`.
+
+This is a **release acceptance gate**, not a reason to keep the integration branch unmerged. If it fails on the released candidate, the release is not considered fully accepted even if GitHub Actions published the artifact.
+
+## Merge protocol
+
+1. Run docs/governance checks on this closure diff.
+2. Commit and push the closure-only changes.
+3. Require exact-head CI success on PR #281.
+4. Mark PR #281 ready for review and merge it to `main` without adding unrelated implementation work.
+5. Run `Prepare Release`; merge the release-please PR only after its required checks pass.
+6. Let `Release Publish` build Windows/Linux assets and ACR/GHCR images from the exact successful release commit.
+7. Perform the Windows live acceptance above against the published candidate.

@@ -263,6 +263,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
     'goal',
     'governance',
     'http-client',
+    'label',
     'notification',
     'patterns',
     'powersync-schema',

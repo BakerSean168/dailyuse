@@ -30,6 +30,7 @@
     "@memoflow/domain-shared": "workspace:*",
     "@memoflow/http-client": "workspace:*",
     "@memoflow/ipc-client": "workspace:*",
+    "argon2": "0.44.0",
     "better-auth": "1.6.25",
     "express": "^5.2.1",
     "nodemailer": "^9.0.3"

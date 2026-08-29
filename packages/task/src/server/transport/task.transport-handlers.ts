@@ -61,6 +61,7 @@ export function createTaskTransportHandlers(api: TaskApplicationPort): TaskTrans
       markMissed: api.markTaskInstanceMissed,
       start: api.startTaskInstance,
       deleteInstance: api.deleteTaskInstance,
+      reschedule: api.rescheduleTaskInstance,
     },
   };
 }

@@ -1,60 +1,35 @@
-import type { ScheduleEventMap } from '@memoflow/contracts/schedule';
+import type { SchedulingPort } from '@memoflow/contracts/schedule';
 import {
   createTaskScheduleProjectionEventHandlers,
   type TaskScheduleProjectionEventMap,
   type TaskScheduleProjectionSource,
 } from '@memoflow/task/schedule-projection';
-import type { IScheduleTaskRepository } from '@memoflow/schedule';
-import type { Publisher, Subscriber } from '@memoflow/utils/domain';
-import { createLogger } from '@memoflow/utils/logger';
+import type { Subscriber } from '@memoflow/utils/domain';
 import type { RuntimeContribution } from '../ports/runtime-contribution';
 import { createTaskProjector } from '../projectors/task-projector';
 
-const logger = createLogger('TaskProjectionRuntime');
-
 export interface CreateTaskProjectionRuntimeDeps {
   readonly source: TaskScheduleProjectionSource;
-  readonly scheduleTaskRepository: IScheduleTaskRepository;
+  readonly schedulingPort: SchedulingPort;
   readonly taskEvents: Subscriber<TaskScheduleProjectionEventMap>;
-  readonly scheduleEvents: Publisher<Pick<ScheduleEventMap, 'schedule:task-deleted'>>;
 }
 
+/** Incremental fast path. Durable startup repair is owned by the common repair runtime. */
 export function createTaskProjectionRuntime(
   deps: CreateTaskProjectionRuntimeDeps,
 ): RuntimeContribution {
   const projector = createTaskProjector({
     source: deps.source,
-    scheduleTaskRepository: deps.scheduleTaskRepository,
-    scheduleEvents: deps.scheduleEvents,
+    schedulingPort: deps.schedulingPort,
   });
 
   const handlers = createTaskScheduleProjectionEventHandlers(projector);
   let started = false;
 
-  /**
-   * R1-4：初次 reconcile —— 源支持全量扫描时，启动先对账（逐模板幂等
-   * upsert），修复"只监听增量、错过启动前事件"的对账缺口（P0-02）。
-   */
-  async function reconcile(): Promise<void> {
-    if (!deps.source.listTemplateRefs) {
-      logger.warn('[TaskProjection] Source has no listTemplateRefs; skip initial reconcile');
-      return;
-    }
-    const refs = await deps.source.listTemplateRefs();
-    for (const ref of refs) {
-      await projector.upsertTemplate(ref.templateId, ref.identityId);
-    }
-    logger.info(`[TaskProjection] Initial reconcile complete (${refs.length} templates)`);
-  }
-
   return {
     async start(): Promise<void> {
-      if (started) {
-        return;
-      }
+      if (started) return;
 
-      // R1-3/R1-4：先注册监听（启动窗口内的增量事件不会丢失），
-      // 再全量对账。对账基于源表最新状态幂等重建，最终与源一致。
       deps.taskEvents.on('task:created', handlers['task:created']);
       deps.taskEvents.on('task:updated', handlers['task:updated']);
       deps.taskEvents.on('task:instance-generated', handlers['task:instance-generated']);
@@ -72,16 +47,13 @@ export function createTaskProjectionRuntime(
       deps.taskEvents.on('task:instance-completed', handlers['task:instance-completed']);
       deps.taskEvents.on('task:instance-skipped', handlers['task:instance-skipped']);
       deps.taskEvents.on('task:instance-deleted', handlers['task:instance-deleted']);
-
-      await reconcile();
-
+      deps.taskEvents.on('task:instance-uncompleted', handlers['task:instance-uncompleted']);
+      deps.taskEvents.on('task:rescheduled', handlers['task:rescheduled']);
       started = true;
     },
 
     async stop(): Promise<void> {
-      if (!started) {
-        return;
-      }
+      if (!started) return;
 
       deps.taskEvents.off('task:created', handlers['task:created']);
       deps.taskEvents.off('task:updated', handlers['task:updated']);
@@ -100,7 +72,8 @@ export function createTaskProjectionRuntime(
       deps.taskEvents.off('task:instance-completed', handlers['task:instance-completed']);
       deps.taskEvents.off('task:instance-skipped', handlers['task:instance-skipped']);
       deps.taskEvents.off('task:instance-deleted', handlers['task:instance-deleted']);
-
+      deps.taskEvents.off('task:instance-uncompleted', handlers['task:instance-uncompleted']);
+      deps.taskEvents.off('task:rescheduled', handlers['task:rescheduled']);
       started = false;
     },
   };

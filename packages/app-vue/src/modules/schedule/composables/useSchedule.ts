@@ -38,6 +38,7 @@ export function useSchedule() {
     // Calendar operations
     fetchCalendarEntries: calendarOps.fetchCalendarEntries,
     createCalendarEntry: calendarOps.createCalendarEntry,
+    updateCalendarEntry: calendarOps.updateCalendarEntry,
     deleteCalendarEntry: calendarOps.deleteCalendarEntry,
   };
 }

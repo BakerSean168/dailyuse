@@ -1,3 +1,4 @@
+import * as argon2 from 'argon2';
 import { memoryAdapter, type MemoryDB } from 'better-auth/adapters/memory';
 import { createEmailVerificationToken } from 'better-auth/api';
 import { describe, expect, it, vi } from 'vitest';
@@ -203,6 +204,41 @@ describe('email and password auth flow', () => {
       code: 'EMAIL_NOT_VERIFIED',
     });
     expect(payload).not.toHaveProperty('token');
+  });
+
+  it('signs in through Better Auth with a migrated legacy Argon2 credential', async () => {
+    const fixture = createAuthFlowFixture();
+    const now = new Date();
+    const userId = 'legacy-user-1';
+    const email = 'legacy@example.com';
+    const passwordHash = await argon2.hash(PASSWORD);
+    (fixture.memory.cloudAuthUser as MemoryRow[]).push({
+      id: userId,
+      name: 'Legacy User',
+      email,
+      emailVerified: true,
+      status: 'active',
+      disabledAt: null,
+      createdAt: now,
+      updatedAt: now,
+    });
+    (fixture.memory.cloudAuthProviderAccount as MemoryRow[]).push({
+      id: 'legacy-credential-1',
+      userId,
+      accountId: userId,
+      providerId: 'credential',
+      password: passwordHash,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    const signIn = await fixture.post('/sign-in/email', { email, password: PASSWORD });
+
+    expect(signIn.status).toBe(200);
+    await expect(signIn.json()).resolves.toMatchObject({
+      token: expect.any(String),
+      user: { id: userId, email, emailVerified: true },
+    });
   });
 
   it('verifies a valid email token and then issues a session token', async () => {

@@ -20,6 +20,8 @@ import {
   NotificationTemplatePrismaRepository,
   NotificationReliableOperationPrismaAdapter,
 } from './adapters/prisma';
+import { NotificationRequestedPrismaWriterAdapter } from './adapters/prisma/notification-requested-writer.prisma.adapter';
+import type { NotificationRequestedWriterPort } from '@memoflow/contracts/notification';
 import {
   createNotificationRuntimeContribution,
   type NotificationReliableOperationPort,
@@ -71,6 +73,7 @@ export interface NotificationPrismaRepositorySet {
   readonly notificationPreferenceRepository: INotificationPreferenceRepository;
   readonly notificationTemplateRepository: INotificationTemplateRepository;
   readonly reliableAdapter: NotificationReliableOperationPort;
+  readonly requestedWriter: NotificationRequestedWriterPort;
   readonly auditRepository: OperationAuditRepository;
 }
 
@@ -98,6 +101,7 @@ export function createNotificationPrismaRepositories(
     notificationPreferenceRepository: new NotificationPreferencePrismaRepository(db),
     notificationTemplateRepository: new NotificationTemplatePrismaRepository(db),
     reliableAdapter: new NotificationReliableOperationPrismaAdapter(db, service),
+    requestedWriter: new NotificationRequestedPrismaWriterAdapter(db),
     auditRepository: new PrismaOperationAuditRepository(db),
   };
 }
@@ -127,6 +131,8 @@ export function createNotificationPrismaModule(
 
   const defaultRuntimeContribution = createNotificationRuntimeContribution({
     repository: notificationRepository,
+    preferenceRepository: repositories.notificationPreferenceRepository,
+    closureChecker: options.closureChecker,
     reliableAdapter,
     deliverer: options.channelDeliverer,
     delivererRegistry: defaultDeliverers,

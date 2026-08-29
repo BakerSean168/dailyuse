@@ -31,6 +31,7 @@ import {
   MarkTaskInstanceMissedSchema,
   SkipTaskInstanceSchema,
 } from './task-instance.dto';
+import { RescheduleTaskBodySchema } from './task-schedule.dto';
 
 // ============================================================================
 // Shared route params
@@ -43,7 +44,6 @@ export type TaskTemplateIdParams = z.infer<typeof TaskTemplateIdParamsSchema>;
 /** `:id` path param for a task-instance-scoped route. 任务实例作用域路由的 `:id` path 参数。 */
 export const TaskInstanceIdParamsSchema = z.object({ id: brandedId<TaskInstanceId>() });
 export type TaskInstanceIdParams = z.infer<typeof TaskInstanceIdParamsSchema>;
-
 
 // ============================================================================
 // Template mutations
@@ -108,6 +108,15 @@ export const MarkTaskInstanceMissedInvocationSchema = z.object({
 });
 export type MarkTaskInstanceMissedInvocation = z.infer<
   typeof MarkTaskInstanceMissedInvocationSchema
+>;
+
+/** POST /:id/reschedule — mutate this occurrence's own time, never the template or Scheduler row. */
+export const RescheduleTaskInstanceInvocationSchema = z.object({
+  params: TaskInstanceIdParamsSchema,
+  body: RescheduleTaskBodySchema,
+});
+export type RescheduleTaskInstanceInvocation = z.infer<
+  typeof RescheduleTaskInstanceInvocationSchema
 >;
 
 /** POST /:id/start | /uncomplete — id-only instance commands. 实例 id-only 命令。 */

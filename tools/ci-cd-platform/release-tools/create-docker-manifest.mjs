@@ -6,6 +6,8 @@ const required = [
   'RELEASE_CI_RUN_ID',
   'RELEASE_REGISTRY',
   'RELEASE_NAMESPACE',
+  'GLOBAL_REGISTRY',
+  'GLOBAL_NAMESPACE',
   'RELEASE_IMMUTABLE_TAG',
   'API_DIGEST',
   'MIGRATOR_DIGEST',
@@ -15,11 +17,33 @@ const required = [
 for (const key of required) {
   if (!process.env[key]) throw new Error(`${key} is required`);
 }
-const image = (name, digest) => ({
-  repository: `${process.env.RELEASE_REGISTRY}/${process.env.RELEASE_NAMESPACE}/${name}`,
-  tags: [process.env.RELEASE_TAG, process.env.RELEASE_IMMUTABLE_TAG],
+
+const tags = [process.env.RELEASE_TAG, process.env.RELEASE_IMMUTABLE_TAG];
+const distribution = (registry, namespace, name, digest) => ({
+  repository: `${registry}/${namespace}/${name}`,
+  tags,
   digest,
 });
+const image = (name, digest) => {
+  const china = distribution(
+    process.env.RELEASE_REGISTRY,
+    process.env.RELEASE_NAMESPACE,
+    name,
+    digest,
+  );
+  const global = distribution(
+    process.env.GLOBAL_REGISTRY,
+    process.env.GLOBAL_NAMESPACE,
+    name,
+    digest,
+  );
+  return {
+    repository: china.repository,
+    tags,
+    digest,
+    distributions: { china, global },
+  };
+};
 const manifest = {
   schemaVersion: 1,
   kind: 'docker-release',

@@ -42,4 +42,18 @@ describe('task desktop runtime composer surface', () => {
     expect(composer).not.toMatch(/@memoflow\/task\/infrastructure/);
     expect(composer).not.toMatch(/@memoflow\/goal\/server/);
   });
+
+  it('main.ts registers the task.reminder.fire handler on the schedule handlerRegistry after composeTask', () => {
+    expect(main).toContain('createTaskReminderScheduledHandlerRegistration');
+    expect(main).toContain('scheduleOrchestrationModule.handlerRegistry.register(');
+    expect(main).toMatch(
+      /taskInstanceRepository: taskComposed\.repositories\.taskInstanceRepository/,
+    );
+    expect(main).toMatch(
+      /taskTemplateRepository: taskComposed\.repositories\.taskTemplateRepository/,
+    );
+    expect(main).toMatch(
+      /notificationRequestedWriter: notificationComposed\.repositories\.requestedWriter/,
+    );
+  });
 });

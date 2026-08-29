@@ -2,15 +2,13 @@
  * Reminder trigger cron runtime spec.
  * 提醒触发定时任务运行时测试。
  *
- * Verifies `createReminderTriggerCronRuntime` restores the merge-base cron
- * behavior as a module-owned runtime contribution: it wraps the every-minute
- * trigger scan, start/stop are idempotent, and when wired into
+ * Verifies `createReminderTriggerCronRuntime` keeps the retired cron as a read-only shadow
+ * contribution: it wraps the every-minute due-set comparison, start/stop are idempotent, and when wired into
  * `createReminderModule({ runtimeContributions })` the cron starts with the
- * module (`instance.start()`) and stops on dispose — exactly the lifecycle the
- * merge-base API module owned.
+ * module (`instance.start()`) and stops on dispose — only when explicitly attached. Production API composition no longer attaches it.
  *
- * 验证 `createReminderTriggerCronRuntime` 把 merge-base 的 cron 行为恢复为模块自有
- * 运行时贡献：包装每分钟触发扫描，start/stop 幂等，且接入
+ * 验证 `createReminderTriggerCronRuntime` 把旧 cron 降级为显式挂载的只读 shadow
+ * 运行时贡献：包装每分钟 due-set 对比，start/stop 幂等，且接入
  * `createReminderModule({ runtimeContributions })` 后，cron 随模块
  * `instance.start()` 启动、dispose 停止——正是 merge-base API 模块所拥有的生命周期。
  */
@@ -43,22 +41,12 @@ const fakeRepository = {
   save: vi.fn(),
 } as never;
 
-const fakeSchedulerService = {
-  schedule: vi.fn(async () => ({
-    successCount: 0,
-    failedCount: 0,
-    skippedCount: 0,
-    totalCount: 0,
-    details: [],
-    duration: 0,
-  })),
-};
+const schedulerDueSetReader = { readDueSet: vi.fn(async () => []) };
 
 function createCronRuntime() {
   return createReminderTriggerCronRuntime({
     reminderTemplateRepository: fakeRepository,
-    reminderGroupRepository: fakeRepository,
-    schedulerService: fakeSchedulerService,
+    schedulerDueSetReader,
     drainTimeoutMs: 100,
   });
 }
@@ -116,7 +104,7 @@ describe('createReminderTriggerCronRuntime', () => {
     expect(mocks.stop).toHaveBeenCalledTimes(1);
   });
 
-  it('starts with the module instance and stops on dispose (merge-base lifecycle)', async () => {
+  it('starts and stops only when explicitly attached as a diagnostic contribution', async () => {
     const instance = createModuleWithCron();
     expect(mocks.schedule).not.toHaveBeenCalled();
 

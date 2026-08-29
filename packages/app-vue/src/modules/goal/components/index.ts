@@ -5,8 +5,10 @@ export { default as GoalRecordCard } from './GoalRecordCard.vue';
 export { default as KRPreviewList } from './KRPreviewList.vue';
 export { default as ProgressBreakdownPanel } from './ProgressBreakdownPanel.vue';
 
+// Product list rows
+export { default as GoalProgressRow } from './GoalProgressRow.vue';
+
 // Cards
-export { default as GoalCard } from './cards/GoalCard.vue';
 export { default as GoalRecordCardFromCards } from './cards/GoalRecordCard.vue';
 export { default as MotivateCard } from './cards/MotivateCard.vue';
 

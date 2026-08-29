@@ -1,9 +1,3 @@
-import {
-  NotificationCategory,
-  NotificationChannelType,
-  NotificationType,
-  RelatedEntityType,
-} from '@memoflow/contracts/notification';
 import type { ITaskInstanceRepository } from '../domain/repositories/i-task-instance-repository';
 import type { ITaskTemplateRepository } from '../domain/repositories/i-task-template-repository';
 import type { TaskScheduleExecutionSource } from '../../schedule-execution';
@@ -46,23 +40,9 @@ export function createTaskScheduleExecutionSource(
         typeof payload['reminderValue'] === 'number' ? payload['reminderValue'] : undefined;
       const reminderUnit =
         typeof payload['reminderUnit'] === 'string' ? payload['reminderUnit'] : undefined;
-      const content =
-        reminderType === 'Relative' && reminderValue !== undefined && reminderUnit
-          ? `任务「${taskTitle}」的提前 ${reminderValue}${reminderUnit} 提醒已到达。`
-          : `任务「${taskTitle}」已到达提醒时间。`;
 
       return {
         nextRunAt: null,
-        notification: {
-          identityId: String(instance.identityId),
-          title: `任务提醒：${taskTitle}`,
-          content,
-          type: NotificationType.Reminder,
-          category: NotificationCategory.Task,
-          relatedEntityType: RelatedEntityType.Task,
-          relatedEntityId: instance.id,
-          channels: [NotificationChannelType.InApp, NotificationChannelType.Push],
-        },
         result: {
           instanceId: instance.id,
           templateId: String(instance.templateId),

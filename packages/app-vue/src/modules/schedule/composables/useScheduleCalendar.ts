@@ -2,7 +2,10 @@ import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import type {
   CalendarEntryClientDTO,
   CreateScheduleRequest,
+  UpdateScheduleRequest,
 } from '@memoflow/contracts/schedule';
+import type { Result } from '@memoflow/contracts/result';
+import { fail } from '@memoflow/contracts/result';
 import type { ScheduleContext } from './useScheduleContext';
 
 export function useScheduleCalendar(ctx: ScheduleContext) {
@@ -58,6 +61,34 @@ export function useScheduleCalendar(ctx: ScheduleContext) {
     }
   }
 
+  async function updateCalendarEntry(
+    id: string,
+    data: UpdateScheduleRequest,
+  ): Promise<Result<CalendarEntryClientDTO>> {
+    store.setError(null);
+    try {
+      const result = await service.updateSchedule(
+        id,
+        sanitizeForIpc(data) as unknown as UpdateScheduleRequest,
+      );
+      if (result.ok) {
+        store.setCalendarEntries(
+          store.calendarEntries.map((entry) => (String(entry.id) === id ? result.data : entry)),
+        );
+      } else {
+        handleError(result.error, 'schedule.error.updateCalendarEntryFailed');
+      }
+      return result;
+    } catch (error: unknown) {
+      handleError(error, 'schedule.error.updateCalendarEntryFailed');
+      return fail({
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to update schedule entry',
+        cause: error,
+      });
+    }
+  }
+
   async function deleteCalendarEntry(id: string, expectedVersion?: number) {
     store.setError(null);
     try {
@@ -82,6 +113,7 @@ export function useScheduleCalendar(ctx: ScheduleContext) {
   return {
     fetchCalendarEntries,
     createCalendarEntry,
+    updateCalendarEntry,
     deleteCalendarEntry,
   };
 }

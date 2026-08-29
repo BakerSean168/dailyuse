@@ -23,7 +23,13 @@ import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { AggregateRoot } from '@memoflow/utils/domain';
 import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../value-objects';
 import { buildTaskInstanceOccurrenceKey } from '../value-objects/task-instance-occurrence-key';
-import { asHm, asInstant, combineYmdHmWithTimeZone, createTimeFacade, resolveTimeZoneId } from '@memoflow/time';
+import {
+  asHm,
+  asInstant,
+  combineYmdHmWithTimeZone,
+  createTimeFacade,
+  resolveTimeZoneId,
+} from '@memoflow/time';
 
 const taskTime = createTimeFacade();
 
@@ -95,7 +101,6 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     return this._props.importance;
   }
 
-
   /**
    * Canonical completion-window end for this occurrence.
    * `timePoint` / `timeRange` are local-day minutes, never epoch timestamps.
@@ -114,11 +119,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     if (minute == null) return null;
 
     const day = taskTime.calendar.toYmd(dayStart);
-    return combineYmdHmWithTimeZone(
-      day,
-      minuteOfDayToHm(minute),
-      resolveTimeZoneId('local'),
-    );
+    return combineYmdHmWithTimeZone(day, minuteOfDayToHm(minute), resolveTimeZoneId('local'));
   }
 
   public get status(): TaskInstanceStatus {
@@ -187,9 +188,9 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
   /**
    * Completes the task.
    *
-   * `goalContext` 由 Task 应用层在调用前算好（模板绑定、是否全部实例完成、标题），
-   * 用于把 task:instance-completed 事件的 payload 填成自包含（ADR-033 范式 A）。
-   * 跨聚合的判定属应用层职责，聚合只负责把结果嵌进自己的领域事件。
+   * `goalContext` 由 Task 应用层在调用前填充模板绑定与标题，使
+   * EachCompletion 事件自包含。PlanCompletion eligibility 不属于 occurrence
+   * event；它由 Task Plan outcome transition 单独发布。
    */
   public complete(
     actualDuration?: number,
@@ -198,7 +199,6 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     goalContext?: {
       taskTitle: string;
       goalBinding: TaskGoalBindingDTO | null;
-      planSucceeded: boolean;
     },
   ): void {
     if (!this.canComplete()) {
@@ -212,7 +212,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     this._props.skipRecord = null;
     if (
       note === undefined &&
-      (previousStatus === TaskInstanceStatus.Missed || previousStatus === TaskInstanceStatus.Skipped)
+      (previousStatus === TaskInstanceStatus.Missed ||
+        previousStatus === TaskInstanceStatus.Skipped)
     ) {
       this._props.note = null;
     }
@@ -241,7 +242,6 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       completedAt: now,
       taskTitle: goalContext?.taskTitle ?? '',
       goalBinding: goalContext?.goalBinding ?? null,
-      planSucceeded: goalContext?.planSucceeded ?? false,
     });
   }
 
@@ -258,15 +258,12 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     this._props.updatedAt = now;
     this.advanceVersion();
 
-    this.addDomainEvent<TaskEventMap['task:instance-uncompleted']>(
-      'task:instance-uncompleted',
-      {
-        identityId: this._props.identityId,
-        taskInstanceId: this.id,
-        taskTemplateId: this._props.templateId,
-        uncompletedAt: now,
-      },
-    );
+    this.addDomainEvent<TaskEventMap['task:instance-uncompleted']>('task:instance-uncompleted', {
+      identityId: this._props.identityId,
+      taskInstanceId: this.id,
+      taskTemplateId: this._props.templateId,
+      uncompletedAt: now,
+    });
   }
 
   /** Skips the task. */
@@ -314,6 +311,56 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
     this._props.updatedAt = now;
     this.advanceVersion();
+  }
+
+  /** Planner/user-owned occurrence reschedule; never mutates the TaskTemplate. */
+  public reschedule(newTime: TaskTimeConfig, now = Date.now()): boolean {
+    if (!this.canReschedule()) {
+      throw new Error('Cannot reschedule task in current state');
+    }
+    if (newTime.startDate == null) {
+      throw new Error('Rescheduled task requires startDate');
+    }
+
+    const nextInstanceDate = taskTime.calendar.startOfDay(asInstant(newTime.startDate));
+    const normalizedTime = newTime.setStartDate(asInstant(nextInstanceDate));
+    const current = this._props.timeConfig.toDTO();
+    const next = normalizedTime.toDTO();
+    if (
+      this._props.instanceDate === Number(nextInstanceDate) &&
+      JSON.stringify(current) === JSON.stringify(next)
+    ) {
+      return false;
+    }
+
+    const previousDueDate = this.dueDate;
+    this._props.instanceDate = Number(nextInstanceDate);
+    this._props.occurrenceKey = buildTaskInstanceOccurrenceKey(
+      String(this._props.templateId),
+      Number(nextInstanceDate),
+    );
+    this._props.timeConfig = normalizedTime;
+    this._props.updatedAt = asInstant(now);
+    this.advanceVersion();
+    const newDueDate = this.dueDate;
+    if (previousDueDate == null || newDueDate == null) {
+      throw new Error('Rescheduled task must have a canonical due date');
+    }
+    this.addDomainEvent<TaskEventMap['task:rescheduled']>('task:rescheduled', {
+      identityId: this._props.identityId,
+      taskInstanceId: this.id,
+      taskTemplateId: this._props.templateId,
+      previousDueDate,
+      newDueDate,
+    });
+    return true;
+  }
+
+  public canReschedule(): boolean {
+    return (
+      this._props.status === TaskInstanceStatus.Pending ||
+      this._props.status === TaskInstanceStatus.InProgress
+    );
   }
 
   /** Applies template-owned fields only while this is an unstarted future instance. */
@@ -462,10 +509,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       templateId: params.templateId,
       identityId: params.identityId,
       instanceDate: params.instanceDate,
-      occurrenceKey: buildTaskInstanceOccurrenceKey(
-        String(params.templateId),
-        params.instanceDate,
-      ),
+      occurrenceKey: buildTaskInstanceOccurrenceKey(String(params.templateId), params.instanceDate),
       timeConfig: params.timeConfig,
       importance: params.importance,
       status: TaskInstanceStatus.Pending,

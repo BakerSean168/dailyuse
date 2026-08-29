@@ -267,6 +267,7 @@ export default {
   },
   "error": {
     "loadTasksFailed": "Failed to load schedule tasks",
+    "updateCalendarEntryFailed": "Failed to update schedule",
     "createTaskFailed": "Failed to create schedule task",
     "deleteTaskFailed": "Failed to delete schedule task",
     "pauseTaskFailed": "Failed to pause schedule task",

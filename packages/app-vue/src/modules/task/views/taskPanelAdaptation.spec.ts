@@ -3,19 +3,19 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-const managementSource = readFileSync(
+const source = readFileSync(
   resolve(dirname(fileURLToPath(import.meta.url)), 'TaskManagementView.vue'),
   'utf8',
 );
 
-describe('Task vNext single-page presentation', () => {
-  it('keeps one create-plan action and no panel-tier business branching', () => {
-    expect(managementSource).toContain('data-primary-action="create-task"');
-    expect(managementSource).toContain('data-testid="create-task-entry"');
-    expect(managementSource).not.toContain('usePanelWidth');
-    expect(managementSource).not.toContain('isNarrow');
-    expect(managementSource).not.toContain('TaskTemplateGrid');
-    expect(managementSource).not.toContain('TaskDAG');
-    expect(managementSource).not.toContain('DependencyManager');
+describe('Task vNext panel adaptation', () => {
+  it('keeps one primary create action and uses container CSS rather than business branching', () => {
+    expect(source).toContain('data-primary-action="create-task"');
+    expect(source).toContain('data-testid="create-task-template-button"');
+    expect(source).toContain('@2xl/panel');
+    expect(source).not.toContain('usePanelWidth');
+    expect(source).not.toContain('isNarrow');
+    expect(source).not.toContain('TaskDAG');
+    expect(source).not.toContain('DependencyManager');
   });
 });

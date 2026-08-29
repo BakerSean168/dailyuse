@@ -8,6 +8,7 @@ import {
   DisconnectKnowledgeRepositoryConnectionResponseSchema,
   KnowledgeRepositoryConnectionClientSchema,
   KnowledgeRepositoryInstallationTokenSchema,
+  KnowledgeRepositoryInstallationIntentStatusResponseSchema,
   KnowledgeRepositoryReconciliationPreviewSchema,
   ListKnowledgeRepositoryConnectionsResSchema,
   PreviewKnowledgeRepositoryReconciliationSchema,
@@ -36,6 +37,24 @@ interface PlatformMiddleware {
 }
 
 const connectionParams = z.object({ connectionId: z.string().min(1) });
+const installationSetupQuerySchema = z.object({
+  state: z.string().min(16),
+  installation_id: z.string().min(1),
+  setup_action: z.enum(['install', 'update']).optional(),
+});
+
+function escapeInstallationSetupHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function renderInstallationSetupPage(message: string): string {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MemoFlow GitHub setup</title></head><body><main><h1>MemoFlow</h1><p>${escapeInstallationSetupHtml(message)}</p></main></body></html>`;
+}
 
 /**
  * GitHub App installation and knowledge repository connection routes.
@@ -51,10 +70,71 @@ export function registerKnowledgeRepositoryConnectionRoutes(
   const auth: RequestHandler[] = middleware.requireEmailVerified
     ? [middleware.auth, middleware.requireEmailVerified]
     : [middleware.auth];
+  router.get('/knowledge-connections/installations/setup', async (req, res) => {
+    const parsed = installationSetupQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res
+        .status(400)
+        .type('html')
+        .send(renderInstallationSetupPage('GitHub installation callback is invalid.'));
+      return;
+    }
+
+    const result = await api.receiveGithubInstallationSetup({
+      state: parsed.data.state,
+      installationId: parsed.data.installation_id,
+      setupAction: parsed.data.setup_action,
+    });
+    if (!result.ok) {
+      const status =
+        result.error.code === 'FORBIDDEN'
+          ? 403
+          : result.error.code === 'CONFLICT'
+            ? 409
+            : result.error.code === 'SERVICE_UNAVAILABLE'
+              ? 503
+              : 400;
+      res.status(status).type('html').send(renderInstallationSetupPage(result.error.message));
+      return;
+    }
+
+    if (result.data.kind === 'redirect' || result.data.kind === 'web') {
+      res.redirect(302, result.data.location);
+      return;
+    }
+    res
+      .status(200)
+      .type('html')
+      .send(
+        renderInstallationSetupPage(
+          'GitHub knowledge repository access was recorded. You can return to MemoFlow Desktop.',
+        ),
+      );
+  });
+
   const r = new RouteRegistrar(router, openApiRegistry ?? null, {
     basePath: '/api/v1/repositories',
     defaultTags: ['Knowledge Repository'],
     defaultSecurity: [{ bearerAuth: [] }],
+  });
+
+  openApiRegistry?.registerPath({
+    method: 'get',
+    path: '/api/v1/repositories/knowledge-connections/installations/setup',
+    tags: ['Knowledge Repository'],
+    summary: '接收 GitHub App installation Setup URL 回调',
+    description:
+      '公开 GitHub redirect 边界；只记录已验证 installation callback 或路由到 allowlisted environment，不授予 repository connection 权限。',
+    security: [],
+    request: { query: installationSetupQuerySchema },
+    responses: {
+      200: { description: 'Desktop installation callback recorded; safe completion HTML' },
+      302: { description: 'Safe redirect to configured environment API or Web return path' },
+      400: { description: 'Invalid or expired installation state' },
+      403: { description: 'Unknown environment route or forbidden installation' },
+      409: { description: 'Installation state conflict' },
+      503: { description: 'GitHub installation verification unavailable' },
+    },
   });
 
   r.route(
@@ -251,6 +331,44 @@ export function registerKnowledgeRepositoryConnectionRoutes(
     },
     auth,
     (req, ctx) => controller.getAttachmentContent(ctx, req.params?.projectionId ?? ''),
+  );
+
+  r.route(
+    {
+      method: 'get',
+      path: '/knowledge-connections/installations/intents/:intentId',
+      summary: '读取 GitHub App 安装意图状态',
+      request: { params: z.object({ intentId: z.string().min(1) }) },
+      responses: {
+        200: successResponse(
+          KnowledgeRepositoryInstallationIntentStatusResponseSchema,
+          '安装状态已获取',
+        ),
+        401: errorResponse('未授权，请登录'),
+        404: errorResponse('安装意图不存在'),
+      },
+    },
+    auth,
+    (req, ctx) => controller.getInstallationIntentStatus(ctx, req.params?.intentId ?? ''),
+  );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/knowledge-connections/installations/intents/:intentId/finalize',
+      summary: '以当前 MemoFlow 身份确认 GitHub App 安装',
+      request: { params: z.object({ intentId: z.string().min(1) }) },
+      responses: {
+        200: successResponse(CompleteKnowledgeRepositoryInstallationResponseSchema, '安装已确认'),
+        401: errorResponse('未授权，请登录'),
+        403: errorResponse('安装不属于当前身份'),
+        404: errorResponse('安装意图不存在'),
+        409: errorResponse('安装尚未回调或状态冲突'),
+        503: errorResponse('GitHub 服务不可用'),
+      },
+    },
+    auth,
+    (req, ctx) => controller.finalizeInstallationIntent(ctx, req.params?.intentId ?? ''),
   );
 
   r.route(

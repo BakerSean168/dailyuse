@@ -14,7 +14,7 @@ tags:
   - parallel
 description: MemoFlow Goal/Task/Routine/Planner/Scheduler/Notification/EventBus 的总重构编排计划，按依赖、共享热点和可并行 lane 组织，并为每个标准能力指定 Build/Borrow/Imitate 来源
 created: 2026-08-25T19:18:00+08:00
-updated: 2026-08-25T21:40:00+08:00
+updated: 2026-08-29T20:00:00+08:00
 status: active
 ---
 
@@ -34,12 +34,36 @@ status: active
 
 已有子计划继续保留详细业务上下文，但**不得再按各自 Phase 编号独立推进**：
 
-- `2026-08-25-goal-task-vnext-refactor.md`
-- `2026-08-25-scheduling-notification-vnext-refactor.md`
+- `../archive/2026-08-25-goal-task-vnext-refactor.md`
+- `../archive/2026-08-25-scheduling-notification-vnext-refactor.md`
 
 本计划解决它们之间的交叉依赖和重复迁移问题。
 
-## 0.1 Implementation checkpoint — Wave 0 / Wave 1
+## 0.1 v0.11 merge milestone closure — 2026-08-29
+
+The integration milestone carried by PR #281 is **closed for merge** at the product boundary that has actually been implemented and production-verified. This is a scope freeze, not a claim that every long-horizon Wave 6/7 ticket is complete.
+
+Included in the v0.11 merge milestone:
+
+- Wave 0–2 contract/domain foundations and schema convergence;
+- Wave 3 durable scheduling/notification/settlement verticals;
+- Wave 4 Routine local runtime and FullCalendar Planner cutover;
+- Web/Desktop primary Goal, Task, Routine, Planner, and Notification product surfaces implemented on the vNext contracts;
+- production deployment rebuild, exact-digest runtime pinning, Production GitHub App install/connect/webhook acceptance, and transactional email recovery;
+- current PR exact-head required CI, governance, Web flow, integration, coverage, performance, and delivery observation gates.
+
+Explicitly **deferred post-v0.11** and therefore not merge blockers for this milestone:
+
+- `ROUTINE-5302` method-library product catalog;
+- `AI-6101~6103` AI parity/tooling;
+- `MOBILE-6201/6202` React/mobile parity;
+- `CLEAN-6301~6304` residual legacy/physical cleanup beyond the product-boundary locks already landed;
+- `POC-6401` pg-boss build-vs-adopt experiment;
+- remaining long-horizon `HARD-7101~7104` matrix/docs work that depends on those deferred surfaces.
+
+The final merge-readiness review found **no unresolved P0/P1 inside the v0.11 milestone scope**. Evidence and the deferred ledger are recorded in `docs/analysis/2026-08-29-core-vnext-v011-merge-readiness.md`. The remaining Desktop GitHub installation live test is a **release acceptance gate on the newly built Windows package**, not an integration-branch merge gate.
+
+## 0.2 Historical implementation checkpoint — Wave 0 / Wave 1
 
 Wave 0 evidence is frozen in [`Core vNext Wave 0 — Baseline / Acceptance / Shared-Train Evidence`](../../analysis/2026-08-25-core-vnext-wave-0-baseline-and-acceptance.md).
 
@@ -55,7 +79,7 @@ Wave 0 evidence is frozen in [`Core vNext Wave 0 — Baseline / Acceptance / Sha
 
 **Wave 2 execution point (closed 2026-08-26):** `GOAL-2101~2103`, `TASK-2201~2205`, `ROUTINE-2301~2303`, and `NOTIF-2401/2402` are integrated and gate-verified.
 
-**Current next executable parallel point:** `TASK-3101`, `GOAL-3201`, `NOTIF-3301`, and `SETTLE-3501`. These four lanes can start independently from the frozen W2 contracts; handler cutover follows their dependency edges below.
+**Current execution point (2026-08-27):** Wave 3 vertical integration and both Wave 4 lanes are closed. Wave 5 shared `UI-5101` and Goal list/editor `GOAL-5101` are closed. Goal now uses the vNext progress-row + Label AND filter + aggregate editor surface; the current primary continuation is `TASK-5201` (Today/Upcoming execution home), while Goal detail, Routine, Planner, and Notification UI lanes remain independently parallelizable.
 
 **Wave 1 gate evidence (2026-08-25):**
 
@@ -614,6 +638,13 @@ ReminderOffsetField
 9. identity isolation tests.
 
 **Acceptance:** same `#工作` can attach to Goal and Task.
+
+**Wave 5 renderer transport extension (2026-08-27):**
+
+- added a transport-neutral `@memoflow/label/client` seam exposing only current-user `listLabels` / `createLabel`; public `LabelClientDTO` deliberately omits `identityId` and `normalizedName`;
+- API owns authenticated `/labels` GET/POST over `LabelService + PrismaLabelRepository`; Desktop owns authenticated `label:list` / `label:create` IPC over the same service with `PowerSyncLabelRepository`; Web/Desktop renderer DI both provide one `LABEL_SERVICE_KEY`;
+- canonical Zod request schemas validate list/create before application calls and host auth injects identity, so renderer requests never carry ownership identity;
+- focused verification: Label client `3/3`, API transport `2/2`, Desktop IPC `2/2`; Label build/typecheck/lint plus API/Desktop/Web/App-Vue typechecks are green. Test inventory is current at `1120` files.
 
 ## SCHED-1101 — Neutral Scheduling contracts
 
@@ -1201,6 +1232,34 @@ Routine wall-clock starts after NotificationRequested seam is available or uses 
 
 **Acceptance:** Scheduler only wakes handlers.
 
+**Implementation evidence — 2026-08-27:**
+
+- Task, Goal, Routine and the legacy Reminder compatibility source own their durable
+  `NotificationRequested` write; execution outcomes no longer carry a `notification` draft.
+- `schedule-orchestration` is notification-domain neutral: the execution router only dispatches by
+  source/handler and has no `NotificationPort`, channel, requested-envelope or notification package
+  runtime/build dependency.
+- API and Desktop hosts no longer construct or inject `scheduleNotificationPort`; they inject the
+  durable `NotificationRequestedWriterPort` into the business boundary that owns the side effect.
+- Legacy Reminder compatibility execution uses an atomic commit port so Reminder state/history and
+  `notification.requested` are committed in the same Prisma/PowerSync transaction. PowerSync writer
+  rollback/retry behavior is covered explicitly.
+- No production business module outside Notification emits new `notification.dispatch` rows; the
+  Notification package retains legacy dispatch consumption only for backward-compatible draining.
+- AC2 integration evidence: `notification-requested-writer.integration.test.ts` now consumes
+  production-shaped `task.reminder` / `goal.reminder` envelopes through the durable
+  `NotificationRequested` path and asserts the materialized Fact carries the workflowKey/topic/type/
+  category/relatedEntity plus both suggested-channel policy decisions; integration suite **9/9**.
+- AC4 anti-resurrection: new `schedule-notification-separation-audit.mjs` (wired into the root
+  `governance-check` target) fails on `@memoflow/notification` imports, the removed legacy delivery
+  symbols (`ScheduleNotificationPort`/`scheduleNotificationPort`/
+  `createNotificationPrismaScheduleNotificationPort`), and `switch (...sourceModule)` execution dispatch
+  in `schedule-orchestration/src` + `schedule/.../infrastructure/scheduling`; the retained
+  domain-neutral if-cascade in `execution/router.ts` stays green (**24 files audited, 0 violations**).
+- Verification: Notification **240/240**, Reminder **491/491**, Task **717/717**, Goal **445/445**,
+  Schedule Orchestration **34/34**, Reminder integration **34/34**, targeted API/Desktop composition
+  **67/67**; final typecheck passed for notification/reminder/task/goal/schedule-orchestration/api/desktop.
+
 ## ROUTINE-3401 — Reliable wall-clock handler path
 
 **Lane:** L-C + L-D  
@@ -1274,6 +1333,17 @@ Routine wall-clock starts after NotificationRequested seam is available or uses 
 
 **Acceptance:** intentionally lost event heals after restart for all three source modules.
 
+**Implementation evidence (2026-08-27):**
+
+- added one common `ProjectionRepairRuntime`; Task / Goal / Routine event runtimes are now incremental-only fast paths;
+- composition order registers all available feature listeners before the startup durable sweep begins;
+- startup sweep enumerates feature-owned durable refs, rebuilds each neutral plan, and converges through the existing transactional `SchedulingPort.reconcile()` stable-key boundary;
+- source enumeration is mandatory at the projection seam; Desktop Task PowerSync now enumerates synchronized local template refs instead of silently returning `[]`;
+- Routine Prisma enumeration includes disabled / non-wall-clock definitions so a lost disable/trigger-change event reconciles the prior owner to an empty desired set;
+- repair failures are isolated per owner/source and exposed as cumulative `repaired / unchanged / failed` metrics through the orchestration module;
+- no periodic sweep is enabled: incremental events + startup durable repair satisfy the current recovery contract; `sweep()` remains an explicit bounded maintenance seam if evidence later requires scheduling it;
+- verification: schedule-orchestration `35/35`, Task `718/718`, Goal `445/445`, Reminder `491/491`, Routine Prisma integration `5/5`; API and Desktop Nx typecheck dependency chains green.
+
 ### Wave 3 primary vertical acceptance
 
 Must demonstrate in executable integration tests:
@@ -1314,6 +1384,16 @@ May execute in parallel with Planner Wave 4B after Routine domain is stable.
 
 **Acceptance:** Routine domain/runtime never imports Win32/platform package.
 
+**Implementation evidence (2026-08-27):**
+
+- added platform-neutral `ActivitySensorPort` / `IdleSensorPort` and canonical `UserActive` / `UserIdle` / `UserResumed` events under the Routine runtime seam;
+- added restart-safe activity normalization with listener-before-sample startup ordering plus deterministic `FakeIdleSensor` / `FakeActivitySensor`;
+- added `WindowsIdleSensorAdapter` under Desktop main-process infrastructure; Electron `powerMonitor.getSystemIdleTime()` is polled only while subscribers exist, and final unsubscribe / dispose tears the timer down;
+- Reminder runtime/domain contains no Electron, Win32, DBus, Wayland, or platform-specific import;
+- focused tests cover initial active/idle state, idle/resume transition, cleanup, idempotent start/stop, app/profile restart, and Windows adapter polling lifecycle;
+- verification: Routine activity runtime `4/4`, Windows adapter `2/2`, Reminder build green, Desktop Nx typecheck green;
+- real Windows operator validation remains an environment gate because the current GCP implementation host is Linux; the adapter is isolated so that gate does not weaken deterministic CI coverage.
+
 ## ROUTINE-4102 — ActiveUsage accumulator + Natural Break
 
 **Depends:** ROUTINE-4101  
@@ -1332,6 +1412,17 @@ May execute in parallel with Planner Wave 4B after Routine domain is stable.
 9. deterministic fake-clock tests.
 
 **Acceptance:** fixture G suppresses unnecessary stand reminder after sufficient idle rest.
+
+**Implementation evidence (2026-08-27):**
+
+- added Desktop-local `ActiveUsageRuntime` over the platform-neutral `ActivitySensorPort`; it owns only local accumulation/tick semantics and has no Scheduler/ScheduledIntent/ScheduleTask dependency;
+- active accumulation stops at the actual last-input boundary (`UserIdle.at - idleDurationMs`) so the idle-detection window is not incorrectly counted as active usage;
+- existing routine/profile/membership/temporary-override gates are reused; inactive profiles and live snooze/suppress intervals pause accumulation without resetting previously earned active time;
+- coarse ticks split temporary-override time at the real gate reopen instant rather than sampling only the end-state boolean;
+- Natural Break credit is idempotent per idle episode and only advances a routine generation when that routine has active-usage debt; qualifying idle resets the accumulator while duplicate resume events do not double-credit;
+- accumulator snapshots are exportable/restorable and process downtime is never inferred as active usage; occurrence identity is stable per `routine:<id>:active-usage:<generation>`;
+- Fixture G (`40m active -> due -> 6m idle -> Natural Break -> reset/no duplicate`) plus profile deactivation, suppression, idle-only time, and restart snapshot cases are green `5/5`;
+- verification: focused ActiveUsage `5/5`, full Reminder `507/507`, Reminder Nx build green, Desktop Nx typecheck green, changed-file ESLint green; boundary audit confirms zero Scheduler import/reference in the ActiveUsage runtime.
 
 ## ROUTINE-4103 — Intervention state machine
 
@@ -1354,6 +1445,17 @@ Due -> Gentle -> Grace -> Guided -> optional Strict
 6. safe escape;
 7. fake-clock tests.
 
+**Implementation evidence (2026-08-27):**
+
+- added a serializable `InterventionRuntime` keyed by canonical routine occurrence identity; renderer/Electron are not timing owners and later surfaces can reconstruct from `InterventionSnapshot`;
+- deterministic deadline catch-up implements `Due -> Gentle -> Grace -> Guided`, while `Strict` is unreachable unless `strictEnabled=true`; coarse resume can cross multiple deadlines while recording the exact phase-boundary Instants;
+- Strict always retains the explicit `safe-escape` command and terminal `Escaped` state; safe escape outside Strict is rejected;
+- `complete`, `natural-stop`, `snooze`, and `dismiss` are explicit runtime commands from every presented phase; pre-due interactions and non-positive snooze durations are rejected before mutation;
+- Natural Break and explicit completion converge on one terminal `Completed` truth with `completionReason`; a late competing interaction is idempotent `applied=false` and does not create a second completion history path;
+- snooze records a concrete `snoozeUntil` in the intervention snapshot so the next composition slice can persist/apply the existing Routine TemporaryOverride without rewriting long-lived trigger config;
+- snapshots can be restored after renderer/window restart and listeners emit only applied runtime transitions; no Electron/Scheduler dependency exists in the intervention state machine;
+- focused intervention matrix is `6/6`, covering all presented phases x completion/natural-stop/snooze/dismiss plus opt-in Strict/safe escape, invalid transitions, coarse clock catch-up, terminal idempotency, and restore; full Reminder is `513/513`, Reminder Nx build and Desktop Nx typecheck are green.
+
 ## ROUTINE-4104 — InterventionWindow
 
 **Depends:** ROUTINE-4103  
@@ -1374,6 +1476,20 @@ Due -> Gentle -> Grace -> Guided -> optional Strict
 
 **Acceptance:** window is a projection of Runtime truth, not owner.
 
+**Implementation evidence (2026-08-27):**
+
+- added a dedicated `InterventionWindowProjection` and strict Zod command contract under Routine-owned Electron channels. The renderer can only `get` the current projection or send `complete`, positive-duration `snooze`, and `dismiss`; projection updates are Main -> renderer events and arbitrary Node/domain access is not exposed;
+- the Desktop Reminder composition root now creates exactly one per-profile `InterventionRuntime` and returns it as a shared host seam. The InterventionWindow controller subscribes to that same runtime, so future ActiveUsage/WallClock occurrence coordinators can create/restore occurrences without creating a second intervention state machine;
+- Main Process owns a single InterventionWindow instance per active profile. It catches up all active runtime occurrences from deadlines, chooses only one visible candidate using `Guided > Grace > Gentle` priority (then oldest due occurrence), and leaves non-visible active occurrences untouched; after the visible occurrence terminates, the next runtime occurrence is projected automatically;
+- `Strict` is deliberately excluded from InterventionWindow capability. A regression test proves a Strict occurrence stays Strict and no ordinary intervention window is shown, preserving ADR-059's separate BreakOverlay boundary;
+- the Electron host uses `BrowserWindow.showInactive()` so ambient reminders do not steal IDE/game/meeting focus, and uses `screen.getCursorScreenPoint()` + `screen.getDisplayNearestPoint()` to place the compact window inside the active display work area at the bottom-right margin. Guided reuses and expands the same BrowserWindow rather than opening a second surface;
+- native window close is intercepted and routed back through the controller as the explicit Runtime `dismiss` command; the window never silently mutates or terminates intervention truth itself;
+- renderer crash/reload keeps Main Process truth alive: `render-process-gone` reloads the dedicated renderer and `did-finish-load` re-pushes the retained projection. Controller/runtime reconstruction is separately covered by restoring an `InterventionSnapshot` and deriving the window projection from it;
+- added an isolated `#/intervention-window` renderer bootstrap that does not initialize the full app-vue shell. Gentle/Grace/Guided presentation is projection-driven; the renderer's one-second timer only recomputes display countdown from `phaseDeadline` and never advances the domain phase;
+- the window controller owns deadline wakeups in Main Process, including phase escalation without renderer ticks and future occurrence wakeups. Runtime `onChanged` also makes externally-created due occurrences surface automatically once the profile identity is bound;
+- test infrastructure gained `BrowserWindow.showInactive`, renderer reload, cursor/display-nearest stubs so no-focus, multi-monitor placement, close semantics, and renderer recovery are verified as behavior rather than source-string assumptions;
+- verification: focused ROUTINE-4104 Desktop matrix `47/47` plus contract `1/1`; full Desktop `51` files / `258` tests, full Contracts `65` files / `475` tests, full Reminder `72` files / `518` tests; Contracts/Desktop typecheck and Reminder build green; Desktop and Contracts lint have `0` errors (three pre-existing warnings each); Desktop production build green; Nx sync, test-target governance, docs, full governance, and test inventory are green at `1114` owned files (`65` Desktop primary: 51 unit / 9 IPC / 5 main).
+
 ## ROUTINE-4201 — ProtocolSession persistence/recovery
 
 **Depends:** ROUTINE-2303  
@@ -1388,6 +1504,17 @@ Due -> Gentle -> Grace -> Guided -> optional Strict
 5. crash during focus/break tests;
 6. completed/cancelled terminal behavior;
 7. no duplicate phase transition.
+
+**Implementation evidence (2026-08-27):**
+
+- added durable `ProtocolSessionStore` with optimistic `expectedVersion` fencing plus Prisma and PowerSync adapters over the existing Wave 2 `routine_protocol_sessions` schema; no schema migration was required;
+- added a protocol-session runtime that persists every command transition and emits versioned `ProtocolPhaseTransitionReceipt` values;
+- restart recovery reads persisted `phaseDeadline` and calls the deterministic domain `advanceDuePhases()` path, including multi-phase catch-up to terminal completion; renderer tick counts are not an input;
+- paused sessions remain paused across restart; resume reconstructs the deadline from persisted `pausedRemainingMs` and accumulated pause accounting;
+- concurrent recovery uses bounded CAS retry: one runtime wins the version fence, the loser reloads and converges to `unchanged`, preventing duplicate durable phase transitions;
+- terminal Completed/Cancelled sessions are excluded from recoverable scans;
+- crash/restart fixture covers Focus, Break, multi-deadline completion, pause/resume, terminal receipt, and concurrent recovery;
+- verification: protocol recovery + PowerSync `7/7`, Prisma real-database store `2/2`, full Reminder `502/502`, Reminder Nx build green, Desktop Nx typecheck green, changed-file ESLint green.
 
 ## ROUTINE-4202 — FocusWindow
 
@@ -1404,6 +1531,19 @@ Due -> Gentle -> Grace -> Guided -> optional Strict
 6. hiding window != ending session;
 7. taskbar integration only through adapter.
 
+**Implementation evidence (2026-08-27):**
+
+- added a Main Process `FocusWindowController` over the durable `ProtocolSessionStore` / `ProtocolSessionRuntime`; renderer/window state is projection-only and never owns protocol transitions;
+- projection includes protocol/phase/cycle/version plus `phaseDeadline`, `pausedRemainingMs`, and derived `remainingMs`; phase/cycle transitions still come from the deterministic durable runtime;
+- dedicated frameless `ElectronFocusWindowHost` owns BrowserWindow lifecycle, drag surface, collapse, always-on-top, and native close interception; native close/hide does not mutate or terminate the ProtocolSession;
+- hiding keeps the Main Process phase-deadline timer alive, and explicit reopen/phase-boundary recovery calls `show()` again, so presentation visibility cannot suspend protocol semantics;
+- pause/resume/end are isolated `RoutineChannels` IPC commands and all route through ProtocolSessionRuntime; FocusWindow channels are separate from legacy ReminderChannels and are explicitly preload-whitelisted;
+- renderer boots through a dedicated `#/focus-window` early path without initializing the full main app/router; its 1s countdown only computes `phaseDeadline - Date.now()` and never issues phase-transition commands;
+- profile activation restores the latest recoverable session for that profile identity from PowerSync, while profile module teardown destroys the window/controller;
+- optional Electron taskbar progress adapter derives progress from the same projection and stores no business state;
+- focused Main Process + host + IPC + renderer tests are `8/8`, including restart catch-up, hide/reopen, pause/resume/end, collapse/always-on-top, native-close-as-hide, taskbar and renderer deadline projection;
+- formal verification: contracts/reminder typechecks green, Desktop Nx typecheck green, full Desktop `244/244`, Desktop production build green, changed TypeScript/Vue ESLint green.
+
 ## ROUTINE-4203 — Protocol break satisfies ambient routine
 
 **Depends:** ROUTINE-4102, ROUTINE-4201
@@ -1417,6 +1557,18 @@ Due -> Gentle -> Grace -> Guided -> optional Strict
 5. completion history correlation.
 
 **Acceptance:** fixture H completes 50/10 and does not immediately show stand/eye reminder.
+
+
+**Implementation evidence (2026-08-27):**
+
+- introduced a first-class `ProtocolBreakCompletionFact` rather than impersonating protocol rest as OS Idle; facts carry stable `factId`, session/protocol/phase/cycle correlation, Product Time Instants, measured break duration, and explicit break capabilities;
+- Stand / Eye / Movement compatibility is an explicit runtime contract (`stand`, `screen-rest`, `movement`) with each Ambient routine supplying its own `minimumBreakMs`; no routine-name heuristic or hard-coded medical timing is used;
+- `ActiveUsageRuntime.markSatisfied()` now returns a generation/occurrence receipt and treats satisfaction as an authoritative reset boundary: it rebases the local clock to the satisfaction Instant instead of counting the protocol-break interval as active usage;
+- the bridge credits only registered ActiveUsage routines that have real accumulated debt, resets their generation, clears threshold state, and records correlated history linking `breakFactId/sessionId/phaseKey` to the exact Ambient occurrence generation it satisfied;
+- stable break facts are replay-deduplicated in the runtime/history seam; duplicate consumption does not advance the Ambient generation twice;
+- Fixture H uses the real 50/10 `ProtocolSession`: after 50m focus all three Ambient routines are due, the 10m ShortBreak credits Stand/Eye/Movement, resets them, and the next active second does not immediately re-trigger an intervention;
+- a dedicated regression covers `35m active + 10m protocol break`: the break is never miscounted as the final 5m of active usage before reset, even if the OS activity sensor still reports active;
+- focused ActiveUsage + break-credit suite is `10/10`; full Reminder is `518/518`; Reminder Nx build and Desktop Nx typecheck are green.
 
 ---
 
@@ -1459,6 +1611,19 @@ light/dark theme
 
 **Acceptance:** PoC meets core Planner needs without Premium plugin.
 
+**Implementation evidence (2026-08-27):**
+
+- validated `@fullcalendar/vue3@7.0.2` Standard (MIT) with `temporal-polyfill@1.0.4`; both remain dev-only PoC dependencies and no Premium/Scheduler/resource package is present;
+- isolated `CalendarEventProjection`-shaped fixture covers Schedule/Task/Goal/Routine ownership, custom event content, per-event move/resize/read-only capabilities, revision, and owner-command targets;
+- Standard-only adapter provides Day / Week TimeGrid / Month / List, select, now indicator, `eventDrop`, `eventResize`, and failed-owner-command `revert()` semantics;
+- component tests use semantic role/ARIA assertions rather than FullCalendar private/generated CSS classes; targeted adapter/surface suite is `7/7`;
+- real Chromium production-preview smoke switched all four views, rendered custom events, applied light/dark + narrow modes, found accessible names on all observed buttons, and produced no page error; local measurements were 119.3 ms app-mount marker and 182.6 ms first observed interactive toolbar;
+- isolated Vite build was ~396.64 kB JS raw / ~121.3 kB gzip and ~5.92 kB CSS raw / ~1.6 kB gzip; these are engineering baselines, not product SLAs;
+- current custom Month + Week renderers are ~436 LOC before surrounding Planner glue, while Standard supplies the additional Day/List + interaction primitives behind one neutral adapter;
+- two raw headless Playwright pointer gestures did not trigger FullCalendar `eventDrop`; this is recorded rather than misreported. Adapter-level owner routing/revert is deterministic and green, but production migration must add a stable real-Planner drag/resize E2E before old custom surfaces are deleted;
+- formal verification: isolated PoC tests `7/7`, `app-vue:typecheck` green with 26 dependent targets, production `app-vue:vite:build` green, changed TypeScript/Vue ESLint green, and production-route import audit empty;
+- decision: **GO** to PLAN-4302 / PLAN-4401 with FullCalendar Standard; keep the current production Planner route untouched in this ticket.
+
 **Fallback:** if PoC fails hard on panel/responsiveness/a11y, record evidence before considering Schedule-X Premium or keeping custom layout.
 
 ## PLAN-4302 — Planner unified read projection
@@ -1491,6 +1656,19 @@ Routine wall-clock occurrence
 
 **Acceptance:** no ScheduledInvocation row is rendered in normal Planner.
 
+
+**Implementation evidence (2026-08-27):**
+
+- added canonical `CalendarEventProjection` under `@memoflow/contracts/schedule` with explicit `identityId`, stable `sourceType/sourceId`, display metadata, edit capabilities, owner command target, revision, and source-correlated owner-target unions;
+- time truth remains Product Time at the contract boundary: timed facts use `Instant`, all-day facts use `Ymd`; the projection does not expose `Date`, ISO-string-as-domain-time, Scheduler runAt, or cron/handler fields;
+- added owner adapters for manual `CalendarEntry`, `TaskOccurrence`, Goal start/deadline facts, and Routine wall-clock occurrences; Task all-day/time-point/time-range semantics are derived through an injected Product Time port rather than local `Date` arithmetic;
+- added `projectPlannerReadModel(...)` as the neutral aggregation boundary. Its legal inputs are owner-domain read facts only; raw `ScheduleTask`, `ScheduledInvocationContext`, `SchedulingPort`, retry/lease/dead-letter state are not accepted;
+- current production `useCalendarView` now constructs Schedule/Task data through the canonical projection and exposes `projections` for PLAN-4303/4304; the existing custom Day/Week/Month renderer is temporarily fed through a compatibility mapper so this ticket does not prematurely replace the rendering engine;
+- Goal/Routine adapters are canonical and covered, while their live client feeds are intentionally not fabricated in this ticket; later Planner source-integration/UI work can supply those facts without changing the projection contract;
+- the PLAN-4301 FullCalendar PoC no longer owns a duplicate Planner model and now consumes the canonical PLAN-4302 contract directly;
+- removed `DevScheduleDebugPanel` / `scheduleTasks` from the normal Planner route/data return; the diagnostic component may remain for a future ops/dev-only entry but raw Scheduler rows are no longer mounted by the product Planner;
+- focused Planner/projection/compatibility/PoC suite is `21/21`; full app-vue suite is `727/727`; contracts build, app-vue typecheck, and app-vue build are green.
+
 ## PLAN-4303 — Source-aware command routing
 
 **Depends:** PLAN-4302
@@ -1508,6 +1686,17 @@ Routine wall-clock occurrence
 
 **Acceptance:** Planner never directly writes Scheduler invocation persistence.
 
+**Implementation evidence (2026-08-27):**
+
+- added one canonical `PlannerOwnerCommandRouter` over owner-domain client commands: CalendarEntry -> `ScheduleClientPort.updateSchedule`, Task occurrence -> `TaskClientPort.rescheduleInstance`, Goal start/deadline -> `GoalClientPort.updateGoal`, and Routine wall-clock -> an explicit `RoutinePlannerOwnerCommandPort`; no Planner command path imports Scheduler orchestration, `ScheduleTask`, `SchedulingPort`, or invocation persistence;
+- Task occurrence movement is now a real owner command rather than Scheduler metadata mutation: `TaskInstance.reschedule()` preserves template ownership, requires Pending/InProgress state, advances aggregate revision, emits `task:rescheduled`, and causes the existing Task scheduling projector to reconcile the new due time through `SchedulingPort`;
+- HTTP and Electron expose the same validated reschedule invocation contract with `expectedVersion`; Prisma already fenced Task instance updates and the PowerSync repository now uses the same identity + previous-version CAS semantics, including collision/conflict handling and transport-level `CONFLICT` results;
+- Planner range conversion remains on Product Time; AllDay / TimePoint / same-day TimeRange are mapped explicitly and cross-day Task ranges are rejected rather than silently corrupting `TaskTimeConfig`;
+- source projection capabilities are enforced before command dispatch. Routine wall-clock projections remain read-only by default and become movable only when the Routine source supplies both editable capability and its owner command port, so Planner never fabricates a missing Routine mutation API;
+- FullCalendar `eventDrop` / `eventResize` now use the canonical router through one optimistic mutation adapter; every conflict, validation failure, unsupported/read-only result, or malformed FullCalendar event calls `revert()`, while successful owner mutations retain the visual change;
+- removed the PoC-local duplicate owner-mutation protocol: the Standard FullCalendar PoC now exercises the same source-aware router that the production cutover will consume in `PLAN-4304`;
+- verification: contracts `474/474`, Task `727/727`, app-vue `737/737`; Task and app-vue dependency-chain typechecks are green. Task/app-vue project lint have zero errors (repository-existing warnings remain); the contracts project lint still has one pre-existing module-boundary error outside this change in `notification-requested.spec.ts`.
+
 ## PLAN-4304 — Retire custom calendar layout code after parity
 
 **Depends:** PLAN-4301~4303
@@ -1524,6 +1713,18 @@ Routine wall-clock occurrence
 
 **Acceptance:** one Planner rendering engine remains.
 
+**Implementation evidence (2026-08-27):**
+
+- production `/schedule` now mounts `PlannerCalendar` as the single Day/Week/Month layout engine; FullCalendar owns visible-range calculation, period navigation, selection, event layout, drag, and resize while MemoFlow keeps its external toolbar and product panels;
+- promoted `@fullcalendar/vue3@7.0.2` and `temporal-polyfill@1.0.4` from PoC-only dev dependencies to runtime dependencies because the production Planner now imports them directly; no Premium/Scheduler/resource package was introduced;
+- loaded the FullCalendar v7 MIT `classic` theme plugin and theme CSS in production. Real-browser parity exposed that `skeleton.css` alone does not materialize an interactive resize handle even when `durationEditable` is true; the corrected theme integration produces the real resize affordance without private Scheduler APIs;
+- `datesSet` is now the canonical Planner read-window source and feeds owner projections back through `fetchForRange`; view changes and previous/next/today navigation drive the FullCalendar API instead of custom date-layout arithmetic;
+- the canonical `CalendarEventProjection` plus `PlannerOwnerCommandRouter` from PLAN-4302/4303 are consumed directly by production `eventDrop`/`eventResize`; applied commands retain the visual mutation, while conflict/failed/read-only/invalid/unsupported outcomes call FullCalendar `revert()` and UI-facing outcomes use stable codes rather than raw infrastructure error messages;
+- retired the duplicate custom `DayViewCalendar`, `WeekViewCalendar`, `MonthViewCalendar`, their geometry-specific Storybook/tests, the old PoC-local FullCalendar renderer/adapter/model, and product-facing Scheduler/statistics/task cards that mixed raw scheduling infrastructure into Planner; keep-boundary tests now prevent reintroduction of custom calendar geometry;
+- `DevScheduleDebugPanel` remains available only as a separate diagnostics component and is explicitly barred from the normal Planner route by a boundary test, preserving the product Planner / ops Scheduler-console split;
+- retained a small isolated browser parity harness that imports the production `PlannerCalendar` rather than a second rendering implementation. Headless Chromium proves a real pointer drag changes visual position and reaches an applied owner outcome, a real resize changes event height and reaches applied, and a rejected owner mutation visually returns to its original position;
+- verification: full app-vue `190` files / `725` tests green; app-vue typecheck green; app-vue lint has `0` errors (13 pre-existing warnings); production app-vue Vite build green; Chromium parity green; Nx `sync:check`, test-target governance, regenerated test inventory, `docs:check`, and full `governance:check` are green at `1108` owned test files. The inventory governance baseline was updated from 54 to 60 Desktop primary tests because earlier Wave 4A added six already-committed Desktop runtime/window tests.
+
 ---
 
 # 12. Wave 5 — Product surface rebuild
@@ -1538,6 +1739,17 @@ Parallel feature lanes are encouraged because UI modules are mostly isolated.
 **Borrow:** shadcn Command + Popover.
 
 **Implementation:** existing search/create/multi-select/narrow summary; no custom combobox engine.
+
+**Implementation evidence (2026-08-27):**
+
+- added a domain-neutral controlled `LabelPickerOption { id, name, color? }` presentation contract rather than importing Goal/Task/Label DTOs into shared UI; selected IDs stay caller-owned and unknown selected IDs are preserved in counts instead of being silently rewritten;
+- both public controls reuse one internal `LabelCommandPanel` built directly on the existing shadcn/Reka `Command`, `CommandInput`, `CommandItem`, `Popover`, `Button`, and `Badge` primitives. Search filtering and multiple-selection semantics are delegated to Reka; there is no local combobox/search engine;
+- `LabelPicker` provides searchable multi-select, optional color dots, compact/narrow summary, `+N` overflow, accessible combobox trigger state, and a normalized `create(name)` intent only for non-empty names that do not exactly match an existing label;
+- label creation remains an intent emitted to the owning feature. `LABEL-1101` currently supplies domain/application persistence but no renderer transport; this shared component deliberately does not compensate by touching persistence or inferring a global catalog from Goal/Task DTOs. Goal/Task product lanes must inject a legitimate catalog/create seam;
+- `LabelFilterPopover` reuses the same Command panel with creation disabled, exposes selected-count feedback, an explicit AND-semantics hint (`Matches all selected labels`), compact mode, and a semantic Clear action;
+- tests exercise the actual Reka input path (`setValue('health')`) and prove the Command engine filters items, verify controlled multiple selection/deduplication, exact-match creation suppression, normalized create intent, compact summary behavior, filter semantics, and clear behavior;
+- exported only `LabelPicker`, `LabelFilterPopover`, and the small option type from shared components; the internal Command panel remains private so Goal and Task cannot fork its interaction protocol;
+- verification: focused `3` files / `7` tests green; full app-vue `193` files / `732` tests green; app-vue typecheck and production Vite build green; app-vue lint has `0` errors (13 pre-existing warnings); Nx sync, test-target governance, inventory governance, docs, and full governance are green. Test inventory is current at `1117` owned files (`970` unit / `29` integration / `3` smoke / `9` boundary-ipc / `5` boundary-main / `63` e2e / `1` perf / `37` governance).
 
 ## GOAL-5101 — Goal list/editor rebuild
 
@@ -1564,6 +1776,18 @@ title/description/start/due/labels/KRs
 ```
 
 Delete old Folder/Focus/Compare/Search product surfaces when parity reached.
+
+**Implementation evidence (2026-08-27):**
+
+- rebuilt the production Goal list around `GoalProgressRow`: each row owns the Goal title, canonical aggregate progress percentage/bar, attached labels, start/due range, completed/total KR count, and a display-only overdue badge derived from `Active + dueDate`; the old card-grid `GoalCard.vue` is deleted and no production Goal source references it;
+- reduced the Goal toolbar to the three vNext system views `Active / Completed / All`, the shared compact `LabelFilterPopover`, and the single primary create action. Search/Refresh/Folder/Focus/Compare controls are absent from the production list surface rather than hidden conditionally;
+- added `labelIdsAll` to Goal renderer state and sends it directly through `GoalClientPort.listGoals(...)`; selected labels are deduplicated and filtering remains repository-owned AND semantics instead of post-filtering one paginated client page. The old `searchGoals` fork is not used by the list fetch path, so label filters cannot be bypassed by a parallel search request;
+- added the shared identity-scoped `useLabelCatalog` Query seam over `LabelClientPort`: renderer list/create requests stay current-user-only while identity appears only in the Query cache key; a successful create patches only that identity's catalog. Goal and Task can reuse the same seam without importing persistence or host auth details;
+- rebuilt the Goal editor around Direction + Measurement only: title, description, start date, due date, shared `LabelPicker`, and an in-dialog KR draft collection. Motivation/feasibility/taxonomy fields are no longer production form controls;
+- the KR draft editor keeps one `+ Add key result` entry with default title/current/target/unit fields and a collapsible advanced section for progress baseline, calculation method, and 1–5 progress weight. New KRs use `startingValue = currentValue`; decreasing/non-positive targets require a distinct `progressBaselineValue`, matching the canonical domain calculator rather than duplicating a UI-only percentage formula;
+- creation persists `labelIds + initialKeyResults` in one Goal aggregate command and editing persists `labelIds + keyResults` in one update command. Goal lifecycle status remains a separate domain command; the editor does not invent a `status` field that is absent from `UpdateGoalReq`;
+- the default Web Goal Playwright oracle was migrated from the retired card/search UI to the vNext product fixture. Real Chromium verifies aggregate Goal+Label+KR creation, progress-row edit/delete/detail, absence of legacy GoalCard/Search/Refresh, `Active/Completed/All`, keyboard-driven Label filtering, and toolbar/filter stability while the business panel is resized;
+- verification: focused Goal/shared regressions `12` files / `31` tests green; full app-vue `196` files / `739` tests green; app-vue typecheck and production Vite build green; app-vue lint has `0` errors (13 pre-existing warnings); Web Goal vNext Playwright `5/5` green in Chromium; Nx sync, test-target governance, docs, and full governance are green. Test inventory is current at `1123` owned files (`976` unit / `29` integration / `3` smoke / `9` boundary-ipc / `5` boundary-main / `63` e2e / `1` perf / `37` governance).
 
 ## GOAL-5102 — Goal detail / record / review surface
 
@@ -2130,6 +2354,8 @@ required CI
 ---
 
 # 19. Definition of Done
+
+> **Long-horizon closure:** the checklist below remains the full Core vNext end-state, not the v0.11 merge gate. Items assigned to post-v0.11 above intentionally remain unchecked until their follow-up implementation lands.
 
 Core vNext can close only when all of the following hold:
 

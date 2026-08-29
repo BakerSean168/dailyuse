@@ -6,6 +6,7 @@ import {
   type PowerSyncTaskTemplateRow,
 } from './mappers/powersync-task-template.mapper';
 import { PowerSyncTaskTemplateRepository } from './task-template-powersync.repository';
+import { TaskLabelOwnershipError } from '../../../domain/repositories/i-task-template-repository';
 
 const identityId = 'identity-1';
 const goalId = 'goal-1';
@@ -100,15 +101,34 @@ describe('PowerSync task template goal binding', () => {
     const repository = new PowerSyncTaskTemplateRepository(db, eventBus);
 
     await expect(repository.findByGoalId(identityId, goalId)).resolves.toHaveLength(1);
-    expect(db.getAll).toHaveBeenLastCalledWith(
+    expect(db.getAll).toHaveBeenCalledWith(
       expect.stringContaining('identity_id = ? AND goal_id = ?'),
       [identityId, goalId],
     );
 
     await expect(repository.findByKeyResultId(identityId, keyResultId)).resolves.toHaveLength(1);
-    expect(db.getAll).toHaveBeenLastCalledWith(
+    expect(db.getAll).toHaveBeenCalledWith(
       expect.stringContaining('identity_id = ? AND key_result_id = ?'),
       [identityId, keyResultId],
+    );
+  });
+
+  it('enumerates every local template ref for startup repair, including non-active rows', async () => {
+    const db = createDatabase({
+      getAll: vi.fn().mockResolvedValue([
+        { id: 'task-template-1', identity_id: 'identity-1' },
+        { id: 'task-template-soft-deleted', identity_id: 'identity-1' },
+      ]),
+    });
+    const repository = new PowerSyncTaskTemplateRepository(db, eventBus);
+
+    await expect(repository.findAllTemplateRefs()).resolves.toEqual([
+      { id: 'task-template-1', identityId: 'identity-1' },
+      { id: 'task-template-soft-deleted', identityId: 'identity-1' },
+    ]);
+    expect(db.getAll).toHaveBeenCalledWith(
+      'SELECT id, identity_id FROM task_templates ORDER BY id ASC',
+      [],
     );
   });
 
@@ -120,7 +140,12 @@ describe('PowerSync task template goal binding', () => {
     await repository.save(template);
 
     const [sql, parameters] = vi.mocked(db.execute).mock.calls[0];
-    for (const column of ['goal_id', 'key_result_id', 'goal_record_value', 'goal_progress_trigger']) {
+    for (const column of [
+      'goal_id',
+      'key_result_id',
+      'goal_record_value',
+      'goal_progress_trigger',
+    ]) {
       expect(sql).toContain(column);
     }
     expect(boundColumnParameters(sql, parameters ?? [])).toMatchObject({
@@ -155,5 +180,54 @@ describe('PowerSync task template goal binding', () => {
       goal_record_value: 3,
       goal_progress_trigger: 'EachCompletion',
     });
+  });
+
+  it('uses strict AND label filtering and hydrates the shared label projection', async () => {
+    const getAll = vi.fn(async (sql: string, parameters?: unknown[]) => {
+      if (sql.includes('SELECT task_template_id FROM task_labels')) {
+        expect(parameters).toEqual([identityId, 'label-work', 'label-ai', 2]);
+        return [{ task_template_id: 'task-template-1' }];
+      }
+      if (sql.includes('SELECT * FROM task_templates')) return [createBoundRow()];
+      if (sql.includes('INNER JOIN task_labels')) {
+        return [
+          {
+            id: 'label-ai',
+            name: 'AI',
+            color: null,
+            created_at: '2026-08-01T00:00:00.000Z',
+            updated_at: '2026-08-01T00:00:00.000Z',
+            owner_id: 'task-template-1',
+          },
+          {
+            id: 'label-work',
+            name: 'Work',
+            color: null,
+            created_at: '2026-08-01T00:00:00.000Z',
+            updated_at: '2026-08-01T00:00:00.000Z',
+            owner_id: 'task-template-1',
+          },
+        ];
+      }
+      return [];
+    });
+    const db = createDatabase({ getAll });
+    const repository = new PowerSyncTaskTemplateRepository(db, eventBus);
+    const result = await repository.findByLabelIdsAll(identityId, ['label-work', 'label-ai']);
+    expect(result).toHaveLength(1);
+    expect(result[0]?.labels.map((label) => label.id).sort()).toEqual(['label-ai', 'label-work']);
+  });
+
+  it('rejects assigning a label owned by another identity', async () => {
+    const getOptional = vi
+      .fn()
+      .mockResolvedValueOnce({ id: 'task-template-1' })
+      .mockResolvedValueOnce(null);
+    const db = createDatabase({ getOptional });
+    const repository = new PowerSyncTaskTemplateRepository(db, eventBus);
+    await expect(
+      repository.replaceLabels(identityId, 'task-template-1', ['foreign-label']),
+    ).rejects.toBeInstanceOf(TaskLabelOwnershipError);
+    expect(db.execute).not.toHaveBeenCalled();
   });
 });

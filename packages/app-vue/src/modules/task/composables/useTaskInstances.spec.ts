@@ -33,6 +33,8 @@ const i18n = createI18n({
           completeSuccess: 'Completed',
           uncompleteFailed: 'Undo failed',
           uncompleteSuccess: 'Restored',
+          markMissedFailed: 'Mark missed failed',
+          markMissedSuccess: 'Marked missed',
           loadTemplatesFailed: 'Template refresh failed',
         },
       },
@@ -63,13 +65,16 @@ function entity<T>(dto: T) {
 function mountComposable() {
   const completed = instance('Completed');
   const pending = instance('Pending');
+  const missed = instance('Missed');
   const service = {
     completeInstance: vi.fn().mockResolvedValue(ok(entity(completed))),
     uncompleteInstance: vi.fn().mockResolvedValue(ok(entity(pending))),
+    markInstanceMissed: vi.fn().mockResolvedValue(ok(entity(missed))),
     getTemplate: vi
       .fn()
       .mockResolvedValueOnce(ok(entity(template(100))))
-      .mockResolvedValueOnce(ok(entity(template(0)))),
+      .mockResolvedValueOnce(ok(entity(template(0))))
+      .mockResolvedValueOnce(ok(entity(template(25)))),
   };
   const runtime = createTestServerStateRuntime();
   const pinia = createTestPinia();
@@ -124,5 +129,15 @@ describe('useTaskInstances template projection refresh', () => {
         taskTemplateQueryKeys.detail('identity-1', 'template-a'),
       )?.completionRate,
     ).toBe(0);
+
+    await composable.markInstanceMissed('instance-a');
+    expect(service.markInstanceMissed).toHaveBeenCalledWith('instance-a');
+    expect(service.getTemplate).toHaveBeenNthCalledWith(3, 'template-a');
+    expect(useTaskStore().instances[0]?.status).toBe('Missed');
+    expect(
+      runtime.queryClient.getQueryData<TaskTemplateClientDTO>(
+        taskTemplateQueryKeys.detail('identity-1', 'template-a'),
+      )?.completionRate,
+    ).toBe(25);
   });
 });

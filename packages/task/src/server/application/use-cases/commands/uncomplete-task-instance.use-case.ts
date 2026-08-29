@@ -49,7 +49,7 @@ export class UncompleteTaskInstanceUseCase {
 
     instance.uncomplete();
     await repositories.instanceRepository.save(instance);
-    await reevaluateTaskPlanOutcome(repositories, identityId, String(instance.templateId));
+    await reevaluateTaskPlanOutcome(repositories, identityId, String(instance.templateId), instance.id);
     return ok({ instance: instance.toClientDTO() });
   }
 }

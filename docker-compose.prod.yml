@@ -14,7 +14,7 @@ services:
   # ---------------------------------------------------------------------------
 
   postgres:
-    image: pgvector/pgvector:0.8.5-pg18
+    image: ${POSTGRES_IMAGE:-pgvector/pgvector:0.8.5-pg18}
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME:?set DB_NAME}
@@ -44,7 +44,7 @@ services:
       start_period: 10s
 
   redis:
-    image: redis:8-alpine
+    image: ${REDIS_IMAGE:-redis:8-alpine}
     restart: unless-stopped
     command:
       - redis-server
@@ -80,7 +80,7 @@ services:
   # ---------------------------------------------------------------------------
 
   migrator:
-    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-migrator:${MIGRATOR_TAG:-prod-latest}
+    image: ${MIGRATOR_IMAGE:-${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-migrator:${MIGRATOR_TAG:-prod-latest}}
     restart: 'no'
     init: true
     labels:
@@ -99,7 +99,7 @@ services:
       - memoflow-network
 
   api:
-    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-api:${API_TAG:-prod-latest}
+    image: ${API_IMAGE:-${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-api:${API_TAG:-prod-latest}}
     restart: unless-stopped
     init: true
     labels:
@@ -125,12 +125,24 @@ services:
       API_HOST: 0.0.0.0
       AUTH_BASE_URL: ${AUTH_BASE_URL:?AUTH_BASE_URL is required}
       MEMOFLOW_WEB_URL: ${MEMOFLOW_WEB_URL:?MEMOFLOW_WEB_URL is required}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-console}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_REPLY_TO: ${SMTP_REPLY_TO:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM: ${RESEND_FROM:-}
       GITHUB_OAUTH_CLIENT_ID: ${GITHUB_OAUTH_CLIENT_ID:-}
       GITHUB_OAUTH_CLIENT_SECRET: ${GITHUB_OAUTH_CLIENT_SECRET:-}
       GITHUB_APP_ID: ${GITHUB_APP_ID:-}
       GITHUB_APP_SLUG: ${GITHUB_APP_SLUG:-}
       GITHUB_APP_PRIVATE_KEY: ${GITHUB_APP_PRIVATE_KEY:-}
       GITHUB_APP_WEBHOOK_SECRET: ${GITHUB_APP_WEBHOOK_SECRET:-}
+      GITHUB_INSTALLATION_ROUTE_KEY: ${GITHUB_INSTALLATION_ROUTE_KEY:-}
+      GITHUB_INSTALLATION_ROUTE_TARGETS: ${GITHUB_INSTALLATION_ROUTE_TARGETS:-}
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:?set DB_NAME}
@@ -186,7 +198,7 @@ services:
       start_period: 40s
 
   powersync:
-    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/journeyapps-powersync-service:${POWERSYNC_IMAGE_TAG:-latest}
+    image: ${POWERSYNC_IMAGE:-journeyapps/powersync-service:1.20.4}
     restart: unless-stopped
     depends_on:
       api:
@@ -228,7 +240,7 @@ services:
       start_period: 30s
 
   web:
-    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-web:${WEB_TAG:-prod-latest}
+    image: ${WEB_IMAGE:-${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-web:${WEB_TAG:-prod-latest}}
     restart: unless-stopped
     labels:
       com.centurylinklabs.watchtower.enable: 'true'
@@ -249,7 +261,7 @@ services:
   # ---------------------------------------------------------------------------
 
   caddy:
-    image: caddy:2-alpine
+    image: ${CADDY_IMAGE:-caddy:2-alpine}
     restart: unless-stopped
     depends_on:
       web:
@@ -274,7 +286,7 @@ services:
       - memoflow-network
 
   watchtower:
-    image: containrrr/watchtower
+    image: ${WATCHTOWER_IMAGE:-containrrr/watchtower}
     restart: unless-stopped
     environment:
       DOCKER_API_VERSION: '1.44'

@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { analyzeInventory, buildInventory, classifyTest } from '../lib/test-inventory.mjs';
+import {
+  analyzeInventory,
+  buildInventory,
+  classifyTest,
+  collectTestFiles,
+} from '../lib/test-inventory.mjs';
 
 test('classifies explicit boundary and measurement file names', () => {
   assert.equal(classifyTest('apps/desktop/src/main/ipc/system-handlers.spec.ts'), 'boundary-ipc');
@@ -10,13 +15,24 @@ test('classifies explicit boundary and measurement file names', () => {
 });
 
 test('gives every Desktop primary file exactly one owner', async () => {
-  const inventory = await buildInventory(process.cwd());
+  const root = process.cwd();
+  const [inventory, testFiles] = await Promise.all([buildInventory(root), collectTestFiles(root)]);
   const desktop = inventory.primary.filter((entry) => entry.path.startsWith('apps/desktop/src/'));
-  assert.equal(desktop.length, 54);
-  assert.equal(new Set(desktop.map((entry) => entry.path)).size, 54);
-  assert.equal(desktop.filter((entry) => entry.primarySuite === 'unit').length, 40);
-  assert.equal(desktop.filter((entry) => entry.primarySuite === 'boundary-ipc').length, 9);
-  assert.equal(desktop.filter((entry) => entry.primarySuite === 'boundary-main').length, 5);
+  const desktopFiles = testFiles.filter((file) => file.startsWith('apps/desktop/src/'));
+
+  assert.deepEqual(
+    desktop.map((entry) => entry.path),
+    desktopFiles,
+    'every Desktop test file must have exactly one primary inventory entry',
+  );
+  assert.equal(new Set(desktop.map((entry) => entry.path)).size, desktopFiles.length);
+  for (const entry of desktop) {
+    assert.equal(
+      entry.primarySuite,
+      classifyTest(entry.path),
+      `Desktop test must stay in its classified primary suite: ${entry.path}`,
+    );
+  }
   assert.deepEqual(inventory.missing, []);
   assert.deepEqual(inventory.duplicate, []);
   assert.deepEqual(inventory.unexpected, []);

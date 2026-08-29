@@ -122,7 +122,7 @@ export function toIpcResult<T>(result: Result<T>): IpcResult<T> {
         field: d.field,
         code: d.code,
         message: d.message,
-        value: d.value,
+        ...(d.value !== undefined ? { value: d.value } : {}),
       })),
       context: result.error.context,
       failure: result.error.failure,

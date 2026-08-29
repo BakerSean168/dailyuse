@@ -17,7 +17,11 @@ import type {
 import type { IReminderTemplateRepository } from '../../../domain/repositories/i-reminder-template-repository';
 import type { ReminderStatus } from '@memoflow/contracts/reminder';
 import { ReminderTemplate } from '../../../domain/aggregates/reminder-template';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import {
+  AggregateRepositoryBase,
+  createEventBusAdapter,
+  publishAggregateEvents,
+} from '@memoflow/patterns';
 import { eventBus } from '@memoflow/utils/domain';
 import {
   PrismaReminderTemplateMapper,
@@ -55,49 +59,68 @@ export class ReminderTemplatePrismaRepository
    * Protected persistence method - called by base class before event publishing
    */
   protected async persist(template: ReminderTemplate): Promise<void> {
+    await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      await this.saveWithinTransaction(tx, template);
+    });
+  }
+
+  /**
+   * Transaction-scoped aggregate persistence used by Reminder-owned durable
+   * side-effect commits (NOTIF-3302). Event publication remains post-commit.
+   */
+  async saveWithinTransaction(
+    tx: Prisma.TransactionClient,
+    template: ReminderTemplate,
+  ): Promise<void> {
     const writeData = this.toWriteData(template);
 
-    await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      // 1. Upsert 鑱氬悎鏍?
-      await tx.reminderTemplate.upsert({
-        where: { id: template.id as string },
-        create: {
-          id: template.id as string,
-          ...writeData,
-        },
-        update: writeData,
-      });
+    // 1. Upsert 鑱氬悎鏍?
+    await tx.reminderTemplate.upsert({
+      where: { id: template.id as string },
+      create: {
+        id: template.id as string,
+        ...writeData,
+      },
+      update: writeData,
+    });
 
-      // 2. 绾ц仈淇濆瓨瀛愬疄浣?- 鍘嗗彶璁板綍
-      const historyList = template.getAllHistory();
-      if (historyList.length > 0) {
-        for (const history of historyList) {
-          const hDto = history.toServerDTO();
-          await tx.reminderHistory.upsert({
-            where: { id: hDto.id },
-            create: {
-              id: hDto.id,
-              templateId: hDto.templateId,
-              identityId: String(template.identityId),
-              triggeredAt: new Date(hDto.triggeredAt),
-              result: hDto.result,
-              error: hDto.error,
-              notificationSent: hDto.notificationSent,
-              notificationChannel: hDto.notificationChannels
-                ? JSON.stringify(hDto.notificationChannels)
-                : null,
-            },
-            update: {
-              result: hDto.result,
-              error: hDto.error,
-              notificationSent: hDto.notificationSent,
-              notificationChannel: hDto.notificationChannels
-                ? JSON.stringify(hDto.notificationChannels)
-                : null,
-            },
-          });
-        }
+    // 2. 绾ц仈淇濆瓨瀛愬疄浣?- 鍘嗗彶璁板綍
+    const historyList = template.getAllHistory();
+    if (historyList.length > 0) {
+      for (const history of historyList) {
+        const hDto = history.toServerDTO();
+        await tx.reminderHistory.upsert({
+          where: { id: hDto.id },
+          create: {
+            id: hDto.id,
+            templateId: hDto.templateId,
+            identityId: String(template.identityId),
+            triggeredAt: new Date(hDto.triggeredAt),
+            result: hDto.result,
+            error: hDto.error,
+            notificationSent: hDto.notificationSent,
+            notificationChannel: hDto.notificationChannels
+              ? JSON.stringify(hDto.notificationChannels)
+              : null,
+          },
+          update: {
+            result: hDto.result,
+            error: hDto.error,
+            notificationSent: hDto.notificationSent,
+            notificationChannel: hDto.notificationChannels
+              ? JSON.stringify(hDto.notificationChannels)
+              : null,
+          },
+        });
       }
+    }
+  }
+
+  /** Publish aggregate events only after an externally-owned transaction commits. */
+  async publishPersistedEvents(template: ReminderTemplate): Promise<void> {
+    await publishAggregateEvents(template, {
+      eventBus: this.eventBus,
+      outboxWriter: this.outboxWriter,
     });
   }
 

@@ -12,6 +12,7 @@ import type {
   CompleteTaskInstanceReq,
   MarkTaskInstanceMissedReq,
   SkipTaskInstanceReq,
+  RescheduleTaskInput,
 } from '@memoflow/contracts/task';
 
 export interface ITaskInstanceApiClient {
@@ -39,5 +40,9 @@ export interface ITaskInstanceApiClient {
   markTaskInstanceMissed(
     id: string,
     request?: MarkTaskInstanceMissedReq,
+  ): Promise<Result<TaskInstanceClientDTO>>;
+  rescheduleTaskInstance(
+    id: string,
+    request: RescheduleTaskInput,
   ): Promise<Result<TaskInstanceClientDTO>>;
 }

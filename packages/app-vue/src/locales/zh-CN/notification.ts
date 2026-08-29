@@ -8,6 +8,22 @@ export default {
     "priorityVital": "紧急",
     "priorityImportant": "重要"
   },
+  "category": {
+    "task": "任务", "goal": "目标", "schedule": "日程", "reminder": "提醒",
+    "account": "账户", "system": "系统", "other": "通知", "general": "通知"
+  },
+  "workflow": {
+    "accountSecurity": "账户安全",
+    "goalReminder": "目标提醒",
+    "goalUpdate": "目标更新",
+    "reminder": "提醒",
+    "routineReminder": "作息提醒",
+    "system": "系统更新",
+    "taskDeadline": "任务截止提醒",
+    "taskReminder": "任务提醒",
+    "taskUpdate": "任务更新"
+  },
+  "entity": { "task": "任务", "goal": "目标", "schedule": "日程", "reminder": "提醒", "routine": "例行事项" },
   "bell": {
     "title": "通知",
     "unreadCount": "{count} 条未读通知"
@@ -24,6 +40,8 @@ export default {
   },
   "action": {
     "markAllRead": "全部标为已读",
+    "openRelated": "打开相关内容",
+    "retry": "重试",
     "enableNotification": "开启通知",
     "dismiss": "知道了"
   },

@@ -5,11 +5,9 @@
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
 import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
 import type { CompleteTaskInstanceReq, TaskInstanceOperationRes } from '@memoflow/contracts/task';
-import { TaskGoalBindingTrigger, TaskInstanceStatus, TaskPlanOutcome } from '@memoflow/contracts/task';
+import { TaskInstanceStatus } from '@memoflow/contracts/task';
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error, fail } from '@memoflow/contracts/result';
-import type { TaskInstance } from '../../../domain/aggregates/task-instance';
-import type { TaskTemplate } from '../../../domain/aggregates/task-template';
 import { createLogger } from '@memoflow/utils/logger';
 import {
   mapTaskWriteErrorToResultError,
@@ -17,7 +15,6 @@ import {
   type TaskWriteTransactionRunner,
 } from './task-write-support';
 import { reevaluateTaskPlanOutcome } from './task-plan-outcome-reevaluation';
-import { TaskPlanOutcomeEvaluator } from '../../../domain/services/task-plan-outcome-evaluator';
 
 /**
  * Complete Task Instance Service
@@ -83,69 +80,20 @@ export class CompleteTaskInstanceUseCase {
       identityId,
       String(instance.templateId),
     );
-    const goalContext = await this.buildGoalContext(
-      instance,
-      template,
-      repositories.instanceRepository,
-    );
+    const goalContext = {
+      taskTitle: template?.title ?? '',
+      goalBinding: template?.goalBinding?.toDTO() ?? null,
+    };
 
     // Mark as completed（goalContext 会被嵌入领域事件的 payload）
     instance.complete(request?.duration, request?.note, request?.rating, goalContext);
     await repositories.instanceRepository.save(instance);
-    await reevaluateTaskPlanOutcome(repositories, identityId, String(instance.templateId));
+    await reevaluateTaskPlanOutcome(repositories, identityId, String(instance.templateId), instance.id);
 
     return ok({
       instance: instance.toClientDTO(),
     });
   }
 
-  /**
-   * Build the self-contained Task-owned settlement context for the completion event.
-   * PlanCompletion eligibility is derived from TaskPlanOutcomeEvaluator with this
-   * occurrence projected as Completed, so Goal never decides Task success policy.
-   */
-  private async buildGoalContext(
-    instance: TaskInstance,
-    template: TaskTemplate | null,
-    instanceRepository: ITaskInstanceRepository,
-  ): Promise<{
-    taskTitle: string;
-    goalBinding: ReturnType<TaskTemplate['toServerDTO']>['goalBinding'];
-    planSucceeded: boolean;
-  }> {
-    const goalBinding = template?.goalBinding?.toDTO() ?? null;
-    const taskTitle = template?.title ?? '';
-
-    if (
-      !template ||
-      !goalBinding?.contribution ||
-      goalBinding.contribution.trigger !== TaskGoalBindingTrigger.PlanCompletion
-    ) {
-      return { taskTitle, goalBinding, planSucceeded: false };
-    }
-
-    const siblings = await instanceRepository.findByTemplateId(
-      String(instance.templateId),
-      String(instance.identityId),
-    );
-    let currentFound = false;
-    const projected = siblings.map((sibling) => {
-      if (String(sibling.id) !== String(instance.id)) {
-        return { status: sibling.status, deletedAt: sibling.deletedAt };
-      }
-      currentFound = true;
-      return { status: TaskInstanceStatus.Completed, deletedAt: sibling.deletedAt };
-    });
-    if (!currentFound) {
-      projected.push({ status: TaskInstanceStatus.Completed, deletedAt: instance.deletedAt });
-    }
-
-    return {
-      taskTitle,
-      goalBinding,
-      planSucceeded:
-        new TaskPlanOutcomeEvaluator().evaluate(template, projected) === TaskPlanOutcome.Succeeded,
-    };
-  }
 
 }

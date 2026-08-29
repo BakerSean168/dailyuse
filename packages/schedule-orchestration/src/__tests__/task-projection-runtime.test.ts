@@ -1,35 +1,79 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SourceModule } from '@memoflow/contracts/schedule';
-import type { ScheduleEventMap } from '@memoflow/contracts/schedule';
-import type { IScheduleTaskRepository } from '@memoflow/schedule';
-import { ScheduleTask } from '@memoflow/schedule';
+import type {
+  ScheduledIntent,
+  SchedulingOwner,
+  SchedulingPort,
+  SchedulingReconcileReceipt,
+} from '@memoflow/contracts/schedule';
 import type {
   TaskScheduleProjectionEventMap,
   TaskScheduleProjectionSource,
+  TaskReminderScheduledPayload,
 } from '@memoflow/task/schedule-projection';
-import type { Publisher, Subscriber } from '@memoflow/utils/domain';
+import type { Subscriber } from '@memoflow/utils/domain';
 import { createTaskProjectionRuntime } from '../runtime/task-projection-runtime';
 
-function createScheduleTask(templateId: string, sourceEntityId: string, name: string) {
-  return ScheduleTask.create({
-    identityId: 'IdentityId_schedule-owner',
-    name,
-    sourceModule: SourceModule.Task,
-    sourceEntityId,
-    schedule: {
-      cronExpression: null,
-      timezone: 'Asia/Shanghai',
-      startDate: new Date('2030-01-10T08:45:00.000Z').toISOString(),
-      endDate: null,
-      maxExecutions: 1,
+function owner(id = 'TaskTemplateId_template'): SchedulingOwner {
+  return { identityId: 'IdentityId_schedule-owner', type: 'task.template', id };
+}
+
+function intent(key = 'intent-1'): ScheduledIntent<TaskReminderScheduledPayload> {
+  return {
+    schedulingKey: key,
+    handlerKey: 'task.reminder.fire',
+    runAt: Date.UTC(2030, 0, 10, 13, 30),
+    payloadVersion: 1,
+    payload: {
+      templateId: 'TaskTemplateId_template',
+      instanceId: 'TaskInstanceId_instance',
+      occurrenceKey: 'TaskTemplateId_template:2030-01-10',
+      taskTitle: 'Task',
+      reminderType: 'Relative',
+      reminderValue: 30,
+      reminderUnit: 'Minutes',
+      reminderAbsoluteTime: null,
+      anchorTime: Date.UTC(2030, 0, 10, 14),
+      reminderTime: Date.UTC(2030, 0, 10, 13, 30),
     },
-    metadata: {
-      payload: { templateId },
-      tags: ['task'],
-      priority: 'Normal',
-      timeout: null,
+  };
+}
+
+function receipt(target: SchedulingOwner, desiredCount: number): SchedulingReconcileReceipt {
+  return {
+    operationId: `op:${target.id}`,
+    owner: target,
+    status: 'succeeded',
+    desiredCount,
+    createdCount: desiredCount,
+    updatedCount: 0,
+    deletedCount: 0,
+    unchangedCount: 0,
+    startedAt: 1,
+    finishedAt: 2,
+  };
+}
+
+function createSchedulingPortHarness(): {
+  port: SchedulingPort;
+  reconciles: Array<{ owner: SchedulingOwner; desired: readonly ScheduledIntent[] }>;
+  removals: SchedulingOwner[];
+} {
+  const reconciles: Array<{ owner: SchedulingOwner; desired: readonly ScheduledIntent[] }> = [];
+  const removals: SchedulingOwner[] = [];
+  return {
+    port: {
+      async reconcile(target, desired) {
+        reconciles.push({ owner: target, desired });
+        return receipt(target, desired.length);
+      },
+      async removeOwner(target) {
+        removals.push(target);
+        return receipt(target, 0);
+      },
     },
-  });
+    reconciles,
+    removals,
+  };
 }
 
 function createTaskEventsHarness(): {
@@ -41,7 +85,11 @@ function createTaskEventsHarness(): {
 } {
   const handlers = new Map<
     keyof TaskScheduleProjectionEventMap,
-    Set<(payload: TaskScheduleProjectionEventMap[keyof TaskScheduleProjectionEventMap]) => void>
+    Set<
+      (
+        payload: TaskScheduleProjectionEventMap[keyof TaskScheduleProjectionEventMap],
+      ) => void | Promise<void>
+    >
   >();
 
   return {
@@ -57,73 +105,38 @@ function createTaskEventsHarness(): {
     },
     async emit(event, payload) {
       const activeHandlers = Array.from(handlers.get(event) ?? []);
-      await Promise.all(activeHandlers.map((handler) => Promise.resolve(handler(payload))));
+      await Promise.all(activeHandlers.map((handler) => handler(payload)));
     },
   };
 }
 
-function createScheduleEventsHarness(): {
-  publisher: Publisher<Pick<ScheduleEventMap, 'schedule:task-deleted'>>;
-  sent: Array<{ event: 'schedule:task-deleted'; payload: { taskId: string } }>;
-} {
-  const sent: Array<{ event: 'schedule:task-deleted'; payload: { taskId: string } }> = [];
-
+function sourceWithPlan(
+  overrides: Partial<TaskScheduleProjectionSource> = {},
+): TaskScheduleProjectionSource {
   return {
-    publisher: {
-      send(event, payload) {
-        sent.push({ event, payload });
-      },
-    },
-    sent,
+    buildTemplatePlan: vi.fn(async (templateId, identityId) => ({
+      owner: { identityId, type: 'task.template', id: templateId },
+      desired: [intent()],
+    })),
+    buildTemplateOwner: vi.fn((templateId, identityId) => ({
+      identityId,
+      type: 'task.template',
+      id: templateId,
+    })),
+    listTemplateRefs: vi.fn().mockResolvedValue([]),
+    ...overrides,
   };
 }
 
-describe('task projection runtime', () => {
-  it('rebuilds matching task projection entries on task:created', async () => {
-    const existingMatchingTask = createScheduleTask('TaskTemplateId_template', 'instance-1', 'Old');
-    const existingUnrelatedTask = createScheduleTask('TaskTemplateId_other', 'instance-2', 'Other');
-    const nextTask = createScheduleTask('TaskTemplateId_template', 'instance-3', 'Next');
+describe('task projection runtime -> SchedulingPort', () => {
+  it('reconciles the complete TaskTemplate desired set on task:created', async () => {
     const taskEvents = createTaskEventsHarness();
-    const scheduleEvents = createScheduleEventsHarness();
-
-    const scheduleTaskRepository: IScheduleTaskRepository = {
-      save: vi.fn(),
-      findById: vi.fn(),
-      findByIdForIdentity: vi.fn(),
-      deleteById: vi.fn(),
-      findByIdentityId: vi.fn(),
-      findBySourceModule: vi.fn().mockResolvedValue([existingMatchingTask, existingUnrelatedTask]),
-      findBySourceEntity: vi.fn(),
-      findByStatus: vi.fn(),
-      findEnabled: vi.fn(),
-      findDueTasksForExecution: vi.fn(),
-      query: vi.fn(),
-      count: vi.fn(),
-      saveBatch: vi.fn().mockResolvedValue(undefined),
-      deleteBatch: vi.fn().mockResolvedValue(undefined),
-      withTransaction: vi.fn(),
-    };
-
-    const source: TaskScheduleProjectionSource = {
-      buildTemplatePlan: vi.fn().mockResolvedValue({
-        selection: {
-          sourceModule: SourceModule.Task,
-          identityId: 'IdentityId_schedule-owner',
-          matches(task: ScheduleTask) {
-            return task.metadata.payload['templateId'] === 'TaskTemplateId_template';
-          },
-        },
-        nextTasks: [nextTask],
-      }),
-      buildTemplateDeletionSelection: vi.fn(),
-      buildInstanceDeletionSelection: vi.fn(),
-    };
-
+    const scheduling = createSchedulingPortHarness();
+    const source = sourceWithPlan();
     const runtime = createTaskProjectionRuntime({
       source,
-      scheduleTaskRepository,
+      schedulingPort: scheduling.port,
       taskEvents: taskEvents.subscriber,
-      scheduleEvents: scheduleEvents.publisher,
     });
 
     await runtime.start();
@@ -138,143 +151,137 @@ describe('task projection runtime', () => {
       'TaskTemplateId_template',
       'IdentityId_schedule-owner',
     );
-    expect(scheduleTaskRepository.deleteBatch).toHaveBeenCalledWith(
-      existingMatchingTask.identityId,
-      [existingMatchingTask.id],
-    );
-    expect(scheduleTaskRepository.saveBatch).toHaveBeenCalledWith([nextTask]);
-    expect(scheduleEvents.sent).toEqual([
-      {
-        event: 'schedule:task-deleted',
-        payload: { taskId: existingMatchingTask.id },
-      },
-    ]);
+    expect(scheduling.reconciles).toEqual([{ owner: owner(), desired: [intent()] }]);
   });
 
-  it('removes instance projection entries and unsubscribes on stop', async () => {
-    const matchingTask = createScheduleTask('TaskTemplateId_template', 'TaskInstanceId_dead', 'Old');
+  it('reconciles the owner after occurrence completion/skip/delete/uncomplete', async () => {
     const taskEvents = createTaskEventsHarness();
-    const scheduleEvents = createScheduleEventsHarness();
-
-    const scheduleTaskRepository: IScheduleTaskRepository = {
-      save: vi.fn(),
-      findById: vi.fn(),
-      findByIdForIdentity: vi.fn(),
-      deleteById: vi.fn(),
-      findByIdentityId: vi.fn(),
-      findBySourceModule: vi.fn(),
-      findBySourceEntity: vi.fn().mockResolvedValue([matchingTask]),
-      findByStatus: vi.fn(),
-      findEnabled: vi.fn(),
-      findDueTasksForExecution: vi.fn(),
-      query: vi.fn(),
-      count: vi.fn(),
-      saveBatch: vi.fn().mockResolvedValue(undefined),
-      deleteBatch: vi.fn().mockResolvedValue(undefined),
-      withTransaction: vi.fn(),
-    };
-
-    const source: TaskScheduleProjectionSource = {
-      buildTemplatePlan: vi.fn(),
-      buildTemplateDeletionSelection: vi.fn(),
-      buildInstanceDeletionSelection: vi.fn().mockReturnValue({
-        sourceModule: SourceModule.Task,
-        sourceEntityId: 'TaskInstanceId_dead',
-        identityId: 'IdentityId_schedule-owner',
-        matches(task: ScheduleTask) {
-          return task.sourceEntityId === 'TaskInstanceId_dead';
-        },
-      }),
-    };
-
+    const scheduling = createSchedulingPortHarness();
+    const source = sourceWithPlan();
     const runtime = createTaskProjectionRuntime({
       source,
-      scheduleTaskRepository,
+      schedulingPort: scheduling.port,
       taskEvents: taskEvents.subscriber,
-      scheduleEvents: scheduleEvents.publisher,
     });
-
     await runtime.start();
-    await taskEvents.emit('task:instance-deleted', {
+
+    const common = {
       identityId: 'IdentityId_schedule-owner',
-      taskInstanceId: 'TaskInstanceId_dead',
+      taskInstanceId: 'TaskInstanceId_instance',
+      taskTemplateId: 'TaskTemplateId_template',
+    };
+    await taskEvents.emit('task:instance-completed', {
+      ...common,
+      completedAt: Date.now(),
+      taskTitle: 'Task',
+      goalBinding: null,
+    } as never);
+    await taskEvents.emit('task:instance-skipped', {
+      ...common,
+      skippedAt: Date.now(),
+      reason: 'waived',
+    } as never);
+    await taskEvents.emit('task:instance-deleted', {
+      ...common,
+      deletedAt: Date.now(),
+    } as never);
+    await taskEvents.emit('task:instance-uncompleted', {
+      ...common,
+      uncompletedAt: Date.now(),
+    } as never);
+
+    expect(source.buildTemplatePlan).toHaveBeenCalledTimes(4);
+    expect(scheduling.reconciles).toHaveLength(4);
+    expect(scheduling.removals).toHaveLength(0);
+  });
+
+  it('reconciles the owner on task:rescheduled (incremental fast path)', async () => {
+    const taskEvents = createTaskEventsHarness();
+    const scheduling = createSchedulingPortHarness();
+    const source = sourceWithPlan();
+    const runtime = createTaskProjectionRuntime({
+      source,
+      schedulingPort: scheduling.port,
+      taskEvents: taskEvents.subscriber,
+    });
+    await runtime.start();
+
+    await taskEvents.emit('task:rescheduled', {
+      identityId: 'IdentityId_schedule-owner',
+      taskInstanceId: 'TaskInstanceId_instance',
+      taskTemplateId: 'TaskTemplateId_template',
+      previousDueDate: Date.now(),
+      newDueDate: Date.now(),
+    } as never);
+
+    expect(source.buildTemplatePlan).toHaveBeenCalledWith(
+      'TaskTemplateId_template',
+      'IdentityId_schedule-owner',
+    );
+    expect(scheduling.reconciles).toEqual([{ owner: owner(), desired: [intent()] }]);
+    expect(scheduling.removals).toEqual([]);
+
+    await runtime.stop();
+    await taskEvents.emit('task:rescheduled', {
+      identityId: 'IdentityId_schedule-owner',
+      taskInstanceId: 'TaskInstanceId_instance',
+      taskTemplateId: 'TaskTemplateId_template',
+      previousDueDate: Date.now(),
+      newDueDate: Date.now(),
+    } as never);
+    expect(source.buildTemplatePlan).toHaveBeenCalledTimes(1);
+  });
+
+  it('removes the whole TaskTemplate owner on pause/delete and unsubscribes on stop', async () => {
+    const taskEvents = createTaskEventsHarness();
+    const scheduling = createSchedulingPortHarness();
+    const source = sourceWithPlan();
+    const runtime = createTaskProjectionRuntime({
+      source,
+      schedulingPort: scheduling.port,
+      taskEvents: taskEvents.subscriber,
+    });
+    await runtime.start();
+
+    await taskEvents.emit('task:template-paused', {
+      identityId: 'IdentityId_schedule-owner',
+      taskTemplateId: 'TaskTemplateId_template',
+      pausedAt: Date.now(),
+      taskTemplate: { id: 'TaskTemplateId_template' },
+    } as never);
+    await taskEvents.emit('task:deleted', {
+      identityId: 'IdentityId_schedule-owner',
       taskTemplateId: 'TaskTemplateId_template',
       deletedAt: Date.now(),
     } as never);
     await runtime.stop();
-    await taskEvents.emit('task:instance-deleted', {
+    await taskEvents.emit('task:deleted', {
       identityId: 'IdentityId_schedule-owner',
-      taskInstanceId: 'TaskInstanceId_dead',
       taskTemplateId: 'TaskTemplateId_template',
       deletedAt: Date.now(),
     } as never);
 
-    expect(source.buildInstanceDeletionSelection).toHaveBeenCalledTimes(1);
-    expect(scheduleTaskRepository.deleteBatch).toHaveBeenCalledTimes(1);
-    expect(scheduleEvents.sent).toEqual([
-      {
-        event: 'schedule:task-deleted',
-        payload: { taskId: matchingTask.id },
-      },
-    ]);
+    expect(scheduling.removals).toEqual([owner(), owner()]);
   });
 
-  it('reconciles every template from the source before registering listeners (R1-4)', async () => {
+  it('registers only the incremental fast path; durable scans are centralized', async () => {
     const taskEvents = createTaskEventsHarness();
-    const scheduleEvents = createScheduleEventsHarness();
-    const scheduleTaskRepository: IScheduleTaskRepository = {
-      save: vi.fn(),
-      findById: vi.fn(),
-      findByIdForIdentity: vi.fn(),
-      deleteById: vi.fn(),
-      findByIdentityId: vi.fn(),
-      findBySourceModule: vi.fn().mockResolvedValue([]),
-      findBySourceEntity: vi.fn(),
-      findByStatus: vi.fn(),
-      findEnabled: vi.fn(),
-      findDueTasksForExecution: vi.fn(),
-      query: vi.fn(),
-      count: vi.fn(),
-      saveBatch: vi.fn().mockResolvedValue(undefined),
-      deleteBatch: vi.fn().mockResolvedValue(undefined),
-      withTransaction: vi.fn(),
-    };
-
-    const buildTemplatePlan = vi.fn().mockResolvedValue({
-      selection: {
-        sourceModule: SourceModule.Task,
-        identityId: 'identity-1',
-        matches() {
-          return true;
-        },
-      },
-      nextTasks: [],
+    const scheduling = createSchedulingPortHarness();
+    const source = sourceWithPlan({
+      listTemplateRefs: vi
+        .fn()
+        .mockResolvedValue([{ templateId: 'tpl-1', identityId: 'identity-1' }]),
     });
-    const source: TaskScheduleProjectionSource = {
-      buildTemplatePlan,
-      buildTemplateDeletionSelection: vi.fn(),
-      buildInstanceDeletionSelection: vi.fn(),
-      listTemplateRefs: vi.fn().mockResolvedValue([
-        { templateId: 'tpl-1', identityId: 'identity-1' },
-        { templateId: 'tpl-2', identityId: 'identity-1' },
-      ]),
-    };
-
     const runtime = createTaskProjectionRuntime({
       source,
-      scheduleTaskRepository,
+      schedulingPort: scheduling.port,
       taskEvents: taskEvents.subscriber,
-      scheduleEvents: scheduleEvents.publisher,
     });
 
     await runtime.start();
 
-    // 启动即对账：每个模板重建一次投影（幂等 upsert）。
-    expect(source.listTemplateRefs).toHaveBeenCalledTimes(1);
-    expect(buildTemplatePlan).toHaveBeenCalledTimes(2);
-    expect(buildTemplatePlan).toHaveBeenCalledWith('tpl-1', 'identity-1');
-    expect(buildTemplatePlan).toHaveBeenCalledWith('tpl-2', 'identity-1');
-
+    expect(source.listTemplateRefs).not.toHaveBeenCalled();
+    expect(scheduling.reconciles).toEqual([]);
     await runtime.stop();
   });
 });

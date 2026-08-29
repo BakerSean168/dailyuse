@@ -19,6 +19,12 @@ import {
 import { PrismaHabitRepository } from './adapters/prisma/prisma-habit.repository';
 import { createGoalScheduleExecutionSource } from './schedule-execution-source';
 import { createGoalScheduleProjectionSource } from './schedule-projection-source';
+import {
+  createGoalReminderFireHandler,
+  type GoalReminderFirePayload,
+} from './goal-reminder-fire.handler';
+import type { NotificationRequestedWriterPort } from '@memoflow/contracts/notification';
+import type { ScheduledHandlerRegistration } from '@memoflow/contracts/schedule';
 import type { GoalScheduleExecutionSource } from '../../schedule-execution';
 import type { GoalScheduleProjectionSource } from '../../schedule-projection';
 import { createGoalTaskProgressHandler } from '../application/event-handlers';
@@ -164,5 +170,15 @@ export function createGoalPrismaScheduleExecutionSource(
 
   return createGoalScheduleExecutionSource({
     goalRepository: repositories.goalRepository,
+  });
+}
+
+export function createGoalPrismaReminderFireHandler(
+  db: PrismaClient,
+  requestedWriter: NotificationRequestedWriterPort,
+): ScheduledHandlerRegistration<GoalReminderFirePayload> {
+  return createGoalReminderFireHandler({
+    goalRepository: createGoalPrismaRepositories(db).goalRepository,
+    requestedWriter,
   });
 }

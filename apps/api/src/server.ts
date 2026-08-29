@@ -65,17 +65,27 @@ import {
 import { composeGoal } from './runtime/compose-goal';
 import { PrismaTaskBindingReadPort } from '@memoflow/task';
 import { createGoalTaskProgressPrismaHandler } from '@memoflow/goal';
-import { createGoalPrismaScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
+import {
+  createGoalPrismaReminderFireHandler,
+  createGoalPrismaScheduleExecutionSource,
+} from '@memoflow/goal/schedule-execution';
 import { createGoalPrismaScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
 import { resolveRepositoryStorageBaseDir } from '@memoflow/repository';
 import { createSchedulePrismaRepositories } from '@memoflow/schedule';
 import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestration';
-import { createTaskPrismaScheduleExecutionSource } from '@memoflow/task/schedule-execution';
+import {
+  createTaskPrismaScheduleExecutionSource,
+  createTaskReminderScheduledHandlerRegistration,
+} from '@memoflow/task/schedule-execution';
 import { createTaskPrismaScheduleProjectionSource } from '@memoflow/task/schedule-projection';
+import { createRoutinePrismaScheduleExecutionDeps } from '@memoflow/reminder/schedule-execution';
+import { createRoutinePrismaScheduleProjectionSource } from '@memoflow/reminder/schedule-projection';
 import { composeTask } from './runtime/compose-task';
 // 基础设施模块（直接在 API 内部定义）
 import { composePowerSyncApiModule } from './modules/powersync/module.js';
 import { composeDashboardApiModule } from './modules/dashboard/module.js';
+import { composeLabelApiModule } from './modules/label/module.js';
+import { LabelService, PrismaLabelRepository } from '@memoflow/label';
 import { PrismaDashboardReadPort } from './modules/dashboard/dashboard-read-port.js';
 import {
   PrismaActivityLedgerWriter,
@@ -199,6 +209,7 @@ async function bootstrap(): Promise<void> {
   });
   const reminderComposed = composeReminder({
     db: prisma,
+    notificationRequestedWriter: notificationApiModule.requestedWriter,
     closureChecker: accountActiveChecker,
     executorClosureChecker,
   });
@@ -219,6 +230,7 @@ async function bootstrap(): Promise<void> {
   const scheduleRepositorySet = createSchedulePrismaRepositories(prisma, {
     outboxWriter: new PrismaOutboxWriter(prisma),
   });
+  const routineExecutionDeps = createRoutinePrismaScheduleExecutionDeps(prisma);
   const scheduleOrchestrationModule = createScheduleOrchestrationModule({
     taskProjection: {
       source: createTaskPrismaScheduleProjectionSource(prisma),
@@ -226,19 +238,25 @@ async function bootstrap(): Promise<void> {
     },
     goalProjection: {
       source: createGoalPrismaScheduleProjectionSource(prisma),
-      scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
     reminderProjection: {
       source: reminderComposed.scheduleProjectionSource,
       scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
+    routineProjection: {
+      source: createRoutinePrismaScheduleProjectionSource(prisma),
+    },
+    routineOverrideStore: routineExecutionDeps.temporaryOverrideStore,
     execution: {
       taskSource: createTaskPrismaScheduleExecutionSource(prisma),
       goalSource: createGoalPrismaScheduleExecutionSource(prisma),
       reminderSource: reminderComposed.scheduleExecutionSource,
-      notificationPort: notificationApiModule.scheduleNotificationPort,
+      routineSource: routineExecutionDeps,
     },
   });
+  scheduleOrchestrationModule.handlerRegistry.register(
+    createGoalPrismaReminderFireHandler(prisma, notificationApiModule.requestedWriter),
+  );
   const scheduleApiModule = composeSchedule({
     repositories: scheduleRepositorySet,
     sourceExecutor: scheduleOrchestrationModule.sourceExecutor,
@@ -248,6 +266,16 @@ async function bootstrap(): Promise<void> {
     runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
     goalProgressHandler: createGoalTaskProgressPrismaHandler(prisma),
   });
+  // Register the Task reminder fire handler so scheduled `task.reminder` work
+  // (e.g. a one-time task + relative reminder) is executed by the registry-based
+  // source executor instead of the legacy router fallback.
+  scheduleOrchestrationModule.handlerRegistry.register(
+    createTaskReminderScheduledHandlerRegistration({
+      taskInstanceRepository: taskComposed.taskInstanceRepository,
+      taskTemplateRepository: taskComposed.taskTemplateRepository,
+      notificationRequestedWriter: notificationApiModule.repositories.requestedWriter,
+    }),
+  );
   const goalComposed = composeGoal({
     db: prisma,
     taskBindingReadPort: new PrismaTaskBindingReadPort(prisma),
@@ -269,6 +297,9 @@ async function bootstrap(): Promise<void> {
   // runtime composer/factory closure BEFORE registration; register() only
   // mounts routes against the transport-only context.
   const powerSyncApiModule = composePowerSyncApiModule({ db: prisma });
+  const labelApiModule = composeLabelApiModule({
+    service: new LabelService(new PrismaLabelRepository(prisma)),
+  });
   const dashboardApiModule = composeDashboardApiModule({
     dashboardReadPort: new PrismaDashboardReadPort(prisma),
     activityLedgerRuntime: createActivityLedgerRecorder(new PrismaActivityLedgerWriter(prisma)),
@@ -285,6 +316,7 @@ async function bootstrap(): Promise<void> {
     .register(taskComposed.module) // ✅ 任务模块
     .register(aiApiModule) // ✅ AI 模块 (runtime composer)
     .register(goalComposed.module) // ✅ 目标模块
+    .register(labelApiModule) // ✅ 共享标签目录
     .register(dataPortabilityApiModule.module) // ✅ 数据导入导出模块 (runtime composer)
     .register(powerSyncApiModule) // ✅ PowerSync 同步模块
     .register(dashboardApiModule) // ✅ 仪表盘聚合模块

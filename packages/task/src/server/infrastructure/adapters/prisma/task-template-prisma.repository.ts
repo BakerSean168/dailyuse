@@ -9,14 +9,14 @@
 
 import type { PrismaClient, TaskTemplate as PrismaTaskTemplate } from '@memoflow/database';
 import { TaskTemplate } from '../../../domain/aggregates/task-template';
-import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
-import type { TaskFilters } from '../../../domain/repositories/i-task-template-repository';
-import type { TaskTemplateStatus } from '@memoflow/contracts/task';
 import {
-  AggregateRepositoryBase,
-  createEventBusAdapter,
-  type IEventBus,
-} from '@memoflow/patterns';
+  TaskLabelOwnershipError,
+  type ITaskTemplateRepository,
+  type TaskFilters,
+} from '../../../domain/repositories/i-task-template-repository';
+import type { TaskTemplateStatus } from '@memoflow/contracts/task';
+import type { LabelClientDTO } from '@memoflow/contracts/label';
+import { AggregateRepositoryBase, createEventBusAdapter, type IEventBus } from '@memoflow/patterns';
 import { eventBus } from '@memoflow/utils/domain';
 import { PrismaTaskTemplateMapper } from './mappers/prisma-task-template-mapper';
 import { OptimisticConcurrencyError } from '../../../domain/errors/optimistic-concurrency.error';
@@ -25,6 +25,8 @@ const eventBusAdapter = createEventBusAdapter(eventBus);
 
 interface TaskTemplateDb {
   taskTemplate: PrismaClient['taskTemplate'];
+  taskLabel: PrismaClient['taskLabel'];
+  label: PrismaClient['label'];
 }
 
 export class TaskTemplatePrismaRepository
@@ -45,6 +47,64 @@ export class TaskTemplatePrismaRepository
    */
   private mapToEntity(data: PrismaTaskTemplate): TaskTemplate {
     return PrismaTaskTemplateMapper.toDomain(data);
+  }
+
+  private static labelDto(row: {
+    id: string;
+    name: string;
+    color: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }): LabelClientDTO {
+    return {
+      id: row.id,
+      name: row.name,
+      color: row.color,
+      createdAt: row.createdAt.getTime(),
+      updatedAt: row.updatedAt.getTime(),
+    };
+  }
+
+  private async loadLabelMap(
+    identityId: string,
+    taskTemplateIds: readonly string[],
+  ): Promise<Map<string, LabelClientDTO[]>> {
+    const ids = [...new Set(taskTemplateIds)];
+    const result = new Map(ids.map((id) => [id, [] as LabelClientDTO[]]));
+    if (ids.length === 0) return result;
+
+    const links = await this.db.taskLabel.findMany({
+      where: { identityId, taskTemplateId: { in: ids } },
+      include: { label: true },
+      orderBy: [{ taskTemplateId: 'asc' }, { label: { name: 'asc' } }],
+    });
+    for (const { taskTemplateId, label } of links) {
+      result.get(taskTemplateId)?.push(TaskTemplatePrismaRepository.labelDto(label));
+    }
+    return result;
+  }
+
+  private async hydrateTemplates(
+    identityId: string,
+    templates: TaskTemplate[],
+  ): Promise<TaskTemplate[]> {
+    const labelMap = await this.loadLabelMap(
+      identityId,
+      templates.map((template) => String(template.id)),
+    );
+    for (const template of templates) {
+      template.hydrateLabels(labelMap.get(String(template.id)) ?? []);
+    }
+    return templates;
+  }
+
+  private async hydrateTemplate(
+    identityId: string,
+    template: TaskTemplate | null,
+  ): Promise<TaskTemplate | null> {
+    if (!template) return null;
+    await this.hydrateTemplates(identityId, [template]);
+    return template;
   }
 
   /**
@@ -95,7 +155,7 @@ export class TaskTemplatePrismaRepository
     const data = await this.db.taskTemplate.findFirst({
       where: { id, identityId },
     });
-    return data ? this.mapToEntity(data) : null;
+    return this.hydrateTemplate(identityId, data ? this.mapToEntity(data) : null);
   }
 
   async findByIdWithChildren(identityId: string, id: string): Promise<TaskTemplate | null> {
@@ -103,7 +163,7 @@ export class TaskTemplatePrismaRepository
       where: { id, identityId },
       include: { instances: true },
     });
-    return data ? this.mapToEntity(data) : null;
+    return this.hydrateTemplate(identityId, data ? this.mapToEntity(data) : null);
   }
 
   async findByIdentityId(identityId: string): Promise<TaskTemplate[]> {
@@ -111,18 +171,21 @@ export class TaskTemplatePrismaRepository
       where: { identityId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
+    return this.hydrateTemplates(
+      identityId,
+      data.map((record: PrismaTaskTemplate) => this.mapToEntity(record)),
+    );
   }
 
-  async findByStatus(
-    identityId: string,
-    status: TaskTemplateStatus,
-  ): Promise<TaskTemplate[]> {
+  async findByStatus(identityId: string, status: TaskTemplateStatus): Promise<TaskTemplate[]> {
     const data = await this.db.taskTemplate.findMany({
       where: { identityId, status, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
+    return this.hydrateTemplates(
+      identityId,
+      data.map((record: PrismaTaskTemplate) => this.mapToEntity(record)),
+    );
   }
 
   async findActiveTemplates(identityId: string): Promise<TaskTemplate[]> {
@@ -134,9 +197,11 @@ export class TaskTemplatePrismaRepository
       },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
+    return this.hydrateTemplates(
+      identityId,
+      data.map((record: PrismaTaskTemplate) => this.mapToEntity(record)),
+    );
   }
-
 
   async findByGoalId(identityId: string, goalId: string): Promise<TaskTemplate[]> {
     const data = await this.db.taskTemplate.findMany({
@@ -147,7 +212,10 @@ export class TaskTemplatePrismaRepository
       },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
+    return this.hydrateTemplates(
+      identityId,
+      data.map((record: PrismaTaskTemplate) => this.mapToEntity(record)),
+    );
   }
 
   async findByTags(identityId: string, tags: string[]): Promise<TaskTemplate[]> {
@@ -155,7 +223,7 @@ export class TaskTemplatePrismaRepository
       where: { identityId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
-    return data
+    const templates = data
       .filter((record: PrismaTaskTemplate) => {
         try {
           const rowTags = JSON.parse(record.tags || '[]');
@@ -165,6 +233,67 @@ export class TaskTemplatePrismaRepository
         }
       })
       .map((record: PrismaTaskTemplate) => this.mapToEntity(record));
+    return this.hydrateTemplates(identityId, templates);
+  }
+
+  async findByLabelIdsAll(
+    identityId: string,
+    labelIds: readonly string[],
+  ): Promise<TaskTemplate[]> {
+    const requiredLabelIds = [...new Set(labelIds)];
+    if (requiredLabelIds.length === 0) return this.findByIdentityId(identityId);
+
+    const links = await this.db.taskLabel.findMany({
+      where: { identityId, labelId: { in: requiredLabelIds } },
+      select: { taskTemplateId: true, labelId: true },
+    });
+    const found = new Map<string, Set<string>>();
+    for (const link of links) {
+      const set = found.get(link.taskTemplateId) ?? new Set<string>();
+      set.add(link.labelId);
+      found.set(link.taskTemplateId, set);
+    }
+    const matchingIds = [...found.entries()]
+      .filter(([, labels]) => requiredLabelIds.every((labelId) => labels.has(labelId)))
+      .map(([taskTemplateId]) => taskTemplateId);
+    if (matchingIds.length === 0) return [];
+
+    const rows = await this.db.taskTemplate.findMany({
+      where: { identityId, id: { in: matchingIds }, deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+    });
+    return this.hydrateTemplates(
+      identityId,
+      rows.map((record: PrismaTaskTemplate) => this.mapToEntity(record)),
+    );
+  }
+
+  async replaceLabels(
+    identityId: string,
+    taskTemplateId: string,
+    labelIds: readonly string[],
+  ): Promise<LabelClientDTO[]> {
+    const owner = await this.db.taskTemplate.findFirst({
+      where: { id: taskTemplateId, identityId },
+      select: { id: true },
+    });
+    if (!owner) throw new Error('Task template not found.');
+
+    const uniqueIds = [...new Set(labelIds)];
+    if (uniqueIds.length > 0) {
+      const count = await this.db.label.count({
+        where: { identityId, id: { in: uniqueIds } },
+      });
+      if (count !== uniqueIds.length) throw new TaskLabelOwnershipError();
+    }
+
+    await this.db.taskLabel.deleteMany({ where: { identityId, taskTemplateId } });
+    if (uniqueIds.length > 0) {
+      await this.db.taskLabel.createMany({
+        data: uniqueIds.map((labelId) => ({ identityId, taskTemplateId, labelId })),
+      });
+    }
+    return (await this.loadLabelMap(identityId, [taskTemplateId])).get(taskTemplateId) ?? [];
   }
 
   async findAllTemplateRefs(): Promise<Array<{ id: string; identityId: string }>> {
@@ -227,7 +356,10 @@ export class TaskTemplatePrismaRepository
       skip: filters?.offset,
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
+    return this.hydrateTemplates(
+      identityId,
+      data.map((record: PrismaTaskTemplate) => this.mapToEntity(record)),
+    );
   }
 
   async findRecurringTasks(identityId: string, filters?: TaskFilters): Promise<TaskTemplate[]> {
@@ -242,7 +374,10 @@ export class TaskTemplatePrismaRepository
       skip: filters?.offset,
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
+    return this.hydrateTemplates(
+      identityId,
+      data.map((record: PrismaTaskTemplate) => this.mapToEntity(record)),
+    );
   }
 
   async findOverdueTasks(identityId: string): Promise<TaskTemplate[]> {
@@ -266,11 +401,11 @@ export class TaskTemplatePrismaRepository
         deletedAt: null,
       },
     });
-    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
+    return this.hydrateTemplates(
+      identityId,
+      data.map((record: PrismaTaskTemplate) => this.mapToEntity(record)),
+    );
   }
-
-
-
 
   async findUpcomingTasks(identityId: string, _daysAhead: number): Promise<TaskTemplate[]> {
     const data = await this.db.taskTemplate.findMany({
@@ -281,7 +416,10 @@ export class TaskTemplatePrismaRepository
       },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
+    return this.hydrateTemplates(
+      identityId,
+      data.map((record: PrismaTaskTemplate) => this.mapToEntity(record)),
+    );
   }
 
   async findTodayTasks(identityId: string): Promise<TaskTemplate[]> {

@@ -1,14 +1,9 @@
 /**
- * Desktop 通知点击导航（R3 收尾）。
+ * Shared Notification click destination policy.
  *
- * 桌面 main 弹系统通知时 payload 携带 notificationId/type/category；
- * 点击后 main 经 `notification:clicked` 推回 renderer。这里把点击转成稳定导航：
- *
- * 1. payload 携带 navigationIntent（{ route, params }）→ 直接 router.push；
- * 2. 否则按 category 映射模块默认 route；
- * 3. 未知 → /notifications。
- *
- * 只消费稳定意图，不解析任意业务 payload（R3d 契约）。
+ * Desktop and web both consume the stable navigation intent first. When no
+ * explicit intent exists, they fall back to a product category landing route.
+ * Raw business payloads and worker details are never parsed here.
  */
 
 import type { Router } from 'vue-router';
@@ -19,20 +14,18 @@ import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('notification:click-nav');
 
-/** category → 模块默认 route（稳定 landing，不依赖 history）。 */
-const CATEGORY_ROUTE: Record<string, string> = {
-  Task: '/tasks',
-  Goal: '/goals',
-  Schedule: '/schedule',
-  Reminder: '/reminders',
-  Account: '/notifications',
-  System: '/notifications',
+const CATEGORY_ROUTE: Readonly<Record<string, string>> = {
+  goal: '/goals',
+  reminder: '/reminders',
+  schedule: '/schedule',
+  task: '/tasks',
 };
 
 interface ClickedPayload {
   notificationId?: string;
   notificationType?: string;
   notificationCategory?: string;
+  category?: string;
   navigationIntent?: NotificationNavigationIntentDTO | null;
   route?: string;
   params?: Record<string, string>;
@@ -42,21 +35,33 @@ function isNavigationIntent(value: unknown): value is NotificationNavigationInte
   return (
     typeof value === 'object' &&
     value !== null &&
-    typeof (value as NotificationNavigationIntentDTO).route === 'string'
+    typeof (value as NotificationNavigationIntentDTO).route === 'string' &&
+    (value as NotificationNavigationIntentDTO).route.trim().length > 0
   );
 }
 
-function resolveRoute(payload: ClickedPayload): string {
-  if (payload.navigationIntent && isNavigationIntent(payload.navigationIntent)) {
-    return payload.navigationIntent.route;
+function normalizeCategory(category: unknown): string {
+  return typeof category === 'string' ? category.trim().toLowerCase() : '';
+}
+
+export function resolveNotificationDestination(
+  payload: Pick<ClickedPayload, 'navigationIntent' | 'notificationCategory' | 'category'>,
+): { path: string; query?: Record<string, string> } {
+  if (isNavigationIntent(payload.navigationIntent)) {
+    return {
+      path: payload.navigationIntent.route,
+      ...(payload.navigationIntent.params ? { query: payload.navigationIntent.params } : {}),
+    };
   }
-  if (typeof payload.route === 'string' && payload.route) {
-    return payload.route;
-  }
-  if (payload.notificationCategory) {
-    return CATEGORY_ROUTE[payload.notificationCategory] ?? '/notifications';
-  }
-  return '/notifications';
+
+  const category = normalizeCategory(payload.notificationCategory ?? payload.category);
+  return { path: CATEGORY_ROUTE[category] ?? '/notifications' };
+}
+
+export function hasNotificationExternalDestination(
+  payload: Pick<ClickedPayload, 'navigationIntent' | 'notificationCategory' | 'category'>,
+): boolean {
+  return resolveNotificationDestination(payload).path !== '/notifications';
 }
 
 export function createNotificationClickNavigation(
@@ -67,16 +72,14 @@ export function createNotificationClickNavigation(
 
   const handleClick = (...args: unknown[]): void => {
     const payload = (args[0] ?? {}) as ClickedPayload;
-    const route = resolveRoute(payload);
+    const destination = resolveNotificationDestination(payload);
     logger.info('[Notification] Click navigation', {
       notificationId: payload.notificationId,
-      route,
+      route: destination,
     });
-    void router.push(route).catch((error) => {
-      // Internal developer surface: the raw navigation failure stays in the log
-      // via String() coercion (never assigned to user-visible state).
+    void router.push(destination).catch((error) => {
       logger.error('[Notification] Click navigation failed', {
-        route,
+        route: destination,
         error: String(error),
       });
     });

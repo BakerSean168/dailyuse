@@ -15,7 +15,6 @@
   "dependencies": {
     "@memoflow/contracts": "workspace:*",
     "@memoflow/goal": "workspace:*",
-    "@memoflow/notification": "workspace:*",
     "@memoflow/reminder": "workspace:*",
     "@memoflow/schedule": "workspace:*",
     "@memoflow/task": "workspace:*",

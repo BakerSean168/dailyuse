@@ -10,6 +10,16 @@
 
 import type { TaskTemplate } from '../aggregates';
 import type { TaskTemplateStatus } from '@memoflow/contracts/task';
+import type { LabelClientDTO } from '@memoflow/contracts/label';
+
+export class TaskLabelOwnershipError extends Error {
+  readonly code = 'VALIDATION_ERROR' as const;
+
+  constructor() {
+    super('One or more labels do not belong to the identity.');
+    this.name = 'TaskLabelOwnershipError';
+  }
+}
 
 /**
  * 任务查询过滤器
@@ -58,7 +68,6 @@ export interface ITaskTemplateRepository {
    */
   findActiveTemplates(identityId: string): Promise<TaskTemplate[]>;
 
-
   /**
    * 根据目标查找任务模板（identity-scoped）
    */
@@ -69,6 +78,16 @@ export interface ITaskTemplateRepository {
    */
   findByTags(identityId: string, tags: string[]): Promise<TaskTemplate[]>;
 
+  /** Shared Label AND filtering for vNext classification. */
+  findByLabelIdsAll(identityId: string, labelIds: readonly string[]): Promise<TaskTemplate[]>;
+
+  /** Replace shared Label assignment inside the owning Task mutation transaction. */
+  replaceLabels(
+    identityId: string,
+    taskTemplateId: string,
+    labelIds: readonly string[],
+  ): Promise<LabelClientDTO[]>;
+
   /**
    * 查找需要生成实例的模板（供定时任务使用）
    */
@@ -77,7 +96,7 @@ export interface ITaskTemplateRepository {
   /**
    * 全量模板引用（R1-4 projection reconcile 用）。
    * 返回所有用户的 (id, identityId)，供投影 runtime 启动时全量对账；
-   * 不支持全量扫描的实现应返回空数组（该宿主跳过 reconcile 并记录告警）。
+   * 所有宿主都必须枚举其本地权威范围；API 可跨 identity，Desktop 枚举已同步到本地 profile 的行。
    */
   findAllTemplateRefs(): Promise<Array<{ id: string; identityId: string }>>;
 
@@ -117,9 +136,6 @@ export interface ITaskTemplateRepository {
    * 根据关键结果查找任务（identity-scoped）
    */
   findByKeyResultId(identityId: string, keyResultId: string): Promise<TaskTemplate[]>;
-
-
-
 
   /**
    * 查找即将到期的任务（未来N天内）

@@ -30,11 +30,15 @@ export default {
     "uncompleteFailed": "撤销待办任务完成状态失败",
     "uncompleteSuccess": "待办任务已恢复为待完成",
     "skipFailed": "跳过待办任务失败",
-    "skipSuccess": "待办任务已跳过"
+    "skipSuccess": "待办任务已跳过",
+    "markMissedFailed": "标记待办为已错过失败",
+    "markMissedSuccess": "待办已标记为错过",
+    "loadFailedTitle": "任务加载失败",
+    "loadFailedDescription": "任务计划与发生项投影暂时不可用。请重试；重试不会改写它们的持久状态。"
   },
   "management": {
-    "title": "任务库",
-    "searchPlaceholder": "搜索任务...",
+    "title": "任务",
+    "searchPlaceholder": "搜索标题、描述或标签...",
     "loading": "加载中...",
     "createSuccess": "任务计划创建成功",
     "editSuccess": "任务计划更新成功",
@@ -43,7 +47,36 @@ export default {
     "confirmDeleteAll": "确认删除全部任务计划？此操作不可撤销！",
     "pauseTitle": "暂停任务计划？",
     "pauseDescription": "暂停「{name}」后，将停止生成新的待办任务，并删除当前时刻之后待完成或进行中的待办任务；已到期和已完成历史保持不变。",
-    "allDeleted": "所有任务计划已删除"
+    "allDeleted": "所有任务计划已删除",
+    "subtitle": "优先处理今天的发生项，再查看后续安排；长期计划配置保持独立。",
+    "surface": {
+      "today": "今天",
+      "upcoming": "后续",
+      "plans": "计划"
+    },
+    "filter": {
+      "status": "按发生项状态筛选",
+      "allStatuses": "全部状态",
+      "tag": "按标签筛选",
+      "allTags": "全部标签",
+      "goal": "按 Goal 绑定筛选",
+      "allGoals": "全部 Goal 绑定",
+      "goalLinked": "已绑定 Goal",
+      "goalUnlinked": "未绑定 Goal",
+      "sort": "发生项排序"
+    },
+    "sort": {
+      "time": "时间",
+      "status": "状态",
+      "title": "标题"
+    },
+    "todayExplanation": "“今天”也会包含到期时间已经过去、但仍未完成的发生项。",
+    "upcomingExplanation": "“后续”展示今天之后的发生项；长期计划仍在独立配置面中管理。",
+    "emptyPlans": "没有符合条件的计划",
+    "emptyPlansDescription": "创建新计划，或清除当前筛选条件。",
+    "emptyToday": "今天没有需要处理的任务",
+    "emptyUpcoming": "暂无后续发生项",
+    "emptyOccurrenceDescription": "创建或调整计划后，系统会生成符合条件的发生项。"
   },
   "detail": {
     "title": "任务详情",
@@ -89,7 +122,31 @@ export default {
     "instanceStatusSkipped": "已跳过",
     "instanceStatusMissed": "已错过",
     "instanceStatusNotGenerated": "尚未生成",
-    "edit": "编辑"
+    "edit": "编辑",
+    "subtitle": "查看一项长期计划、它的配置，以及它已经生成的发生项。",
+    "planSettings": "计划设置",
+    "planSettingsDescription": "调度、重复、提醒与 Goal 贡献属于计划本身，而不是某一个发生项。",
+    "editSettings": "编辑设置",
+    "recurrence": "重复规则",
+    "schedule": "时段",
+    "reminders": "提醒",
+    "reminderAuthority": "提醒策略通过统一计划编辑器维护。",
+    "goalBindingDescription": "完成发生项时，可按配置贡献到对应 Goal / Key Result。",
+    "noStartDate": "未设置开始日期",
+    "startsOn": "开始于 {date}",
+    "oneTimePlan": "一次性计划",
+    "occurrenceLimit": "生成 {count} 次后结束",
+    "endsOn": "结束于 {date}",
+    "noRecurrenceEnd": "未设置结束条件",
+    "remindersOff": "已关闭",
+    "reminderCount": "{count} 个提醒触发器",
+    "goalBindingConfigured": "已配置 Goal 贡献",
+    "goalBindingNone": "未配置 Goal 贡献",
+    "occurrences": "发生项",
+    "occurrencesDescription": "在这里纠正单个发生项状态，不改写计划或相邻发生项。",
+    "completedCount": "已完成 {count}",
+    "openCount": "待处理 {count}",
+    "noOccurrences": "这项计划尚未生成任何发生项。"
   },
   "depValidationDemo": {
     "title": "依赖验证演示 (STORY-024)",
@@ -613,7 +670,12 @@ export default {
     "complete": "标记完成",
     "undoComplete": "撤销完成",
     "skip": "跳过",
-    "start": "开始"
+    "start": "开始",
+    "create": "新建计划",
+    "archive": "结束计划",
+    "pause": "暂停计划",
+    "activate": "激活计划",
+    "retry": "重试"
   },
   "field": {
     "status": "状态"
@@ -626,6 +688,25 @@ export default {
     "missed": "已错过"
   },
   "status": {
-    "completed": "已完成"
+    "completed": "已完成",
+    "loading": "正在加载任务..."
+  },
+  "occurrence": {
+    "status": {
+      "pending": "待处理",
+      "inprogress": "进行中",
+      "completed": "已完成",
+      "missed": "已错过",
+      "skipped": "已跳过",
+      "overdue": "已逾期"
+    },
+    "scheduleAt": "{date} · {time}",
+    "scheduleRange": "{date} · {start}–{end}",
+    "scheduleAllDay": "{date} · 全天",
+    "repeatPosition": "第 {position} / {total} 次",
+    "recurring": "重复发生项",
+    "goalLinked": "已绑定 Goal",
+    "openPlan": "打开计划「{title}」",
+    "markMissed": "标记错过"
   }
 } as const;

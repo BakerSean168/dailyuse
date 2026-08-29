@@ -20,18 +20,38 @@ import { ok } from '@memoflow/contracts/result';
  * List Task Templates Service
  */
 export class ListTaskTemplatesUseCase {
-
   constructor(
     private readonly templateRepository: ITaskTemplateRepository,
     private readonly instanceRepository: ITaskInstanceRepository,
-  ) {
-  }
+  ) {}
 
   async execute(request: QueryTaskTemplatesInternal): Promise<Result<QueryTaskTemplatesRes>> {
     let templates: TaskTemplate[];
 
-    // Query by different conditions
-    if (request.status && request.status.length > 0) {
+    // Shared Label filtering is repository-owned AND semantics. Other legacy filters
+    // can further narrow the already identity-scoped result without inventing a
+    // second Label filtering engine in the application layer.
+    if (request.labelIdsAll && request.labelIdsAll.length > 0) {
+      templates = await this.templateRepository.findByLabelIdsAll(
+        request.identityId,
+        request.labelIdsAll,
+      );
+      if (request.status && request.status.length > 0) {
+        templates = templates.filter((template) =>
+          request.status!.includes(String(template.status)),
+        );
+      }
+      if (request.goalId) {
+        templates = templates.filter(
+          (template) => String(template.goalBinding?.goalId ?? '') === String(request.goalId),
+        );
+      }
+      if (request.tags && request.tags.length > 0) {
+        templates = templates.filter((template) =>
+          request.tags!.some((tag) => template.tags.includes(tag)),
+        );
+      }
+    } else if (request.status && request.status.length > 0) {
       templates = await this.templateRepository.findByStatus(
         request.identityId,
         request.status[0] as TaskTemplateStatusType,
@@ -50,8 +70,7 @@ export class ListTaskTemplatesUseCase {
       (await this.instanceRepository.getTemplateStats(
         templates.map((template) => template.id),
         request.identityId,
-      )) ??
-      {};
+      )) ?? {};
 
     return ok({
       templates: templates.map((template) => {
@@ -78,5 +97,4 @@ export class ListTaskTemplatesUseCase {
       total: templates.length,
     });
   }
-
 }

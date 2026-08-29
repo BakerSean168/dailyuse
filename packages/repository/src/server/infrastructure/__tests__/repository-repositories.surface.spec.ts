@@ -19,14 +19,14 @@ import {
  * Repository seam surface.
  * 知识仓储模块 seam 的表面契约。
  *
- * `createRepositoryPrismaRepositories` returns the seven knowledge persistence
- * categories plus audit; `createRepositoryPrismaRuntimeContributions` returns
+ * `createRepositoryPrismaRepositories` returns the eight knowledge persistence
+ * / atomic-write capabilities plus audit; `createRepositoryPrismaRuntimeContributions` returns
  * port-shaped services and the runtime contribution, keeping the fail-closed
  * `githubApp + closureChecker` check. `RepositoryModuleDependencies` consumes
  * the narrow service ports, and no concrete GitHub/Prisma/Fs class leaks
  * through the root barrel.
  *
- * `createRepositoryPrismaRepositories` 返回七个知识持久化类别加审计；
+ * `createRepositoryPrismaRepositories` 返回八个知识持久化/原子写能力加审计；
  * `createRepositoryPrismaRuntimeContributions` 返回 Port 形状的服务与运行时贡献，
  * 保留 fail-closed 的 `githubApp + closureChecker` 检查。`RepositoryModuleDependencies`
  * 消费窄服务 Port，具体 GitHub/Prisma/Fs 类不通过根 barrel 泄漏。
@@ -34,9 +34,11 @@ import {
 describe('repository factories surface', () => {
   const fakePrisma = {} as unknown as PrismaClient;
 
-  it('createRepositoryPrismaRepositories returns the seven categories plus audit', () => {
+  it('createRepositoryPrismaRepositories returns durable installation + atomic connection capabilities plus audit', () => {
     const set = createRepositoryPrismaRepositories(fakePrisma);
     expect(set).toHaveProperty('connectionRepository');
+    expect(set).toHaveProperty('installationIntentRepository');
+    expect(set).toHaveProperty('connectionWriteTransactionRunner');
     expect(set).toHaveProperty('deliveryRepository');
     expect(set).toHaveProperty('noteProjectionRepository');
     expect(set).toHaveProperty('attachmentProjectionRepository');
@@ -69,6 +71,10 @@ describe('repository factories surface', () => {
           appSlug: 's',
           privateKey: 'k',
           webhookSecret: 'w',
+          installationRouting: {
+            routeKey: 'test',
+            webOrigin: 'https://app.example.test',
+          },
         },
       }),
     ).toThrow(/FAIL-CLOSED/);
@@ -114,6 +120,8 @@ describe('repository factories surface', () => {
       'GitHubAppClient',
       'FsStorageAdapter',
       'KnowledgeRepositoryConnectionPrismaRepository',
+      'KnowledgeRepositoryInstallationIntentPrismaRepository',
+      'KnowledgeRepositoryConnectionWritePrismaTransactionRunner',
       'GithubWebhookDeliveryPrismaRepository',
       'KnowledgeNoteProjectionPrismaRepository',
       'KnowledgeAttachmentProjectionPrismaRepository',

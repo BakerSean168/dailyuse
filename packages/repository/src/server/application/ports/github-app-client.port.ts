@@ -129,17 +129,3 @@ export interface IGitHubAppClient {
     repositoryId?: string,
   ): Promise<GitHubInstallationAccessToken>;
 }
-
-export interface KnowledgeRepositoryInstallationState {
-  identityId: string;
-  returnUrl: string | null;
-  expiresAt: number;
-}
-
-export interface IKnowledgeRepositoryInstallationStateStore {
-  issue(identityId: string, returnUrl?: string): { state: string; expiresAt: number };
-  consume(state: string): KnowledgeRepositoryInstallationState | null;
-  claimInstallation(identityId: string, installationId: string): void;
-  hasInstallationClaim(identityId: string, installationId: string): boolean;
-  releaseInstallationClaim(identityId: string, installationId: string): void;
-}

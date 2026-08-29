@@ -35,7 +35,7 @@ updated: 2026-08-26T00:00:00
 | [`packages/app-vue/src/modules/goal/composables/useGoalTimeline.ts`](../../../packages/app-vue/src/modules/goal/composables/useGoalTimeline.ts) | 目标时间线数据组织 |
 | [`packages/app-vue/src/modules/goal/components/dialogs/GoalDialog.vue`](../../../packages/app-vue/src/modules/goal/components/dialogs/GoalDialog.vue) | 目标创建或编辑弹窗 |
 | [`packages/app-vue/src/modules/goal/components/dialogs/KeyResultDialog.vue`](../../../packages/app-vue/src/modules/goal/components/dialogs/KeyResultDialog.vue) | 关键结果创建或编辑弹窗 |
-| [`packages/app-vue/src/modules/goal/components/cards/GoalCard.vue`](../../../packages/app-vue/src/modules/goal/components/cards/GoalCard.vue) | 目标卡片 |
+| [`packages/app-vue/src/modules/goal/components/GoalProgressRow.vue`](../../../packages/app-vue/src/modules/goal/components/GoalProgressRow.vue) | vNext 目标进度行 |
 
 ## 移动端入口
 

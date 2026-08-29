@@ -37,18 +37,27 @@ export {
   type ReminderPrismaRepositorySet,
   type ReminderPowerSyncRepositorySet,
   type ReminderSnoozeRescheduler,
+  compareReminderDueSets,
+  type ReminderDueSetComparison,
+  type ReminderDueSetEntry,
+  type ReminderDueSetReader,
+  type ReminderDueSetTimingMismatch,
+  type ReminderTriggerCronJobDependencies,
   type IReminderTemplateRepository,
   type IReminderGroupRepository,
   type IReminderResponseRepository,
   type IUserReminderPreferenceRepository,
+  loadPowerSyncRoutineLocalRegistrations,
+  type RoutineLocalRegistrationsSnapshot,
 } from './server';
 // Schedule orchestration integrations are re-exported through the package root
 // so host composers import only `@memoflow/reminder` (no `/schedule-*` subpath).
 // 通过包根重新导出 schedule 编排集成，使宿主 composer 只导入 `@memoflow/reminder`。
 export {
   createReminderScheduleExecutionSource,
+  createReminderPrismaScheduleExecutionCommitPort,
+  createReminderPowerSyncScheduleExecutionCommitPort,
   type ReminderScheduleExecutionSource,
-  type ReminderScheduleExecutionNotification,
   type ReminderScheduleExecutionOutcome,
   type ReminderScheduleExecutionTask,
 } from './schedule-execution';

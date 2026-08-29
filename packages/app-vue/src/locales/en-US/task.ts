@@ -30,11 +30,15 @@ export default {
     "uncompleteFailed": "Failed to undo to-do completion",
     "uncompleteSuccess": "To-do marked as pending",
     "skipFailed": "Failed to skip to-do",
-    "skipSuccess": "To-do skipped"
+    "skipSuccess": "To-do skipped",
+    "markMissedFailed": "Failed to mark the to-do as missed",
+    "markMissedSuccess": "To-do marked as missed",
+    "loadFailedTitle": "Tasks could not be loaded",
+    "loadFailedDescription": "The task plan and occurrence projections are temporarily unavailable. Try again without changing their durable state."
   },
   "management": {
-    "title": "Task Library",
-    "searchPlaceholder": "Search tasks...",
+    "title": "Tasks",
+    "searchPlaceholder": "Search title, description, or tags...",
     "loading": "Loading...",
     "createSuccess": "Task plan created",
     "editSuccess": "Task plan updated",
@@ -43,7 +47,36 @@ export default {
     "confirmDeleteAll": "Delete all task plans? This cannot be undone!",
     "pauseTitle": "Pause task plan?",
     "pauseDescription": "Pausing \"{name}\" stops new to-dos and deletes future pending or in-progress to-dos. Due and completed history stays unchanged.",
-    "allDeleted": "All task plans deleted"
+    "allDeleted": "All task plans deleted",
+    "subtitle": "Act on today’s occurrences first, review what is next, and edit long-lived plans separately.",
+    "surface": {
+      "today": "Today",
+      "upcoming": "Upcoming",
+      "plans": "Plans"
+    },
+    "filter": {
+      "status": "Filter by occurrence status",
+      "allStatuses": "All statuses",
+      "tag": "Filter by tag",
+      "allTags": "All tags",
+      "goal": "Filter by Goal binding",
+      "allGoals": "All Goal bindings",
+      "goalLinked": "Linked to a Goal",
+      "goalUnlinked": "Not linked to a Goal",
+      "sort": "Sort occurrences"
+    },
+    "sort": {
+      "time": "Time",
+      "status": "Status",
+      "title": "Title"
+    },
+    "todayExplanation": "Today also includes unfinished occurrences whose due time has passed.",
+    "upcomingExplanation": "Upcoming shows occurrences scheduled after today; plans remain in their own configuration surface.",
+    "emptyPlans": "No matching plans",
+    "emptyPlansDescription": "Create a plan or clear the current filters.",
+    "emptyToday": "Nothing needs action today",
+    "emptyUpcoming": "No upcoming occurrences",
+    "emptyOccurrenceDescription": "Create or adjust a plan to generate eligible occurrences."
   },
   "detail": {
     "title": "Task Detail",
@@ -89,7 +122,31 @@ export default {
     "instanceStatusSkipped": "Skipped",
     "instanceStatusMissed": "Missed",
     "instanceStatusNotGenerated": "Not generated",
-    "edit": "Edit"
+    "edit": "Edit",
+    "subtitle": "Inspect one long-lived plan, its settings, and the occurrences it generated.",
+    "planSettings": "Plan settings",
+    "planSettingsDescription": "Scheduling, recurrence, reminders, and Goal contribution belong to the plan—not to one occurrence.",
+    "editSettings": "Edit settings",
+    "recurrence": "Recurrence",
+    "schedule": "Schedule",
+    "reminders": "Reminders",
+    "reminderAuthority": "Reminder policy is edited through the shared plan editor.",
+    "goalBindingDescription": "Completion can contribute to the configured Goal / Key Result.",
+    "noStartDate": "No start date",
+    "startsOn": "Starts {date}",
+    "oneTimePlan": "One-time plan",
+    "occurrenceLimit": "Stops after {count} occurrences",
+    "endsOn": "Ends {date}",
+    "noRecurrenceEnd": "No configured end",
+    "remindersOff": "Off",
+    "reminderCount": "{count} reminder triggers",
+    "goalBindingConfigured": "Goal contribution configured",
+    "goalBindingNone": "No Goal contribution",
+    "occurrences": "Occurrences",
+    "occurrencesDescription": "Correct occurrence state here without rewriting the plan or neighboring occurrences.",
+    "completedCount": "{count} completed",
+    "openCount": "{count} open",
+    "noOccurrences": "This plan has not generated any occurrences yet."
   },
   "depValidationDemo": {
     "title": "Dependency Validation Demo (STORY-024)",
@@ -613,7 +670,12 @@ export default {
     "complete": "Mark Complete",
     "undoComplete": "Undo completion",
     "skip": "Skip",
-    "start": "Start"
+    "start": "Start",
+    "create": "New plan",
+    "archive": "End plan",
+    "pause": "Pause plan",
+    "activate": "Activate plan",
+    "retry": "Try again"
   },
   "field": {
     "status": "Status"
@@ -626,6 +688,25 @@ export default {
     "missed": "Missed"
   },
   "status": {
-    "completed": "Completed"
+    "completed": "Completed",
+    "loading": "Loading tasks..."
+  },
+  "occurrence": {
+    "status": {
+      "pending": "Pending",
+      "inprogress": "In progress",
+      "completed": "Completed",
+      "missed": "Missed",
+      "skipped": "Skipped",
+      "overdue": "Overdue"
+    },
+    "scheduleAt": "{date} · {time}",
+    "scheduleRange": "{date} · {start}–{end}",
+    "scheduleAllDay": "{date} · All day",
+    "repeatPosition": "Occurrence {position} of {total}",
+    "recurring": "Recurring occurrence",
+    "goalLinked": "Goal linked",
+    "openPlan": "Open plan {title}",
+    "markMissed": "Mark missed"
   }
 } as const;

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { IDomainEvent } from '@memoflow/contracts/shared';
-import { TaskGoalBindingTrigger, type TaskInstanceCompletedEvent } from '@memoflow/contracts/task';
+import {
+  TaskGoalBindingTrigger,
+  TaskPlanOutcome,
+  type TaskInstanceCompletedEvent,
+  type TaskPlanOutcomeChangedEvent,
+} from '@memoflow/contracts/task';
 import { toTaskGoalOutboxRecord } from './task-goal-outbox';
 
 function completionEvent(
@@ -24,7 +29,38 @@ function completionEvent(
         keyResultId: 'kr-1' as NonNullable<TaskInstanceCompletedEvent['goalBinding']>['keyResultId'],
         contribution,
       },
-      planSucceeded: false,
+    },
+  };
+}
+
+function planOutcomeEvent(
+  previousOutcome: TaskPlanOutcomeChangedEvent['previousOutcome'],
+  nextOutcome: TaskPlanOutcomeChangedEvent['nextOutcome'],
+  planVersion = 8,
+  contribution: NonNullable<NonNullable<TaskPlanOutcomeChangedEvent['goalBinding']>['contribution']> | null = {
+    value: 3,
+    trigger: TaskGoalBindingTrigger.PlanCompletion,
+  },
+): IDomainEvent<TaskPlanOutcomeChangedEvent> {
+  return {
+    eventType: 'task:plan-outcome-changed',
+    aggregateId: 'template-1',
+    occurredAt: new Date(2_000),
+    payload: {
+      identityId: 'identity-1' as TaskPlanOutcomeChangedEvent['identityId'],
+      taskTemplateId: 'template-1' as TaskPlanOutcomeChangedEvent['taskTemplateId'],
+      triggeringTaskInstanceId:
+        'instance-15' as TaskPlanOutcomeChangedEvent['triggeringTaskInstanceId'],
+      taskTitle: 'Graduate reliably',
+      goalBinding: {
+        goalId: 'goal-1' as NonNullable<TaskPlanOutcomeChangedEvent['goalBinding']>['goalId'],
+        keyResultId: 'kr-1' as NonNullable<TaskPlanOutcomeChangedEvent['goalBinding']>['keyResultId'],
+        contribution,
+      },
+      previousOutcome,
+      nextOutcome,
+      planVersion,
+      changedAt: 2_000,
     },
   };
 }
@@ -49,21 +85,58 @@ describe('toTaskGoalOutboxRecord V2', () => {
     expect(toTaskGoalOutboxRecord(completionEvent(null))).toBeNull();
   });
 
-  it('does not enqueue PlanCompletion until Task-owned outcome policy says Succeeded', () => {
-    const source = completionEvent({ value: 3, trigger: TaskGoalBindingTrigger.PlanCompletion });
-    expect(toTaskGoalOutboxRecord(source)).toBeNull();
+  it('does not let an occurrence completion directly settle PlanCompletion', () => {
+    expect(
+      toTaskGoalOutboxRecord(
+        completionEvent({ value: 3, trigger: TaskGoalBindingTrigger.PlanCompletion }),
+      ),
+    ).toBeNull();
+  });
 
-    source.payload.planSucceeded = true;
-    const record = toTaskGoalOutboxRecord(source);
-    expect(record).not.toBeNull();
-    expect(JSON.parse(record!.payload)).toMatchObject({
+  it('settles PlanCompletion only on the authoritative transition to Succeeded', () => {
+    const event = planOutcomeEvent(TaskPlanOutcome.Open, TaskPlanOutcome.Succeeded, 8);
+    const first = toTaskGoalOutboxRecord(event);
+    const retry = toTaskGoalOutboxRecord(event);
+
+    expect(first?.eventId).toBe('task-goal-plan-apply:template-1:v8');
+    expect(retry?.eventId).toBe(first?.eventId);
+    expect(JSON.parse(first!.payload)).toMatchObject({
       action: 'apply',
       source: { type: 'TaskPlan', id: 'template-1' },
       value: 3,
     });
   });
 
-  it('converts uncomplete into an explicit-source revert delivery', () => {
+  it('does not settle a strict plan transition to Failed', () => {
+    expect(
+      toTaskGoalOutboxRecord(planOutcomeEvent(TaskPlanOutcome.Open, TaskPlanOutcome.Failed)),
+    ).toBeNull();
+  });
+
+  it('reverts only the plan source when a correction leaves Succeeded', () => {
+    const record = toTaskGoalOutboxRecord(
+      planOutcomeEvent(TaskPlanOutcome.Succeeded, TaskPlanOutcome.Open, 9),
+    );
+
+    expect(record?.eventId).toBe('task-goal-plan-revert:template-1:v9');
+    expect(JSON.parse(record!.payload)).toMatchObject({
+      action: 'revert',
+      sources: [{ type: 'TaskPlan', id: 'template-1' }],
+    });
+  });
+
+  it('uses a new transition version when a corrected plan succeeds again', () => {
+    const first = toTaskGoalOutboxRecord(
+      planOutcomeEvent(TaskPlanOutcome.Open, TaskPlanOutcome.Succeeded, 8),
+    );
+    const second = toTaskGoalOutboxRecord(
+      planOutcomeEvent(TaskPlanOutcome.Open, TaskPlanOutcome.Succeeded, 10),
+    );
+    expect(second?.eventId).not.toBe(first?.eventId);
+    expect(second?.eventId).toBe('task-goal-plan-apply:template-1:v10');
+  });
+
+  it('converts uncomplete into an instance-source revert; plan revert comes from outcome transition', () => {
     const source: IDomainEvent = {
       eventType: 'task:instance-uncompleted',
       aggregateId: 'instance-1',
@@ -79,14 +152,11 @@ describe('toTaskGoalOutboxRecord V2', () => {
     const record = toTaskGoalOutboxRecord(source);
 
     expect(record).not.toBeNull();
-    expect(record!.eventId).toBe('task-goal-revert:instance-1:2000');
+    expect(record!.eventId).toBe('task-goal-revert:instance:instance-1:2000');
     expect(JSON.parse(record!.payload)).toMatchObject({
       schemaVersion: 2,
       action: 'revert',
-      sources: [
-        { type: 'TaskInstance', id: 'instance-1' },
-        { type: 'TaskPlan', id: 'template-1' },
-      ],
+      sources: [{ type: 'TaskInstance', id: 'instance-1' }],
     });
   });
 });

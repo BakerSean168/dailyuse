@@ -63,7 +63,13 @@
     >
       <div class="mx-auto max-w-4xl">
         <!-- 加载 = 行骨架（§0.3 禁整页 spinner） -->
-        <div v-if="isLoading" class="space-y-3 py-2" data-testid="notification-list-skeleton">
+        <div
+          v-if="isLoading"
+          class="space-y-3 py-2"
+          data-testid="notification-list-skeleton"
+          role="status"
+          :aria-label="t('notification.loading')"
+        >
           <div v-for="i in 6" :key="i" class="flex items-start gap-3 px-2 py-2">
             <Skeleton class="mt-1 h-2 w-2 rounded-full" />
             <div class="flex-1 space-y-1.5">
@@ -71,6 +77,18 @@
               <Skeleton class="h-3 w-1/3" />
             </div>
           </div>
+        </div>
+
+        <div
+          v-else-if="isError"
+          class="flex flex-col items-center gap-3 py-16 text-center"
+          data-testid="notifications-error-state"
+          role="alert"
+        >
+          <p class="text-sm text-muted-foreground">{{ t('notification.error.fetchFailed') }}</p>
+          <Button variant="outline" size="sm" data-testid="notifications-retry" @click="refetch">
+            {{ t('notification.action.retry') }}
+          </Button>
         </div>
 
         <!-- 未读 Tab 空 = 已全部处理；全部空 = 空信箱（无按钮，§11-7） -->
@@ -108,6 +126,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import { Bell, CheckCheck } from '@lucide/vue';
@@ -120,14 +139,16 @@ import { useNotificationUnreadQuery } from '../composables/useNotificationUnread
 import { useNotificationMutations } from '../composables/useNotificationMutations';
 import { useNotificationStore } from '../stores/notification-store';
 import type { NotificationClientDTO } from '@memoflow/contracts/notification';
+import { resolveNotificationDestination } from '../desktop/notification-click-navigation';
 
-const { notifications, isLoading } = useNotificationListQuery();
+const { notifications, isLoading, isError, refetch } = useNotificationListQuery();
 const { unreadCount, hasUnread } = useNotificationUnreadQuery();
 const { markAsRead, markAllAsRead, dismiss } = useNotificationMutations();
 
 const store = useNotificationStore();
 
 const { t } = useI18n();
+const router = useRouter();
 
 // 过滤收敛为 全部/未读 两态（§11-5；「已读」不是信箱高频动作）；read filter 是 UI state。
 const selectedFilter = computed({
@@ -149,6 +170,7 @@ function handleNotificationClick(notification: NotificationClientDTO) {
   if (!notification.isRead) {
     markAsRead.mutate(notification.id);
   }
+  void router.push(resolveNotificationDestination(notification)).catch(() => undefined);
 }
 
 async function handleMarkRead(id: string) {

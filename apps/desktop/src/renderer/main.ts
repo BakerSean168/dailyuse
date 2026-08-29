@@ -40,7 +40,6 @@ function renderStartupError(error: unknown): void {
   `;
 }
 
-
 function getHashPath(): string {
   const hash = window.location.hash;
   const rawPath = hash.startsWith('#') ? hash.slice(1) : hash;
@@ -50,6 +49,14 @@ function getHashPath(): string {
 
 function isProfileAccessHashRoute(path: string): boolean {
   return path === '/profile-access' || path.startsWith('/profile-access/');
+}
+
+function isInterventionWindowHashRoute(path: string): boolean {
+  return path === '/intervention-window' || path.startsWith('/intervention-window/');
+}
+
+function isFocusWindowHashRoute(path: string): boolean {
+  return path === '/focus-window' || path.startsWith('/focus-window/');
 }
 
 async function startRenderer() {
@@ -68,7 +75,20 @@ async function startRenderer() {
 
   ensureElectronBridgeAvailable();
 
-  if (isProfileAccessHashRoute(getHashPath())) {
+  const hashPath = getHashPath();
+  if (isInterventionWindowHashRoute(hashPath)) {
+    const { bootstrapInterventionWindow } = await import('./bootstrap/intervention-window');
+    await bootstrapInterventionWindow();
+    return;
+  }
+
+  if (isFocusWindowHashRoute(hashPath)) {
+    const { bootstrapFocusWindow } = await import('./bootstrap/focus-window');
+    await bootstrapFocusWindow();
+    return;
+  }
+
+  if (isProfileAccessHashRoute(hashPath)) {
     const { bootstrapAuthApp } = await import('./bootstrap/auth');
     await bootstrapAuthApp();
     return;

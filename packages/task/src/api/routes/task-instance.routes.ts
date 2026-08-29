@@ -18,6 +18,7 @@ import {
   GetTaskInstancesByRangeSchema,
   CompleteTaskInstanceInvocationSchema,
   MarkTaskInstanceMissedInvocationSchema,
+  RescheduleTaskInstanceInvocationSchema,
   SkipTaskInstanceInvocationSchema,
   TaskInstanceIdCommandInvocationSchema,
 } from '@memoflow/contracts/task';
@@ -219,6 +220,34 @@ export function registerTaskInstanceRoutes(
     },
     [auth],
     (data, ctx) => controller.markMissedInstance(data.params.id, data.body, ctx),
+  );
+
+  // POST /:id/reschedule — owner command for this Task occurrence only
+  r.routeWithValidation(
+    {
+      method: 'post',
+      path: '/:id/reschedule',
+      summary: '重新安排任务实例时间',
+      request: {
+        params: RescheduleTaskInstanceInvocationSchema.shape.params,
+        body: {
+          content: {
+            'application/json': { schema: RescheduleTaskInstanceInvocationSchema.shape.body },
+          },
+        },
+      },
+      responses: {
+        200: successResponse(TaskInstanceResponseSchema, '重新安排成功'),
+        404: errorResponse('实例不存在'),
+        409: errorResponse('版本或目标日期冲突'),
+      },
+      validation: {
+        schema: RescheduleTaskInstanceInvocationSchema,
+        projectInput: (req) => ({ params: req.params, body: req.body }),
+      },
+    },
+    [auth],
+    (data, ctx) => controller.rescheduleInstance(data.params.id, data.body, ctx),
   );
 
   // POST /:id/start — Start instance

@@ -10,8 +10,18 @@ import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
 import { padTwoDigits } from '../../../shared/utils/pad-two-digits';
 import { useSchedule } from './useSchedule';
 import { useTask } from '../../task/composables/useTask';
-import type { TaskInstanceClientDTO, TaskInstanceStatus, TaskTemplateClientDTO } from '@memoflow/contracts/task';
-import { startOfDayMs, endOfDayMs } from '../../../shared/utils/product-time';
+import type {
+  TaskInstanceClientDTO,
+  TaskInstanceStatus,
+  TaskTemplateClientDTO,
+} from '@memoflow/contracts/task';
+import type { CalendarEventProjection } from '@memoflow/contracts/schedule';
+import { endOfDayMs, getProductTime, startOfDayMs } from '../../../shared/utils/product-time';
+import {
+  projectPlannerReadModel,
+  projectTaskOccurrence,
+  type PlannerProductTimePort,
+} from '../planner';
 
 // ============ 统一内部事件类型 ============
 
@@ -33,7 +43,6 @@ export interface CalendarEventItem {
  * Dual-retired from Day/Week/Month calendar local toDateStr copies.
  * Residual 1321: padStart dual retired onto padTwoDigits sole (Date|number key contract stays local).
  * Soft residual 1252: formatDateToYMD Date-only form sole remains separate (storage encoding).
- * Soft residual 1285: getWeekStart dual retired onto schedule sole in residual 1285.
  */
 export function toLocalDateKey(value: Date | number): string {
   const date = typeof value === 'number' ? new Date(value) : value;
@@ -41,36 +50,6 @@ export function toLocalDateKey(value: Date | number): string {
   const month = padTwoDigits(date.getMonth() + 1);
   const day = padTwoDigits(date.getDate());
   return `${year}-${month}-${day}`;
-}
-
-/**
- * Residual 1285: sole getWeekStart — Monday-start local week (hours zeroed).
- * Dual-retired from WeekViewCalendar + ScheduleCalendarView local copies.
- * Soft residual 1282: toLocalDateKey dual-retired sole remains separate.
- */
-export function getWeekStart(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day; // Monday as week start
-  d.setDate(d.getDate() + diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-/**
- * Residual 1288: sole calendarEventBgClass — conflict/source solid bg for Day/Week timed cells.
- * Dual-retired from DayViewCalendar + WeekViewCalendar local eventBgClass copies.
- * Soft residual 1288: Month eventClass uses translucent /text variants (keep-boundary).
- * Soft residual 1288: getEventStyle Day px vs Week % layout keep-boundary (no force-merge).
- */
-export function calendarEventBgClass(event: Pick<CalendarEventItem, 'source' | 'hasConflict'>): string {
-  if (event.hasConflict) return 'bg-warning';
-  const map: Record<CalendarEventItem['source'], string> = {
-    schedule: 'bg-primary',
-    goal: 'bg-success',
-    task: 'bg-info',
-  };
-  return map[event.source];
 }
 
 /**
@@ -90,9 +69,6 @@ export function calendarEventSourceLabel(
   };
   return translate(keys[source]);
 }
-
-
-
 
 /**
  * Residual 1294: formatCapsuleTime dual body retired onto formatLocalHHmm sole.
@@ -119,7 +95,10 @@ export function resolveScheduleCapsule(
 ): ScheduleCapsuleSnapshot {
   const todayKey = toLocalDateKey(nowMs);
   const todays = events
-    .filter((event) => toLocalDateKey(event.startTime) === todayKey || toLocalDateKey(event.endTime) === todayKey)
+    .filter(
+      (event) =>
+        toLocalDateKey(event.startTime) === todayKey || toLocalDateKey(event.endTime) === todayKey,
+    )
     .sort((a, b) => a.startTime - b.startTime);
 
   const current = todays.find(
@@ -169,52 +148,62 @@ export function formatScheduleCapsuleLabel(
 
 // ============ 转换工具函数 ============
 
-/** TaskInstance → CalendarEventItem（用 instanceDate + timeRange 分钟偏移） */
+/** Product-time seam shared by the canonical Planner projection and the legacy renderer adapter. */
+function plannerProductTimePort(): PlannerProductTimePort {
+  const time = getProductTime();
+  return {
+    toYmd: (instant) => time.calendar.toYmd(instant),
+    startOfDay: (instant) => time.calendar.startOfDay(instant),
+  };
+}
+
+/**
+ * Temporary renderer compatibility seam until PLAN-4304 retires the custom
+ * Day/Week/Month layout. Canonical ownership/revision/time truth stays on the
+ * CalendarEventProjection; this only reshapes Schedule/Task facts for old UI.
+ */
+function projectionToLegacyCalendarEvent(
+  projection: Extract<CalendarEventProjection, { sourceType: 'schedule' | 'task' }>,
+): CalendarEventItem {
+  const time = getProductTime();
+  const startTime = projection.allDay
+    ? Number(time.codec.startOfYmd(projection.start))
+    : Number(projection.start);
+  const endTime = projection.allDay
+    ? Number(time.calendar.endOfDay(startTime))
+    : Number(projection.end ?? startTime + 30 * 60_000);
+
+  return {
+    id: `${projection.sourceType}-${projection.sourceId}`,
+    title: projection.title,
+    startTime,
+    endTime,
+    displayMode: projection.allDay ? 'all-day' : 'timed',
+    source: projection.sourceType,
+    hasConflict: projection.displayMetadata.hasConflict ?? false,
+    originalId: projection.ownerCommandTarget.ownerId,
+    instanceStatus:
+      projection.sourceType === 'task'
+        ? (projection.displayMetadata.status as TaskInstanceStatus | undefined)
+        : undefined,
+  };
+}
+
+/** TaskInstance → legacy CalendarEventItem through the canonical PLAN-4302 projection. */
 export function taskInstancesToEvents(
   instances: TaskInstanceClientDTO[],
   templates: TaskTemplateClientDTO[],
 ): CalendarEventItem[] {
-  const templateMap = new Map(templates.map((t) => [t.id, t]));
-  const events: CalendarEventItem[] = [];
-  for (const inst of instances) {
-    const baseTs = Number(inst.instanceDate);
-    if (!isFinite(baseTs)) continue;
-    const dayBaseTs = startOfDayMs(baseTs);
-
-    const timeRange = inst.timeConfig?.timeRange;
-    const isAllDay = inst.timeConfig?.timeType === 'AllDay';
-    let startTime: number;
-    let endTime: number;
-    let displayMode: CalendarEventItem['displayMode'];
-
-    if (timeRange && typeof timeRange.start === 'number' && typeof timeRange.end === 'number') {
-      startTime = dayBaseTs + timeRange.start * 60 * 1000;
-      endTime = dayBaseTs + timeRange.end * 60 * 1000;
-      displayMode = 'timed';
-    } else if (inst.timeConfig?.timePoint != null) {
-      startTime = dayBaseTs + inst.timeConfig.timePoint * 60 * 1000;
-      endTime = startTime + 30 * 60 * 1000;
-      displayMode = 'timed';
-    } else {
-      startTime = dayBaseTs;
-      endTime = endOfDayMs(dayBaseTs);
-      displayMode = isAllDay ? 'all-day' : 'timed';
-    }
-
-    const template = templateMap.get(inst.templateId);
-    events.push({
-      id: `task-${inst.id}`,
-      title: template?.name ?? inst.id,
-      startTime,
-      endTime,
-      displayMode,
-      source: 'task',
-      hasConflict: false,
-      originalId: inst.id,
-      instanceStatus: inst.status,
-    });
-  }
-  return events;
+  const templateMap = new Map(templates.map((template) => [String(template.id), template]));
+  const time = plannerProductTimePort();
+  return instances.flatMap((instance) => {
+    const projection = projectTaskOccurrence(
+      instance,
+      templateMap.get(String(instance.templateId)),
+      time,
+    );
+    return projection ? [projectionToLegacyCalendarEvent(projection)] : [];
+  });
 }
 
 // ============ Composable ============
@@ -227,34 +216,36 @@ export function useCalendarView() {
   const windowStart = ref<number>(0);
   const windowEnd = ref<number>(0);
 
-  /** All events from all sources, merged and sorted by startTime */
-  const events = computed<CalendarEventItem[]>(() => {
+  /**
+   * Canonical owner-aware read model. Goal/Routine adapters are already part of
+   * PLAN-4302, while their live client feeds are wired in the later Planner
+   * source-integration slice. Raw ScheduleTask/ScheduledInvocation rows never
+   * enter this computed value.
+   */
+  const projections = computed<CalendarEventProjection[]>(() => {
     const entriesRaw = schedule.calendarEntries.value;
-    const entries = Array.isArray(entriesRaw) ? entriesRaw : [];
-    const scheduleEvents: CalendarEventItem[] = entries.map((entry) => ({
-      id: `schedule-${entry.id}`,
-      title: entry.title,
-      startTime: Number(entry.startTime),
-      endTime: Number(entry.endTime),
-      displayMode: 'timed',
-      source: 'schedule' as const,
-      hasConflict: entry.hasConflict,
-      originalId: entry.id,
-    }));
-
     const instancesRaw = task.instances.value;
     const templatesRaw = task.templates.value;
-    const taskEvents = taskInstancesToEvents(
-      Array.isArray(instancesRaw) ? instancesRaw : [],
-      Array.isArray(templatesRaw) ? templatesRaw : [],
-    );
-
-    const merged = [...scheduleEvents, ...taskEvents]
-      .sort((a, b) => a.startTime - b.startTime)
-      .filter((event, index, items) => items.findIndex((item) => item.id === event.id) === index);
-
-    return merged;
+    return projectPlannerReadModel({
+      calendarEntries: Array.isArray(entriesRaw) ? entriesRaw : [],
+      taskOccurrences: Array.isArray(instancesRaw) ? instancesRaw : [],
+      taskTemplates: Array.isArray(templatesRaw) ? templatesRaw : [],
+      goals: [],
+      routineOccurrences: [],
+      time: plannerProductTimePort(),
+    });
   });
+
+  /** Legacy custom-calendar view model, derived from canonical Schedule/Task projections. */
+  const events = computed<CalendarEventItem[]>(() =>
+    projections.value
+      .filter(
+        (event): event is Extract<CalendarEventProjection, { sourceType: 'schedule' | 'task' }> =>
+          event.sourceType === 'schedule' || event.sourceType === 'task',
+      )
+      .map(projectionToLegacyCalendarEvent)
+      .sort((a, b) => a.startTime - b.startTime),
+  );
 
   const isLoading = computed(() => schedule.isLoading.value || task.isLoading.value);
 
@@ -286,6 +277,7 @@ export function useCalendarView() {
   }
 
   return {
+    projections,
     events,
     isLoading,
     windowStart,
@@ -293,7 +285,5 @@ export function useCalendarView() {
     fetchForRange,
     ensureTodayLoaded,
     getScheduleCapsuleSnapshot,
-    // expose sub-composables for DEV panel access
-    scheduleTasks: schedule.tasks,
   };
 }

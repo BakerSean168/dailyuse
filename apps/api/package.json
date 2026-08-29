@@ -16,6 +16,7 @@
     "@memoflow/goal": "workspace:*",
     "@memoflow/governance": "workspace:*",
     "@memoflow/http-client": "workspace:*",
+    "@memoflow/label": "workspace:*",
     "@memoflow/notification": "workspace:*",
     "@memoflow/patterns": "workspace:*",
     "@memoflow/powersync-schema": "workspace:*",

@@ -26,6 +26,9 @@
       "@memoflow/schedule/electron": ["packages/schedule/dist/electron/index.d.ts"],
       "@memoflow/reminder/client": ["packages/reminder/dist/client/index.d.ts"],
       "@memoflow/reminder/electron": ["packages/reminder/dist/electron/index.d.ts"],
+      "@memoflow/reminder/routine-runtime": [
+        "packages/reminder/dist/routine-runtime/index.d.ts"
+      ],
       "@memoflow/notification/client": ["packages/notification/dist/client/index.d.ts"],
       "@memoflow/notification/electron": ["packages/notification/dist/electron/index.d.ts"],
       "@memoflow/ipc-client": ["packages/ipc-client/dist/index.d.ts"],

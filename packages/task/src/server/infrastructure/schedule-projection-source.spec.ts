@@ -1,206 +1,216 @@
 import { describe, expect, it, vi } from 'vitest';
+import { TaskType } from '@memoflow/contracts/task';
+import { buildSchedulingKey } from '@memoflow/contracts/schedule';
 import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { ITaskInstanceRepository } from '../domain/repositories/i-task-instance-repository';
 import type { ITaskTemplateRepository } from '../domain/repositories/i-task-template-repository';
 import {
-  aRecurringTask,
+  aLoadedTaskTemplate,
   aRelativeReminder,
   aTaskInstance,
-  anAllDayTimeConfig,
+  aTimePointConfig,
   anIdentityId,
 } from '../../testing';
-import { SourceModule } from '@memoflow/contracts/schedule';
-import { ScheduleTask } from '@memoflow/schedule';
 import {
   createTaskScheduleProjectionEventHandlers,
   createTaskScheduleProjectionSource,
+  TASK_REMINDER_HANDLER_KEY,
+  TASK_REMINDER_PAYLOAD_VERSION,
   taskScheduleProjectionEventNames,
 } from './schedule-projection-source';
 
-function aScheduleTaskForSelection(templateId: string, sourceEntityId: string) {
-  return ScheduleTask.create({
-    identityId: String(anIdentityId()),
-    name: 'Selection Task',
-    sourceModule: SourceModule.Task,
-    sourceEntityId,
-    schedule: {
-      cronExpression: null,
-      timezone: 'Asia/Shanghai',
-      startDate: new Date('2030-01-10T08:45:00.000Z').toISOString(),
-      endDate: null,
-      maxExecutions: 1,
-    },
-    metadata: {
-      payload: { templateId },
-      tags: ['task'],
-      priority: 'Normal',
-      timeout: null,
-    },
-  });
+function repos(input: {
+  template: Awaited<ReturnType<typeof aLoadedTaskTemplate>> | null;
+  instances?: Awaited<ReturnType<typeof aTaskInstance>>[];
+}) {
+  const findByIdForIdentity = vi.fn().mockResolvedValue(input.template);
+  const findById = vi.fn();
+  return {
+    findById,
+    findByIdForIdentity,
+    taskTemplateRepository: createMockRepo<ITaskTemplateRepository>({
+      findById,
+      findByIdForIdentity,
+    }),
+    taskInstanceRepository: createMockRepo<ITaskInstanceRepository>({
+      findByTemplateId: vi.fn().mockResolvedValue(input.instances ?? []),
+    }),
+  };
 }
 
-describe('task schedule projection source', () => {
-  it('builds a template projection plan and keeps template matching local to task', async () => {
+describe('task schedule projection source -> ScheduledIntent', () => {
+  it('fixture D: one-time Task at 14:00 with -30m reminder emits exactly one 13:30 neutral intent', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2030-01-01T00:00:00.000Z'));
 
     try {
       const identityId = anIdentityId();
-      const template = aRecurringTask({
+      const instanceDay = new Date('2030-01-10T00:00:00.000Z');
+      const timeConfig = aTimePointConfig(14 * 60, instanceDay);
+      const template = aLoadedTaskTemplate({
         identityId,
-        title: 'Pay rent',
-        reminderConfig: aRelativeReminder(15),
-        timeConfig: anAllDayTimeConfig(new Date('2030-01-10T00:00:00.000Z')),
+        title: 'Thesis defense',
+        taskType: TaskType.OneTime,
+        timeConfig,
+        reminderConfig: aRelativeReminder(30),
       });
-      const futureInstance = await aTaskInstance({
-        identityId,
-        templateId: template.id,
-        instanceDate: new Date('2030-01-10T00:00:00.000Z').getTime(),
-        timeConfig: anAllDayTimeConfig(new Date('2030-01-10T00:00:00.000Z')),
-      });
-      const pastInstance = await aTaskInstance({
+      const instance = await aTaskInstance({
         identityId,
         templateId: template.id,
-        instanceDate: new Date('2029-12-10T00:00:00.000Z').getTime(),
-        timeConfig: anAllDayTimeConfig(new Date('2029-12-10T00:00:00.000Z')),
+        instanceDate: instanceDay.getTime(),
+        timeConfig,
       });
-
-      const findByIdForIdentity = vi.fn().mockResolvedValue(template);
-      const findById = vi.fn();
-      const taskTemplateRepository = createMockRepo<ITaskTemplateRepository>({
-        findById,
-        findByIdForIdentity,
-      });
-      const taskInstanceRepository = createMockRepo<ITaskInstanceRepository>({
-        findByTemplateId: vi.fn().mockResolvedValue([futureInstance, pastInstance]),
-      });
-
-      const source = createTaskScheduleProjectionSource({
-        taskTemplateRepository,
-        taskInstanceRepository,
-      });
+      const dependencies = repos({ template, instances: [instance] });
+      const source = createTaskScheduleProjectionSource(dependencies);
 
       const plan = await source.buildTemplatePlan(template.id, String(identityId));
 
-      expect(findByIdForIdentity).toHaveBeenCalledWith(String(identityId), template.id);
-      expect(findById).not.toHaveBeenCalled();
-      expect(plan.selection.sourceModule).toBe(SourceModule.Task);
-      expect(plan.selection.identityId).toBe(String(identityId));
-      expect(plan.nextTasks).toHaveLength(1);
-      expect(plan.nextTasks[0]?.sourceEntityId).toBe(futureInstance.id);
-      expect(plan.nextTasks[0]?.metadata.payload['templateId']).toBe(template.id);
-      expect(plan.nextTasks[0]?.metadata.payload['instanceId']).toBe(futureInstance.id);
-      expect(plan.selection.matches(aScheduleTaskForSelection(template.id, futureInstance.id))).toBe(true);
-      expect(plan.selection.matches(aScheduleTaskForSelection('other-template', futureInstance.id))).toBe(
-        false,
+      expect(dependencies.findByIdForIdentity).toHaveBeenCalledWith(
+        String(identityId),
+        template.id,
+      );
+      expect(dependencies.findById).not.toHaveBeenCalled();
+      expect(plan.owner).toEqual({
+        identityId: String(identityId),
+        type: 'task.template',
+        id: template.id,
+      });
+      expect(plan.desired).toHaveLength(1);
+      expect(plan.desired[0]).toMatchObject({
+        handlerKey: TASK_REMINDER_HANDLER_KEY,
+        payloadVersion: TASK_REMINDER_PAYLOAD_VERSION,
+        runAt: Date.parse('2030-01-10T13:30:00.000Z'),
+        payload: {
+          templateId: template.id,
+          instanceId: instance.id,
+          occurrenceKey: instance.occurrenceKey,
+          taskTitle: 'Thesis defense',
+          reminderType: 'Relative',
+          reminderValue: 30,
+          reminderUnit: 'Minutes',
+          anchorTime: Date.parse('2030-01-10T14:00:00.000Z'),
+          reminderTime: Date.parse('2030-01-10T13:30:00.000Z'),
+        },
+      });
+      expect(plan.desired[0]?.schedulingKey).toBe(
+        buildSchedulingKey(
+          'task.reminder',
+          instance.occurrenceKey ?? instance.id,
+          'relative:30:Minutes',
+        ),
       );
     } finally {
       vi.useRealTimers();
     }
   });
 
-  it('returns an empty plan when the template is not schedulable', async () => {
-    const template = aRecurringTask({
-      reminderConfig: aRelativeReminder(15),
-    });
-    template.pause();
+  it('repeated projection keeps the same owner/key and identical reminder triggers do not duplicate', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2030-01-01T00:00:00.000Z'));
+    try {
+      const identityId = anIdentityId();
+      const day = new Date('2030-01-10T00:00:00.000Z');
+      const timeConfig = aTimePointConfig(14 * 60, day);
+      const duplicateReminder = aRelativeReminder(30).addRelativeTrigger(30, 'Minutes');
+      const template = aLoadedTaskTemplate({
+        identityId,
+        taskType: TaskType.OneTime,
+        timeConfig,
+        reminderConfig: duplicateReminder,
+      });
+      const instance = await aTaskInstance({
+        identityId,
+        templateId: template.id,
+        instanceDate: day.getTime(),
+        timeConfig,
+      });
+      const source = createTaskScheduleProjectionSource(repos({ template, instances: [instance] }));
 
-    const findByIdForIdentity = vi.fn().mockResolvedValue(template);
-    const findById = vi.fn();
-    const taskTemplateRepository = createMockRepo<ITaskTemplateRepository>({
-      findById,
-      findByIdForIdentity,
-    });
-    const taskInstanceRepository = createMockRepo<ITaskInstanceRepository>({
-      findByTemplateId: vi.fn().mockResolvedValue([]),
-    });
+      const first = await source.buildTemplatePlan(template.id, String(identityId));
+      const second = await source.buildTemplatePlan(template.id, String(identityId));
 
-    const source = createTaskScheduleProjectionSource({
-      taskTemplateRepository,
-      taskInstanceRepository,
-    });
-
-    const plan = await source.buildTemplatePlan(template.id, String(template.identityId));
-
-    expect(findByIdForIdentity).toHaveBeenCalledWith(String(template.identityId), template.id);
-    expect(findById).not.toHaveBeenCalled();
-    expect(plan.nextTasks).toEqual([]);
-    expect(plan.selection.matches(aScheduleTaskForSelection(template.id, 'instance-1'))).toBe(true);
+      expect(first.desired).toHaveLength(1);
+      expect(second.desired).toHaveLength(1);
+      expect(second.owner).toEqual(first.owner);
+      expect(second.desired[0]?.schedulingKey).toBe(first.desired[0]?.schedulingKey);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
+  it('returns an empty desired set for a paused template or a completed occurrence', async () => {
+    const identityId = anIdentityId();
+    const day = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const timeConfig = aTimePointConfig(14 * 60, day);
+    const template = aLoadedTaskTemplate({
+      identityId,
+      taskType: TaskType.OneTime,
+      timeConfig,
+      reminderConfig: aRelativeReminder(30),
+    });
+    template.pause();
+    const instance = await aTaskInstance({
+      identityId,
+      templateId: template.id,
+      instanceDate: day.getTime(),
+      timeConfig,
+    });
+    const pausedSource = createTaskScheduleProjectionSource(
+      repos({ template, instances: [instance] }),
+    );
+    expect((await pausedSource.buildTemplatePlan(template.id, String(identityId))).desired).toEqual(
+      [],
+    );
 
-  it('loads missing template via findByIdForIdentity and returns empty plan', async () => {
-    const findById = vi.fn();
-    const findByIdForIdentity = vi.fn().mockResolvedValue(null);
-    const taskTemplateRepository = createMockRepo<ITaskTemplateRepository>({
-      findById,
-      findByIdForIdentity,
-    });
-    const taskInstanceRepository = createMockRepo<ITaskInstanceRepository>({
-      findByTemplateId: vi.fn().mockResolvedValue([]),
-    });
+    template.activate();
+    instance.complete();
+    const completedSource = createTaskScheduleProjectionSource(
+      repos({ template, instances: [instance] }),
+    );
+    expect(
+      (await completedSource.buildTemplatePlan(template.id, String(identityId))).desired,
+    ).toEqual([]);
+  });
 
-    const source = createTaskScheduleProjectionSource({
-      taskTemplateRepository,
-      taskInstanceRepository,
-    });
+  it('returns the canonical owner with an empty desired set when the template is missing', async () => {
+    const dependencies = repos({ template: null });
+    const source = createTaskScheduleProjectionSource(dependencies);
 
     const plan = await source.buildTemplatePlan('TaskTemplateId_missing', 'identity-1');
 
-    expect(findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'TaskTemplateId_missing');
-    expect(findById).not.toHaveBeenCalled();
-    expect(plan.nextTasks).toEqual([]);
-    expect(plan.selection.identityId).toBe('identity-1');
-  });
-
-  it('builds an instance deletion selection by exact source entity id', () => {
-    const source = createTaskScheduleProjectionSource({
-      taskTemplateRepository: createMockRepo<ITaskTemplateRepository>({}),
-      taskInstanceRepository: createMockRepo<ITaskInstanceRepository>({}),
+    expect(plan).toEqual({
+      owner: { identityId: 'identity-1', type: 'task.template', id: 'TaskTemplateId_missing' },
+      desired: [],
     });
-
-    const selection = source.buildInstanceDeletionSelection('instance-42', 'identity-1');
-
-    expect(selection.sourceEntityId).toBe('instance-42');
-    expect(selection.matches(aScheduleTaskForSelection('template-1', 'instance-42'))).toBe(true);
-    expect(selection.matches(aScheduleTaskForSelection('template-1', 'instance-99'))).toBe(false);
   });
 
-  it('maps task domain events to projection actions', async () => {
+  it('maps occurrence terminal/reopen events to owner reconcile and template removal events to removeOwner', async () => {
     const upsertTemplate = vi.fn().mockResolvedValue(undefined);
     const deleteTemplate = vi.fn().mockResolvedValue(undefined);
-    const deleteInstance = vi.fn().mockResolvedValue(undefined);
-
-    const handlers = createTaskScheduleProjectionEventHandlers({
-      upsertTemplate,
-      deleteTemplate,
-      deleteInstance,
-    });
-
-    expect(taskScheduleProjectionEventNames).toContain('task:created');
-    expect(taskScheduleProjectionEventNames).toContain('task:instance-deleted');
-
-    await handlers['task:created']({
+    const handlers = createTaskScheduleProjectionEventHandlers({ upsertTemplate, deleteTemplate });
+    const common = {
       identityId: 'IdentityId_test',
-      templateId: 'TaskTemplateId_template',
-      goalId: null,
-      task: { id: 'TaskTemplateId_template' },
-    } as never);
-    await handlers['task:template-paused']({
-      identityId: 'IdentityId_test',
-      taskTemplateId: 'TaskTemplateId_paused',
-      pausedAt: Date.now(),
-      taskTemplate: { id: 'TaskTemplateId_paused' },
-    } as never);
-    await handlers['task:instance-deleted']({
-      identityId: 'IdentityId_test',
-      taskInstanceId: 'TaskInstanceId_deleted',
       taskTemplateId: 'TaskTemplateId_template',
-      deletedAt: Date.now(),
-    } as never);
+      taskInstanceId: 'TaskInstanceId_instance',
+    };
 
+    expect(taskScheduleProjectionEventNames).toContain('task:instance-uncompleted');
+    expect(taskScheduleProjectionEventNames).toContain('task:rescheduled');
+    await handlers['task:instance-completed']({ ...common, completedAt: 1 } as never);
+    await handlers['task:instance-skipped']({ ...common, skippedAt: 2 } as never);
+    await handlers['task:instance-deleted']({ ...common, deletedAt: 3 } as never);
+    await handlers['task:instance-uncompleted']({ ...common, uncompletedAt: 4 } as never);
+    await handlers['task:rescheduled']({
+      ...common,
+      previousDueDate: 10,
+      newDueDate: 20,
+    } as never);
+    await handlers['task:template-paused']({ ...common, pausedAt: 5 } as never);
+    await handlers['task:deleted']({ ...common, deletedAt: 6 } as never);
+
+    expect(upsertTemplate).toHaveBeenCalledTimes(5);
     expect(upsertTemplate).toHaveBeenCalledWith('TaskTemplateId_template', 'IdentityId_test');
-    expect(deleteTemplate).toHaveBeenCalledWith('TaskTemplateId_paused', 'IdentityId_test');
-    expect(deleteInstance).toHaveBeenCalledWith('TaskInstanceId_deleted', 'IdentityId_test');
+    expect(deleteTemplate).toHaveBeenCalledTimes(2);
+    expect(deleteTemplate).toHaveBeenCalledWith('TaskTemplateId_template', 'IdentityId_test');
   });
 });

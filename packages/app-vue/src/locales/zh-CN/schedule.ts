@@ -267,6 +267,7 @@ export default {
   },
   "error": {
     "loadTasksFailed": "加载调度任务失败",
+    "updateCalendarEntryFailed": "更新日程失败",
     "createTaskFailed": "创建调度任务失败",
     "deleteTaskFailed": "删除调度任务失败",
     "pauseTaskFailed": "暂停调度任务失败",

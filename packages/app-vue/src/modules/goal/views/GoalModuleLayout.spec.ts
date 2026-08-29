@@ -12,6 +12,7 @@ const goalMocks = vi.hoisted(() => ({
   setSelectedFolderId: vi.fn(),
   setSystemView: vi.fn(),
   search: vi.fn(),
+  setLabelIdsAll: vi.fn(),
   fetchGoals: vi.fn(async () => undefined),
   getGoalAggregateView: vi.fn(async () => null),
   fetchFolders: vi.fn(async () => undefined),
@@ -26,11 +27,22 @@ vi.mock('../composables/useGoal', async () => {
     goals: vueRef([]),
     currentFocusMode: vueRef(null),
     selectedFolderId: vueRef(null),
+    labelIdsAll: vueRef([]),
     systemView: vueRef('active'),
     isSaving: vueRef(false),
     ...goalMocks,
   };
   return { useGoal: () => state };
+});
+
+vi.mock('../../../shared/composables/useLabelCatalog', async () => {
+  const { ref: vueRef } = await import('vue');
+  return {
+    useLabelCatalog: () => ({
+      options: vueRef([{ id: 'work', name: 'Work', color: null }]),
+      isLoading: vueRef(false),
+    }),
+  };
 });
 
 const i18n = createI18n({
@@ -44,6 +56,7 @@ const i18n = createI18n({
           completed: 'Completed',
           expired: 'Expired',
           deleted: 'Deleted',
+          all: 'All',
         },
       },
     },
@@ -74,7 +87,7 @@ const RouteContentProbe = defineComponent({
 
 const ToolbarStub = defineComponent({
   name: 'GoalPageToolbar',
-  emits: ['create-goal'],
+  emits: ['create-goal', 'update-labels', 'select-system-view'],
   setup(_, { emit }) {
     return () =>
       h('header', { 'data-testid': 'goal-page-toolbar' }, [
@@ -82,6 +95,14 @@ const ToolbarStub = defineComponent({
           'data-primary-action': 'create-goal',
           'data-testid': 'create-goal-entry',
           onClick: () => emit('create-goal'),
+        }),
+        h('button', {
+          'data-testid': 'goal-label-filter-stub',
+          onClick: () => emit('update-labels', ['work', 'ai']),
+        }),
+        h('button', {
+          'data-testid': 'goal-system-view-stub',
+          onClick: () => emit('select-system-view', 'completed'),
         }),
       ]);
   },
@@ -151,6 +172,11 @@ describe('GoalModuleLayout', () => {
     expect(wrapper.get('[data-testid="goal-route-scroll"]').element.scrollTop).toBe(48);
     expect(routeMountCount).toBe(1);
 
+    await wrapper.get('[data-testid="goal-label-filter-stub"]').trigger('click');
+    await wrapper.get('[data-testid="goal-system-view-stub"]').trigger('click');
+    expect(goalMocks.setLabelIdsAll).toHaveBeenCalledWith(['work', 'ai']);
+    expect(goalMocks.setSystemView).toHaveBeenCalledWith('completed');
+
     vi.clearAllMocks();
     window.dispatchEvent(
       new CustomEvent('db:tables-changed', {
@@ -189,7 +215,7 @@ describe('GoalModuleLayout', () => {
 
     const wrapper = mount(GoalModuleLayout, {
       global: {
-        plugins: [router, i18n, createPinia()],
+        plugins: [router, i18n],
         stubs: {
           GoalPageToolbar: ToolbarStub,
           GoalDialog: GoalDialogStub,

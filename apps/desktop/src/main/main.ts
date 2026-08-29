@@ -25,19 +25,40 @@ import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 // ── Module Electron Entry Points ─────────────────────────────────────
 import { PowerSyncTaskBindingReadPort } from '@memoflow/task';
 import { createGoalTaskProgressPowerSyncHandler } from '@memoflow/goal';
-import { createTaskPowerSyncScheduleExecutionSource } from '@memoflow/task/schedule-execution';
+import {
+  createTaskPowerSyncScheduleExecutionSource,
+  createTaskReminderScheduledHandlerRegistration,
+} from '@memoflow/task/schedule-execution';
 import { createTaskPowerSyncScheduleProjectionSource } from '@memoflow/task/schedule-projection';
 import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestration';
-import { createGoalPowerSyncScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
+import {
+  createGoalPowerSyncReminderFireHandler,
+  createGoalPowerSyncScheduleExecutionSource,
+} from '@memoflow/goal/schedule-execution';
 import { createGoalPowerSyncScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
 import { createLocalVaultRuntime } from '@memoflow/repository/electron';
 import { createSchedulePowerSyncRepositories } from '@memoflow/schedule';
+import { LabelService, PowerSyncLabelRepository } from '@memoflow/label';
+import { createLabelElectronModule } from './modules/label/label.electron-module';
 import { composeGovernance } from './runtime/compose-governance';
 import { composeGoal } from './runtime/compose-goal';
 import { composeTask } from './runtime/compose-task';
 import { composeAccount } from './runtime/compose-account';
 import { composeNotification } from './runtime/compose-notification';
 import { composeReminder } from './runtime/compose-reminder';
+import { PowerSyncProtocolSessionStore } from '@memoflow/reminder/server';
+import { createProtocolSessionRuntime } from '@memoflow/reminder/routine-runtime';
+import {
+  createFocusWindowController,
+  createFocusWindowElectronModule,
+  createInterventionWindowController,
+  createInterventionWindowElectronModule,
+  ElectronFocusTaskbarAdapter,
+  ElectronFocusWindowHost,
+  ElectronInterventionWindowHost,
+  type FocusWindowController,
+  type InterventionWindowController,
+} from './modules/routine';
 import { composeSchedule } from './runtime/compose-schedule';
 import { composeSetting } from './runtime/compose-setting';
 import { composeDataPortability } from './runtime/compose-data-portability';
@@ -80,6 +101,10 @@ configureDesktopShellIdentity();
 const logger = createLogger('DesktopMain');
 let mainRuntime: DesktopMainRuntime | null = null;
 const windowManager = new WindowManager();
+let activeFocusWindowController: FocusWindowController | null = null;
+let activeInterventionWindowController: InterventionWindowController | null = null;
+let activeReminderActivityRuntime: { stop: () => void } | null = null;
+let activeReminderUsageRuntime: { stop: () => void } | null = null;
 
 // Composed Goal/Task repository view for the active profile. The dashboard IPC
 // handler is registered once at shell init, but the repositories only exist
@@ -133,7 +158,58 @@ async function registerBusinessModules(
       { channelType: 'Desktop', status: 'available' },
     ],
   });
-  const reminderComposed = composeReminder({ db });
+  const profileIdentityId = mainRuntime?.profileRuntimeManager.getCurrentIdentityId();
+  if (!profileIdentityId) {
+    throw new Error(
+      'Reminder local Routine runtime requires an active or prepared profile identity',
+    );
+  }
+  const reminderComposed = composeReminder({
+    db,
+    identityId: profileIdentityId,
+    notificationRequestedWriter: notificationComposed.requestedWriter,
+  });
+  // Project the durable vNext Routine snapshot before sensors start so the first
+  // activity transition cannot race ahead of registration. ROUTINE-5301 can
+  // reuse the same refresh seam after configuration mutations.
+  await reminderComposed.refreshLocalRoutineRegistrations();
+  // Activity truth is a per-profile runtime. Start the sensor before the
+  // accumulator so no idle/resume transition is lost during activation.
+  reminderComposed.activityRuntime.start();
+  reminderComposed.activeUsageRuntime.start();
+  activeReminderActivityRuntime = reminderComposed.activityRuntime;
+  activeReminderUsageRuntime = reminderComposed.activeUsageRuntime;
+
+  // Routine InterventionWindow is a Main Process projection over the per-profile
+  // InterventionRuntime returned by the Reminder composition root. It owns only
+  // one low-intrusion BrowserWindow; occurrence truth remains in the runtime.
+  const interventionWindowHost = new ElectronInterventionWindowHost();
+  const interventionWindowController = createInterventionWindowController({
+    runtime: reminderComposed.interventionRuntime,
+    host: interventionWindowHost,
+  });
+  const interventionWindowElectronModule = createInterventionWindowElectronModule(
+    interventionWindowController,
+  );
+  activeInterventionWindowController = interventionWindowController;
+
+  // Routine FocusWindow is a Main Process projection over the durable ProtocolSession.
+  // Closing/hiding the window never owns session termination; all state commands go
+  // through ProtocolSessionRuntime and its optimistic-versioned PowerSync store.
+  const protocolSessionStore = new PowerSyncProtocolSessionStore(db);
+  const protocolSessionRuntime = createProtocolSessionRuntime({
+    store: protocolSessionStore,
+    protocolBreakCreditRuntime: reminderComposed.protocolBreakCreditRuntime,
+  });
+  const focusWindowHost = new ElectronFocusWindowHost();
+  const focusWindowController = createFocusWindowController({
+    store: protocolSessionStore,
+    runtime: protocolSessionRuntime,
+    host: focusWindowHost,
+    taskbar: new ElectronFocusTaskbarAdapter(() => focusWindowHost.browserWindow),
+  });
+  const focusWindowElectronModule = createFocusWindowElectronModule(focusWindowController);
+  activeFocusWindowController = focusWindowController;
 
   // 3. Schedule orchestration using the single schedule-task repository, then the
   //    two-phase schedule composer. The runtime controller is the ONLY schedule
@@ -149,7 +225,6 @@ async function registerBusinessModules(
     },
     goalProjection: {
       source: createGoalPowerSyncScheduleProjectionSource(db),
-      scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
     reminderProjection: {
       source: reminderComposed.scheduleProjectionSource,
@@ -159,9 +234,11 @@ async function registerBusinessModules(
       taskSource: createTaskPowerSyncScheduleExecutionSource(db),
       goalSource: createGoalPowerSyncScheduleExecutionSource(db),
       reminderSource: reminderComposed.scheduleExecutionSource,
-      notificationPort: notificationComposed.scheduleNotificationPort,
     },
   });
+  scheduleOrchestrationModule.handlerRegistry.register(
+    createGoalPowerSyncReminderFireHandler(db, notificationComposed.requestedWriter),
+  );
   const scheduleComposed = composeSchedule({
     repositories: scheduleRepositorySet,
     sourceExecutor: scheduleOrchestrationModule.sourceExecutor,
@@ -180,11 +257,26 @@ async function registerBusinessModules(
     runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
     goalProgressHandler: createGoalTaskProgressPowerSyncHandler(db),
   });
+  // Register the Task reminder fire handler so scheduled `task.reminder` work
+  // (e.g. a one-time task + relative reminder) is executed by the registry-based
+  // source executor. Desktop enqueues the durable NotificationRequested envelope
+  // into the shared outbox consumed by the notification durable runtime.
+  scheduleOrchestrationModule.handlerRegistry.register(
+    createTaskReminderScheduledHandlerRegistration({
+      taskInstanceRepository: taskComposed.repositories.taskInstanceRepository,
+      taskTemplateRepository: taskComposed.repositories.taskTemplateRepository,
+      notificationRequestedWriter: notificationComposed.repositories.requestedWriter,
+    }),
+  );
   const taskElectronModule = taskComposed.module;
 
   const goalComposed = composeGoal({
     db,
     taskBindingReadPort: new PowerSyncTaskBindingReadPort(db),
+  });
+
+  const labelElectronModule = createLabelElectronModule({
+    service: new LabelService(new PowerSyncLabelRepository(db)),
   });
 
   const dashboardRepositories: DashboardRepositoryDependencies = {
@@ -386,9 +478,12 @@ async function registerBusinessModules(
     .register(dataPortabilityElectronModule)
     // Feature modules
     .register(goalComposed.module)
+    .register(labelElectronModule)
     .register(taskElectronModule)
     .register(scheduleComposed.module)
     .register(reminderComposed.module)
+    .register(interventionWindowElectronModule)
+    .register(focusWindowElectronModule)
     .register(AIElectronModule)
     .register(governanceElectronModule)
     .register(repositoryElectronModule);
@@ -466,11 +561,29 @@ async function initializeShellRuntime(): Promise<void> {
       },
     );
   });
-  profileRuntimeManager.setAfterActivation((profile) =>
-    cloudConnectionManager.restore(profile).then(() => undefined),
-  );
+  profileRuntimeManager.setAfterActivation(async (profile) => {
+    await cloudConnectionManager.restore(profile).catch((error) => {
+      logger.warn('Cloud connection restore failed; Profile remains locally available', { error });
+    });
+    try {
+      activeInterventionWindowController?.restoreIdentity(profile.localOwnerId);
+    } catch (error) {
+      logger.warn('InterventionWindow restore failed; InterventionRuntime remains authoritative', {
+        error,
+      });
+    }
+    await activeFocusWindowController?.restoreIdentity(profile.localOwnerId).catch((error) => {
+      logger.warn('FocusWindow restore failed; ProtocolSession remains durable', { error });
+    });
+  });
   profileRuntimeManager.setBeforeDeactivation(() => {
+    activeReminderUsageRuntime?.stop();
+    activeReminderActivityRuntime?.stop();
+    activeReminderUsageRuntime = null;
+    activeReminderActivityRuntime = null;
     activeProfileDashboardRepositories = null;
+    activeInterventionWindowController = null;
+    activeFocusWindowController = null;
     // Clear the WindowManager's bound schedule runtime controller BEFORE the
     // modules are torn down so no stale controller outlives its instance.
     // 在模块拆除前清除 WindowManager 绑定的 schedule runtime controller，

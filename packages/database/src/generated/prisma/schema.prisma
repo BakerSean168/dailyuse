@@ -60,6 +60,7 @@ model Account {
   reminderInstances               ReminderInstance[]
   reminderStatistics              ReminderStatistic?
   routineDefinitions              RoutineDefinition[]
+  routineTemporaryOverrides       RoutineTemporaryOverride[]
   routineProfiles                 RoutineProfile[]
   routineProfileMemberships       RoutineProfileMembership[]
   routineProtocolDefinitions      RoutineProtocolDefinition[]
@@ -90,20 +91,22 @@ model Account {
   dashboardConfigs                DashboardConfig?
 
   // PowerSync: denormalized identity relations
-  taskTemplateHistory            TaskTemplateHistory[]           @relation("AccountTaskTemplateHistory")
-  scheduleExecutions             ScheduleExecution[]             @relation("AccountScheduleExecutions")
-  reminderHistory                ReminderHistory[]               @relation("AccountReminderHistory")
-  reminderResponses              ReminderResponse[]              @relation("AccountReminderResponses")
-  reminderOccurrences            ReminderOccurrence[]            @relation("AccountReminderOccurrences")
-  notificationChannels           NotificationChannel[]           @relation("AccountNotificationChannels")
-  notificationHistory            NotificationHistory[]           @relation("AccountNotificationHistory")
-  notificationDispatchOutboxes   NotificationDispatchOutbox[]    @relation("AccountNotificationDispatchOutboxes")
-  aiMessages                     AiMessage[]                     @relation("AccountAiMessages")
-  folders                        Folder[]                        @relation("AccountFolders")
-  resources                      Resource[]                      @relation("AccountResources")
-  repositoryResources            RepositoryResource[]            @relation("AccountRepositoryResources")
-  knowledgeRepositoryConnections KnowledgeRepositoryConnection[]
-  knowledgeWriteRequests         KnowledgeWriteRequest[]
+  taskTemplateHistory                    TaskTemplateHistory[]                   @relation("AccountTaskTemplateHistory")
+  scheduleExecutions                     ScheduleExecution[]                     @relation("AccountScheduleExecutions")
+  reminderHistory                        ReminderHistory[]                       @relation("AccountReminderHistory")
+  reminderResponses                      ReminderResponse[]                      @relation("AccountReminderResponses")
+  reminderOccurrences                    ReminderOccurrence[]                    @relation("AccountReminderOccurrences")
+  routineOccurrences                     RoutineOccurrence[]                     @relation("AccountRoutineOccurrences")
+  notificationChannels                   NotificationChannel[]                   @relation("AccountNotificationChannels")
+  notificationHistory                    NotificationHistory[]                   @relation("AccountNotificationHistory")
+  notificationDispatchOutboxes           NotificationDispatchOutbox[]            @relation("AccountNotificationDispatchOutboxes")
+  aiMessages                             AiMessage[]                             @relation("AccountAiMessages")
+  folders                                Folder[]                                @relation("AccountFolders")
+  resources                              Resource[]                              @relation("AccountResources")
+  repositoryResources                    RepositoryResource[]                    @relation("AccountRepositoryResources")
+  knowledgeRepositoryConnections         KnowledgeRepositoryConnection[]
+  knowledgeRepositoryInstallationIntents KnowledgeRepositoryInstallationIntent[]
+  knowledgeWriteRequests                 KnowledgeWriteRequest[]
 
   @@index([emailAddress])
   @@index([phoneFullNumber])
@@ -933,8 +936,8 @@ model NotificationDeliveryDecisionRecord {
 model NotificationPreference {
   id                String    @id
   identityId        String    @unique @map("identity_id")
-  globalChannels    String    @map("global_channels")
-  workflowOverrides String    @map("workflow_overrides")
+  globalChannels    String    @default("{}") @map("global_channels")
+  workflowOverrides String    @default("{}") @map("workflow_overrides")
   doNotDisturb      String?   @map("do_not_disturb")
   rateLimit         String?   @map("rate_limit")
   version           Int       @default(1)
@@ -1369,8 +1372,10 @@ model RoutineDefinition {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  account     Account                    @relation(fields: [identityId], references: [id], onDelete: Cascade)
-  memberships RoutineProfileMembership[]
+  account           Account                    @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  memberships       RoutineProfileMembership[]
+  occurrences       RoutineOccurrence[]
+  temporaryOverride RoutineTemporaryOverride?
 
   @@unique([identityId, id])
   @@index([identityId, enabled])
@@ -1451,6 +1456,64 @@ model RoutineProtocolSession {
   @@index([identityId, status])
   @@index([identityId, protocolId, createdAt])
   @@map("routine_protocol_sessions")
+}
+
+/// RoutineOccurrence durable occurrence fence for the ROUTINE-3401 wall-clock lane.
+/// Mirrors the protected ReminderOccurrence lease-claim contract (ADR-059 §10)
+/// keyed by the canonical occurrenceKey so crash/retry replay is idempotent.
+model RoutineOccurrence {
+  id               String    @id
+  identityId       String    @map("identity_id")
+  routineId        String    @map("routine_id")
+  source           String    @default("routine")
+  occurrenceKey    String    @map("occurrence_key")
+  scheduledFor     DateTime  @map("scheduled_for")
+  sourceRevision   String?   @map("source_revision")
+  idempotencyKey   String    @unique @map("idempotency_key")
+  status           String
+  attempt          Int       @default(0)
+  ownerToken       String?   @map("owner_token")
+  claimId          String?   @map("claim_id")
+  fencingToken     Int       @default(0) @map("fencing_token")
+  leaseExpiresAt   DateTime? @map("lease_expires_at")
+  lastError        String?   @map("last_error")
+  nextRetryAt      DateTime? @map("next_retry_at")
+  deadLetterAt     DateTime? @map("dead_letter_at")
+  correlationId    String?   @map("correlation_id")
+  causationId      String?   @map("causation_id")
+  historyJson      String?   @map("history_json")
+  nextOccurrenceAt DateTime? @map("next_occurrence_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  finishedAt       DateTime? @map("finished_at")
+
+  routine RoutineDefinition @relation(fields: [routineId, identityId], references: [id, identityId], onDelete: Cascade)
+  account Account           @relation("AccountRoutineOccurrences", fields: [identityId], references: [id])
+
+  @@unique([identityId, routineId, occurrenceKey])
+  @@index([identityId])
+  @@index([status])
+  @@index([leaseExpiresAt])
+  @@map("routine_occurrences")
+}
+
+/// ROUTINE-3401 durable snooze/suppress state for the routine wall-clock lane.
+/// Temporary override is runtime state kept separate from long-lived trigger
+/// config so a snooze never rewrites `trigger_json` (ADR-059 §6). One row per
+/// routine; the decoded payload uses the W2 trigger-parity codec.
+model RoutineTemporaryOverride {
+  identityId   String   @map("identity_id")
+  routineId    String   @map("routine_id")
+  overrideJson String   @map("override_json")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  routine RoutineDefinition @relation(fields: [routineId, identityId], references: [id, identityId], onDelete: Cascade)
+  account Account           @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@id([identityId, routineId])
+  @@unique([routineId, identityId])
+  @@map("routine_temporary_overrides")
 }
 
 // ==========================================
@@ -1666,6 +1729,34 @@ model RepositoryStatistic {
 
   @@index([identityId])
   @@map("repository_statistics")
+}
+
+/// Short-lived, identity-bound GitHub App installation orchestration intent.
+/// Only a SHA-256 hash of the provider state is persisted; no raw state or token is stored.
+model KnowledgeRepositoryInstallationIntent {
+  id                 String    @id
+  identityId         String    @map("identity_id")
+  stateHash          String    @unique @map("state_hash")
+  routeKey           String    @map("route_key")
+  clientKind         String    @map("client_kind")
+  returnPath         String    @map("return_path")
+  status             String    @default("Pending")
+  installationId     String?   @map("installation_id")
+  providerAccountId  String?   @map("provider_account_id")
+  setupAction        String?   @map("setup_action")
+  expiresAt          DateTime  @map("expires_at")
+  callbackReceivedAt DateTime? @map("callback_received_at")
+  finalizedAt        DateTime? @map("finalized_at")
+  consumedAt         DateTime? @map("consumed_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId, status])
+  @@index([installationId, status])
+  @@index([expiresAt])
+  @@map("knowledge_repository_installation_intents")
 }
 
 /// GitHub App installation bound to one explicitly selected knowledge repository.

@@ -5,8 +5,8 @@ import { TaskPriority, mapImportanceToTaskPriority } from './task-priority';
 
 /**
  * Residual 1168: mapPriority dual retired (contracts schedule sole).
- * Sole: mapImportanceToTaskPriority(importance) → TaskPriority.
- * Goal + Task schedule-projection-source import sole; local dual bodies deleted.
+ * Legacy ScheduleTask keeps one TaskPriority mapper. TASK-3101 moved the Task
+ * business projector to neutral SchedulingPriority, so it must not depend on it.
  * Soft residual 1168: buildTaskName / trigger scheduling stay domain-specific (no force-merge).
  * Soft residual 1165: startOfDay keep-boundary remains separate.
  * Does not flip §13.2 checkboxes.
@@ -34,15 +34,17 @@ describe('mapImportanceToTaskPriority dual retired (residual 1168)', () => {
     expect(voIndex).toContain('mapImportanceToTaskPriority');
   });
 
-  it('keeps Task importance mapping while Goal no longer owns a business priority field', () => {
-    expect(task).toContain('mapImportanceToTaskPriority');
-    expect(task).toContain("from '@memoflow/contracts/schedule'");
-    expect(task).not.toMatch(/function mapPriority\b/);
-    expect(task).toContain('mapImportanceToTaskPriority(templateDTO.importance)');
+  it('keeps legacy TaskPriority mapping out of the neutral Task projector', () => {
+    expect(task).not.toContain('mapImportanceToTaskPriority');
+    expect(task).toContain('SchedulingPriority');
+    expect(task).toMatch(/function neutralPriority\b/);
+    expect(task).toContain("if (importance === 'Vital') return 'urgent'");
+    expect(task).toContain("if (importance === 'Important') return 'high'");
+    expect(task).toContain('priority: neutralPriority(templateDTO.importance)');
 
     expect(goal).not.toContain('mapImportanceToTaskPriority');
     expect(goal).not.toContain('goalDTO.importance');
-    expect(goal).toContain('priority: TaskPriority.Normal');
+    expect(goal).toContain("priority: 'normal'");
   });
 
   it('runtime: maps importance strings to TaskPriority', () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@memoflow/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@memoflow/test-utils/mocks';
-import { TaskGoalBindingTrigger } from '@memoflow/contracts/task';
+import { TaskGoalBindingTrigger, TaskPlanOutcome } from '@memoflow/contracts/task';
 import { aLoadedTaskTemplate, aTaskInstance } from '../../../../../testing';
 import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
 import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-task-template-repository';
@@ -132,7 +132,6 @@ describe('CompleteTaskInstanceUseCase', () => {
     expect(completeSpy).toHaveBeenCalledWith(45, 'Great work', 5, {
       taskTitle: '',
       goalBinding: null,
-      planSucceeded: false,
     });
   });
 
@@ -149,31 +148,35 @@ describe('CompleteTaskInstanceUseCase', () => {
     expect(completeSpy).toHaveBeenCalledWith(undefined, undefined, undefined, {
       taskTitle: 'Ship linked task',
       goalBinding: template.goalBinding?.toDTO(),
-      planSucceeded: false,
     });
   });
 
-  it('marks planSucceeded when the Task outcome evaluator succeeds after this completion', async () => {
+  it('publishes the authoritative Succeeded transition after the final completion', async () => {
     const template = aLoadedTaskTemplate({ title: 'Finish recurring work' });
     template.bindToGoal('goal-1', 'kr-1', { value: 3, trigger: TaskGoalBindingTrigger.PlanCompletion });
     const instance = await aTaskInstance({ templateId: template.id, instanceDate: 200 });
     const completedSibling = await aTaskInstance({ templateId: template.id, instanceDate: 100 });
     completedSibling.complete();
-    const completeSpy = vi.spyOn(instance, 'complete');
     vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
     vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([completedSibling, instance]);
     vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
     await useCase.execute(instance.id, instance.identityId);
 
-    expect(completeSpy).toHaveBeenCalledWith(undefined, undefined, undefined, {
-      taskTitle: 'Finish recurring work',
-      goalBinding: template.goalBinding?.toDTO(),
-      planSucceeded: true,
-    });
+    expect(template.outcome).toBe(TaskPlanOutcome.Succeeded);
+    expect(template.domainEvents).toContainEqual(
+      expect.objectContaining({
+        eventType: 'task:plan-outcome-changed',
+        payload: expect.objectContaining({
+          triggeringTaskInstanceId: instance.id,
+          previousOutcome: TaskPlanOutcome.Open,
+          nextOutcome: TaskPlanOutcome.Succeeded,
+        }),
+      }),
+    );
   });
 
-  it('does not mark a finite plan complete while a future sibling is still pending', async () => {
+  it('keeps the plan Open while a future sibling is still pending', async () => {
     const template = aLoadedTaskTemplate({ title: 'Finish the complete plan' });
     template.bindToGoal('goal-1', 'kr-1', { value: 3, trigger: TaskGoalBindingTrigger.PlanCompletion });
     const instance = await aTaskInstance({ templateId: template.id, instanceDate: 200 });
@@ -197,8 +200,9 @@ describe('CompleteTaskInstanceUseCase', () => {
     expect(completeSpy).toHaveBeenCalledWith(undefined, undefined, undefined, {
       taskTitle: 'Finish the complete plan',
       goalBinding: template.goalBinding?.toDTO(),
-      planSucceeded: false,
     });
+    expect(template.outcome).toBe(TaskPlanOutcome.Open);
+    expect(template.domainEvents.filter((event) => event.eventType === 'task:plan-outcome-changed')).toHaveLength(0);
   });
 
   it('should return the instance client DTO in the response', async () => {

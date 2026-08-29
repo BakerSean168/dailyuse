@@ -8,6 +8,22 @@ export default {
     "priorityVital": "Urgent",
     "priorityImportant": "Important"
   },
+  "category": {
+    "task": "Tasks", "goal": "Goals", "schedule": "Schedule", "reminder": "Reminders",
+    "account": "Account", "system": "System", "other": "Notifications", "general": "Notifications"
+  },
+  "workflow": {
+    "accountSecurity": "Account security",
+    "goalReminder": "Goal reminder",
+    "goalUpdate": "Goal update",
+    "reminder": "Reminder",
+    "routineReminder": "Routine reminder",
+    "system": "System update",
+    "taskDeadline": "Task deadline",
+    "taskReminder": "Task reminder",
+    "taskUpdate": "Task update"
+  },
+  "entity": { "task": "Task", "goal": "Goal", "schedule": "Schedule", "reminder": "Reminder", "routine": "Routine" },
   "bell": {
     "title": "Notifications",
     "unreadCount": "{count} unread notifications"
@@ -24,6 +40,8 @@ export default {
   },
   "action": {
     "markAllRead": "Mark all as read",
+    "openRelated": "Open related item",
+    "retry": "Try again",
     "enableNotification": "Enable notifications",
     "dismiss": "Got it"
   },

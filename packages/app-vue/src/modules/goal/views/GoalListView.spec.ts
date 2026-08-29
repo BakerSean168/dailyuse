@@ -5,6 +5,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { productionLocaleMessages } from '../../../locales/production-messages';
 import GoalListView from './GoalListView.vue';
 
+const routerPush = vi.hoisted(() => vi.fn());
+
+vi.mock('vue-router', () => ({
+  useRouter: () => ({ push: routerPush }),
+}));
+
 vi.mock('../composables/useGoal', () => ({
   useGoal: () => ({
     goals: ref([]),
@@ -29,7 +35,7 @@ const EmptyStateStub = defineComponent({
 });
 
 describe('GoalListView', () => {
-  it('leaves title, search, and the primary create action to the page toolbar', () => {
+  it('leaves toolbar controls to GoalModuleLayout and owns only the row/empty content surface', () => {
     const wrapper = shallowMount(GoalListView, {
       global: {
         plugins: [i18n],
@@ -40,9 +46,6 @@ describe('GoalListView', () => {
               return () => h('div', slots.default?.());
             },
           }),
-        },
-        mocks: {
-          $router: { push: vi.fn() },
         },
       },
     });

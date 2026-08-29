@@ -1,11 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 import { SourceModule } from '@memoflow/contracts/schedule';
-import {
-  NotificationCategory,
-  NotificationChannelType,
-  NotificationType,
-  RelatedEntityType,
-} from '@memoflow/contracts/notification';
 import { ScheduleTask } from '@memoflow/schedule';
 import { createGoalScheduleExecutionSource } from './schedule-execution-source';
 
@@ -32,7 +26,7 @@ function createScheduleTask(payload: Record<string, unknown> = {}) {
 }
 
 describe('createGoalScheduleExecutionSource', () => {
-  it('builds a notification draft for active goal reminders', async () => {
+  it('returns only business execution metadata for legacy fallback goals', async () => {
     const findByIdForIdentity = vi.fn().mockResolvedValue({
       id: 'GoalId_goal-1',
       identityId: 'IdentityId_goal-owner',
@@ -56,23 +50,11 @@ describe('createGoalScheduleExecutionSource', () => {
     });
     const outcome = await source.executeGoal(task);
 
-    expect(findByIdForIdentity).toHaveBeenCalledWith(
-      String(task.identityId),
-      'GoalId_goal-1',
-      { includeChildren: true },
-    );
+    expect(findByIdForIdentity).toHaveBeenCalledWith(String(task.identityId), 'GoalId_goal-1', {
+      includeChildren: true,
+    });
     expect(outcome).toEqual({
       nextRunAt: null,
-      notification: {
-        identityId: 'IdentityId_goal-owner',
-        title: '目标提醒：Ship R06',
-        content: '目标「Ship R06」距离截止还有 3 天。',
-        type: NotificationType.Reminder,
-        category: NotificationCategory.Goal,
-        relatedEntityType: RelatedEntityType.Goal,
-        relatedEntityId: 'GoalId_goal-1',
-        channels: [NotificationChannelType.InApp, NotificationChannelType.Push],
-      },
       result: {
         goalId: 'GoalId_goal-1',
         goalTitle: 'Ship R06',
@@ -80,5 +62,6 @@ describe('createGoalScheduleExecutionSource', () => {
         triggerValue: 3,
       },
     });
+    expect(outcome).not.toHaveProperty('notification');
   });
 });

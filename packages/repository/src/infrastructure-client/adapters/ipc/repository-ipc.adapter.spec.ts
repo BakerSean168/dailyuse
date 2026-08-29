@@ -10,11 +10,20 @@ function createResultIpcClientStub() {
 }
 
 describe('RepositoryIpcAdapter knowledge repository connections', () => {
-
-  it('still routes knowledge connection methods over IPC', async () => {
+  it('routes durable installation status/finalize and knowledge connection methods over IPC', async () => {
     const ipcClient = createResultIpcClientStub();
     const adapter = new RepositoryIpcAdapter(ipcClient);
+    await adapter.getKnowledgeRepositoryInstallationIntentStatus('intent-1');
+    await adapter.finalizeKnowledgeRepositoryInstallationIntent('intent-1');
     await adapter.listKnowledgeRepositoryConnections();
+    expect(ipcClient.invoke).toHaveBeenCalledWith(
+      'repository:knowledge-connection:installation:status',
+      { intentId: 'intent-1' },
+    );
+    expect(ipcClient.invoke).toHaveBeenCalledWith(
+      'repository:knowledge-connection:installation:finalize',
+      { intentId: 'intent-1' },
+    );
     expect(ipcClient.invoke).toHaveBeenCalledWith('repository:knowledge-connection:list');
   });
 

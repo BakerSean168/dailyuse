@@ -23,7 +23,7 @@
             {{ template?.groupName || t('reminder.templateDetail.groupedFallback') }}
           </Badge>
           <Badge v-if="template?.lifecycleSource === 'group'" variant="outline">
-            {{ t('reminder.templateDetail.badgeGroupControlled') }}
+            {{ t('reminder.templateDetail.badgeProfilePaused') }}
           </Badge>
           <Badge v-else-if="template?.lifecycleSource === 'global'" variant="secondary">{{
             t('reminder.templateDetail.badgeGlobalPaused')
@@ -83,36 +83,6 @@
                   <p class="text-sm text-muted-foreground">{{ template.description }}</p>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <!-- Statistics -->
-          <div class="space-y-3">
-            <h3 class="text-sm font-semibold flex items-center gap-2">
-              <BarChart3 class="h-4 w-4" />
-              {{ t('reminder.templateDetail.sectionStats') }}
-            </h3>
-            <Separator />
-
-            <div class="grid grid-cols-3 gap-4">
-              <Card class="p-4 text-center">
-                <div class="text-2xl font-bold text-primary">{{ stats.total }}</div>
-                <div class="text-xs text-muted-foreground">
-                  {{ t('reminder.templateDetail.statTotal') }}
-                </div>
-              </Card>
-              <Card class="p-4 text-center">
-                <div class="text-2xl font-bold text-success">{{ stats.completed }}</div>
-                <div class="text-xs text-muted-foreground">
-                  {{ t('reminder.templateDetail.statCompleted') }}
-                </div>
-              </Card>
-              <Card class="p-4 text-center">
-                <div class="text-2xl font-bold text-warning">{{ stats.pending }}</div>
-                <div class="text-xs text-muted-foreground">
-                  {{ t('reminder.templateDetail.statPending') }}
-                </div>
-              </Card>
             </div>
           </div>
 
@@ -196,7 +166,7 @@
                   controller:
                     template.lifecycleSource === 'global'
                       ? t('reminder.templateDetail.overrideControllerGlobal')
-                      : t('reminder.templateDetail.overrideControllerGroup'),
+                      : t('reminder.templateDetail.overrideControllerProfile'),
                 })
               }}
             </p>
@@ -229,15 +199,15 @@
                 </p>
               </Card>
               <Card class="p-3">
-                <p class="font-medium">{{ t('reminder.templateDetail.fieldGroupControlMode') }}</p>
+                <p class="font-medium">{{ t('reminder.templateDetail.fieldProfile') }}</p>
                 <p class="text-muted-foreground mt-1">
-                  {{ groupControlModeLabel }}
+                  {{ profileMembershipLabel }}
                 </p>
               </Card>
               <Card class="p-3">
-                <p class="font-medium">{{ t('reminder.templateDetail.fieldGroupSwitch') }}</p>
+                <p class="font-medium">{{ t('reminder.templateDetail.fieldProfileGate') }}</p>
                 <p class="text-muted-foreground mt-1">
-                  {{ groupSwitchLabel }}
+                  {{ profileGateStateLabel }}
                 </p>
               </Card>
             </div>
@@ -270,7 +240,6 @@ import {
   Info,
   FileText,
   AlignLeft,
-  BarChart3,
   Calendar,
   CalendarPlus,
   CalendarCheck,
@@ -295,8 +264,8 @@ import { Switch } from '@memoflow/ui-vue-shadcn';
 import { Separator } from '@memoflow/ui-vue-shadcn';
 import {
   getGlobalSwitchLabel,
-  getGroupControlModeLabel,
-  getGroupSwitchLabel,
+  getProfileGateStateLabel,
+  getProfileMembershipLabel,
   getTemplateEffectiveResultLabel,
   getTemplateEffectiveStatusLabel,
   getTemplateNextTriggerLabel,
@@ -320,13 +289,6 @@ const emit = defineEmits<{
 const { locale, t } = useI18n();
 const visible = ref(false);
 const isTogglingStatus = ref(false);
-
-// Mock stats - would come from API
-const stats = computed(() => ({
-  total: 0,
-  completed: 0,
-  pending: 0,
-}));
 
 const selfSwitchLabel = computed(() => {
   if (!props.template) return t('common.unknown');
@@ -373,14 +335,14 @@ const globalSwitchLabel = computed(() => {
   return getGlobalSwitchLabel(t, props.template);
 });
 
-const groupControlModeLabel = computed(() => {
+const profileMembershipLabel = computed(() => {
   if (!props.template) return t('common.unknown');
-  return getGroupControlModeLabel(t, props.template);
+  return getProfileMembershipLabel(t, props.template);
 });
 
-const groupSwitchLabel = computed(() => {
+const profileGateStateLabel = computed(() => {
   if (!props.template) return t('common.unknown');
-  return getGroupSwitchLabel(t, props.template);
+  return getProfileGateStateLabel(t, props.template);
 });
 
 const open = () => {

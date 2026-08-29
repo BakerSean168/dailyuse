@@ -8,6 +8,7 @@ import { deviceAuthorization } from 'better-auth/plugins/device-authorization';
 import type { RequestHandler } from 'express';
 import type { IncomingHttpHeaders } from 'node:http';
 import type { CloudAuthEmailDelivery } from './email-delivery.js';
+import { verifyCloudPassword } from './password-compatibility.js';
 
 const DESKTOP_DEVICE_CLIENT_ID = 'memoflow-desktop';
 
@@ -105,6 +106,9 @@ export function createCloudAuth(
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,
+      password: {
+        verify: verifyCloudPassword,
+      },
       sendResetPassword: async ({ user, url }) => {
         await options.emailDelivery.send({
           kind: 'password-reset',

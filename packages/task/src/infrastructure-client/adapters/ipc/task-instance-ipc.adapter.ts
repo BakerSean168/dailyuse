@@ -14,6 +14,7 @@ import type {
   CompleteTaskInstanceReq,
   MarkTaskInstanceMissedReq,
   SkipTaskInstanceReq,
+  RescheduleTaskInput,
 } from '@memoflow/contracts/task';
 
 export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
@@ -69,6 +70,17 @@ export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
     request?: MarkTaskInstanceMissedReq,
   ): Promise<Result<TaskInstanceClientDTO>> {
     return this.ipcClient.invoke(TaskChannels.INSTANCE_MARK_MISSED, { id, request });
+  }
+
+  async rescheduleTaskInstance(
+    id: string,
+    request: RescheduleTaskInput,
+  ): Promise<Result<TaskInstanceClientDTO>> {
+    return this.ipcClient.invoke(TaskChannels.INSTANCE_RESCHEDULE, {
+      instanceId: id,
+      newTime: request.newTime,
+      expectedVersion: request.expectedVersion,
+    });
   }
 }
 

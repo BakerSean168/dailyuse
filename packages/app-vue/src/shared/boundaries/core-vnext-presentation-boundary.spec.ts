@@ -11,14 +11,14 @@ describe('Core vNext presentation boundaries', () => {
     expect(productTime).toContain('formatProductDate');
     expect(productTime).toContain('toProductDateInputValue');
     for (const file of [
-      'modules/goal/components/cards/GoalCard.vue',
+      'modules/goal/components/GoalProgressRow.vue',
       'modules/goal/views/GoalDetailView.vue',
       'modules/goal/views/GoalReviewDetailView.vue',
       'modules/goal/components/dialogs/GoalDialog.vue',
     ]) {
       const source = read(file);
       expect(source).not.toContain('new Intl.DateTimeFormat');
-      expect(source).not.toContain("toISOString().slice(0,10)");
+      expect(source).not.toContain('toISOString().slice(0,10)');
     }
   });
 
@@ -30,7 +30,8 @@ describe('Core vNext presentation boundaries', () => {
 
   it('keeps a stable canonical create-task action anchor', () => {
     const source = read('modules/task/views/TaskManagementView.vue');
-    expect(source).toContain('data-testid="create-task-entry"');
+    expect(source).toContain('data-testid="create-task-template-button"');
+    expect(source).toContain('data-primary-action="create-task"');
     expect(source).not.toContain('TaskDAG');
     expect(source).not.toContain('DependencyManager');
   });

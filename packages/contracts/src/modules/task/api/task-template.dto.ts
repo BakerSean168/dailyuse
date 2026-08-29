@@ -38,6 +38,7 @@ export const CreateTaskTemplateSchema = z
     reminderConfig: TaskReminderConfigSchema.optional().nullable(),
     importance: z.enum(ImportanceLevel),
     tags: z.array(z.string()).default([]).optional(),
+    labelIds: z.array(z.string().min(1)).max(50).optional(),
     color: z.string().optional().nullable(),
     goalBinding: TaskGoalBindingSchema.optional().nullable(),
     completionPolicy: z.enum(TaskPlanCompletionPolicy).optional(),
@@ -66,6 +67,7 @@ export const UpdateTaskTemplateSchema = z
     reminderConfig: TaskReminderConfigSchema.optional().nullable(),
     importance: z.enum(ImportanceLevel).optional(),
     tags: z.array(z.string()).optional(),
+    labelIds: z.array(z.string().min(1)).max(50).optional(),
     color: z.string().optional().nullable(),
     goalBinding: TaskGoalBindingSchema.optional().nullable(),
     completionPolicy: z.enum(TaskPlanCompletionPolicy).optional(),
@@ -77,9 +79,11 @@ export const UpdateTaskTemplateSchema = z
 export type UpdateTaskTemplateReq = z.infer<typeof UpdateTaskTemplateSchema>;
 export type UpdateTaskTemplateRes = TaskTemplateClientDTO;
 
-export const AbandonTaskPlanSchema = z.object({
-  reason: z.string().trim().min(1).optional(),
-}).default({});
+export const AbandonTaskPlanSchema = z
+  .object({
+    reason: z.string().trim().min(1).optional(),
+  })
+  .default({});
 export type AbandonTaskPlanReq = z.infer<typeof AbandonTaskPlanSchema>;
 
 // Public transport schema - NO identityId (injected from Context)
@@ -87,6 +91,7 @@ export const ListTaskTemplateFiltersSchema = z.object({
   status: z.array(z.string()).optional(),
   goalId: brandedId<GoalId>().optional(),
   tags: z.array(z.string()).optional(),
+  labelIdsAll: z.array(z.string().min(1)).max(50).optional(),
 });
 
 export type ListTaskTemplateFilters = z.infer<typeof ListTaskTemplateFiltersSchema>;
@@ -104,12 +109,12 @@ export interface QueryTaskTemplatesInternal {
   status?: string[];
   goalId?: GoalId;
   tags?: string[];
+  labelIdsAll?: string[];
 }
 export interface QueryTaskTemplatesRes {
   templates: TaskTemplateClientDTO[];
   total: number;
 }
-
 
 export const GenerateInstancesSchema = z.object({
   fromDate: z.number(),

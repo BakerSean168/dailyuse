@@ -41,6 +41,29 @@ describe('TaskInstanceHttpAdapter', () => {
     });
   });
 
+  it('uses the occurrence reschedule endpoint with expectedVersion', async () => {
+    const httpClient = {
+      post: vi.fn().mockResolvedValue(ok({ id: 'TaskInstanceId_123' })),
+    } as any;
+    const adapter = new TaskInstanceHttpAdapter(httpClient);
+    const request = {
+      newTime: {
+        timeType: 'TimePoint' as const,
+        startDate: 1_787_860_800_000,
+        timePoint: 16 * 60,
+        timeRange: null,
+      },
+      expectedVersion: 4,
+    };
+
+    await adapter.rescheduleTaskInstance('TaskInstanceId_123', request);
+
+    expect(httpClient.post).toHaveBeenCalledWith(
+      '/task-instances/TaskInstanceId_123/reschedule',
+      request,
+    );
+  });
+
   it('uses the uncomplete endpoint when restoring a completed instance', async () => {
     const httpClient = {
       post: vi.fn().mockResolvedValue(ok({ status: 'Pending' })),
@@ -50,8 +73,6 @@ describe('TaskInstanceHttpAdapter', () => {
 
     await adapter.uncompleteTaskInstance('TaskInstanceId_123');
 
-    expect(httpClient.post).toHaveBeenCalledWith(
-      '/task-instances/TaskInstanceId_123/uncomplete',
-    );
+    expect(httpClient.post).toHaveBeenCalledWith('/task-instances/TaskInstanceId_123/uncomplete');
   });
 });

@@ -3,14 +3,15 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 1177: buildTaskName keep-boundary (goal vs task schedule projections).
+ * Residual 1177: buildIntentName keep-boundary (goal vs task schedule projections).
  * - goal: GoalServerDTO + ReminderTrigger → RemainingDays / progress % Chinese name
- * - task: TaskTemplateServerDTO + Relative/Absolute trigger → 提前/定时提醒 name
+ * - task: TASK-3101 neutral ScheduledIntent observability name keeps the same
+ *   TaskTemplate + Relative/Absolute business wording without ScheduleTask coupling.
  * Soft residual 1168: mapImportanceToTaskPriority dual-retired sole remains separate.
  * Soft residual 1174: normalizePath keep-boundary remains separate.
  * Does not flip §13.2 checkboxes.
  */
-describe('buildTaskName keep-boundary (residual 1177)', () => {
+describe('buildIntentName keep-boundary (residual 1177)', () => {
   const dir = __dirname;
   const goal = readFileSync(resolve(dir, 'schedule-projection-source.ts'), 'utf8');
   const task = readFileSync(
@@ -18,15 +19,15 @@ describe('buildTaskName keep-boundary (residual 1177)', () => {
     'utf8',
   );
 
-  it('owns Residual 1177 keep-boundary markers on goal domain buildTaskName', () => {
+  it('owns Residual 1177 keep-boundary markers on goal domain buildIntentName', () => {
     expect(goal).toContain('Residual 1177 keep-boundary');
-    expect(goal).toMatch(/function buildTaskName\b/);
+    expect(goal).toMatch(/function buildIntentName\b/);
     expect(goal).toContain('GoalServerDTO');
     expect(goal).toContain('ReminderTrigger');
     expect(goal).toContain('RemainingDays');
     expect(goal).toContain('剩余');
     expect(goal).toContain('进度');
-    const body = goal.match(/function buildTaskName\([\s\S]*?\n\}/)?.[0] ?? '';
+    const body = goal.match(/function buildIntentName\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(body).toContain('goal.name');
     expect(body).toContain('trigger.value');
     expect(body).not.toContain('template.name');
@@ -34,15 +35,15 @@ describe('buildTaskName keep-boundary (residual 1177)', () => {
     expect(body).not.toContain('定时提醒');
   });
 
-  it('differs from task template Relative/Absolute buildTaskName (no force-merge)', () => {
-    expect(task).toContain('Residual 1177 keep-boundary');
-    expect(task).toMatch(/function buildTaskName\b/);
-    expect(task).toContain('Soft residual 1177');
+  it('keeps Goal legacy naming distinct from Task neutral intent observability naming', () => {
+    expect(task).toMatch(/function buildIntentName\b/);
     expect(task).toContain('TaskTemplateServerDTO');
-    expect(task).toContain("'Relative'");
+    expect(task).toContain("trigger.type === 'Relative'");
     expect(task).toContain('formatUnit');
     expect(task).toContain('定时提醒');
-    const body = task.match(/function buildTaskName\([\s\S]*?\n\}/)?.[0] ?? '';
+    expect(task).toContain('observability:');
+    expect(task).not.toContain('ScheduleTask');
+    const body = task.match(/function buildIntentName\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(body).toContain('template.name');
     expect(body).toContain('relativeValue');
     expect(body).not.toContain('RemainingDays');
@@ -51,7 +52,7 @@ describe('buildTaskName keep-boundary (residual 1177)', () => {
   });
 
   it('runtime: documents goal remaining/progress vs task relative/absolute naming contracts', () => {
-    function goalBuildTaskName(
+    function goalBuildIntentName(
       goalName: string,
       trigger: { type: 'RemainingDays' | 'TimeProgressPercentage'; value: number },
     ): string {
@@ -60,7 +61,7 @@ describe('buildTaskName keep-boundary (residual 1177)', () => {
       }
       return `${goalName} · 进度 ${trigger.value}% 提醒`;
     }
-    function taskBuildTaskName(
+    function taskBuildIntentName(
       templateName: string,
       trigger: {
         type: 'Relative' | 'Absolute';
@@ -81,21 +82,21 @@ describe('buildTaskName keep-boundary (residual 1177)', () => {
       }
       return `${templateName} · 定时提醒`;
     }
-    expect(goalBuildTaskName('读完书', { type: 'RemainingDays', value: 3 })).toBe(
+    expect(goalBuildIntentName('读完书', { type: 'RemainingDays', value: 3 })).toBe(
       '读完书 · 剩余 3 天提醒',
     );
-    expect(goalBuildTaskName('读完书', { type: 'TimeProgressPercentage', value: 50 })).toBe(
+    expect(goalBuildIntentName('读完书', { type: 'TimeProgressPercentage', value: 50 })).toBe(
       '读完书 · 进度 50% 提醒',
     );
     expect(
-      taskBuildTaskName('写报告', {
+      taskBuildIntentName('写报告', {
         type: 'Relative',
         relativeValue: 30,
         relativeUnit: 'Minutes',
       }),
     ).toBe('写报告 · 提前 30分钟 提醒');
     expect(
-      taskBuildTaskName('写报告', {
+      taskBuildIntentName('写报告', {
         type: 'Absolute',
         relativeValue: null,
         relativeUnit: null,
@@ -104,7 +105,10 @@ describe('buildTaskName keep-boundary (residual 1177)', () => {
   });
 
   it('documents residual 1177 lock intent without claiming §13.2 complete', () => {
-    const self = readFileSync(resolve(dir, 'build-task-name-keep-boundary.surface.spec.ts'), 'utf8');
+    const self = readFileSync(
+      resolve(dir, 'build-task-name-keep-boundary.surface.spec.ts'),
+      'utf8',
+    );
     expect(self).toContain('Residual 1177');
     expect(self).toContain('Does not flip §13.2 checkboxes');
     expect(self).toContain('keep-boundary');
