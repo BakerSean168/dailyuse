@@ -34,6 +34,43 @@ async function createReleaseRepo({ desktopVersion = '1.2.3', manifestVersion = '
   return cwd;
 }
 
+async function createMergedReleaseRepo() {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), 'memoflow-release-merge-contract-'));
+  await mkdir(path.join(cwd, 'apps/desktop'), { recursive: true });
+  git(cwd, ['init', '-q', '-b', 'main']);
+  git(cwd, ['config', 'user.email', 'release-test@example.com']);
+  git(cwd, ['config', 'user.name', 'Release Test']);
+
+  await writeFile(path.join(cwd, 'package.json'), '{"version":"1.2.2"}\n');
+  await writeFile(path.join(cwd, 'apps/desktop/package.json'), '{"version":"1.2.2"}\n');
+  await writeFile(path.join(cwd, '.release-please-manifest.json'), '{".":"1.2.2"}\n');
+  await writeFile(path.join(cwd, 'CHANGELOG.md'), '# Changelog\n\n## [1.2.2]\n');
+  git(cwd, ['add', '.']);
+  git(cwd, ['commit', '-q', '-m', 'chore: baseline']);
+
+  git(cwd, ['checkout', '-q', '-b', 'release']);
+  await writeFile(path.join(cwd, 'package.json'), '{"version":"1.2.3"}\n');
+  await writeFile(path.join(cwd, 'apps/desktop/package.json'), '{"version":"1.2.3"}\n');
+  await writeFile(path.join(cwd, '.release-please-manifest.json'), '{".":"1.2.3"}\n');
+  await writeFile(
+    path.join(cwd, 'CHANGELOG.md'),
+    '# Changelog\n\n## [1.2.3] (2026-08-29)\n\n### Features\n\n* merged release lifecycle\n\n## [1.2.2]\n',
+  );
+  git(cwd, ['add', '.']);
+  git(cwd, ['commit', '-q', '-m', 'chore(main): release 1.2.3 (#999)']);
+
+  git(cwd, ['checkout', '-q', 'main']);
+  git(cwd, [
+    'merge',
+    '-q',
+    '--no-ff',
+    'release',
+    '-m',
+    'Merge pull request #999 from test/release',
+  ]);
+  return cwd;
+}
+
 test('release contract binds release commit, package versions, manifest, changelog and SHA', async () => {
   const cwd = await createReleaseRepo();
   try {
@@ -44,6 +81,20 @@ test('release contract binds release commit, package versions, manifest, changel
     assert.equal(contract.sha, git(cwd, ['rev-parse', 'HEAD']));
     assert.match(contract.notes, /release lifecycle/);
     assert.doesNotMatch(contract.notes, /1\.2\.2/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test('release contract recognizes the merged release PR head while binding the merge SHA', async () => {
+  const cwd = await createMergedReleaseRepo();
+  try {
+    const contract = await readReleaseContract({ cwd });
+    assert.equal(contract.eligible, true);
+    assert.equal(contract.version, '1.2.3');
+    assert.equal(contract.tag, 'v1.2.3');
+    assert.equal(contract.sha, git(cwd, ['rev-parse', 'HEAD']));
+    assert.match(contract.notes, /merged release lifecycle/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
