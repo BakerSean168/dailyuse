@@ -164,12 +164,14 @@ test('runtime dependencies are digest-pinned and mirrored to both China and glob
   ]);
   for (const entry of config.images) {
     assert.match(entry.source, /@sha256:[a-f0-9]{64}$/);
+    assert.equal(entry.platform, 'linux/amd64');
     assert.match(entry.tag, /^[a-z0-9][a-z0-9._-]+$/);
   }
   assert.match(workflow, /packages:\s*write/);
   assert.match(workflow, /Login to ACR/);
   assert.match(workflow, /Login to GHCR/);
-  assert.match(workflow, /skopeo copy --all --preserve-digests/);
+  assert.match(workflow, /skopeo copy --preserve-digests/);
+  assert.doesNotMatch(workflow, /skopeo copy --all/);
   assert.match(workflow, /china_digest/);
   assert.match(workflow, /global_digest/);
   assert.match(workflow, /source_digest/);

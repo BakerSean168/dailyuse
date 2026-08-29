@@ -178,7 +178,7 @@ PostgreSQL、Redis、Caddy、PowerSync、Watchtower 不再依赖生产服务器�
 tools/ci-cd-platform/runtime-image-mirrors.json
 ```
 
-管理，并且每一项都必须使用 `@sha256:` pin。手工运行 `Mirror Runtime Images` workflow 后，会通过 `skopeo --preserve-digests` 同步到 ACR 与 GHCR并验证三方 digest 一致。
+管理，并且每一项都必须使用 `@sha256:` pin 到 `linux/amd64` platform manifest。手工运行 `Mirror Runtime Images` workflow 后，会通过 `skopeo --preserve-digests` 同步到 ACR 与 GHCR并验证三方 digest 一致。这里故意不复制上游 multi-arch/attestation index，因为阿里 ACR 对部分 OCI attestation manifest 不兼容。
 
 生产 compose 暴露以下完整 image-ref override：
 

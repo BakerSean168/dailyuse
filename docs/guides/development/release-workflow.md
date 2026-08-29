@@ -123,7 +123,7 @@ Docker release 的 **artifact identity 是 OCI digest，不是某一个 registry
 
 `publish-images.yml` 会对 ACR 与 GHCR 的 immutable tag 再做 digest parity 检查；任一 registry 返回的 digest 与 build output 不一致，release lane 直接失败。`docker-release-manifest.json` 保留兼容的 `repository/tags/digest` 字段，并额外记录 `distributions.china` 与 `distributions.global`。因此 production promotion 可以选择离运行区域最近的 registry，但不能改变 artifact identity。
 
-第三方 runtime dependency 不在每个 release 重建。`.github/workflows/mirror-runtime-images.yml` 读取 `tools/ci-cd-platform/runtime-image-mirrors.json` 中经过 review 的 digest-pinned source，并使用 `skopeo copy --all --preserve-digests` 同步到 ACR 与 GHCR。更新 PostgreSQL / Redis / Caddy / Watchtower 版本必须先修改 source digest；不能通过重新解析 `latest` 或 floating tag 隐式升级。
+第三方 runtime dependency 不在每个 release 重建。`.github/workflows/mirror-runtime-images.yml` 读取 `tools/ci-cd-platform/runtime-image-mirrors.json` 中经过 review 的 `linux/amd64` platform-digest source，并使用 `skopeo copy --preserve-digests` 同步到 ACR 与 GHCR。平台 manifest digest 是 runtime artifact identity；不复制上游 attestation/multi-arch index，避免 ACR 对未知 OCI manifest class 的兼容问题。更新 PostgreSQL / Redis / Caddy / Watchtower 版本必须先修改 source digest；不能通过重新解析 `latest` 或 floating tag 隐式升级。
 
 ### 8. Postflight 后再 Publish
 
