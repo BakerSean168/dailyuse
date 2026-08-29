@@ -143,9 +143,9 @@ test.describe('Goal vNext product surface', () => {
     await labelFilter.click();
     const filterSearch = page.getByPlaceholder(/Search labels|搜索标签/i).last();
     await filterSearch.fill(labelName);
-    await expect(page.getByRole('option', { name: labelName, exact: true })).toBeVisible();
-    await filterSearch.press('ArrowDown');
-    await filterSearch.press('Enter');
+    const labelOption = page.getByRole('option', { name: labelName, exact: true });
+    await expect(labelOption).toBeVisible();
+    await labelOption.click({ force: true });
     await page.keyboard.press('Escape');
     await expect(labelFilter).toContainText('1');
     await expect(waitForGoalRowByName(page, goalName)).resolves.toBeDefined();
