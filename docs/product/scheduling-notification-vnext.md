@@ -501,4 +501,4 @@ Novu
 
 见：
 
-[2026-08-25 Scheduling / Notification vNext Refactor](../plan/active/2026-08-25-scheduling-notification-vnext-refactor.md)
+[2026-08-25 Scheduling / Notification vNext Refactor](../plan/archive/2026-08-25-scheduling-notification-vnext-refactor.md)

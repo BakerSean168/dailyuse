@@ -9,10 +9,12 @@ tags:
 description: MemoFlow GCP Dev MagicDNS GitHub App 身份认证、知识仓库连接与产品复审问题收敛计划
 created: 2026-08-25T09:49:00+08:00
 updated: 2026-08-25T10:08:00+08:00
-status: active
+status: superseded
 ---
 
 # GitHub App + MagicDNS 产品闭环与复审问题收敛
+
+> **Archived 2026-08-29:** the durable installation orchestration and remaining Desktop live acceptance are owned by `../active/2026-08-28-github-installation-intent-gateway.md`. Production Web install/connect/webhook acceptance is already recorded there.
 
 ## Outcome
 

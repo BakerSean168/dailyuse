@@ -14,7 +14,7 @@ tags:
   - parallel
 description: MemoFlow Goal/Task/Routine/Planner/Scheduler/Notification/EventBus 的总重构编排计划，按依赖、共享热点和可并行 lane 组织，并为每个标准能力指定 Build/Borrow/Imitate 来源
 created: 2026-08-25T19:18:00+08:00
-updated: 2026-08-25T21:40:00+08:00
+updated: 2026-08-29T20:00:00+08:00
 status: active
 ---
 
@@ -34,12 +34,36 @@ status: active
 
 已有子计划继续保留详细业务上下文，但**不得再按各自 Phase 编号独立推进**：
 
-- `2026-08-25-goal-task-vnext-refactor.md`
-- `2026-08-25-scheduling-notification-vnext-refactor.md`
+- `../archive/2026-08-25-goal-task-vnext-refactor.md`
+- `../archive/2026-08-25-scheduling-notification-vnext-refactor.md`
 
 本计划解决它们之间的交叉依赖和重复迁移问题。
 
-## 0.1 Implementation checkpoint — Wave 0 / Wave 1
+## 0.1 v0.11 merge milestone closure — 2026-08-29
+
+The integration milestone carried by PR #281 is **closed for merge** at the product boundary that has actually been implemented and production-verified. This is a scope freeze, not a claim that every long-horizon Wave 6/7 ticket is complete.
+
+Included in the v0.11 merge milestone:
+
+- Wave 0–2 contract/domain foundations and schema convergence;
+- Wave 3 durable scheduling/notification/settlement verticals;
+- Wave 4 Routine local runtime and FullCalendar Planner cutover;
+- Web/Desktop primary Goal, Task, Routine, Planner, and Notification product surfaces implemented on the vNext contracts;
+- production deployment rebuild, exact-digest runtime pinning, Production GitHub App install/connect/webhook acceptance, and transactional email recovery;
+- current PR exact-head required CI, governance, Web flow, integration, coverage, performance, and delivery observation gates.
+
+Explicitly **deferred post-v0.11** and therefore not merge blockers for this milestone:
+
+- `ROUTINE-5302` method-library product catalog;
+- `AI-6101~6103` AI parity/tooling;
+- `MOBILE-6201/6202` React/mobile parity;
+- `CLEAN-6301~6304` residual legacy/physical cleanup beyond the product-boundary locks already landed;
+- `POC-6401` pg-boss build-vs-adopt experiment;
+- remaining long-horizon `HARD-7101~7104` matrix/docs work that depends on those deferred surfaces.
+
+The final merge-readiness review found **no unresolved P0/P1 inside the v0.11 milestone scope**. Evidence and the deferred ledger are recorded in `docs/analysis/2026-08-29-core-vnext-v011-merge-readiness.md`. The remaining Desktop GitHub installation live test is a **release acceptance gate on the newly built Windows package**, not an integration-branch merge gate.
+
+## 0.2 Historical implementation checkpoint — Wave 0 / Wave 1
 
 Wave 0 evidence is frozen in [`Core vNext Wave 0 — Baseline / Acceptance / Shared-Train Evidence`](../../analysis/2026-08-25-core-vnext-wave-0-baseline-and-acceptance.md).
 
@@ -2330,6 +2354,8 @@ required CI
 ---
 
 # 19. Definition of Done
+
+> **Long-horizon closure:** the checklist below remains the full Core vNext end-state, not the v0.11 merge gate. Items assigned to post-v0.11 above intentionally remain unchecked until their follow-up implementation lands.
 
 Core vNext can close only when all of the following hold:
 

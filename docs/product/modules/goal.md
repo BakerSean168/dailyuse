@@ -107,5 +107,5 @@ updated: 2026-08-25T14:28:00+08:00
 - [ADR-055: Key Result Measurement & Progress V2](../../architecture/adr/ADR-055-key-result-measurement-progress-v2.md)
 - [ADR-056: Task Plan → Goal Link / Contribution / Settlement](../../architecture/adr/ADR-056-task-plan-goal-link-contribution-settlement.md)
 - [Goal / Task vNext 产品设计](../goal-task-vnext.md)
-- [Goal / Task vNext Active Plan](../../plan/active/2026-08-25-goal-task-vnext-refactor.md)
+- [Goal / Task vNext Archived Plan](../../plan/archive/2026-08-25-goal-task-vnext-refactor.md)
 - [ADR-058: OSS-first 标准能力复用与领域所有权边界](../../architecture/adr/ADR-058-oss-first-standard-capability-reuse.md)

@@ -119,5 +119,5 @@ updated: 2026-08-25T15:03:00+08:00
 - [ADR-057: Task Occurrence Outcome、Overdue 与 Task Plan 生命周期](../../architecture/adr/ADR-057-task-occurrence-outcome-and-plan-lifecycle.md)
 - [Goal / Task OSS 直接复用与可插拔可行性评估](../../analysis/2026-08-25-goal-task-oss-reuse-feasibility.md)
 - [Goal / Task vNext 产品设计](../goal-task-vnext.md)
-- [Goal / Task vNext Active Plan](../../plan/active/2026-08-25-goal-task-vnext-refactor.md)
+- [Goal / Task vNext Archived Plan](../../plan/archive/2026-08-25-goal-task-vnext-refactor.md)
 - [ADR-058: OSS-first 标准能力复用与领域所有权边界](../../architecture/adr/ADR-058-oss-first-standard-capability-reuse.md)

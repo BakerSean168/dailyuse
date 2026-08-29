@@ -1,5 +1,7 @@
 # ROUTINE-3401 — Routine Wall-Clock Scheduled Handler Lane
 
+> **Archived 2026-08-29:** ROUTINE-3401 and ROUTINE-3402 are implemented and integrated; canonical follow-up remains in the Core vNext umbrella plan.
+
 ## Status
 
 ROUTINE-3401 and ROUTINE-3402 implementation complete on the Core vNext continuation lane.

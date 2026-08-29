@@ -32,7 +32,7 @@ updated: 2026-08-25T15:44:00+08:00
 - ADR-055：KR Measurement V2；
 - ADR-056：Task Plan Contribution；
 - `docs/product/goal-task-vnext.md`；
-- `docs/plan/active/2026-08-25-goal-task-vnext-refactor.md`。
+- `docs/plan/archive/2026-08-25-goal-task-vnext-refactor.md`。
 
 ## 2. 参考项目总览
 
