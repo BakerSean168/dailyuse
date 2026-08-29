@@ -6,7 +6,7 @@ tags:
   - workflow
 description: Release Lifecycle V2：从本地验证、Prepare Release 到 exact-SHA Draft/Postflight/Publish
 created: 2026-05-19T00:00:00
-updated: 2026-08-23T11:48:00+08:00
+updated: 2026-08-29T11:46:00+08:00
 ---
 
 # Release 工作流
@@ -114,6 +114,17 @@ vX.Y.Z-<sha12>
 
 最终可信身份仍是 registry digest。Release lane **不更新 `prod-latest`**；`prod-latest` 属于后续 production rollout/promotion 的 mutable channel，避免 Draft 阶段或 Desktop lane 失败时提前触发线上更新。
 
+### 7.1 双 Registry 分发
+
+Docker release 的 **artifact identity 是 OCI digest，不是某一个 registry URL**。每个 API / Migrator / Web 镜像只执行一次 `docker/build-push-action` build，并在同一次 push 中同时写入：
+
+- China distribution：阿里云 ACR；
+- Global distribution：GitHub Container Registry（GHCR）。
+
+`publish-images.yml` 会对 ACR 与 GHCR 的 immutable tag 再做 digest parity 检查；任一 registry 返回的 digest 与 build output 不一致，release lane 直接失败。`docker-release-manifest.json` 保留兼容的 `repository/tags/digest` 字段，并额外记录 `distributions.china` 与 `distributions.global`。因此 production promotion 可以选择离运行区域最近的 registry，但不能改变 artifact identity。
+
+第三方 runtime dependency 不在每个 release 重建。`.github/workflows/mirror-runtime-images.yml` 读取 `tools/ci-cd-platform/runtime-image-mirrors.json` 中经过 review 的 digest-pinned source，并使用 `skopeo copy --all --preserve-digests` 同步到 ACR 与 GHCR。更新 PostgreSQL / Redis / Caddy / Watchtower 版本必须先修改 source digest；不能通过重新解析 `latest` 或 floating tag 隐式升级。
+
 ### 8. Postflight 后再 Publish
 
 只有 Desktop 与 Docker 两条 lane 都成功时，`Release Publish` 才会：
@@ -143,6 +154,6 @@ vX.Y.Z-<sha12>
 
 ## 与生产部署的边界
 
-Release Lifecycle V2 的完成点是：GitHub Release/桌面资产/ACR 镜像均具备可追溯证据。它**不自动 SSH 到生产服务器，也不自动修改 production compose**。
+Release Lifecycle V2 的完成点是：GitHub Release/桌面资产/ACR + GHCR 双 registry 镜像均具备可追溯证据。它**不自动 SSH 到生产服务器，也不自动修改 production compose**。
 
 生产 rollout、migrator-first 更新、回滚和观察日志见 [deployment README](../../deployment/README.md)。

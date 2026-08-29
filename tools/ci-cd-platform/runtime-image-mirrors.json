@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "images": [
+    {
+      "name": "memoflow-postgres",
+      "source": "docker.io/pgvector/pgvector@sha256:12a379b47ad65289572ea0756efc11b7c241a6662833e8af7038cd3b73d647e0",
+      "tag": "0.8.5-pg18-12a379b47ad6"
+    },
+    {
+      "name": "memoflow-redis",
+      "source": "docker.io/library/redis@sha256:becdda6c7f4b3fb42e42fd7f120bbf5c54c4caaaf16f26da24e4563d2c1f0576",
+      "tag": "8-alpine-becdda6c7f4b"
+    },
+    {
+      "name": "memoflow-caddy",
+      "source": "docker.io/library/caddy@sha256:77c07d5ebfa5be9fd6c820d2094ae662c9e7eeb9bf98346b7f639900263ee2a2",
+      "tag": "2-alpine-77c07d5ebfa5"
+    },
+    {
+      "name": "memoflow-powersync",
+      "source": "docker.io/journeyapps/powersync-service@sha256:ae81b523ddc930d237ec27073579e8274f2351608c95765aeba50dafa0c4aa21",
+      "tag": "1.20.4-ae81b523ddc9"
+    },
+    {
+      "name": "memoflow-watchtower",
+      "source": "docker.io/containrrr/watchtower@sha256:6dd50763bbd632a83cb154d5451700530d1e44200b268a4e9488fefdfcf2b038",
+      "tag": "snapshot-6dd50763bbd6"
+    }
+  ]
+}

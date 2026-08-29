@@ -2,7 +2,7 @@
 
 本文档面向当前这台阿里云服务器，按你已经具备的前提来设计：
 
-- 可以直接使用 `ssh ali-memoflow` 登录服务器
+- 可以直接使用 `ssh ali-dailyuse` 登录服务器
 - `/opt/memoflow` 已创建
 - 服务器已安装 Docker 和 Docker Compose 插件
 - 服务器已完成阿里云 ACR 登录
@@ -36,9 +36,9 @@ api:3000
   +--> redis:6379
   +--> Mastra AI runtime (in-process)
 
-watchtower
+release / promotion
   |
-  +--> 轮询阿里云 ACR 中的 prod-latest 镜像并自动滚动更新业务服务
+  +--> exact-SHA / digest-pinned images -> explicit migrator-first rollout
 ```
 
 这套方案下：
@@ -48,8 +48,8 @@ watchtower
 - `web` 的 Nginx 配置以仓库根目录 [`nginx.conf`](D:\home\projects\memoflow\nginx.conf) 为唯一来源
 - `powersync` 通过独立子域名走 `caddy -> powersync:8080`
 - 数据库和 Redis 只绑定到 `127.0.0.1`，不暴露公网
-- 业务镜像优先从阿里云 ACR 拉取
-- 基础设施镜像如果拉不下来，走本地离线打包上传
+- 中国 production 的业务镜像从阿里云 ACR 拉取
+- PostgreSQL / Redis / Caddy / PowerSync / Watchtower 也使用 ACR digest mirror，避免临时跨境拉取
 
 ### 1.1 Nginx 配置约定
 
@@ -90,23 +90,23 @@ watchtower
 
 仓库里的 [`docker-compose.prod.yml`](D:\home\projects\memoflow\docker-compose.prod.yml) 已定义以下服务：
 
-| 服务         | 镜像                                               | 作用                       | 建议来源       |
-| ------------ | -------------------------------------------------- | -------------------------- | -------------- |
-| `postgres`   | `pgvector/pgvector:pg16`                           | 主数据库                   | 本地离线预加载 |
-| `redis`      | `redis:7-alpine`                                   | 缓存 / 队列                | 本地离线预加载 |
-| `migrator`   | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-migrator` | 一次性数据库初始化         | 阿里云 ACR     |
-| `api`        | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-api`      | 后端 API                   | 阿里云 ACR     |
-| `powersync`  | `journeyapps/powersync-service:latest`             | Desktop / Web 实时同步服务 | 本地离线预加载 |
-| `web`        | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-web`      | 前端站点                   | 阿里云 ACR     |
-| `caddy`      | `caddy:2-alpine`                                   | HTTPS 入口                 | 本地离线预加载 |
-| `watchtower` | `containrrr/watchtower`                            | 自动更新                   | 本地离线预加载 |
+| 服务         | 镜像来源                                                   | 作用                       | China production 建议 |
+| ------------ | ---------------------------------------------------------- | -------------------------- | --------------------- |
+| `postgres`   | `${POSTGRES_IMAGE:-pgvector/pgvector:0.8.5-pg18}`          | 主数据库                   | ACR digest mirror     |
+| `redis`      | `${REDIS_IMAGE:-redis:8-alpine}`                           | 缓存 / 队列                | ACR digest mirror     |
+| `migrator`   | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-migrator`         | 一次性数据库初始化         | ACR immutable image   |
+| `api`        | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-api`              | 后端 API                   | ACR immutable image   |
+| `powersync`  | `${POWERSYNC_IMAGE:-journeyapps/powersync-service:1.20.4}` | Desktop / Web 实时同步服务 | ACR digest mirror     |
+| `web`        | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-web`              | 前端站点                   | ACR immutable image   |
+| `caddy`      | `${CADDY_IMAGE:-caddy:2-alpine}`                           | HTTPS 入口                 | ACR digest mirror     |
+| `watchtower` | `${WATCHTOWER_IMAGE:-containrrr/watchtower}`               | 可选辅助更新               | ACR digest mirror     |
 
 其中：
 
 - `postgres` 和 `redis` 只绑定宿主机 `127.0.0.1`
 - `api`、`web`、`powersync` 都不直接暴露到公网
 - `caddy` 暴露 `80/443`
-- `watchtower` 通过 `/var/run/docker.sock` 管理容器更新
+- `watchtower` 如启用，只管理明确允许的 mutable channel；API/Migrator production promotion 仍由显式 release 流程拥有
 
 ### 3.1 代理层职责划分
 
@@ -152,86 +152,58 @@ desktop / web client
 
 ## 4. 镜像策略
 
-### 4.1 推荐策略
+### 4.1 Artifact identity 与区域分发
 
-推荐把镜像分成两类处理：
-
-1. 基础设施镜像：本地拉取后离线上传到服务器
-2. 业务镜像：服务器直接从阿里云 ACR 拉取
-
-这样做的原因：
-
-- 基础镜像来自 Docker Hub，命中你当前网络问题的概率最高
-- 业务镜像已经托管在阿里云 ACR，国内服务器访问通常稳定
-- 服务器不参与源码构建，只负责拉镜像和启动，部署链路更短
-
-### 4.2 需要离线准备的基础设施镜像
-
-建议固定打包这 4 个：
+MemoFlow production 不再把 `prod-latest` 或某个 registry URL 当作发布真值。发布真值是：
 
 ```text
-pgvector/pgvector:pg16
-redis:7-alpine
-caddy:2-alpine
-containrrr/watchtower
-journeyapps/powersync-service:latest
+exact release SHA -> one build -> OCI digest
+                              |-> GHCR (Global)
+                              `-> Alibaba ACR (China)
 ```
 
-你本地如果已经生成了 [`memoflow-infra-images.tar`](D:\home\projects\memoflow\memoflow-infra-images.tar)，就直接复用它。
+- `ghcr.io/<owner>/memoflow-*` 面向 GCP、Oracle、CI 与其他海外 runtime；
+- 阿里云杭州 ACR 面向中国 production；
+- API / Migrator / Web 每个 release 只 build 一次；同一 build 同时写两个 registry；
+- release lane 必须验证 ACR/GHCR immutable tag 的 digest 与 build output 完全一致；
+- `prod-latest` 只能作为可选 mutable alias，不能用于 rollback / provenance / deployment truth。
 
-本地打包命令：
+当前中国 production 应优先使用 ACR immutable tag 或 `repository@sha256:<digest>`，避免跨境拉 GHCR/Docker Hub。
 
-```bash
-docker pull pgvector/pgvector:pg16
-docker pull redis:7-alpine
-docker pull caddy:2-alpine
-docker pull containrrr/watchtower
-docker pull journeyapps/powersync-service:latest
+### 4.2 Runtime dependency mirror
 
-docker save \
-  pgvector/pgvector:pg16 \
-  redis:7-alpine \
-  caddy:2-alpine \
-  containrrr/watchtower \
-  journeyapps/powersync-service:latest \
-  -o memoflow-infra-images.tar
+PostgreSQL、Redis、Caddy、PowerSync、Watchtower 不再依赖生产服务器临时访问 Docker Hub。其 mirror source 由：
+
+```text
+tools/ci-cd-platform/runtime-image-mirrors.json
 ```
 
-上传到服务器：
+管理，并且每一项都必须使用 `@sha256:` pin。手工运行 `Mirror Runtime Images` workflow 后，会通过 `skopeo --preserve-digests` 同步到 ACR 与 GHCR并验证三方 digest 一致。
 
-```bash
-scp memoflow-infra-images.tar ali-memoflow:/opt/memoflow/
+生产 compose 暴露以下完整 image-ref override：
+
+```env
+POSTGRES_IMAGE=<ACR>/memoflow-postgres@sha256:<digest>
+REDIS_IMAGE=<ACR>/memoflow-redis@sha256:<digest>
+CADDY_IMAGE=<ACR>/memoflow-caddy@sha256:<digest>
+POWERSYNC_IMAGE=<ACR>/memoflow-powersync@sha256:<digest>
+WATCHTOWER_IMAGE=<ACR>/memoflow-watchtower@sha256:<digest>
 ```
 
-服务器加载：
+没有这些 override 时，compose 仍保留公共 registry 默认值，方便开发/验证环境使用；中国 production 则必须显式设置 ACR mirror。
 
-```bash
-ssh ali-memoflow "cd /opt/memoflow && docker load -i memoflow-infra-images.tar"
-```
+### 4.3 当前生产基线
 
-### 4.3 业务镜像的兜底策略
+当前 clean rebuild 基线为：
 
-默认情况下，业务镜像直接从 ACR 拉取：
+- PostgreSQL 18 + pgvector 0.8.5；
+- Redis 8；
+- API / Web / Migrator 使用 exact-SHA immutable image；
+- PowerSync 使用 ACR，并应使用 immutable tag 而不是 `latest`；
+- Caddy/基础 runtime 通过 ACR mirror 固定；
+- Watchtower 不拥有 API/Migrator production promotion；migrator-first rollout 仍由显式 release/promotion 控制。
 
-- `memoflow-api`
-- `memoflow-web`
-
-如果后续发现服务器连 ACR 也偶发超时，那么业务镜像也可以走同样的离线路线：
-
-```bash
-docker pull <ACR_REGISTRY>/<NAMESPACE>/memoflow-api:prod-latest
-docker pull <ACR_REGISTRY>/<NAMESPACE>/memoflow-web:prod-latest
-
-docker save \
-  <ACR_REGISTRY>/<NAMESPACE>/memoflow-api:prod-latest \
-  <ACR_REGISTRY>/<NAMESPACE>/memoflow-web:prod-latest \
-  -o memoflow-app-images.tar
-
-scp memoflow-app-images.tar ali-memoflow:/opt/memoflow/
-ssh ali-memoflow "cd /opt/memoflow && docker load -i memoflow-app-images.tar"
-```
-
-注意：只要服务器上已经 `docker load` 进对应 tag，`docker compose up -d` 就会直接复用本地镜像，不一定再去远端拉取。
+更新 runtime dependency 时，应把它当作独立 dependency-upgrade 变更：先修改 digest pin、在非生产环境验证，再运行 mirror workflow。不要把“镜像分发优化”和“依赖升级”混成一次操作。
 
 ## 5. 部署前检查
 
@@ -240,7 +212,7 @@ ssh ali-memoflow "cd /opt/memoflow && docker load -i memoflow-app-images.tar"
 ### 5.1 服务器目录文件齐全
 
 ```bash
-ssh ali-memoflow "ls -lah /opt/memoflow"
+ssh ali-dailyuse "ls -lah /opt/memoflow"
 ```
 
 至少应看到：
@@ -256,7 +228,7 @@ ssh ali-memoflow "ls -lah /opt/memoflow"
 如果你服务器上上传的是 `.env`，建议直接改名，减少后续命令分歧：
 
 ```bash
-ssh ali-memoflow "cd /opt/memoflow && [ -f .env ] && [ ! -f .env.production.local ] && mv .env .env.production.local || true"
+ssh ali-dailyuse "cd /opt/memoflow && [ -f .env ] && [ ! -f .env.production.local ] && mv .env .env.production.local || true"
 ```
 
 后文统一按 `.env.production.local` 说明。
@@ -274,7 +246,7 @@ ssh ali-memoflow "cd /opt/memoflow && [ -f .env ] && [ ! -f .env.production.loca
 ### 5.4 Docker 登录状态
 
 ```bash
-ssh ali-memoflow "docker info 2>/dev/null | sed -n '/Username:/p'"
+ssh ali-dailyuse "docker info 2>/dev/null | sed -n '/Username:/p'"
 ```
 
 如果这里没有看到登录用户，说明 Watchtower 后续自动拉取 ACR 镜像会失败，需要重新 `docker login`。
@@ -294,19 +266,19 @@ ssh ali-memoflow "docker info 2>/dev/null | sed -n '/Username:/p'"
 如果你已经上传了离线包，执行：
 
 ```bash
-ssh ali-memoflow "cd /opt/memoflow && docker load -i memoflow-infra-images.tar"
+ssh ali-dailyuse "cd /opt/memoflow && docker load -i memoflow-infra-images.tar"
 ```
 
 可选验证：
 
 ```bash
-ssh ali-memoflow "docker images --format '{{.Repository}}:{{.Tag}}' | grep -E 'pgvector/pgvector|redis|caddy|containrrr/watchtower'"
+ssh ali-dailyuse "docker images --format '{{.Repository}}:{{.Tag}}' | grep -E 'pgvector/pgvector|redis|caddy|containrrr/watchtower'"
 ```
 
 ### 6.2 第二步：先启动核心服务
 
 ```bash
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis migrator api powersync web caddy"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis migrator api powersync web caddy"
 ```
 
 这一步的意义：
@@ -317,7 +289,7 @@ ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 ### 6.3 第三步：检查容器状态
 
 ```bash
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local ps"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local ps"
 ```
 
 重点看：
@@ -332,10 +304,10 @@ ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 ### 6.4 第四步：检查关键日志
 
 ```bash
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 postgres"
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 api"
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 powersync"
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 caddy"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 postgres"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 api"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 powersync"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 caddy"
 ```
 
 特别关注：
@@ -347,8 +319,8 @@ ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 ### 6.5 第五步：本机健康检查
 
 ```bash
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local exec -T api node -e \'require(\"node:http\").get(\"http://127.0.0.1:3000/healthz\",r=>process.exit(r.statusCode===200?0:1)).on(\"error\",()=>process.exit(1))\'"
-ssh ali-memoflow "curl -I http://127.0.0.1"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local exec -T api node -e \'require(\"node:http\").get(\"http://127.0.0.1:3000/healthz\",r=>process.exit(r.statusCode===200?0:1)).on(\"error\",()=>process.exit(1))\'"
+ssh ali-dailyuse "curl -I http://127.0.0.1"
 ```
 
 如果 `curl -I http://127.0.0.1` 返回的是 `Caddy` 转出来的站点响应，说明入口链路已经打通。
@@ -366,13 +338,13 @@ curl -I https://<你的域名>
 ### 6.7 第七步：确认稳定后再启动 Watchtower
 
 ```bash
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d watchtower"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d watchtower"
 ```
 
 然后看 Watchtower 日志：
 
 ```bash
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 watchtower"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 watchtower"
 ```
 
 ## 7. 推荐的实际执行脚本顺序
@@ -382,14 +354,14 @@ ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 ### 7.1 本地机器执行
 
 ```bash
-docker pull pgvector/pgvector:pg16
-docker pull redis:7-alpine
+docker pull pgvector/pgvector:0.8.5-pg18
+docker pull redis:8-alpine
 docker pull caddy:2-alpine
 docker pull containrrr/watchtower
 
 docker save \
-  pgvector/pgvector:pg16 \
-  redis:7-alpine \
+  pgvector/pgvector:0.8.5-pg18 \
+  redis:8-alpine \
   caddy:2-alpine \
   containrrr/watchtower \
   -o memoflow-infra-images.tar
@@ -400,12 +372,12 @@ scp memoflow-infra-images.tar ali-memoflow:/opt/memoflow/
 ### 7.2 服务器执行
 
 ```bash
-ssh ali-memoflow "cd /opt/memoflow && docker load -i memoflow-infra-images.tar"
-ssh ali-memoflow "cd /opt/memoflow && ls -lah"
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis migrator api powersync web caddy"
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local ps"
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 caddy"
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d watchtower"
+ssh ali-dailyuse "cd /opt/memoflow && docker load -i memoflow-infra-images.tar"
+ssh ali-dailyuse "cd /opt/memoflow && ls -lah"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis migrator api powersync web caddy"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local ps"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 caddy"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d watchtower"
 ```
 
 ## 8. 环境变量检查要点
@@ -491,7 +463,7 @@ OPENAI_BASE_URL=...
 查看卷：
 
 ```bash
-ssh ali-memoflow "docker volume ls | grep memoflow"
+ssh ali-dailyuse "docker volume ls | grep memoflow"
 ```
 
 ## 10. 常见问题与处理
@@ -533,7 +505,7 @@ ssh ali-memoflow "docker volume ls | grep memoflow"
 检查命令：
 
 ```bash
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=200 caddy"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=200 caddy"
 ```
 
 ### 10.4 `api` 启动失败
@@ -542,7 +514,7 @@ ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 如果它起不来，优先看这里：
 
 ```bash
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=200 api"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=200 api"
 ```
 
 重点排查：
@@ -562,7 +534,7 @@ ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 查看日志：
 
 ```bash
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=200 watchtower"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=200 watchtower"
 ```
 
 ## 11. 日常发布、更新和回滚
@@ -625,8 +597,8 @@ WEB_TAG=v0.3.0-prod.20260403-150338-93dca44f0df1
 然后执行：
 
 ```bash
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local pull"
-ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local pull"
+ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d"
 ```
 
 如果服务器拉取这个历史 tag 仍然受网络影响，也可以在本地先拉取对应 tag，再离线导入。

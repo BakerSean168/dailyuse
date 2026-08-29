@@ -118,3 +118,59 @@ test('release tooling exposes fail-closed identity and evidence builders', async
   assert.match(aggregate, /release identity mismatch/);
   assert.match(aggregate, /docker CI run mismatch/);
 });
+
+test('release image publication distributes one build to China ACR and global GHCR', async () => {
+  const [workflow, caller] = await Promise.all([
+    readRepoFile('.github/workflows/publish-images.yml'),
+    readRepoFile('.github/workflows/release-publish.yml'),
+  ]);
+
+  assert.match(workflow, /packages:\s*write/);
+  assert.match(caller, /packages:\s*write/);
+  assert.match(workflow, /name: Login to GHCR/);
+  assert.match(workflow, /registry:\s*ghcr\.io/);
+  assert.match(workflow, /password:\s*\$\{\{ github\.token \}\}/);
+  assert.equal(workflow.match(/uses: docker\/build-push-action@v6/g)?.length, 3);
+  for (const name of ['memoflow-api', 'memoflow-migrator', 'memoflow-web']) {
+    assert.match(workflow, new RegExp('ACR_NAMESPACE \\}\\}/' + name));
+    assert.match(workflow, new RegExp('global_namespace \\}\\}/' + name));
+  }
+  assert.match(workflow, /Verify registry digest parity/);
+  assert.match(workflow, /GLOBAL_REGISTRY:\s*ghcr\.io/);
+});
+
+test('production compose allows China-mirrored runtime dependencies without changing service contracts', async () => {
+  const compose = await readRepoFile('docker-compose.prod.yml');
+
+  assert.match(compose, /image: \$\{POSTGRES_IMAGE:-pgvector\/pgvector:0\.8\.5-pg18\}/);
+  assert.match(compose, /image: \$\{REDIS_IMAGE:-redis:8-alpine\}/);
+  assert.match(compose, /image: \$\{CADDY_IMAGE:-caddy:2-alpine\}/);
+  assert.match(compose, /image: \$\{POWERSYNC_IMAGE:-journeyapps\/powersync-service:1\.20\.4\}/);
+  assert.match(compose, /image: \$\{WATCHTOWER_IMAGE:-containrrr\/watchtower\}/);
+});
+
+test('runtime dependencies are digest-pinned and mirrored to both China and global registries', async () => {
+  const [workflow, configText] = await Promise.all([
+    readRepoFile('.github/workflows/mirror-runtime-images.yml'),
+    readRepoFile('tools/ci-cd-platform/runtime-image-mirrors.json'),
+  ]);
+  const config = JSON.parse(configText);
+  assert.deepEqual(config.images.map((entry) => entry.name).sort(), [
+    'memoflow-caddy',
+    'memoflow-postgres',
+    'memoflow-powersync',
+    'memoflow-redis',
+    'memoflow-watchtower',
+  ]);
+  for (const entry of config.images) {
+    assert.match(entry.source, /@sha256:[a-f0-9]{64}$/);
+    assert.match(entry.tag, /^[a-z0-9][a-z0-9._-]+$/);
+  }
+  assert.match(workflow, /packages:\s*write/);
+  assert.match(workflow, /Login to ACR/);
+  assert.match(workflow, /Login to GHCR/);
+  assert.match(workflow, /skopeo copy --all --preserve-digests/);
+  assert.match(workflow, /china_digest/);
+  assert.match(workflow, /global_digest/);
+  assert.match(workflow, /source_digest/);
+});

@@ -14,7 +14,7 @@ services:
   # ---------------------------------------------------------------------------
 
   postgres:
-    image: pgvector/pgvector:0.8.5-pg18
+    image: ${POSTGRES_IMAGE:-pgvector/pgvector:0.8.5-pg18}
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME:?set DB_NAME}
@@ -44,7 +44,7 @@ services:
       start_period: 10s
 
   redis:
-    image: redis:8-alpine
+    image: ${REDIS_IMAGE:-redis:8-alpine}
     restart: unless-stopped
     command:
       - redis-server
@@ -188,7 +188,7 @@ services:
       start_period: 40s
 
   powersync:
-    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/journeyapps-powersync-service:${POWERSYNC_IMAGE_TAG:-latest}
+    image: ${POWERSYNC_IMAGE:-journeyapps/powersync-service:1.20.4}
     restart: unless-stopped
     depends_on:
       api:
@@ -251,7 +251,7 @@ services:
   # ---------------------------------------------------------------------------
 
   caddy:
-    image: caddy:2-alpine
+    image: ${CADDY_IMAGE:-caddy:2-alpine}
     restart: unless-stopped
     depends_on:
       web:
@@ -276,7 +276,7 @@ services:
       - memoflow-network
 
   watchtower:
-    image: containrrr/watchtower
+    image: ${WATCHTOWER_IMAGE:-containrrr/watchtower}
     restart: unless-stopped
     environment:
       DOCKER_API_VERSION: '1.44'

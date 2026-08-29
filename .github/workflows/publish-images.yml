@@ -27,6 +27,7 @@ concurrency:
 permissions:
   contents: write
   actions: read
+  packages: write
 
 env:
   NODE_VERSION: '24'
@@ -177,7 +178,9 @@ jobs:
         run: |
           SHA_SHORT="${RELEASE_SHA:0:12}"
           IMMUTABLE_TAG="${RELEASE_TAG}-${SHA_SHORT}"
+          GLOBAL_NAMESPACE="${GITHUB_REPOSITORY_OWNER,,}"
           echo "immutable_tag=$IMMUTABLE_TAG" >> "$GITHUB_OUTPUT"
+          echo "global_namespace=$GLOBAL_NAMESPACE" >> "$GITHUB_OUTPUT"
           echo "### Image release: \`$RELEASE_TAG\` / \`$IMMUTABLE_TAG\`" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Set up Docker Buildx
@@ -190,6 +193,13 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
       - name: Build and push API image
         id: build-api
         uses: docker/build-push-action@v6
@@ -200,6 +210,8 @@ jobs:
           tags: |
             ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-api:${{ needs.prepare-release.outputs.release_tag }}
             ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-api:${{ steps.tag.outputs.immutable_tag }}
+            ghcr.io/${{ steps.tag.outputs.global_namespace }}/memoflow-api:${{ needs.prepare-release.outputs.release_tag }}
+            ghcr.io/${{ steps.tag.outputs.global_namespace }}/memoflow-api:${{ steps.tag.outputs.immutable_tag }}
           build-args: |
             VCS_REF=${{ needs.prepare-release.outputs.release_sha }}
             VERSION=${{ needs.prepare-release.outputs.release_tag }}
@@ -222,6 +234,8 @@ jobs:
           tags: |
             ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-migrator:${{ needs.prepare-release.outputs.release_tag }}
             ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-migrator:${{ steps.tag.outputs.immutable_tag }}
+            ghcr.io/${{ steps.tag.outputs.global_namespace }}/memoflow-migrator:${{ needs.prepare-release.outputs.release_tag }}
+            ghcr.io/${{ steps.tag.outputs.global_namespace }}/memoflow-migrator:${{ steps.tag.outputs.immutable_tag }}
           build-args: |
             VCS_REF=${{ needs.prepare-release.outputs.release_sha }}
             VERSION=${{ needs.prepare-release.outputs.release_tag }}
@@ -240,6 +254,8 @@ jobs:
           tags: |
             ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-web:${{ needs.prepare-release.outputs.release_tag }}
             ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-web:${{ steps.tag.outputs.immutable_tag }}
+            ghcr.io/${{ steps.tag.outputs.global_namespace }}/memoflow-web:${{ needs.prepare-release.outputs.release_tag }}
+            ghcr.io/${{ steps.tag.outputs.global_namespace }}/memoflow-web:${{ steps.tag.outputs.immutable_tag }}
           build-args: |
             VCS_REF=${{ needs.prepare-release.outputs.release_sha }}
             VERSION=${{ needs.prepare-release.outputs.release_tag }}
@@ -248,6 +264,34 @@ jobs:
           provenance: false
           sbom: false
 
+      - name: Verify registry digest parity
+        shell: bash
+        env:
+          CHINA_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          CHINA_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+          GLOBAL_REGISTRY: ghcr.io
+          GLOBAL_NAMESPACE: ${{ steps.tag.outputs.global_namespace }}
+          IMMUTABLE_TAG: ${{ steps.tag.outputs.immutable_tag }}
+          API_DIGEST: ${{ steps.build-api.outputs.digest }}
+          MIGRATOR_DIGEST: ${{ steps.build-migrator.outputs.digest }}
+          WEB_DIGEST: ${{ steps.build-web.outputs.digest }}
+        run: |
+          set -euo pipefail
+          verify_digest() {
+            local name="$1" expected="$2"
+            local china_ref="$CHINA_REGISTRY/$CHINA_NAMESPACE/$name:$IMMUTABLE_TAG"
+            local global_ref="$GLOBAL_REGISTRY/$GLOBAL_NAMESPACE/$name:$IMMUTABLE_TAG"
+            local china_digest global_digest
+            china_digest="$(docker buildx imagetools inspect "$china_ref" --format '{{.Manifest.Digest}}')"
+            global_digest="$(docker buildx imagetools inspect "$global_ref" --format '{{.Manifest.Digest}}')"
+            test "$china_digest" = "$expected"
+            test "$global_digest" = "$expected"
+            test "$china_digest" = "$global_digest"
+          }
+          verify_digest memoflow-api "$API_DIGEST"
+          verify_digest memoflow-migrator "$MIGRATOR_DIGEST"
+          verify_digest memoflow-web "$WEB_DIGEST"
+
       - name: Build Docker release evidence
         env:
           RELEASE_TAG: ${{ needs.prepare-release.outputs.release_tag }}
@@ -255,6 +299,8 @@ jobs:
           RELEASE_CI_RUN_ID: ${{ needs.resolve-build-artifact.outputs.run_id }}
           RELEASE_REGISTRY: ${{ secrets.ACR_REGISTRY }}
           RELEASE_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+          GLOBAL_REGISTRY: ghcr.io
+          GLOBAL_NAMESPACE: ${{ steps.tag.outputs.global_namespace }}
           RELEASE_IMMUTABLE_TAG: ${{ steps.tag.outputs.immutable_tag }}
           API_DIGEST: ${{ steps.build-api.outputs.digest }}
           MIGRATOR_DIGEST: ${{ steps.build-migrator.outputs.digest }}
