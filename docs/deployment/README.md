@@ -2,7 +2,7 @@
 
 本文档面向当前这台阿里云服务器，按你已经具备的前提来设计：
 
-- 可以直接使用 `ssh ali-dailyuse` 登录服务器
+- 可以直接使用 `ssh ali-memoflow` 登录服务器
 - `/opt/memoflow` 已创建
 - 服务器已安装 Docker 和 Docker Compose 插件
 - 服务器已完成阿里云 ACR 登录
@@ -212,7 +212,7 @@ WATCHTOWER_IMAGE=<ACR>/memoflow-watchtower@sha256:<digest>
 ### 5.1 服务器目录文件齐全
 
 ```bash
-ssh ali-dailyuse "ls -lah /opt/memoflow"
+ssh ali-memoflow "ls -lah /opt/memoflow"
 ```
 
 至少应看到：
@@ -228,7 +228,7 @@ ssh ali-dailyuse "ls -lah /opt/memoflow"
 如果你服务器上上传的是 `.env`，建议直接改名，减少后续命令分歧：
 
 ```bash
-ssh ali-dailyuse "cd /opt/memoflow && [ -f .env ] && [ ! -f .env.production.local ] && mv .env .env.production.local || true"
+ssh ali-memoflow "cd /opt/memoflow && [ -f .env ] && [ ! -f .env.production.local ] && mv .env .env.production.local || true"
 ```
 
 后文统一按 `.env.production.local` 说明。
@@ -246,7 +246,7 @@ ssh ali-dailyuse "cd /opt/memoflow && [ -f .env ] && [ ! -f .env.production.loca
 ### 5.4 Docker 登录状态
 
 ```bash
-ssh ali-dailyuse "docker info 2>/dev/null | sed -n '/Username:/p'"
+ssh ali-memoflow "docker info 2>/dev/null | sed -n '/Username:/p'"
 ```
 
 如果这里没有看到登录用户，说明 Watchtower 后续自动拉取 ACR 镜像会失败，需要重新 `docker login`。
@@ -266,19 +266,19 @@ ssh ali-dailyuse "docker info 2>/dev/null | sed -n '/Username:/p'"
 如果你已经上传了离线包，执行：
 
 ```bash
-ssh ali-dailyuse "cd /opt/memoflow && docker load -i memoflow-infra-images.tar"
+ssh ali-memoflow "cd /opt/memoflow && docker load -i memoflow-infra-images.tar"
 ```
 
 可选验证：
 
 ```bash
-ssh ali-dailyuse "docker images --format '{{.Repository}}:{{.Tag}}' | grep -E 'pgvector/pgvector|redis|caddy|containrrr/watchtower'"
+ssh ali-memoflow "docker images --format '{{.Repository}}:{{.Tag}}' | grep -E 'pgvector/pgvector|redis|caddy|containrrr/watchtower'"
 ```
 
 ### 6.2 第二步：先启动核心服务
 
 ```bash
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis migrator api powersync web caddy"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis migrator api powersync web caddy"
 ```
 
 这一步的意义：
@@ -289,7 +289,7 @@ ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 ### 6.3 第三步：检查容器状态
 
 ```bash
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local ps"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local ps"
 ```
 
 重点看：
@@ -304,10 +304,10 @@ ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 ### 6.4 第四步：检查关键日志
 
 ```bash
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 postgres"
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 api"
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 powersync"
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 caddy"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 postgres"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 api"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 powersync"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 caddy"
 ```
 
 特别关注：
@@ -319,8 +319,8 @@ ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 ### 6.5 第五步：本机健康检查
 
 ```bash
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local exec -T api node -e \'require(\"node:http\").get(\"http://127.0.0.1:3000/healthz\",r=>process.exit(r.statusCode===200?0:1)).on(\"error\",()=>process.exit(1))\'"
-ssh ali-dailyuse "curl -I http://127.0.0.1"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local exec -T api node -e \'require(\"node:http\").get(\"http://127.0.0.1:3000/healthz\",r=>process.exit(r.statusCode===200?0:1)).on(\"error\",()=>process.exit(1))\'"
+ssh ali-memoflow "curl -I http://127.0.0.1"
 ```
 
 如果 `curl -I http://127.0.0.1` 返回的是 `Caddy` 转出来的站点响应，说明入口链路已经打通。
@@ -338,13 +338,13 @@ curl -I https://<你的域名>
 ### 6.7 第七步：确认稳定后再启动 Watchtower
 
 ```bash
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d watchtower"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d watchtower"
 ```
 
 然后看 Watchtower 日志：
 
 ```bash
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 watchtower"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 watchtower"
 ```
 
 ## 7. 推荐的实际执行脚本顺序
@@ -372,12 +372,12 @@ scp memoflow-infra-images.tar ali-memoflow:/opt/memoflow/
 ### 7.2 服务器执行
 
 ```bash
-ssh ali-dailyuse "cd /opt/memoflow && docker load -i memoflow-infra-images.tar"
-ssh ali-dailyuse "cd /opt/memoflow && ls -lah"
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis migrator api powersync web caddy"
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local ps"
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 caddy"
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d watchtower"
+ssh ali-memoflow "cd /opt/memoflow && docker load -i memoflow-infra-images.tar"
+ssh ali-memoflow "cd /opt/memoflow && ls -lah"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis migrator api powersync web caddy"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local ps"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 caddy"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d watchtower"
 ```
 
 ## 8. 环境变量检查要点
@@ -463,7 +463,7 @@ OPENAI_BASE_URL=...
 查看卷：
 
 ```bash
-ssh ali-dailyuse "docker volume ls | grep memoflow"
+ssh ali-memoflow "docker volume ls | grep memoflow"
 ```
 
 ## 10. 常见问题与处理
@@ -505,7 +505,7 @@ ssh ali-dailyuse "docker volume ls | grep memoflow"
 检查命令：
 
 ```bash
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=200 caddy"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=200 caddy"
 ```
 
 ### 10.4 `api` 启动失败
@@ -514,7 +514,7 @@ ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 如果它起不来，优先看这里：
 
 ```bash
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=200 api"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=200 api"
 ```
 
 重点排查：
@@ -534,7 +534,7 @@ ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml 
 查看日志：
 
 ```bash
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=200 watchtower"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=200 watchtower"
 ```
 
 ## 11. 日常发布、更新和回滚
@@ -597,8 +597,8 @@ WEB_TAG=v0.3.0-prod.20260403-150338-93dca44f0df1
 然后执行：
 
 ```bash
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local pull"
-ssh ali-dailyuse "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local pull"
+ssh ali-memoflow "cd /opt/memoflow && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d"
 ```
 
 如果服务器拉取这个历史 tag 仍然受网络影响，也可以在本地先拉取对应 tag，再离线导入。
