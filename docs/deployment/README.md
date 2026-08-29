@@ -178,11 +178,15 @@ PostgreSQL、Redis、Caddy、PowerSync、Watchtower 不再依赖生产服务器�
 tools/ci-cd-platform/runtime-image-mirrors.json
 ```
 
-管理，并且每一项都必须使用 `@sha256:` pin 到 `linux/amd64` platform manifest。手工运行 `Mirror Runtime Images` workflow 后，会通过 `skopeo --preserve-digests` 同步到 ACR 与 GHCR并验证三方 digest 一致。这里故意不复制上游 multi-arch/attestation index，因为阿里 ACR 对部分 OCI attestation manifest 不兼容。
+管理，并且每一项都必须使用 `@sha256:` pin 到 `linux/amd64` platform manifest。该配置或 mirror workflow 变更合并到 `main` 时会自动运行 `Mirror Runtime Images`；`workflow_dispatch` 只用于显式重试。workflow 通过 `skopeo --preserve-digests` 同步到 ACR 与 GHCR并验证三方 digest 一致。这里故意不复制上游 multi-arch/attestation index，因为阿里 ACR 对部分 OCI attestation manifest 不兼容。
 
 生产 compose 暴露以下完整 image-ref override：
 
 ```env
+API_IMAGE=<ACR>/memoflow-api@sha256:<digest>
+MIGRATOR_IMAGE=<ACR>/memoflow-migrator@sha256:<digest>
+WEB_IMAGE=<ACR>/memoflow-web@sha256:<digest>
+
 POSTGRES_IMAGE=<ACR>/memoflow-postgres@sha256:<digest>
 REDIS_IMAGE=<ACR>/memoflow-redis@sha256:<digest>
 CADDY_IMAGE=<ACR>/memoflow-caddy@sha256:<digest>
@@ -203,7 +207,7 @@ WATCHTOWER_IMAGE=<ACR>/memoflow-watchtower@sha256:<digest>
 - Caddy/基础 runtime 通过 ACR mirror 固定；
 - Watchtower 不拥有 API/Migrator production promotion；migrator-first rollout 仍由显式 release/promotion 控制。
 
-更新 runtime dependency 时，应把它当作独立 dependency-upgrade 变更：先修改 digest pin、在非生产环境验证，再运行 mirror workflow。不要把“镜像分发优化”和“依赖升级”混成一次操作。
+更新 runtime dependency 时，应把它当作独立 dependency-upgrade 变更：先修改 digest pin、在非生产环境验证，再合并到 `main` 触发 mirror workflow；需要重试时再手工 dispatch。不要把“镜像分发优化”和“依赖升级”混成一次操作。
 
 ## 5. 部署前检查
 
@@ -342,6 +346,11 @@ IMAGE_NAMESPACE=<China ACR namespace>
 API_TAG=<immutable release tag>
 MIGRATOR_TAG=<same release immutable tag>
 WEB_TAG=<same release immutable tag>
+
+# Production may pin the exact release manifests directly; these override REGISTRY + TAG.
+API_IMAGE=<ACR>/memoflow-api@sha256:<digest>
+MIGRATOR_IMAGE=<ACR>/memoflow-migrator@sha256:<digest>
+WEB_IMAGE=<ACR>/memoflow-web@sha256:<digest>
 
 POSTGRES_IMAGE=<ACR>/memoflow-postgres@sha256:<digest>
 REDIS_IMAGE=<ACR>/memoflow-redis@sha256:<digest>
