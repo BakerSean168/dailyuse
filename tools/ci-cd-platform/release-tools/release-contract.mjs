@@ -12,6 +12,20 @@ function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 }
 
+function resolveReleaseSubject(cwd) {
+  const headSubject = git(cwd, ['log', '-1', '--pretty=%s']);
+  if (RELEASE_SUBJECT.test(headSubject)) return headSubject;
+
+  const parents = git(cwd, ['rev-list', '--parents', '-n', '1', 'HEAD']).split(/\s+/u).slice(1);
+  if (parents.length !== 2) return headSubject;
+
+  // Release PRs are intentionally merged with a merge commit so the release SHA
+  // is the main-branch integration point. The second parent is the PR head and
+  // retains release-please's conventional release subject.
+  const mergedHeadSubject = git(cwd, ['log', '-1', '--pretty=%s', parents[1]]);
+  return RELEASE_SUBJECT.test(mergedHeadSubject) ? mergedHeadSubject : headSubject;
+}
+
 export async function readReleaseContract({ cwd = process.cwd() } = {}) {
   const [rootPackage, desktopPackage, manifest, changelog] = await Promise.all([
     readFile(path.join(cwd, 'package.json'), 'utf8').then(JSON.parse),
@@ -19,7 +33,7 @@ export async function readReleaseContract({ cwd = process.cwd() } = {}) {
     readFile(path.join(cwd, '.release-please-manifest.json'), 'utf8').then(JSON.parse),
     readFile(path.join(cwd, 'CHANGELOG.md'), 'utf8'),
   ]);
-  const subject = git(cwd, ['log', '-1', '--pretty=%s']);
+  const subject = resolveReleaseSubject(cwd);
   const sha = git(cwd, ['rev-parse', 'HEAD']);
   const match = subject.match(RELEASE_SUBJECT);
 

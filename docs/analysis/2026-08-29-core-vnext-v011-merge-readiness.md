@@ -70,3 +70,11 @@ This is a **release acceptance gate**, not a reason to keep the integration bran
 5. Run `Prepare Release`; merge the release-please PR only after its required checks pass.
 6. Let `Release Publish` build Windows/Linux assets and ACR/GHCR images from the exact successful release commit.
 7. Perform the Windows live acceptance above against the published candidate.
+
+## Release lifecycle recovery — 2026-08-29
+
+The first `v0.11.0` release-please merge produced main commit `3627c7e0cf4a446b1e3921f6d4d12d1d32e36fc7` and passed exact-SHA CI, but `Release Publish` correctly left the release unpublished because the release detector only recognized a direct `chore(main): release X.Y.Z` HEAD subject. The repository intentionally merges release PRs with merge commits, so HEAD instead had GitHub's `Merge pull request ...` subject.
+
+The release contract now preserves the main merge commit as the immutable release SHA while, only for an exact two-parent merge commit, accepting the second parent's strict release-please subject. A regression fixture reproduces the GitHub merge shape and remains fail-closed for non-release subjects and version identity drift.
+
+This documentation-only marker is the retry candidate for `0.11.0`; publication still requires its PR checks, main exact-SHA CI, Desktop lane, Docker lane, and postflight to pass.
