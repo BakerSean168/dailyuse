@@ -78,3 +78,9 @@ The first `v0.11.0` release-please merge produced main commit `3627c7e0cf4a446b1
 The release contract now preserves the main merge commit as the immutable release SHA while, only for an exact two-parent merge commit, accepting the second parent's strict release-please subject. A regression fixture reproduces the GitHub merge shape and remains fail-closed for non-release subjects and version identity drift.
 
 This documentation-only marker is the retry candidate for `0.11.0`; publication still requires its PR checks, main exact-SHA CI, Desktop lane, Docker lane, and postflight to pass.
+
+### Release retry 2 — preserve merge-parent history
+
+The next publication attempt reached the real release candidate, but `Create or Resume Draft Release` re-validated the exact SHA from an `actions/checkout` shallow clone. With depth 1 the release merge commit's second parent was unavailable, so the otherwise-correct merged-release detector could not recover the release-please subject. The same shallow-history defect also existed in the Desktop source checkout and Docker source checkout that re-run the release contract.
+
+All three release-validation checkouts now use full history (`fetch-depth: 0`). A workflow regression test locks the invariant so prepare, Desktop, and Docker validation cannot silently regress to depth 1. This marker retries `v0.11.0`; all normal PR, exact-main-CI, Desktop, Docker, and postflight gates remain mandatory.
