@@ -16,6 +16,7 @@ updated: 2026-08-29T20:00:00+08:00
 | 计划 | 当前状态 |
 | --- | --- |
 | [MemoFlow Core vNext — Unified Refactor Orchestration](./2026-08-25-core-vnext-orchestration.md) | **v0.11 merge milestone closed / post-v0.11 follow-up active**：Wave 0–4 与 Web/Desktop 主产品面已完成；Mobile/AI parity、Routine method library、legacy physical cleanup、pg-boss PoC 与剩余 hardening 明确延期，不阻塞 v0.11。 |
+| [Desktop Cross-Platform Runtime](./2026-08-29-desktop-cross-platform-runtime.md) | **Planning / Phase 0 ready**：Windows/Linux/macOS capability architecture 与 WSLg host overlay 已拍板；下一步先做 capability inventory/probe/WSLg baseline，再实施平台 adapter。 |
 | [GitHub Durable Installation Intent + Setup Gateway](./2026-08-28-github-installation-intent-gateway.md) | **Release acceptance**：Production Web install/connect/webhook E2E 已通过；仅保留新 Windows release 的 Desktop external-browser + polling/finalize live acceptance。 |
 | [AI Provider Onboarding V2](./2026-08-25-ai-provider-onboarding-v2.md) | **Independent follow-up**：credential validation/model discovery/explicit selection/atomic save 仍待实施；不作为 Core vNext v0.11 integration merge blocker。 |
 

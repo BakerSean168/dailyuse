@@ -81,6 +81,7 @@ updated: 2026-08-28T20:29:00+08:00
 | [ADR-063](./ADR-063-notification-fact-delivery-policy-and-device-surfaces.md) | Notification Fact、Delivery Policy 与 Device Surface 分离 | 已采纳（待实施） | 2026-08-25 |
 | [ADR-064](./ADR-064-emittery-runtime-event-delivery.md) | Runtime EventBus 采用 Emittery 与 Delivery-scoped Async Publish | 已采纳并实施 | 2026-08-25 |
 | [ADR-065](./ADR-065-durable-github-installation-intent-gateway.md) | Durable GitHub App Installation Intent 与 Setup Gateway | 已采纳 | 2026-08-28 |
+| [ADR-066](./ADR-066-desktop-platform-capability-and-host-environment.md) | Desktop Platform Capability、Host Environment 与 WSLg 支持边界 | 已采纳 | 2026-08-29 |
 
 ## 维护规则
 
