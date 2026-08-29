@@ -9,7 +9,7 @@ tags:
   - staging
 description: MemoFlow GitHub App durable installation intent、环境路由与 Web/Desktop 安装完成闭环实施方案
 created: 2026-08-28T12:00:00+08:00
-updated: 2026-08-28T12:00:00+08:00
+updated: 2026-08-29T13:35:00+08:00
 status: active
 ---
 
@@ -564,15 +564,49 @@ Old in-memory store remains available only as a test/dev adapter while migration
 
 ## 14. Definition of Done
 
-- [ ] Plan and ADR record the final ownership/state model.
-- [ ] Production composition no longer defaults to process-local installation state.
-- [ ] Raw GitHub installation state is never persisted.
-- [ ] Setup callback cannot directly authorize `connect`.
-- [ ] Web installation works through intent redirect/finalize.
+- [x] Plan and ADR record the final ownership/state model.
+- [x] Production composition no longer defaults to process-local installation state.
+- [x] Raw GitHub installation state is never persisted.
+- [x] Setup callback cannot directly authorize `connect`.
+- [x] Web installation works through intent redirect/finalize.
 - [ ] Desktop installation works through external browser + polling/finalize.
-- [ ] dev/staging can share Dev Test App with route-key isolation and independent DBs.
-- [ ] prod path is code-identical but credential/runtime-isolated.
-- [ ] focused + package + integration tests green.
-- [ ] exact SHA passes prod-like Docker migration/startup smoke.
-- [ ] exact SHA deployed to staging and setup gateway smoke passes.
-- [ ] Only then update GitHub App registration and run live GitHub acceptance.
+- [x] dev/staging can share Dev Test App with route-key isolation and independent DBs.
+- [x] prod path is code-identical but credential/runtime-isolated.
+- [x] focused + package + integration tests green.
+- [x] exact SHA passes prod-like Docker migration/startup smoke.
+- [x] exact SHA deployed to staging and setup gateway smoke passes.
+- [x] Only then update GitHub App registration and run live GitHub acceptance.
+
+## 15. Live acceptance evidence — 2026-08-29
+
+### 15.1 Runtime / release identity
+
+- Production runtime content revision: `670aaea48a0644d3bdef792a18367d79b43d02a9`.
+- Deployment contract / dual-registry revision validated before promotion: `bc1a5566720ad3bd1f63a87b4ab038bfbc4d1ddf`.
+- Final contract CI run: `33234315202` — Unit, Build, Typecheck, Static Analysis, Verification, Governance, Performance, Coverage, Integration, Delivery Observation and Web Flow 1–4 all succeeded.
+- China production application and runtime images are pinned by ACR `@sha256` refs; `docker-compose.prod.yml` on the host is byte-identical to the reviewed repository compose.
+- Public Web, API `/healthz`, and PowerSync liveness returned `200` after promotion.
+
+### 15.2 Dev / staging shared-App acceptance
+
+- Dev Test App installation inventory was verified with the real GitHub App API.
+- Dev completed authenticated start → callback → finalize → connect, ending with `Active` connection and `Consumed` intent.
+- Staging used the single Dev Setup URL, routed `mfi1.staging.*` through the dev gateway to staging, then completed callback → finalize → connect against the staging DB.
+- Cross-route fake probes remained fail-closed and did not create installation-intent rows.
+
+### 15.3 Production isolated-App acceptance
+
+- Production App: `MemoFlow Production`, App ID `4752078`, slug `memoflow-production`; Contents=`write`, Metadata=`read`, production webhook URL, JSON content type, SSL verification enabled.
+- A real installation was created for account `BakerSean168` with `selected` repository mode and exactly one private fixture repo: `BakerSean168/memoflow-github-app-e2e-fixture`.
+- Production intent `knowledge-install-intent-e96723f7-241d-4fc5-add2-d16b0912455c` completed `Pending → CallbackReceived → Finalized → Consumed`.
+- Production connection `knowledge-connection-cfde834a-4dea-443a-8f9d-b18730f9d03a` became `Active`.
+- The first real push exposed a production-only configuration drift: GitHub webhook deliveries returned HTTP `401` because the GitHub App webhook secret did not match the production runtime secret.
+- Focused runtime repair synchronized the GitHub App hook secret to the existing production secret without exposing either value. A second real App-authored push (`45b9c6dc734d2c2b06b4ba57f154615202f4d9e7`) returned webhook HTTP `202`, delivery status `Processed`, advanced `lastProjectedCommitSha` to the same commit, and projected `README.md`.
+- A GitHub redelivery request returned `202`; the durable delivery table remained at one row, proving delivery-id deduplication on the live path.
+
+### 15.4 Residual boundaries
+
+- Production Desktop live installation was not rerun in this closure pass; Desktop polling/finalize remains covered by implementation and automated contract tests. This is why the Desktop live DoD item above remains unchecked.
+- Production email/password auth currently has `requireEmailVerification=true` while no SMTP/Resend provider is configured. `ConsoleEmailDelivery` deliberately does not expose verification URLs, so public self-registration requires a real SMTP or Resend configuration before it is considered production-ready. This is an auth/email deployment finding, not a GitHub installation-gateway defect.
+- The Production GitHub App installation is intentionally left installed only on the private fixture repository so later production E2E does not require another broad repository authorization.
+- The temporary production MemoFlow E2E identity was deleted after acceptance; cascading cleanup returned users/sessions/accounts/intents/connections/projections/webhook-deliveries to zero while leaving the GitHub App installation scoped only to the fixture repository.

@@ -224,3 +224,11 @@ Required evidence:
 - after GitHub App registration change: real Web + Desktop installation acceptance。
 
 Live GitHub acceptance is deliberately last: application and deployment must be ready before the external Setup URL is changed.
+
+## 7. Deployment verification note — 2026-08-29
+
+The production rollout validated the ADR boundary with the separate `MemoFlow Production` GitHub App and production-only runtime credentials. A real selected-repository installation completed durable callback/finalize/connect and a real `push` webhook advanced the repository projection on the production API.
+
+The first push returned HTTP `401` because the external GitHub App hook secret and the production runtime secret had drifted. The repair synchronized the external hook config to the already-generated production secret; no application-code or trust-boundary change was required. A subsequent push was accepted with HTTP `202`, processed to the exact Git commit, and a GitHub redelivery was deduplicated by the durable delivery ledger.
+
+This deployment incident reinforces, rather than changes, the ADR: webhook secret ownership is environment-local production configuration and must be validated by a real signed delivery after rollout. Secrets, JWTs and private keys remain outside Git and outside acceptance evidence.
