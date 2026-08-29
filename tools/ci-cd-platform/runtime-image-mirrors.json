@@ -4,19 +4,19 @@
     {
       "name": "memoflow-postgres",
       "source": "docker.io/pgvector/pgvector@sha256:766437bbab40c7d0b080d380e2976f9ca2e880ce8fe7544c60e832eceaf43c1c",
-      "tag": "0.8.5-pg18-12a379b47ad6",
+      "tag": "0.8.5-pg18-766437bbab40",
       "platform": "linux/amd64"
     },
     {
       "name": "memoflow-redis",
       "source": "docker.io/library/redis@sha256:9c3ecc609a8087c0f11c494fefaf37a8f7bf9a967631d4a0da8967a9810be354",
-      "tag": "8-alpine-becdda6c7f4b",
+      "tag": "8-alpine-9c3ecc609a80",
       "platform": "linux/amd64"
     },
     {
       "name": "memoflow-caddy",
       "source": "docker.io/library/caddy@sha256:4679412ccd2114dca9f3017e2c460f76c9d8eb9e1850e72fb9ecda672e05c629",
-      "tag": "2-alpine-77c07d5ebfa5",
+      "tag": "2-alpine-4679412ccd21",
       "platform": "linux/amd64"
     },
     {
@@ -28,7 +28,7 @@
     {
       "name": "memoflow-watchtower",
       "source": "docker.io/containrrr/watchtower@sha256:f9086bfda061100361fc2bacf069585678d760d705cf390918ccdbda8a00980b",
-      "tag": "snapshot-6dd50763bbd6",
+      "tag": "snapshot-f9086bfda061",
       "platform": "linux/amd64"
     }
   ]

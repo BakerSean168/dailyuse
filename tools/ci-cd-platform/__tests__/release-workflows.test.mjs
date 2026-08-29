@@ -147,6 +147,9 @@ test('production compose allows China-mirrored runtime dependencies without chan
   assert.match(compose, /image: \$\{CADDY_IMAGE:-caddy:2-alpine\}/);
   assert.match(compose, /image: \$\{POWERSYNC_IMAGE:-journeyapps\/powersync-service:1\.20\.4\}/);
   assert.match(compose, /image: \$\{WATCHTOWER_IMAGE:-containrrr\/watchtower\}/);
+  assert.match(compose, /image: \$\{MIGRATOR_IMAGE:-\$\{REGISTRY:/);
+  assert.match(compose, /image: \$\{API_IMAGE:-\$\{REGISTRY:/);
+  assert.match(compose, /image: \$\{WEB_IMAGE:-\$\{REGISTRY:/);
 });
 
 test('runtime dependencies are digest-pinned and mirrored to both China and global registries', async () => {
@@ -166,6 +169,8 @@ test('runtime dependencies are digest-pinned and mirrored to both China and glob
     assert.match(entry.source, /@sha256:[a-f0-9]{64}$/);
     assert.equal(entry.platform, 'linux/amd64');
     assert.match(entry.tag, /^[a-z0-9][a-z0-9._-]+$/);
+    const digest = entry.source.split('@sha256:')[1];
+    assert.equal(entry.tag.endsWith(digest.slice(0, 12)), true);
   }
   assert.match(workflow, /packages:\s*write/);
   assert.match(workflow, /Login to ACR/);

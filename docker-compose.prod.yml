@@ -80,7 +80,7 @@ services:
   # ---------------------------------------------------------------------------
 
   migrator:
-    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-migrator:${MIGRATOR_TAG:-prod-latest}
+    image: ${MIGRATOR_IMAGE:-${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-migrator:${MIGRATOR_TAG:-prod-latest}}
     restart: 'no'
     init: true
     labels:
@@ -99,7 +99,7 @@ services:
       - memoflow-network
 
   api:
-    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-api:${API_TAG:-prod-latest}
+    image: ${API_IMAGE:-${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-api:${API_TAG:-prod-latest}}
     restart: unless-stopped
     init: true
     labels:
@@ -230,7 +230,7 @@ services:
       start_period: 30s
 
   web:
-    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-web:${WEB_TAG:-prod-latest}
+    image: ${WEB_IMAGE:-${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/memoflow-web:${WEB_TAG:-prod-latest}}
     restart: unless-stopped
     labels:
       com.centurylinklabs.watchtower.enable: 'true'
