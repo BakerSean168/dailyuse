@@ -1,6 +1,11 @@
 name: Mirror Runtime Images
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - tools/ci-cd-platform/runtime-image-mirrors.json
+      - .github/workflows/mirror-runtime-images.yml
   workflow_dispatch:
 
 permissions:

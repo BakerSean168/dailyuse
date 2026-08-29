@@ -172,6 +172,9 @@ test('runtime dependencies are digest-pinned and mirrored to both China and glob
     const digest = entry.source.split('@sha256:')[1];
     assert.equal(entry.tag.endsWith(digest.slice(0, 12)), true);
   }
+  assert.match(workflow, /push:\s*\n\s*branches:\s*\[main\]/);
+  assert.match(workflow, /runtime-image-mirrors\.json/);
+  assert.match(workflow, /workflow_dispatch:/);
   assert.match(workflow, /packages:\s*write/);
   assert.match(workflow, /Login to ACR/);
   assert.match(workflow, /Login to GHCR/);
