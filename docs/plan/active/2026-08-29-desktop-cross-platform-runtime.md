@@ -14,7 +14,7 @@ tags:
   - notification
 description: MemoFlow Desktop Windows/Linux/macOS 全平台化与 WSLg 正式支持的统一执行计划
 created: 2026-08-29T19:38:00+08:00
-updated: 2026-08-29T19:38:00+08:00
+updated: 2026-08-29T22:14:03+08:00
 status: active
 ---
 
@@ -53,6 +53,23 @@ MemoFlow Linux under WSLg
 - [ADR-066](../../architecture/adr/ADR-066-desktop-platform-capability-and-host-environment.md)
 - [Target Architecture](../../architecture/desktop-cross-platform-runtime.md)
 - [OSS / Current-State Study](../../analysis/2026-08-29-desktop-cross-platform-oss-study.md)
+
+## 0.1 Execution checkpoint — PLAT-0001 accepted
+
+`PLAT-0001` 已完成，并由 ChatGPT Web 在 Pixel implementation 之外独立验收。当前唯一继续执行点为 `PLAT-0002`。
+
+实施与审查证据：
+
+- Pixel implementation 产物：[`Desktop Dependency Inventory`](../../analysis/2026-08-29-desktop-dependency-inventory.md)；
+- frozen baseline：`e33a2986c11be37eb0f5017ba17ca5d14d03dd92`；
+- 六个 `process.platform` 命中文件全部与 inventory 对齐；
+- Tray / Shortcut / AutoLaunch / Notification / Update / Window、Repository Local Vault / Git / watcher、Routine sensors、safeStorage/auth 与 package/release matrix 均有真实文件证据；
+- 独立 review 修正了按类名/视觉名推断平台的错误：`powerMonitor.getSystemIdleTime()` 当前实现属于共享 Electron provider；`BrowserWindow.setProgressBar()` 同一 API 覆盖 Windows taskbar、macOS Dock 与受支持 Linux launcher；WSLg host idle 仍保持 `unverified`，不提前猜测；
+- WSL/host inventory 明确为：当前 runtime 尚无 WSL host/display detection；`NUL/os.devNull`、`localAppData` 等是普通 OS branch，不是 WSL host bridge；
+- R11 provider/test evidence 已全部展开为具体真实路径；provider/test evidence 不再使用 glob 占位；
+- ChatGPT 独立 detached review worktree 从 baseline 仅加入最终 inventory 后，`git diff --check`、`pnpm nx run memoflow:docs-check`、`pnpm nx run memoflow:governance-check` 全部通过。
+
+执行工具偏差：Pixel durable-plan aggregate review 正确发现首版 inventory 缺口，但 integration-repair retry 当前会丢失 backend fallback override，并反复选择 DSH；其 `gpt-5.6-sol` 请求又因固定 256k completion budget 超过 262144 context 而失败。该问题属于 Pixel control-plane tooling，不改变 MemoFlow `PLAT-0001` 产品/架构验收；本 ticket 的最终 repair 仍由 Pixel/OpenHands implementation workspace 完成，ChatGPT Web 只负责 review、acceptance 与 integration。
 
 ## 1. Target outcome
 
@@ -162,7 +179,7 @@ Phase 4 不是必然大开发；如果 Phase 2/3 证明 Electron/Linux capabilit
 
 # Phase 0 — Baseline and capability evidence
 
-## PLAT-0001 — Freeze current platform surface inventory
+## PLAT-0001 — ✅ DONE — Freeze current platform surface inventory
 
 **Goal:** 得到一份可执行的 current-state inventory，明确哪些文件直接依赖 Electron/OS、哪些 capability 已有 Port、哪些是共享实现。
 
@@ -193,7 +210,7 @@ Phase 4 不是必然大开发；如果 Phase 2/3 证明 Electron/Linux capabilit
 - inventory 可追溯到真实文件；
 - `git grep` platform refs 与 inventory 对齐。
 
-**Acceptance:** 没有“凭印象认为某功能 Windows-only”的条目。
+**Acceptance:** ✅ PASS — 没有“凭印象认为某功能 Windows-only”的条目；最终 evidence 与独立治理验证见 §0.1。
 
 ## PLAT-0002 — Create capability probe harness
 
