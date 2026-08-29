@@ -146,6 +146,8 @@ services:
       SMTP_PASS: ${SMTP_PASS:-}
       SMTP_FROM: ${SMTP_FROM:-}
       SMTP_REPLY_TO: ${SMTP_REPLY_TO:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM: ${RESEND_FROM:-}
       APP_NAME: ${APP_NAME:-MemoFlow}
       APP_VERSION: ${APP_VERSION:-0.3.0}
       LOG_LEVEL: ${LOG_LEVEL:-warn}

@@ -271,6 +271,30 @@ describe('GitHub server-only compose environment contract', () => {
   }
 });
 
+describe('transactional email compose environment contract', () => {
+  const requiredKeys = [
+    'EMAIL_PROVIDER',
+    'SMTP_HOST',
+    'SMTP_PORT',
+    'SMTP_SECURE',
+    'SMTP_USER',
+    'SMTP_PASS',
+    'SMTP_FROM',
+    'SMTP_REPLY_TO',
+    'RESEND_API_KEY',
+    'RESEND_FROM',
+  ];
+
+  for (const composeFile of ['docker-compose.local.yml', 'docker-compose.prod.yml']) {
+    it(`${composeFile} passes all transactional email delivery configuration to API`, () => {
+      const source = readFileSync(resolve(process.cwd(), composeFile), 'utf8');
+      for (const key of requiredKeys) {
+        assert.ok(source.includes(key + ': ${' + key + ':'));
+      }
+    });
+  }
+});
+
 describe('local Docker external bind contract', () => {
   it('binds API/Web/PowerSync to loopback by default so remote access must use a TLS terminator', () => {
     const source = readFileSync(resolve(process.cwd(), 'docker-compose.local.yml'), 'utf8');
