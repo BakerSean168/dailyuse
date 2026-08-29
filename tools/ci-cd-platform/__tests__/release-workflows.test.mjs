@@ -4,6 +4,14 @@ import test from 'node:test';
 
 const readRepoFile = (path) => readFile(new URL(`../../../${path}`, import.meta.url), 'utf8');
 
+function workflowStep(workflow, name) {
+  const marker = `- name: ${name}`;
+  const start = workflow.indexOf(marker);
+  assert.notEqual(start, -1, `workflow step not found: ${name}`);
+  const next = workflow.indexOf('\n      - name:', start + marker.length);
+  return workflow.slice(start, next < 0 ? workflow.length : next);
+}
+
 test('release-please is an explicit prepare-release workflow and never publishes', async () => {
   const [workflow, config] = await Promise.all([
     readRepoFile('.github/workflows/release-please.yml'),
@@ -32,6 +40,25 @@ test('release publish waits for exact CI then calls both reusable release lanes 
   assert.match(workflow, /autorelease: pending/);
   assert.match(workflow, /autorelease: tagged/);
   assert.match(workflow, /already_published == 'true' \|\| needs\.finalize\.result == 'success'/);
+});
+
+test('release validation checkouts retain merge-parent history', async () => {
+  const [caller, assets, images] = await Promise.all([
+    readRepoFile('.github/workflows/release-publish.yml'),
+    readRepoFile('.github/workflows/release-assets.yml'),
+    readRepoFile('.github/workflows/publish-images.yml'),
+  ]);
+
+  const prepareCheckout = workflowStep(caller, 'Checkout exact release SHA');
+  const desktopCheckout = workflowStep(assets, 'Checkout exact release source');
+  const dockerCheckout = workflowStep(images, 'Checkout exact release SHA');
+
+  assert.match(prepareCheckout, /ref: \$\{\{ needs\.resolve\.outputs\.sha \}\}/);
+  assert.match(desktopCheckout, /ref: \$\{\{ needs\.prepare-release\.outputs\.release_sha \}\}/);
+  assert.match(dockerCheckout, /ref: \$\{\{ needs\.prepare-release\.outputs\.release_sha \}\}/);
+  for (const step of [prepareCheckout, desktopCheckout, dockerCheckout]) {
+    assert.match(step, /fetch-depth:\s*0/);
+  }
 });
 
 test('desktop assets and image publishing are reusable retryable lanes, not publish-event or tag-push side effects', async () => {
