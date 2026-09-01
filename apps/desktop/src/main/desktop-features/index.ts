@@ -24,6 +24,7 @@ import {
 import type {
   AutoLaunchPort,
   CapabilityMainWindow,
+  ExternalEditorPort,
   NotificationPort,
   ShortcutPort,
   TrayPort,
@@ -66,6 +67,11 @@ export class DesktopFeaturesRuntime {
   /** The notification capability port (null when degraded/unavailable). */
   get notification(): NotificationPort | null {
     return this.registry.getNotification();
+  }
+
+  /** The external-editor capability port (null when degraded/unavailable). */
+  get externalEditor(): ExternalEditorPort | null {
+    return this.registry.getExternalEditor();
   }
 
   /** Rebind the host window the window-binding ports control. */

@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { dialog, shell } from 'electron';
 import matter from 'gray-matter';
 import type {
   ConfirmedLocalVaultWriteReq,
@@ -84,9 +83,33 @@ export interface LocalVaultElectronPort {
   inspectSyncContent(identityId: string): Promise<KnowledgeRepositoryContentState>;
 }
 
-function createElectronLocalVaultPlatform(): LocalVaultPlatform {
+/**
+ * Default external-URI opener. Used only when no capability port is injected;
+ * the desktop composition root injects a registry-backed `ExternalEditorPort`
+ * so consumers never reach this Electron `shell` call directly.
+ */
+async function defaultOpenExternal(uri: string): Promise<void> {
+  const { shell } = await import('electron');
+  await shell.openExternal(uri);
+}
+
+/**
+ * Builds the Electron-backed Local Vault platform.
+ *
+ * `selectDirectory` always uses Electron's native directory dialog (vault
+ * selection is host-specific and not part of the external-editor capability).
+ * `openExternal` defaults to Electron's `shell.openExternal` but can be
+ * overridden — the desktop composition root injects the registry-owned
+ * `ExternalEditorPort.openExternal` here, so `openInObsidian` routes through the
+ * single capability registry instead of constructing a second Electron shell
+ * provider.
+ */
+export function createElectronLocalVaultPlatform(
+  override?: Partial<Pick<LocalVaultPlatform, 'openExternal'>>,
+): LocalVaultPlatform {
   return {
     async selectDirectory({ suggestedPath }) {
+      const { dialog } = await import('electron');
       const result = await dialog.showOpenDialog({
         title: 'Select Obsidian vault',
         defaultPath: suggestedPath,
@@ -95,7 +118,7 @@ function createElectronLocalVaultPlatform(): LocalVaultPlatform {
       return result.canceled ? null : (result.filePaths[0] ?? null);
     },
     async openExternal(uri) {
-      await shell.openExternal(uri);
+      await (override?.openExternal ?? defaultOpenExternal)(uri);
     },
   };
 }

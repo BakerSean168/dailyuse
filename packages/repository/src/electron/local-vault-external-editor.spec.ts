@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  createElectronLocalVaultPlatform,
   LocalVaultRuntime,
   LocalVaultRuntimeError,
   type LocalVaultPlatform,
@@ -120,5 +121,72 @@ describe('LocalVaultRuntime external editor (openInObsidian)', () => {
       runtime.openInObsidian('identity-1', { relativePath: 'missing.md' }),
     ).rejects.toMatchObject<Partial<LocalVaultRuntimeError>>({ code: 'NOT_FOUND' });
     expect(platform.openExternal).not.toHaveBeenCalled();
+  });
+});
+
+describe('createElectronLocalVaultPlatform delegates to the injected external-editor port', () => {
+  const IDENTITY = 'owner-1';
+  const NOW = 1750000000000;
+  let root: string;
+  let vault: string;
+  let bindingFilePath: string;
+  let opener: ReturnType<typeof vi.fn>;
+  let platform: LocalVaultPlatform;
+  let runtime: LocalVaultRuntime;
+
+  beforeEach(async () => {
+    root = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'memoflow-injected-editor-'));
+    vault = path.join(root, 'Vault');
+    await fs.promises.mkdir(vault, { recursive: true });
+    const canonicalRoot = await fs.promises.realpath(vault);
+    bindingFilePath = path.join(root, 'binding.json');
+    await fs.promises.writeFile(
+      bindingFilePath,
+      JSON.stringify({
+        schemaVersion: 1,
+        id: 'local-vault-owner-1',
+        identityId: IDENTITY,
+        rootPath: canonicalRoot,
+        displayName: path.basename(vault),
+        status: 'Active',
+        obsidianVaultId: null,
+        lastScannedAt: null,
+        createdAt: NOW,
+        updatedAt: NOW,
+      }),
+      'utf8',
+    );
+    opener = vi.fn(async () => undefined);
+    platform = createElectronLocalVaultPlatform({ openExternal: opener });
+    runtime = new LocalVaultRuntime({
+      bindingFilePath,
+      writeLedgerFilePath: path.join(root, 'ledger.json'),
+      platform,
+      now: () => NOW,
+    });
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(root, { recursive: true, force: true });
+  });
+
+  it('forwards the exact obsidian URI to the injected registry-owned opener', async () => {
+    await runtime.openInObsidian(IDENTITY, {});
+
+    const uri = opener.mock.calls[0]?.[0] as string;
+    expect(uri.startsWith('obsidian://open?path=')).toBe(true);
+    expect(new URL(uri).searchParams.get('path')).toBe(await fs.promises.realpath(vault));
+    expect(opener).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects (no success) when the injected opener fails', async () => {
+    opener.mockRejectedValueOnce(
+      new LocalVaultRuntimeError('INTERNAL_ERROR', 'External editor capability is unavailable'),
+    );
+
+    await expect(runtime.openInObsidian(IDENTITY, {})).rejects.toMatchObject<
+      Partial<LocalVaultRuntimeError>
+    >({ code: 'INTERNAL_ERROR' });
+    expect(opener).toHaveBeenCalledTimes(1);
   });
 });

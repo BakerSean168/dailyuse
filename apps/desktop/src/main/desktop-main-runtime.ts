@@ -14,7 +14,7 @@
 
 import type { DesktopProfileRuntimeManager } from './profile';
 import type { WindowManager } from './lifecycle/window-manager';
-import type { NotificationPort } from './capabilities/ports';
+import type { NotificationPort, ExternalEditorPort } from './capabilities/ports';
 import type { DesktopFeaturesRuntime } from './desktop-features';
 import { createLogger } from '@memoflow/utils/logger';
 import type { DeviceAuthCoordinator } from './profile/device-auth-coordinator';
@@ -44,6 +44,17 @@ export class DesktopMainRuntime {
 
   setDesktopFeaturesRuntime(runtime: DesktopFeaturesRuntime): void {
     this._desktopFeaturesRuntime = runtime;
+  }
+
+  /**
+   * The registry-owned external-editor capability port (null before the
+   * CapabilityRegistry initializes or when the capability is degraded).
+   *
+   * Resolved lazily so consumers may be bound before the capability registry
+   * exists; a null result degrades gracefully instead of crashing.
+   */
+  get externalEditor(): ExternalEditorPort | null {
+    return this._desktopFeaturesRuntime?.externalEditor ?? null;
   }
 
   setDeviceAuthCoordinator(coordinator: DeviceAuthCoordinator): void {

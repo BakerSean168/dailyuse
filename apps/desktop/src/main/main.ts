@@ -36,7 +36,11 @@ import {
   createGoalPowerSyncScheduleExecutionSource,
 } from '@memoflow/goal/schedule-execution';
 import { createGoalPowerSyncScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
-import { createLocalVaultRuntime } from '@memoflow/repository/electron';
+import {
+  createLocalVaultRuntime,
+  createElectronLocalVaultPlatform,
+  LocalVaultRuntimeError,
+} from '@memoflow/repository/electron';
 import { createSchedulePowerSyncRepositories } from '@memoflow/schedule';
 import { LabelService, PowerSyncLabelRepository } from '@memoflow/label';
 import { createLabelElectronModule } from './modules/label/label.electron-module';
@@ -133,9 +137,37 @@ async function registerBusinessModules(
   const ownership = createRuntimeOwnership('desktop-local', undefined, () => new Date());
   logger.info('[runtime-ownership] Desktop host ownership', ownership);
 
+  // Local Vault routes `openInObsidian` through the single registry-owned
+  // ExternalEditorPort (CapabilityRegistry gates degradation), not through a
+  // second Electron `shell` provider. The port is resolved lazily at use-time:
+  // business modules compose before the CapabilityRegistry exists, but
+  // `openInObsidian` only runs on a later IPC gesture, by which time the
+  // registry is bound. Directory selection stays Electron's native dialog.
+  //
+  // An unavailable capability rejects explicitly (bounded, with no local path
+  // or URI leaked) so the existing IPC error boundary reports the failure
+  // instead of a caller silently believing the vault was opened.
+  const localVaultPlatform = createElectronLocalVaultPlatform({
+    openExternal: (uri): Promise<void> => {
+      void uri;
+      const editor = mainRuntime?.externalEditor;
+      if (!editor) {
+        // Bounded, explicit rejection (no local path or URI leaked) that the
+        // existing Local Vault IPC error boundary maps to a failure result.
+        return Promise.reject(
+          new LocalVaultRuntimeError(
+            'INTERNAL_ERROR',
+            'External editor capability is unavailable',
+          ),
+        );
+      }
+      return editor.openExternal(uri);
+    },
+  });
   const localVaultRuntime = createLocalVaultRuntime({
     bindingFilePath: profilePaths.localVaultBindingPath,
     writeLedgerFilePath: profilePaths.localVaultWriteLedgerPath,
+    platform: localVaultPlatform,
   });
 
   // Step D：宿主 runtime 负责 feature 装配。通知/提醒 composer 先于 schedule
