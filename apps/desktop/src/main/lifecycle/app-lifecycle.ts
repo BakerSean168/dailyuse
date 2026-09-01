@@ -18,7 +18,6 @@
 import { app, BrowserWindow } from 'electron';
 import { initializeDesktopFeatures } from '../desktop-features';
 import { registerSystemIpcHandlers } from '../ipc/system-handlers';
-import { initNotificationService } from '../services';
 import type { DesktopMainRuntime } from '../desktop-main-runtime';
 import type { WindowManager } from './window-manager';
 import { createLogger } from '@memoflow/utils/logger';
@@ -59,21 +58,27 @@ async function handleAppReady(
   const win = windowManager.getMainWindow() ?? windowManager.getProfileAccessWindow();
   console.log('[Lifecycle] Desktop Profile access initialized');
 
-  // Initialize notification service (requires window to be created)
+  // Initialize desktop capabilities via the CapabilityRegistry (degradation-gated).
+  // Each capability is constructed through its Electron-first factory; a failed
+  // capability (tray/shortcut/auto-launch/notification) degrades to an unavailable
+  // port instead of aborting startup.
   if (win) {
-    const notificationService = initNotificationService(win, windowManager);
-    mainRuntime.setNotificationService(notificationService);
-    console.log('[Lifecycle] Notification service initialized');
-
-    // Initialize desktop features and wire the runtime into the lifecycle owner
-    const desktopFeaturesRuntime = await initializeDesktopFeatures(win);
+    const desktopFeaturesRuntime = await initializeDesktopFeatures({
+      mainWindow: win,
+      windowManager,
+    });
     mainRuntime.setDesktopFeaturesRuntime(desktopFeaturesRuntime);
+
+    // Notification capability is owned by the same registry; wire it into the runtime.
+    mainRuntime.setNotification(desktopFeaturesRuntime.notification);
+    console.log('[Lifecycle] Notification capability initialized');
+
     windowManager.setDesktopFeaturesRuntime(desktopFeaturesRuntime);
 
     registerSystemIpcHandlers(
-      desktopFeaturesRuntime.trayManager,
-      desktopFeaturesRuntime.shortcutManager,
-      desktopFeaturesRuntime.autoLaunchManager,
+      desktopFeaturesRuntime.tray,
+      desktopFeaturesRuntime.shortcut,
+      desktopFeaturesRuntime.autolaunch,
     );
     console.log('[Lifecycle] System IPC handlers registered');
 
