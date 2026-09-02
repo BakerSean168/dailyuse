@@ -305,11 +305,16 @@ export async function collectConfiguredTests(root) {
 
 export function analyzeInventory(files, collectors) {
   const normalizedFiles = [...new Set(files.map(normalizePath))].sort();
+  const normalizedCollectors = [...collectors].sort((left, right) =>
+    `${left.type}:${left.suite}:${left.runner}:${left.id}`.localeCompare(
+      `${right.type}:${right.suite}:${right.runner}:${right.id}`,
+    ),
+  );
   const fileSet = new Set(normalizedFiles);
   const ownership = new Map(normalizedFiles.map((file) => [file, { primary: [], measurement: [] }]));
   const unexpected = [];
 
-  for (const collector of collectors) {
+  for (const collector of normalizedCollectors) {
     if (collector.type !== 'primary' && collector.type !== 'measurement') {
       unexpected.push({ collector: collector.id, reason: 'invalid-collector-type' });
       continue;
@@ -367,7 +372,7 @@ export function analyzeInventory(files, collectors) {
   }
 
   const measurementSuites = {};
-  for (const collector of collectors.filter((item) => item.type === 'measurement')) {
+  for (const collector of normalizedCollectors.filter((item) => item.type === 'measurement')) {
     const filesForSuite = measurementSuites[collector.suite] ?? new Set();
     for (const file of collector.files) {
       if (fileSet.has(file)) filesForSuite.add(file);
@@ -378,7 +383,7 @@ export function analyzeInventory(files, collectors) {
   return {
     version: INVENTORY_VERSION,
     primary,
-    collectors: collectors.map(({ files: collectorFiles, ...collector }) => ({
+    collectors: normalizedCollectors.map(({ files: collectorFiles, ...collector }) => ({
       ...collector,
       fileCount: collectorFiles.length,
     })),

@@ -92,3 +92,28 @@ test('reports missing, duplicate, unexpected and measurement-only collectors', (
     },
   ]);
 });
+
+test('inventory serialization is independent of filesystem collector order', () => {
+  const files = ['apps/desktop/src/example.spec.ts', 'apps/web/src/example.spec.ts'];
+  const collectors = [
+    {
+      id: 'apps/web/vitest.config.ts',
+      type: 'primary',
+      suite: 'unit',
+      runner: 'vitest',
+      files: [files[1]],
+    },
+    {
+      id: 'apps/desktop/vitest.config.ts',
+      type: 'primary',
+      suite: 'unit',
+      runner: 'vitest',
+      files: [files[0]],
+    },
+  ];
+
+  assert.deepEqual(
+    analyzeInventory(files, collectors),
+    analyzeInventory(files, [...collectors].reverse()),
+  );
+});
