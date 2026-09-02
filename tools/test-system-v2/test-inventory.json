@@ -10857,13 +10857,6 @@
       "fileCount": 7
     },
     {
-      "id": "apps/desktop/playwright.config.ts",
-      "type": "primary",
-      "suite": "e2e",
-      "runner": "playwright",
-      "fileCount": 1
-    },
-    {
       "id": "apps/web/playwright.ai-workspace.config.ts",
       "type": "primary",
       "suite": "e2e",
@@ -10921,6 +10914,13 @@
     },
     {
       "id": "apps/web/playwright.sync.config.ts",
+      "type": "primary",
+      "suite": "e2e",
+      "runner": "playwright",
+      "fileCount": 1
+    },
+    {
+      "id": "apps/desktop/playwright.config.ts",
       "type": "primary",
       "suite": "e2e",
       "runner": "playwright",

@@ -30,7 +30,9 @@
       "type": "object",
       "required": ["level", "reasons"],
       "properties": {
-        "level": { "enum": ["docs", "package", "runtime", "web-flow", "root", "release"] },
+        "level": {
+          "enum": ["docs", "package", "desktop", "runtime", "web-flow", "root", "release"]
+        },
         "reasons": { "type": "array", "items": { "type": "string" } },
         "matchedLevels": { "type": "array", "items": { "type": "string" } }
       },

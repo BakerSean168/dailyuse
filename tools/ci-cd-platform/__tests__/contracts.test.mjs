@@ -23,6 +23,7 @@ const scope = {
   boundary: [],
   perf: [],
   webFlow: true,
+  desktopFlow: false,
 };
 
 test('validates a delivery manifest and gives deterministic provenance', () => {
@@ -161,7 +162,9 @@ test('run summary timing rejects invalid measurements', () => {
 
 test('Prisma client generation has one Nx-owned writer in the typecheck graph', async () => {
   const [databaseProject, apiProject] = await Promise.all([
-    readFile(new URL('../../../packages/database/project.json', import.meta.url), 'utf8').then(JSON.parse),
+    readFile(new URL('../../../packages/database/project.json', import.meta.url), 'utf8').then(
+      JSON.parse,
+    ),
     readFile(new URL('../../../apps/api/project.json', import.meta.url), 'utf8').then(JSON.parse),
   ]);
 

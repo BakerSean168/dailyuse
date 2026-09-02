@@ -32,7 +32,10 @@ export async function buildDeliveryManifest({
   base = process.env.NX_BASE ?? null,
   head = process.env.NX_HEAD ?? process.env.GITHUB_SHA ?? null,
   event = process.env.GITHUB_EVENT_NAME ?? 'pull_request',
-  full = event === 'schedule' || event === 'workflow_dispatch',
+  ref = process.env.GITHUB_REF ?? null,
+  full = event === 'schedule' ||
+    event === 'workflow_dispatch' ||
+    (event === 'push' && ref === 'refs/heads/main'),
   scope,
   files,
 } = {}) {
@@ -43,12 +46,13 @@ export async function buildDeliveryManifest({
     .split(',')
     .map((lane) => lane.trim())
     .filter(Boolean);
-  const selectedLanes = selectLanes({ risk, scope: resolvedScope, event });
+  const selectedLanes = selectLanes({ risk, scope: resolvedScope, event, full });
   for (const lane of forcedLanes) selectedLanes[lane] = true;
   const input = {
     base,
     head,
     event,
+    ref,
     full,
     changedFiles: changed,
     scope: resolvedScope,

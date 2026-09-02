@@ -42,6 +42,7 @@ export async function detectScope({
     target('test:perf'),
   ]);
   const webFlow = projects.some((project) => ['web', 'api'].includes(project));
+  const desktopFlow = projects.includes('desktop');
   return {
     version: SCOPE_VERSION,
     base: base ?? null,
@@ -55,5 +56,6 @@ export async function detectScope({
     boundary,
     perf,
     webFlow,
+    desktopFlow,
   };
 }

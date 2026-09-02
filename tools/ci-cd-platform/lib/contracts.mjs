@@ -11,7 +11,15 @@ export const RUN_SUMMARY_VERSION = 1;
 export const TIMING_REPORT_VERSION = 1;
 export const FAULT_INJECTION_REPORT_VERSION = 1;
 
-const RISK_LEVELS = new Set(['docs', 'package', 'runtime', 'web-flow', 'root', 'release']);
+const RISK_LEVELS = new Set([
+  'docs',
+  'package',
+  'desktop',
+  'runtime',
+  'web-flow',
+  'root',
+  'release',
+]);
 const LANE_NAMES = new Set([
   'governance',
   'validate',
