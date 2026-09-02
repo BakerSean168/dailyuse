@@ -239,7 +239,8 @@ test('Desktop release matrix covers Windows, Linux, macOS Intel and Apple Silico
   assert.match(workflow, /signing_state: unsigned-pilot/);
   assert.match(workflow, /CSC_IDENTITY_AUTO_DISCOVERY: 'false'/);
   assert.match(workflow, /write-desktop-platform-receipt\.mjs/);
-  assert.match(workflow, /-name '\*\.dmg'/);
+  assert.match(workflow, /resolve-desktop-release-assets\.mjs/);
+  assert.match(workflow, /verify-desktop-release-assets\.mjs/);
   assert.match(builder, /\$\{productName\}-macOS-\$\{arch\}-\$\{version\}/);
   assert.match(receipt, /signed-notarized/);
   assert.match(manifest, /missing required Desktop platform/);
@@ -268,4 +269,35 @@ test('CI has one long-lived main branch target and full-main policy is encoded b
   assert.equal((workflow.match(/branches:\s*\[main\]/gu) ?? []).length, 2);
   assert.doesNotMatch(workflow, /develop/u);
   assert.match(generator, /event === 'push' && ref === 'refs\/heads\/main'/u);
+});
+
+test('Desktop upload and release publication are manifest-owned and verify the remote asset set', async () => {
+  const [assets, publish] = await Promise.all([
+    readRepoFile('.github/workflows/release-assets.yml'),
+    readRepoFile('.github/workflows/release-publish.yml'),
+  ]);
+  const upload = workflowStep(
+    assets,
+    'Upload the manifest-owned asset set to the draft GitHub Release',
+  );
+  assert.match(upload, /resolve-desktop-release-assets\.mjs/);
+  assert.match(upload, /expected_count=.*\.assets \| length/);
+  assert.match(upload, /verify-desktop-release-assets\.mjs/);
+  assert.doesNotMatch(upload, /find artifacts.*-name/);
+
+  const remoteGate = workflowStep(
+    publish,
+    'Verify the remote Draft contains every manifest-owned Desktop asset',
+  );
+  assert.match(remoteGate, /gh api .*releases\/tags/);
+  assert.match(remoteGate, /verify-desktop-release-assets\.mjs/);
+  assert.ok(
+    publish.indexOf('Verify the remote Draft contains every manifest-owned Desktop asset') <
+      publish.indexOf('Upload canonical manifest and publish'),
+  );
+  for (const workflow of [assets, publish]) {
+    for (const [, action, ref] of workflow.matchAll(/uses:\s+([^./\s][^@\s]+)@([^\s#]+)/gu)) {
+      assert.match(ref, /^[0-9a-f]{40}$/u, `${action} must use a full commit SHA`);
+    }
+  }
 });
