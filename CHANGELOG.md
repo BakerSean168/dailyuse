@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.12.0](https://github.com/BakerSean168/memoflow/compare/v0.11.0...v0.12.0) (2026-09-02)
+
+
+### Features
+
+* **delivery:** adopt V3 CI scope and cross-platform Desktop release ([07b8713](https://github.com/BakerSean168/memoflow/commit/07b8713d3b9180669d6d7d5c11a544b8117dbccb))
+* **desktop:** define typed capability ports and Electron-first factories ([cfb4a92](https://github.com/BakerSean168/memoflow/commit/cfb4a9222c82c756733818a53b9cad6c5676c9a2))
+* **desktop:** route desktop capability startup through CapabilityRegistry ([359b121](https://github.com/BakerSean168/memoflow/commit/359b1217d98bf8058694cab32ccc0bfba3e66d4f))
+* **release:** add desktop-aware CI and macOS artifacts ([631d3e0](https://github.com/BakerSean168/memoflow/commit/631d3e07982feac712baa6adf5a82fa75a15bad0))
+
+
+### Bug Fixes
+
+* **desktop:** route Local Vault external editor through capability registry ([6efe606](https://github.com/BakerSean168/memoflow/commit/6efe60622bde2ec8c79d2407721d6a900dee7c89))
+* **test:** make inventory collector order deterministic ([7098c8c](https://github.com/BakerSean168/memoflow/commit/7098c8ce3f5c4343d8cc4c301461f54c52dc5877))
+
 ## [0.11.0](https://github.com/BakerSean168/memoflow/compare/v0.10.0...v0.11.0) (2026-08-29)
 
 
