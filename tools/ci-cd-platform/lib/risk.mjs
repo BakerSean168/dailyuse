@@ -1,10 +1,11 @@
 const RISK_RANK = {
   docs: 0,
   package: 1,
-  runtime: 2,
-  'web-flow': 3,
-  root: 4,
-  release: 5,
+  desktop: 2,
+  runtime: 3,
+  'web-flow': 4,
+  root: 5,
+  release: 6,
 };
 
 const RULES = [
@@ -25,12 +26,18 @@ const RULES = [
       ),
   },
   {
+    level: 'desktop',
+    reason: 'Desktop, Electron, or native packaging surface changed',
+    test: (file) =>
+      /(^apps\/desktop\/|^packages\/repository\/src\/electron\/|electron-builder|desktop-release)/iu.test(
+        file,
+      ),
+  },
+  {
     level: 'runtime',
     reason: 'API, database, Prisma, IPC, or integration runtime changed',
     test: (file) =>
-      /(^apps\/api\/|^apps\/migrator\/|^apps\/desktop\/.*(main|ipc)|prisma|database|integration|smoke)/iu.test(
-        file,
-      ),
+      /(^apps\/api\/|^apps\/migrator\/|prisma|database|integration|smoke)/iu.test(file),
   },
   {
     level: 'web-flow',
@@ -52,9 +59,12 @@ const RULES = [
 export function classifyRisk(changedFiles) {
   const levels = new Map();
   for (const file of changedFiles) {
-    const matching = RULES.find((rule) => rule.test(file));
-    const rule = matching ?? { level: 'root', reason: 'unclassified file changed' };
-    levels.set(rule.level, (levels.get(rule.level) ?? new Set()).add(rule.reason));
+    const matching = RULES.filter((rule) => rule.test(file));
+    const rules =
+      matching.length > 0 ? matching : [{ level: 'root', reason: 'unclassified file changed' }];
+    for (const rule of rules) {
+      levels.set(rule.level, (levels.get(rule.level) ?? new Set()).add(rule.reason));
+    }
   }
 
   if (levels.size === 0) {
@@ -75,9 +85,10 @@ export function classifyRisk(changedFiles) {
   };
 }
 
-export function selectLanes({ risk, scope, event = 'pull_request' }) {
-  const root = risk.level === 'root' || risk.level === 'release';
-  const fullAudit = event === 'schedule' || event === 'workflow_dispatch';
+export function selectLanes({ risk, scope, event = 'pull_request', full = scope.full === true }) {
+  const matched = new Set(risk.matchedLevels ?? [risk.level]);
+  const root = matched.has('root') || matched.has('release');
+  const fullAudit = full || event === 'schedule' || event === 'workflow_dispatch';
   const has = (values) => fullAudit || (Array.isArray(values) && values.length > 0);
   return {
     governance: true,
@@ -86,7 +97,11 @@ export function selectLanes({ risk, scope, event = 'pull_request' }) {
     validate: fullAudit || risk.level !== 'docs',
     boundary: root || has(scope.boundary) || has(scope.smoke),
     integration: root || has(scope.integration),
-    web: fullAudit || root || Boolean(scope.webFlow) || risk.level === 'web-flow',
+    web:
+      fullAudit ||
+      root ||
+      matched.has('web-flow') ||
+      (Boolean(scope.webFlow) && !matched.has('desktop')),
     coverage: root || has(scope.coverage),
     performance: root || has(scope.perf),
   };

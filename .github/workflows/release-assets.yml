@@ -41,7 +41,7 @@ jobs:
     steps:
       - name: Resolve exact tag and SHA
         id: resolve
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           RELEASE_TAG: ${{ inputs.tag }}
           RELEASE_SHA: ${{ inputs.sha }}
@@ -83,28 +83,46 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            platform: windows
-            builder_args: --win --x64
+            platform: windows-x64
+            platform_os: windows
+            arch: x64
+            signing_state: unsigned
+            builder_args: --win nsis zip --x64
           - os: ubuntu-latest
-            platform: linux
+            platform: linux-x64
+            platform_os: linux
+            arch: x64
+            signing_state: unsigned
             builder_args: --linux AppImage deb rpm --x64
+          - os: macos-15-intel
+            platform: macos-x64
+            platform_os: macos
+            arch: x64
+            signing_state: unsigned-pilot
+            builder_args: --mac dmg zip --x64
+          - os: macos-15
+            platform: macos-arm64
+            platform_os: macos
+            arch: arm64
+            signing_state: unsigned-pilot
+            builder_args: --mac dmg zip --arm64
 
     steps:
       - name: Checkout release packaging tooling
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.workflow_sha }}
           path: release-tooling
 
       - name: Checkout exact release source
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ needs.prepare-release.outputs.release_sha }}
           fetch-depth: 0
           path: release-source
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
@@ -115,13 +133,13 @@ jobs:
           pnpm --version
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version-file: release-source/apps/desktop/.python-version
 
       - name: Setup MSBuild (Windows)
         if: runner.os == 'Windows'
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2
         with:
           msbuild-architecture: x64
 
@@ -156,17 +174,35 @@ jobs:
 
       - name: Package desktop application
         working-directory: release-source/apps/desktop
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_OPTIONS: --require=${{ github.workspace }}/release-source/tools/ci/node-process-bootstrap.cjs
           PYTHON: ${{ env.pythonLocation }}/python
           npm_config_python: ${{ env.pythonLocation }}/python
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
         run: |
           pnpm exec electron-builder ${{ matrix.builder_args }} --publish never --config ../../../release-tooling/apps/desktop/electron-builder.json5
           node ./scripts/verify-packaged-runtime-deps.mjs
+          if [ "${{ matrix.platform_os }}" = macos ] && [ -f dist-package/latest-mac.yml ]; then
+            mv dist-package/latest-mac.yml "dist-package/latest-mac-${{ matrix.arch }}.yml"
+          fi
+
+      - name: Write Desktop platform receipt
+        working-directory: release-source/apps/desktop
+        shell: bash
+        run: >-
+          node ../../../release-tooling/tools/ci-cd-platform/release-tools/write-desktop-platform-receipt.mjs
+          dist-package
+          "${{ matrix.platform }}"
+          "${{ matrix.platform_os }}"
+          "${{ matrix.arch }}"
+          "${{ matrix.signing_state }}"
+          "${{ needs.prepare-release.outputs.release_tag }}"
+          "${{ needs.prepare-release.outputs.release_sha }}"
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: desktop-${{ matrix.platform }}
           path: release-source/apps/desktop/dist-package
@@ -182,12 +218,12 @@ jobs:
 
     steps:
       - name: Checkout release tooling
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.workflow_sha }}
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           pattern: desktop-*
           path: artifacts
@@ -221,7 +257,7 @@ jobs:
         run: |
           mapfile -d '' files < <(find artifacts -type f \
             \( -name '*Setup.exe' -o -name '*Setup.zip' -o -name '*.blockmap' -o \
-               -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' -o -name 'latest*.yml' \) \
+               -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' -o -name '*.dmg' -o -name 'latest*.yml' \) \
             -print0 | sort -z)
           if [ "${#files[@]}" -eq 0 ]; then
             echo "No release assets were found in downloaded artifacts."

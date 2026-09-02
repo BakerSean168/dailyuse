@@ -4,19 +4,19 @@ tags:
   - development
   - release
   - workflow
-description: Release Lifecycle V2：从本地验证、Prepare Release 到 exact-SHA Draft/Postflight/Publish
+description: Release Lifecycle V3：成功 main CI 自动维护 Release PR，exact-SHA Draft/Postflight 与四平台 Desktop 发布
 created: 2026-05-19T00:00:00
-updated: 2026-08-29T11:46:00+08:00
+updated: 2026-09-02T16:15:00+08:00
 ---
 
 # Release 工作流
 
-MemoFlow 使用 **Release Lifecycle V2**。发布被拆成两个明确阶段：
+MemoFlow 正在实施 **Release Lifecycle V3**。当前已落地的 Phase 1 把发布拆成两个明确阶段：
 
-1. `Prepare Release`：release-please 只按需维护版本、CHANGELOG 和 Release PR；
-2. `Release Publish`：Release PR 合并后的 exact SHA 必须先通过 `CI`，随后创建 Draft Release/tag，同时构建 Desktop 资产与 Docker 镜像；postflight 全部通过后才公开 GitHub Release。
+1. `Prepare Release`：成功的 exact-SHA `main` CI 自动触发 release-please 维护版本、CHANGELOG 和 Release PR，手工 dispatch 只用于重试；
+2. `Release Publish`：Release PR 合并后的 exact SHA 必须先通过 full `CI`，随后创建 Draft Release/tag，构建 Windows/Linux/macOS Desktop 资产与当前 Server 镜像；postflight 全部通过后才公开 GitHub Release。Server candidate 的 build-once/promote-many 是 V3 Phase 2/3 的后续切换。
 
-这避免了三类旧问题：每次 `main` push 都扫描超长发布历史、tag 与 CI 的竞态、以及 GitHub Release 已公开但资产仍失败的半发布状态。
+Prepare Release 不再从原始 push 直接触发，而是在 `CI` 已成功后运行，因此只有 verified main 才维护 Release PR；Release Publish 仍与 release-please 解耦，避免 tag/CI 竞态和半发布状态。
 
 ## 标准顺序
 
@@ -36,19 +36,21 @@ pnpm docker:local:up
 - 从 `main` 切短生命周期分支；
 - 完成改动和验证；
 - 发起 PR 并合并到 `main`；
-- 普通 `main` commit **不会**自动运行 release-please，也不会产生 release/tag。
+- `main` commit 必须完成 full CI；成功后自动运行 `Prepare Release`。这只创建或更新 Release PR，不创建 release/tag。
 
-### 3. 按需 Prepare Release
+### 3. 自动 Prepare Release
 
-到达明确发布里程碑时，手工运行 `.github/workflows/release-please.yml`（GitHub UI 名称 `Prepare Release`）。它使用 manifest mode：
+`.github/workflows/release-please.yml` 监听 `CI` 的 `workflow_run`。仅当来源是 `push`、分支是 `main`、结论为 `success` 时，release-please 才运行。`workflow_dispatch` 保留为幂等重试入口。
+
+它使用 manifest mode：
 
 - 计算下一个版本；
 - 更新 `package.json`、`apps/desktop/package.json`；
 - 更新 `.release-please-manifest.json`；
 - 更新 `CHANGELOG.md`；
-- 创建或更新 Release PR。
+- 创建或更新同一个 Release PR。
 
-`release-please-config.json` 设置 `skip-github-release: true`，因此 release-please **不再创建正式 tag / GitHub Release**。
+`release-please-config.json` 设置 `skip-github-release: true`，因此 Prepare Release **不能**创建正式 tag、GitHub Release、Desktop 包或 Docker 镜像。
 
 ### 4. 合并 Release PR，等待 exact-SHA CI
 
@@ -87,10 +89,11 @@ chore(main): release X.Y.Z (#PR)
 
 - checkout exact release SHA；
 - 再次验证 release contract；
-- 构建 Windows / Linux Desktop 包；
+- 构建 Windows x64、Linux x64、macOS Intel x64 与 macOS Apple Silicon arm64 Desktop 包；
 - 上传 release assets；
 - 生成 `SHA256SUMS.txt`；
-- 生成 `desktop-release-manifest.json`，绑定 `version/tag/gitSha` 与每个资产的 SHA256。
+- 为每个平台生成 receipt，并生成 `desktop-release-manifest.json`，绑定 `version/tag/gitSha`、platform/arch/signing state 与每个资产的 SHA256；
+- 缺任一必需平台、重复资产名、macOS 架构名缺失或 receipt 漂移都会 fail closed。
 
 它支持 `workflow_call` 和 `workflow_dispatch`，因此失败后可针对同一 Draft/tag 重试。
 
@@ -154,6 +157,16 @@ Docker release 的 **artifact identity 是 OCI digest，不是某一个 registry
 
 ## 与生产部署的边界
 
-Release Lifecycle V2 的完成点是：GitHub Release/桌面资产/ACR + GHCR 双 registry 镜像均具备可追溯证据。它**不自动 SSH 到生产服务器，也不自动修改 production compose**。
+Release Lifecycle V3 当前发布面的完成点是：GitHub Release/桌面资产/ACR + GHCR 双 registry 镜像均具备可追溯证据。它**不自动 SSH 到生产服务器，也不自动修改 production compose**。
 
 生产 rollout、migrator-first 更新、回滚和观察日志见 [deployment README](../../deployment/README.md)。
+
+## V3 后续 authority cutover
+
+完整 V3 目标和实施状态以以下文档为准：
+
+- [`../../architecture/delivery-platform-v3.md`](../../architecture/delivery-platform-v3.md)；
+- [`../../architecture/release-lifecycle-v3.md`](../../architecture/release-lifecycle-v3.md)；
+- [`../../plan/active/2026-09-02-delivery-platform-v3.md`](../../plan/active/2026-09-02-delivery-platform-v3.md)。
+
+在 Server candidate/staging/production watcher 尚未完成真实切换前，本文不会把它们表示成当前已部署事实。

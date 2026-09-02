@@ -15,6 +15,7 @@ const scope = {
   boundary: [],
   perf: [],
   webFlow: true,
+  desktopFlow: false,
 };
 
 test('builds one deterministic delivery manifest from injected scope', async () => {
@@ -59,4 +60,49 @@ test('uses the manifest lane policy for docs-only and root changes', async () =>
   assert.equal(rootManifest.lanes.web, true);
   assert.equal(rootManifest.lanes.coverage, true);
   assert.equal(rootManifest.lanes.performance, true);
+});
+
+test('historical Desktop capability paths do not select Web Flow', async () => {
+  const manifest = await buildDeliveryManifest({
+    base: 'base',
+    head: 'head',
+    event: 'pull_request',
+    scope: {
+      ...scope,
+      projects: ['desktop', 'repository'],
+      unit: ['desktop', 'repository'],
+      boundary: ['desktop'],
+      integration: [],
+      webFlow: true,
+      desktopFlow: true,
+    },
+    files: [
+      'apps/desktop/src/main/capabilities/capability-registry.ts',
+      'apps/desktop/src/main/desktop-main-runtime.ts',
+      'packages/repository/src/electron/local-vault-runtime.ts',
+      'packages/repository/src/electron/local-vault-external-editor.spec.ts',
+    ],
+  });
+  assert.equal(manifest.lanes.validate, true);
+  assert.equal(manifest.lanes.web, false);
+  assert.ok(manifest.risk.matchedLevels.includes('desktop'));
+  assert.ok(!manifest.risk.matchedLevels.includes('web-flow'));
+});
+
+test('push to main is an exhaustive full audit regardless of changed path', async () => {
+  const manifest = await buildDeliveryManifest({
+    base: 'base',
+    head: 'head',
+    ref: 'refs/heads/main',
+    event: 'push',
+    scope: {
+      ...scope,
+      full: true,
+      projects: ['desktop', 'web', 'api'],
+      desktopFlow: true,
+    },
+    files: ['docs/README.md'],
+  });
+  assert.equal(manifest.full, true);
+  assert.ok(Object.values(manifest.lanes).every(Boolean));
 });

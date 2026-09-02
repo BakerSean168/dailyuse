@@ -10354,38 +10354,150 @@
   "collectors": [
     {
       "id": "apps/api/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 62
-    },
-    {
-      "id": "apps/api/vitest.smoke.config.ts",
-      "type": "primary",
-      "suite": "smoke",
-      "runner": "vitest",
-      "fileCount": 3
-    },
-    {
-      "id": "apps/api/vitest.integration.config.ts",
-      "type": "primary",
-      "suite": "integration",
-      "runner": "vitest",
-      "fileCount": 3
-    },
-    {
-      "id": "apps/api/vitest.config.ts",
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
       "fileCount": 62
     },
     {
-      "id": "apps/desktop/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
+      "id": "packages/account/vitest.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 57
+      "fileCount": 27
+    },
+    {
+      "id": "packages/ai/vitest.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 64
+    },
+    {
+      "id": "packages/app-vue/vitest.store-coverage.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 10
+    },
+    {
+      "id": "packages/data-portability/vitest.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 32
+    },
+    {
+      "id": "packages/domain-shared/vitest.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 1
+    },
+    {
+      "id": "packages/goal/vitest.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 81
+    },
+    {
+      "id": "packages/goal/vitest.mappers.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 8
+    },
+    {
+      "id": "packages/goal/vitest.use-cases.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 29
+    },
+    {
+      "id": "packages/governance/vitest.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 25
+    },
+    {
+      "id": "packages/notification/vitest.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 44
+    },
+    {
+      "id": "packages/reminder/vitest.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 73
+    },
+    {
+      "id": "packages/reminder/vitest.mappers.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 4
+    },
+    {
+      "id": "packages/reminder/vitest.use-cases.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 8
+    },
+    {
+      "id": "packages/schedule/vitest.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 45
+    },
+    {
+      "id": "packages/schedule/vitest.mappers.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 3
+    },
+    {
+      "id": "packages/schedule/vitest.use-cases.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 5
+    },
+    {
+      "id": "packages/setting/vitest.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 18
+    },
+    {
+      "id": "packages/task/vitest.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 72
+    },
+    {
+      "id": "packages/task/vitest.mappers.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 3
+    },
+    {
+      "id": "packages/task/vitest.use-cases.config.ts",
+      "type": "measurement",
+      "suite": "coverage",
+      "runner": "vitest",
+      "fileCount": 24
     },
     {
       "id": "apps/desktop/vitest.ipc.config.ts",
@@ -10400,461 +10512,6 @@
       "suite": "boundary-main",
       "runner": "vitest",
       "fileCount": 5
-    },
-    {
-      "id": "apps/migrator/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 1
-    },
-    {
-      "id": "apps/web/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 17
-    },
-    {
-      "id": "packages/account/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 27
-    },
-    {
-      "id": "packages/account/vitest.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 27
-    },
-    {
-      "id": "packages/account/vitest.integration.config.ts",
-      "type": "primary",
-      "suite": "integration",
-      "runner": "vitest",
-      "fileCount": 4
-    },
-    {
-      "id": "packages/ai/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 64
-    },
-    {
-      "id": "packages/ai/vitest.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 64
-    },
-    {
-      "id": "packages/app-vue/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 200
-    },
-    {
-      "id": "packages/app-vue/vitest.store-coverage.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 10
-    },
-    {
-      "id": "packages/assets/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 1
-    },
-    {
-      "id": "packages/cloud-auth/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 6
-    },
-    {
-      "id": "packages/contracts/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 65
-    },
-    {
-      "id": "packages/dashboard/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 4
-    },
-    {
-      "id": "packages/data-portability/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 32
-    },
-    {
-      "id": "packages/data-portability/vitest.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 32
-    },
-    {
-      "id": "packages/database/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 8
-    },
-    {
-      "id": "packages/domain-shared/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 1
-    },
-    {
-      "id": "packages/domain-shared/vitest.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 1
-    },
-    {
-      "id": "packages/goal/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 81
-    },
-    {
-      "id": "packages/goal/vitest.integration.config.ts",
-      "type": "primary",
-      "suite": "integration",
-      "runner": "vitest",
-      "fileCount": 4
-    },
-    {
-      "id": "packages/goal/vitest.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 81
-    },
-    {
-      "id": "packages/goal/vitest.use-cases.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 29
-    },
-    {
-      "id": "packages/goal/vitest.mappers.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 8
-    },
-    {
-      "id": "packages/governance/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 25
-    },
-    {
-      "id": "packages/governance/vitest.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 25
-    },
-    {
-      "id": "packages/http-client/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 6
-    },
-    {
-      "id": "packages/ipc-client/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 3
-    },
-    {
-      "id": "packages/label/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 3
-    },
-    {
-      "id": "packages/label/vitest.integration.config.ts",
-      "type": "primary",
-      "suite": "integration",
-      "runner": "vitest",
-      "fileCount": 1
-    },
-    {
-      "id": "packages/notification/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 44
-    },
-    {
-      "id": "packages/notification/vitest.integration.config.ts",
-      "type": "primary",
-      "suite": "integration",
-      "runner": "vitest",
-      "fileCount": 3
-    },
-    {
-      "id": "packages/notification/vitest.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 44
-    },
-    {
-      "id": "packages/patterns/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 6
-    },
-    {
-      "id": "packages/powersync-schema/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 1
-    },
-    {
-      "id": "packages/reminder/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 73
-    },
-    {
-      "id": "packages/reminder/vitest.integration.config.ts",
-      "type": "primary",
-      "suite": "integration",
-      "runner": "vitest",
-      "fileCount": 4
-    },
-    {
-      "id": "packages/reminder/vitest.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 73
-    },
-    {
-      "id": "packages/reminder/vitest.use-cases.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 8
-    },
-    {
-      "id": "packages/reminder/vitest.mappers.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 4
-    },
-    {
-      "id": "packages/repository/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 35
-    },
-    {
-      "id": "packages/repository/vitest.integration.config.ts",
-      "type": "primary",
-      "suite": "integration",
-      "runner": "vitest",
-      "fileCount": 2
-    },
-    {
-      "id": "packages/schedule-orchestration/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 12
-    },
-    {
-      "id": "packages/schedule/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 45
-    },
-    {
-      "id": "packages/schedule/vitest.integration.config.ts",
-      "type": "primary",
-      "suite": "integration",
-      "runner": "vitest",
-      "fileCount": 3
-    },
-    {
-      "id": "packages/schedule/vitest.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 45
-    },
-    {
-      "id": "packages/schedule/vitest.use-cases.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 5
-    },
-    {
-      "id": "packages/schedule/vitest.mappers.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 3
-    },
-    {
-      "id": "packages/setting/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 18
-    },
-    {
-      "id": "packages/setting/vitest.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 18
-    },
-    {
-      "id": "packages/setting/vitest.integration.config.ts",
-      "type": "primary",
-      "suite": "integration",
-      "runner": "vitest",
-      "fileCount": 1
-    },
-    {
-      "id": "packages/task/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 72
-    },
-    {
-      "id": "packages/task/vitest.integration.config.ts",
-      "type": "primary",
-      "suite": "integration",
-      "runner": "vitest",
-      "fileCount": 6
-    },
-    {
-      "id": "packages/task/vitest.performance.config.ts",
-      "type": "primary",
-      "suite": "perf",
-      "runner": "vitest",
-      "fileCount": 1
-    },
-    {
-      "id": "packages/task/vitest.performance-experiment.config.ts",
-      "type": "primary",
-      "suite": "perf",
-      "runner": "vitest",
-      "fileCount": 0
-    },
-    {
-      "id": "packages/task/vitest.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 72
-    },
-    {
-      "id": "packages/task/vitest.use-cases.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 24
-    },
-    {
-      "id": "packages/task/vitest.mappers.config.ts",
-      "type": "measurement",
-      "suite": "coverage",
-      "runner": "vitest",
-      "fileCount": 3
-    },
-    {
-      "id": "packages/time/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 6
-    },
-    {
-      "id": "packages/ui-core/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 1
-    },
-    {
-      "id": "packages/ui-vue-shadcn/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 1
-    },
-    {
-      "id": "packages/utils/vitest.config.ts",
-      "type": "primary",
-      "suite": "unit",
-      "runner": "vitest",
-      "fileCount": 17
-    },
-    {
-      "id": "memoflow:test:governance",
-      "type": "primary",
-      "suite": "governance",
-      "runner": "node-test",
-      "fileCount": 3
-    },
-    {
-      "id": "ci-cd-platform:test",
-      "type": "primary",
-      "suite": "governance",
-      "runner": "node-test",
-      "fileCount": 18
-    },
-    {
-      "id": "tools/governance/vitest.config.ts",
-      "type": "primary",
-      "suite": "governance",
-      "runner": "vitest",
-      "fileCount": 10
-    },
-    {
-      "id": "test-system-v2:test",
-      "type": "primary",
-      "suite": "governance",
-      "runner": "node-test",
-      "fileCount": 7
     },
     {
       "id": "apps/desktop/playwright.config.ts",
@@ -10925,6 +10582,349 @@
       "suite": "e2e",
       "runner": "playwright",
       "fileCount": 1
+    },
+    {
+      "id": "ci-cd-platform:test",
+      "type": "primary",
+      "suite": "governance",
+      "runner": "node-test",
+      "fileCount": 18
+    },
+    {
+      "id": "memoflow:test:governance",
+      "type": "primary",
+      "suite": "governance",
+      "runner": "node-test",
+      "fileCount": 3
+    },
+    {
+      "id": "test-system-v2:test",
+      "type": "primary",
+      "suite": "governance",
+      "runner": "node-test",
+      "fileCount": 7
+    },
+    {
+      "id": "tools/governance/vitest.config.ts",
+      "type": "primary",
+      "suite": "governance",
+      "runner": "vitest",
+      "fileCount": 10
+    },
+    {
+      "id": "apps/api/vitest.integration.config.ts",
+      "type": "primary",
+      "suite": "integration",
+      "runner": "vitest",
+      "fileCount": 3
+    },
+    {
+      "id": "packages/account/vitest.integration.config.ts",
+      "type": "primary",
+      "suite": "integration",
+      "runner": "vitest",
+      "fileCount": 4
+    },
+    {
+      "id": "packages/goal/vitest.integration.config.ts",
+      "type": "primary",
+      "suite": "integration",
+      "runner": "vitest",
+      "fileCount": 4
+    },
+    {
+      "id": "packages/label/vitest.integration.config.ts",
+      "type": "primary",
+      "suite": "integration",
+      "runner": "vitest",
+      "fileCount": 1
+    },
+    {
+      "id": "packages/notification/vitest.integration.config.ts",
+      "type": "primary",
+      "suite": "integration",
+      "runner": "vitest",
+      "fileCount": 3
+    },
+    {
+      "id": "packages/reminder/vitest.integration.config.ts",
+      "type": "primary",
+      "suite": "integration",
+      "runner": "vitest",
+      "fileCount": 4
+    },
+    {
+      "id": "packages/repository/vitest.integration.config.ts",
+      "type": "primary",
+      "suite": "integration",
+      "runner": "vitest",
+      "fileCount": 2
+    },
+    {
+      "id": "packages/schedule/vitest.integration.config.ts",
+      "type": "primary",
+      "suite": "integration",
+      "runner": "vitest",
+      "fileCount": 3
+    },
+    {
+      "id": "packages/setting/vitest.integration.config.ts",
+      "type": "primary",
+      "suite": "integration",
+      "runner": "vitest",
+      "fileCount": 1
+    },
+    {
+      "id": "packages/task/vitest.integration.config.ts",
+      "type": "primary",
+      "suite": "integration",
+      "runner": "vitest",
+      "fileCount": 6
+    },
+    {
+      "id": "packages/task/vitest.performance-experiment.config.ts",
+      "type": "primary",
+      "suite": "perf",
+      "runner": "vitest",
+      "fileCount": 0
+    },
+    {
+      "id": "packages/task/vitest.performance.config.ts",
+      "type": "primary",
+      "suite": "perf",
+      "runner": "vitest",
+      "fileCount": 1
+    },
+    {
+      "id": "apps/api/vitest.smoke.config.ts",
+      "type": "primary",
+      "suite": "smoke",
+      "runner": "vitest",
+      "fileCount": 3
+    },
+    {
+      "id": "apps/api/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 62
+    },
+    {
+      "id": "apps/desktop/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 57
+    },
+    {
+      "id": "apps/migrator/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 1
+    },
+    {
+      "id": "apps/web/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 17
+    },
+    {
+      "id": "packages/account/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 27
+    },
+    {
+      "id": "packages/ai/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 64
+    },
+    {
+      "id": "packages/app-vue/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 200
+    },
+    {
+      "id": "packages/assets/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 1
+    },
+    {
+      "id": "packages/cloud-auth/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 6
+    },
+    {
+      "id": "packages/contracts/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 65
+    },
+    {
+      "id": "packages/dashboard/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 4
+    },
+    {
+      "id": "packages/data-portability/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 32
+    },
+    {
+      "id": "packages/database/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 8
+    },
+    {
+      "id": "packages/domain-shared/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 1
+    },
+    {
+      "id": "packages/goal/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 81
+    },
+    {
+      "id": "packages/governance/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 25
+    },
+    {
+      "id": "packages/http-client/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 6
+    },
+    {
+      "id": "packages/ipc-client/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 3
+    },
+    {
+      "id": "packages/label/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 3
+    },
+    {
+      "id": "packages/notification/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 44
+    },
+    {
+      "id": "packages/patterns/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 6
+    },
+    {
+      "id": "packages/powersync-schema/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 1
+    },
+    {
+      "id": "packages/reminder/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 73
+    },
+    {
+      "id": "packages/repository/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 35
+    },
+    {
+      "id": "packages/schedule-orchestration/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 12
+    },
+    {
+      "id": "packages/schedule/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 45
+    },
+    {
+      "id": "packages/setting/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 18
+    },
+    {
+      "id": "packages/task/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 72
+    },
+    {
+      "id": "packages/time/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 6
+    },
+    {
+      "id": "packages/ui-core/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 1
+    },
+    {
+      "id": "packages/ui-vue-shadcn/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 1
+    },
+    {
+      "id": "packages/utils/vitest.config.ts",
+      "type": "primary",
+      "suite": "unit",
+      "runner": "vitest",
+      "fileCount": 17
     }
   ],
   "measurementSuites": {

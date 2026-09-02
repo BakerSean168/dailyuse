@@ -15,7 +15,10 @@ updated: 2026-04-26T00:00:00
 
 - [`../standards/architecture.md`](../standards/architecture.md)：长期有效的架构规则
 - [`adr/README.md`](./adr/README.md)：正式 ADR 索引与编号规则
-- [`ci-cd-platform-v2.md`](./ci-cd-platform-v2.md)：CI/CD Platform V2 的目标架构与稳定契约
+- [`ci-cd-platform-v2.md`](./ci-cd-platform-v2.md)：CI/CD Platform V2 的既有控制面与稳定契约
+- [`delivery-platform-v3.md`](./delivery-platform-v3.md)：Delivery Platform V3 的目标状态机、candidate/staging/release/production 边界
+- [`release-lifecycle-v3.md`](./release-lifecycle-v3.md)：Release Please、Server candidate、跨平台 Desktop 与 production selection 契约
+- [`cross-platform-desktop-release.md`](./cross-platform-desktop-release.md)：Windows/Linux/macOS x64+arm64 Desktop 发布契约
 - [`../governance/README.md`](../governance/README.md)：仓库治理来源、检查方式与文档约定
 
 ## 使用方式

@@ -12,14 +12,24 @@ function workflowStep(workflow, name) {
   return workflow.slice(start, next < 0 ? workflow.length : next);
 }
 
-test('release-please is an explicit prepare-release workflow and never publishes', async () => {
+test('release-please maintains the Release PR only after successful main CI and never publishes', async () => {
   const [workflow, config] = await Promise.all([
     readRepoFile('.github/workflows/release-please.yml'),
     readRepoFile('release-please-config.json'),
   ]);
 
+  assert.match(workflow, /workflow_run:/);
+  assert.match(workflow, /workflows:\s*\[?['"]CI['"]\]?/);
+  assert.match(workflow, /types:\s*\[?completed\]?/);
+  assert.match(workflow, /branches:\s*\[?main\]?/);
   assert.match(workflow, /workflow_dispatch:/);
-  assert.doesNotMatch(workflow, /push:\s*\n\s*branches:\s*\n\s*- main/);
+  assert.match(workflow, /workflow_run\.conclusion == 'success'/);
+  assert.match(workflow, /workflow_run\.event == 'push'/);
+  assert.match(workflow, /workflow_run\.head_branch == 'main'/);
+  assert.match(workflow, /group:\s*prepare-release-main/);
+  assert.doesNotMatch(workflow, /push:\s*\n\s*branches:/);
+  assert.doesNotMatch(workflow, /gh release|createRelease|createRef|docker\/build-push-action/u);
+  assert.match(workflow, /googleapis\/release-please-action@[0-9a-f]{40}/u);
   assert.equal(JSON.parse(config).packages['.']['skip-github-release'], true);
 });
 
@@ -210,4 +220,52 @@ test('runtime dependencies are digest-pinned and mirrored to both China and glob
   assert.match(workflow, /china_digest/);
   assert.match(workflow, /global_digest/);
   assert.match(workflow, /source_digest/);
+});
+
+test('Desktop release matrix covers Windows, Linux, macOS Intel and Apple Silicon with fail-closed receipts', async () => {
+  const [workflow, builder, receipt, manifest] = await Promise.all([
+    readRepoFile('.github/workflows/release-assets.yml'),
+    readRepoFile('apps/desktop/electron-builder.json5'),
+    readRepoFile('tools/ci-cd-platform/release-tools/write-desktop-platform-receipt.mjs'),
+    readRepoFile('tools/ci-cd-platform/release-tools/create-desktop-manifest.mjs'),
+  ]);
+
+  for (const platform of ['windows-x64', 'linux-x64', 'macos-x64', 'macos-arm64']) {
+    assert.match(workflow, new RegExp(`platform: ${platform}`));
+    assert.match(manifest, new RegExp(`['"]${platform}['"]`));
+  }
+  assert.match(workflow, /os: macos-15-intel[\s\S]*?builder_args: --mac dmg zip --x64/);
+  assert.match(workflow, /os: macos-15[\s\S]*?builder_args: --mac dmg zip --arm64/);
+  assert.match(workflow, /signing_state: unsigned-pilot/);
+  assert.match(workflow, /CSC_IDENTITY_AUTO_DISCOVERY: 'false'/);
+  assert.match(workflow, /write-desktop-platform-receipt\.mjs/);
+  assert.match(workflow, /-name '\*\.dmg'/);
+  assert.match(builder, /\$\{productName\}-macOS-\$\{arch\}-\$\{version\}/);
+  assert.match(receipt, /signed-notarized/);
+  assert.match(manifest, /missing required Desktop platform/);
+  assert.match(manifest, /duplicate Desktop release asset name/);
+});
+
+test('touched V3 release workflows pin external actions by immutable commit', async () => {
+  const workflows = await Promise.all([
+    readRepoFile('.github/workflows/release-please.yml'),
+    readRepoFile('.github/workflows/release-assets.yml'),
+  ]);
+  for (const workflow of workflows) {
+    const externalUses = [...workflow.matchAll(/uses:\s+([^./\s][^@\s]+)@([^\s#]+)/gu)];
+    assert.ok(externalUses.length > 0);
+    for (const [, action, ref] of externalUses) {
+      assert.match(ref, /^[0-9a-f]{40}$/u, `${action} must use a full commit SHA`);
+    }
+  }
+});
+
+test('CI has one long-lived main branch target and full-main policy is encoded by the manifest generator', async () => {
+  const [workflow, generator] = await Promise.all([
+    readRepoFile('.github/workflows/ci.yml'),
+    readRepoFile('tools/ci-cd-platform/generate-delivery-manifest.mjs'),
+  ]);
+  assert.equal((workflow.match(/branches:\s*\[main\]/gu) ?? []).length, 2);
+  assert.doesNotMatch(workflow, /develop/u);
+  assert.match(generator, /event === 'push' && ref === 'refs\/heads\/main'/u);
 });

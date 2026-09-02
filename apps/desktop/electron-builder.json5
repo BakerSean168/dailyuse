@@ -61,7 +61,7 @@
       "dmg",
       "zip"  // 添加 zip 格式支持自动更新
     ],
-    "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
+    "artifactName": "${productName}-macOS-${arch}-${version}.${ext}",
     "category": "public.app-category.productivity" // 添加应用类别
   },
   "win": {

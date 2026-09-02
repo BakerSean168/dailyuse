@@ -14,20 +14,20 @@ updated: 2026-07-29T00:00:00
 
 ## 当前入口
 
-| 文档                                                                                         | 用途                                                                                       |
-| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| [ai-goal-creation-current-workflow.md](./ai-goal-creation-current-workflow.md)               | 系统讲解当前 AI 创建目标工作流，覆盖草稿生成、自动化执行、分层结构和调试入口               |
-| [ai-chat-streaming-current-implementation.md](./ai-chat-streaming-current-implementation.md) | 分析当前 AI 对话页和流式实现，梳理现状与后续手动扩展路线                                   |
-| [coding-standards.md](./coding-standards.md)                                                 | 代码风格、分层和通用实现约束                                                               |
-| [git-workflow.md](./git-workflow.md)                                                         | 分支、提交和协作流程                                                                       |
-| [local-development.md](./local-development.md)                                               | 本机开发模式、Docker/宿主服务替换、Desktop 启动与统一 Nx 命令心智                          |
-| [local.docker.md](./local.docker.md)                                                         | 使用 `docker-compose.local.yml` 做 prod-like 本地容器验证的入口                            |
-| [transactional-email-smtp.md](./transactional-email-smtp.md)                                 | 事务邮件 console / SMTP / Resend、域名 DNS、Redis challenge                                |
-| [runtime-lanes.md](./runtime-lanes.md)                                                       | 本机 host-dev / e2e / local-docker 端口契约与互斥规则                                      |
-| [powersync-profile-snapshot-rollout.md](./powersync-profile-snapshot-rollout.md)             | PowerSync per-profile snapshot 的部署、验收、观测与手动回补说明                            |
-| [release-workflow.md](./release-workflow.md)                                                 | Release Lifecycle V2：Prepare Release、exact-SHA Draft、Desktop/Docker lanes 与 postflight |
-| [testing.md](./testing.md)                                                                   | 测试快速入口，跳转到 `docs/test`                                                           |
-| [tech-stack-upgrade-local-sync.md](./tech-stack-upgrade-local-sync.md)                       | 2026-07 技术栈升级后本机/worktree 依赖与 Docker 卷同步指南                                 |
+| 文档                                                                                         | 用途                                                                         |
+| -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| [ai-goal-creation-current-workflow.md](./ai-goal-creation-current-workflow.md)               | 系统讲解当前 AI 创建目标工作流，覆盖草稿生成、自动化执行、分层结构和调试入口 |
+| [ai-chat-streaming-current-implementation.md](./ai-chat-streaming-current-implementation.md) | 分析当前 AI 对话页和流式实现，梳理现状与后续手动扩展路线                     |
+| [coding-standards.md](./coding-standards.md)                                                 | 代码风格、分层和通用实现约束                                                 |
+| [git-workflow.md](./git-workflow.md)                                                         | 分支、提交和协作流程                                                         |
+| [local-development.md](./local-development.md)                                               | 本机开发模式、Docker/宿主服务替换、Desktop 启动与统一 Nx 命令心智            |
+| [local.docker.md](./local.docker.md)                                                         | 使用 `docker-compose.local.yml` 做 prod-like 本地容器验证的入口              |
+| [transactional-email-smtp.md](./transactional-email-smtp.md)                                 | 事务邮件 console / SMTP / Resend、域名 DNS、Redis challenge                  |
+| [runtime-lanes.md](./runtime-lanes.md)                                                       | 本机 host-dev / e2e / local-docker 端口契约与互斥规则                        |
+| [powersync-profile-snapshot-rollout.md](./powersync-profile-snapshot-rollout.md)             | PowerSync per-profile snapshot 的部署、验收、观测与手动回补说明              |
+| [release-workflow.md](./release-workflow.md)                                                 | Release Lifecycle V2 当前操作入口；V3 目标见架构与 active plan               |
+| [testing.md](./testing.md)                                                                   | 测试快速入口，跳转到 `docs/test`                                             |
+| [tech-stack-upgrade-local-sync.md](./tech-stack-upgrade-local-sync.md)                       | 2026-07 技术栈升级后本机/worktree 依赖与 Docker 卷同步指南                   |
 
 ## 使用约定
 
