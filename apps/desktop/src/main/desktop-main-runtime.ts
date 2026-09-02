@@ -14,7 +14,7 @@
 
 import type { DesktopProfileRuntimeManager } from './profile';
 import type { WindowManager } from './lifecycle/window-manager';
-import type { NotificationService } from './services';
+import type { NotificationPort, ExternalEditorPort } from './capabilities/ports';
 import type { DesktopFeaturesRuntime } from './desktop-features';
 import { createLogger } from '@memoflow/utils/logger';
 import type { DeviceAuthCoordinator } from './profile/device-auth-coordinator';
@@ -22,7 +22,7 @@ import type { DeviceAuthCoordinator } from './profile/device-auth-coordinator';
 const logger = createLogger('DesktopMainRuntime');
 
 export class DesktopMainRuntime {
-  private _notificationService: NotificationService | null = null;
+  private _notification: NotificationPort | null = null;
   private _desktopFeaturesRuntime: DesktopFeaturesRuntime | null = null;
   private _deviceAuthCoordinator: DeviceAuthCoordinator | null = null;
 
@@ -37,13 +37,24 @@ export class DesktopMainRuntime {
     return this.profileRuntimeManager.getActiveProfileAccessContext();
   }
 
-  /** Store the notification service instance for lifecycle management. */
-  setNotificationService(service: NotificationService): void {
-    this._notificationService = service;
+  /** Store the notification capability port for lifecycle management. */
+  setNotification(port: NotificationPort | null): void {
+    this._notification = port;
   }
 
   setDesktopFeaturesRuntime(runtime: DesktopFeaturesRuntime): void {
     this._desktopFeaturesRuntime = runtime;
+  }
+
+  /**
+   * The registry-owned external-editor capability port (null before the
+   * CapabilityRegistry initializes or when the capability is degraded).
+   *
+   * Resolved lazily so consumers may be bound before the capability registry
+   * exists; a null result degrades gracefully instead of crashing.
+   */
+  get externalEditor(): ExternalEditorPort | null {
+    return this._desktopFeaturesRuntime?.externalEditor ?? null;
   }
 
   setDeviceAuthCoordinator(coordinator: DeviceAuthCoordinator): void {
@@ -75,7 +86,7 @@ export class DesktopMainRuntime {
       this._desktopFeaturesRuntime = null;
     }
 
-    this._notificationService = null;
+    this._notification = null;
     logger.info('DesktopMainRuntime disposed');
   }
 }

@@ -13,9 +13,7 @@
 import { app, dialog, ipcMain, shell } from 'electron';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { TrayManager } from '../modules/tray';
-import type { ShortcutManager } from '../modules/shortcuts';
-import type { AutoLaunchManager } from '../modules/autolaunch';
+import type { AutoLaunchPort, ShortcutPort, TrayPort } from '../capabilities/ports';
 import { getIpcCache } from '../utils';
 import { getSharedPathResolver, updateUserFilesRootPath } from '../runtime-init';
 import { resolveDesktopUserFilesPath } from '../user-data-path';
@@ -232,14 +230,14 @@ function registerSystemHandlers(): void {
  * @description Registers desktop feature IPC handlers (Tray, Shortcuts, AutoLaunch).
  * Channels start with 'desktop:'.
  *
- * @param {TrayManager | null} trayManager - The tray manager instance.
- * @param {ShortcutManager | null} shortcutManager - The shortcut manager instance.
- * @param {AutoLaunchManager | null} autoLaunchManager - The auto-launch manager instance.
+ * @param {TrayPort | null} trayPort - The tray capability port (null when degraded).
+ * @param {ShortcutPort | null} shortcutPort - The shortcut capability port (null when degraded).
+ * @param {AutoLaunchPort | null} autoLaunchPort - The auto-launch capability port (null when degraded).
  */
 function registerDesktopFeaturesHandlers(
-  trayManager: TrayManager | null,
-  shortcutManager: ShortcutManager | null,
-  autoLaunchManager: AutoLaunchManager | null,
+  trayPort: TrayPort | null,
+  shortcutPort: ShortcutPort | null,
+  autoLaunchPort: AutoLaunchPort | null,
 ): void {
   // ========== Auto Launch ==========
   /**
@@ -250,7 +248,7 @@ function registerDesktopFeaturesHandlers(
    * Security: None
    */
   ipcMain.handle(DesktopFeatureChannels.AUTO_LAUNCH_IS_ENABLED, async () => {
-    return ok((await autoLaunchManager?.isEnabled()) ?? false);
+    return ok((await autoLaunchPort?.isEnabled()) ?? false);
   });
 
   /**
@@ -261,7 +259,7 @@ function registerDesktopFeaturesHandlers(
    * Security: None
    */
   ipcMain.handle(DesktopFeatureChannels.AUTO_LAUNCH_ENABLE, async () => {
-    return ok((await autoLaunchManager?.enable()) ?? false);
+    return ok((await autoLaunchPort?.enable()) ?? false);
   });
 
   /**
@@ -272,7 +270,7 @@ function registerDesktopFeaturesHandlers(
    * Security: None
    */
   ipcMain.handle(DesktopFeatureChannels.AUTO_LAUNCH_DISABLE, async () => {
-    return ok((await autoLaunchManager?.disable()) ?? false);
+    return ok((await autoLaunchPort?.disable()) ?? false);
   });
 
   // Shortcuts
@@ -284,7 +282,7 @@ function registerDesktopFeaturesHandlers(
    * Security: None
    */
   ipcMain.handle(DesktopFeatureChannels.SHORTCUTS_GET_ALL, async () => {
-    return ok(shortcutManager?.getShortcuts() ?? []);
+    return ok(shortcutPort?.getShortcuts() ?? []);
   });
 
   /**
@@ -297,14 +295,14 @@ function registerDesktopFeaturesHandlers(
   ipcMain.handle(
     DesktopFeatureChannels.SHORTCUTS_UPDATE,
     async (_, accelerator: string, newConfig: { enabled?: boolean }) => {
-      if (!shortcutManager) return ok(false);
+      if (!shortcutPort) return ok(false);
       if (newConfig.enabled === false) {
-        shortcutManager.unregister(accelerator);
+        shortcutPort.unregister(accelerator);
       } else {
-        const shortcuts = shortcutManager.getShortcuts();
+        const shortcuts = shortcutPort.getShortcuts();
         const existing = shortcuts.find((s) => s.accelerator === accelerator);
         if (existing) {
-          shortcutManager.register({ ...existing, enabled: true });
+          shortcutPort.register({ ...existing, enabled: true });
         }
       }
       return ok(true);
@@ -320,7 +318,7 @@ function registerDesktopFeaturesHandlers(
    * Security: None
    */
   ipcMain.handle(DesktopFeatureChannels.TRAY_FLASH, async () => {
-    trayManager?.startFlashing();
+    trayPort?.startFlashing();
     return ok(null);
   });
 
@@ -332,7 +330,7 @@ function registerDesktopFeaturesHandlers(
    * Security: None
    */
   ipcMain.handle(DesktopFeatureChannels.TRAY_STOP_FLASH, async () => {
-    trayManager?.stopFlashing();
+    trayPort?.stopFlashing();
     return ok(null);
   });
 }
@@ -347,14 +345,14 @@ let systemHandlersRegistered = false;
  * This function is idempotent - calling it multiple times is safe.
  * Handlers are only registered once on the first call.
  *
- * @param {TrayManager | null} trayManager - The tray manager instance.
- * @param {ShortcutManager | null} shortcutManager - The shortcut manager instance.
- * @param {AutoLaunchManager | null} autoLaunchManager - The auto-launch manager instance.
+ * @param {TrayPort | null} trayPort - The tray capability port (null when degraded).
+ * @param {ShortcutPort | null} shortcutPort - The shortcut capability port (null when degraded).
+ * @param {AutoLaunchPort | null} autoLaunchPort - The auto-launch capability port (null when degraded).
  */
 export function registerSystemIpcHandlers(
-  trayManager: TrayManager | null,
-  shortcutManager: ShortcutManager | null,
-  autoLaunchManager: AutoLaunchManager | null,
+  trayPort: TrayPort | null,
+  shortcutPort: ShortcutPort | null,
+  autoLaunchPort: AutoLaunchPort | null,
 ): void {
   // Prevent duplicate registration
   if (systemHandlersRegistered) {
@@ -367,5 +365,5 @@ export function registerSystemIpcHandlers(
   registerSystemHandlers();
 
   // ========== Desktop Features Channels ==========
-  registerDesktopFeaturesHandlers(trayManager, shortcutManager, autoLaunchManager);
+  registerDesktopFeaturesHandlers(trayPort, shortcutPort, autoLaunchPort);
 }

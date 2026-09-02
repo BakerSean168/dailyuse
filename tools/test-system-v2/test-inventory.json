@@ -806,6 +806,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "apps/desktop/src/main/modules/autolaunch/auto-launch-manager.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "apps/desktop/src/main/modules/label/label.electron-module.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -911,6 +919,22 @@
     },
     {
       "path": "apps/desktop/src/main/modules/routine/windows-idle-sensor.adapter.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "apps/desktop/src/main/modules/shortcuts/shortcut-manager.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "apps/desktop/src/main/modules/tray/tray-manager.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "apps/desktop/vitest.config.ts"
@@ -1095,6 +1119,14 @@
     },
     {
       "path": "apps/desktop/src/main/services/dashboard-read-service.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "apps/desktop/src/main/services/notification.service.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "apps/desktop/vitest.config.ts"
@@ -8014,6 +8046,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/repository/src/electron/local-vault-external-editor.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/repository/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/repository/src/electron/local-vault-runtime.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10345,7 +10385,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 53
+      "fileCount": 57
     },
     {
       "id": "apps/desktop/vitest.ipc.config.ts",
@@ -10639,7 +10679,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 34
+      "fileCount": 35
     },
     {
       "id": "packages/repository/vitest.integration.config.ts",
@@ -11450,7 +11490,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 989,
+    "unit": 994,
     "integration": 31,
     "smoke": 3,
     "boundary-ipc": 9,

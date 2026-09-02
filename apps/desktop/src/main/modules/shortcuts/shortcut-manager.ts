@@ -7,25 +7,9 @@
  */
 
 import { globalShortcut, BrowserWindow } from 'electron';
+import type { ShortcutConfig } from '../../capabilities/ports';
 
-/**
- * @interface ShortcutConfig
- * @description Interface defining a keyboard shortcut configuration.
- */
-export interface ShortcutConfig {
-  /** The unique identifier for the shortcut (e.g., 'show-app'). */
-  id: string;
-  /** The accelerator string (e.g., 'CommandOrControl+Shift+D'). */
-  accelerator: string;
-  /** Description of what the shortcut does. */
-  description: string;
-  /** Whether the shortcut is global (works when app is not focused). */
-  global: boolean;
-  /** Whether the shortcut is currently enabled. */
-  enabled: boolean;
-  /** The action to execute when triggered. */
-  action: () => void;
-}
+export type { ShortcutConfig };
 
 /**
  * @class ShortcutManager

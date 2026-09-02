@@ -234,6 +234,8 @@ export const app = createEmitterApi({
   requestSingleInstanceLock: vi.fn(() => true),
   releaseSingleInstanceLock: vi.fn(),
   setAppUserModelId: vi.fn(),
+  getLoginItemSettings: vi.fn(() => ({ openAtLogin: false })),
+  setLoginItemSettings: vi.fn(),
 });
 
 export const ipcMain = createEmitterApi({
@@ -264,12 +266,23 @@ export const nativeImage = {
   createEmpty: vi.fn(() => createNativeImageStub()),
 };
 
-export class Notification {
+export class Notification extends EventEmitter {
   static isSupported = vi.fn(() => true);
+  // Track instances so characterization tests can inspect the wired instance.
+  static instances: Notification[] = [];
+  static lastInstance(): Notification | null {
+    return this.instances[this.instances.length - 1] ?? null;
+  }
+  static clearInstances(): void {
+    this.instances.length = 0;
+  }
 
   readonly show = vi.fn();
 
-  constructor(_options?: Record<string, unknown>) {}
+  constructor(_options?: Record<string, unknown>) {
+    super();
+    Notification.instances.push(this);
+  }
 }
 
 export const dialog = {
@@ -303,12 +316,23 @@ export const Menu = {
 };
 
 export class Tray extends EventEmitter {
+  // Track instances so characterization tests can inspect the wired instance.
+  static instances: Tray[] = [];
+  static lastInstance(): Tray | null {
+    return this.instances[this.instances.length - 1] ?? null;
+  }
+  static clearInstances(): void {
+    this.instances.length = 0;
+  }
+
   readonly setToolTip = vi.fn();
   readonly setContextMenu = vi.fn();
+  readonly setImage = vi.fn();
   readonly destroy = vi.fn();
 
   constructor(_image?: unknown) {
     super();
+    Tray.instances.push(this);
   }
 }
 

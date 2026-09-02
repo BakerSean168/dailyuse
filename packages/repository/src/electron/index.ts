@@ -69,6 +69,7 @@ import type { IRepositoryApiClient } from '../application-client/ports/repositor
 
 export {
   createLocalVaultRuntime,
+  createElectronLocalVaultPlatform,
   LocalVaultRuntime,
   LocalVaultRuntimeError,
   type LocalVaultElectronPort,
