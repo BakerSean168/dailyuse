@@ -37,7 +37,7 @@ jobs:
       ci_run_id: ${{ steps.ci.outputs.run_id }}
     steps:
       - name: Checkout candidate
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || inputs.tag }}
           fetch-depth: 0
@@ -64,7 +64,7 @@ jobs:
       - name: Resolve exact successful CI
         if: steps.contract.outputs.eligible == 'true'
         id: ci
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           RELEASE_SHA: ${{ steps.contract.outputs.sha }}
         with:
@@ -111,7 +111,7 @@ jobs:
       already_published: ${{ steps.prepare.outputs.already_published }}
     steps:
       - name: Checkout exact release SHA
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ needs.resolve.outputs.sha }}
           fetch-depth: 0
@@ -123,7 +123,7 @@ jobs:
 
       - name: Create or validate draft release and tag
         id: prepare
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           RELEASE_TAG: ${{ needs.resolve.outputs.tag }}
           RELEASE_SHA: ${{ needs.resolve.outputs.sha }}
@@ -234,7 +234,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout release tooling
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ needs.resolve.outputs.sha }}
 
@@ -246,6 +246,19 @@ jobs:
           mkdir -p .release-evidence
           test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = "true"
           gh release download "$RELEASE_TAG" --pattern desktop-release-manifest.json --pattern docker-release-manifest.json --dir .release-evidence
+
+      - name: Verify the remote Draft contains every manifest-owned Desktop asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.resolve.outputs.tag }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/${REPOSITORY}/releases/tags/${RELEASE_TAG}" > .release-evidence/github-release.json
+          node ./tools/ci-cd-platform/release-tools/verify-desktop-release-assets.mjs \
+            .release-evidence/desktop-release-manifest.json \
+            .release-evidence/github-release.json
 
       - name: Build canonical release manifest
         env:
@@ -281,7 +294,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Reconcile release-please labels
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           RELEASE_SHA: ${{ needs.resolve.outputs.sha }}
         with:

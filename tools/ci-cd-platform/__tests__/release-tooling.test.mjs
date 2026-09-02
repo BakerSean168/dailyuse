@@ -300,3 +300,72 @@ test('Desktop release manifest fails closed when a required platform is missing'
     await rm(cwd, { recursive: true, force: true });
   }
 });
+
+test('Desktop asset resolution follows the manifest and remote verification rejects omissions', async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), 'memoflow-release-assets-'));
+  const artifactRoot = path.join(cwd, 'artifacts');
+  const platformRoot = path.join(artifactRoot, 'desktop-macos-arm64');
+  const manifestPath = path.join(cwd, 'desktop-release-manifest.json');
+  const releasePath = path.join(cwd, 'release.json');
+  const assetName = 'MemoFlow-macOS-arm64-1.2.3.zip';
+  const assetPath = path.join(platformRoot, assetName);
+  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../..');
+  try {
+    await mkdir(platformRoot, { recursive: true });
+    await writeFile(assetPath, 'exact-macos-archive');
+    const { createHash } = await import('node:crypto');
+    const body = Buffer.from('exact-macos-archive');
+    const sha256 = createHash('sha256').update(body).digest('hex');
+    const manifest = {
+      schemaVersion: 2,
+      kind: 'desktop-release',
+      assets: [{ name: assetName, size: body.length, sha256 }],
+    };
+    await writeFile(manifestPath, `${JSON.stringify(manifest)}\n`);
+
+    const resolved = execFileSync(process.execPath, [
+      path.join(repoRoot, 'tools/ci-cd-platform/release-tools/resolve-desktop-release-assets.mjs'),
+      manifestPath,
+      artifactRoot,
+    ]);
+    assert.deepEqual(resolved.toString().split('\0').filter(Boolean), [assetPath]);
+
+    await writeFile(
+      releasePath,
+      `${JSON.stringify({
+        assets: [
+          { name: assetName, size: body.length, digest: `sha256:${sha256}`, state: 'uploaded' },
+        ],
+      })}\n`,
+    );
+    execFileSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'tools/ci-cd-platform/release-tools/verify-desktop-release-assets.mjs'),
+        manifestPath,
+        releasePath,
+      ],
+      { stdio: 'pipe' },
+    );
+
+    await writeFile(releasePath, '{"assets":[]}\n');
+    assert.throws(
+      () =>
+        execFileSync(
+          process.execPath,
+          [
+            path.join(
+              repoRoot,
+              'tools/ci-cd-platform/release-tools/verify-desktop-release-assets.mjs',
+            ),
+            manifestPath,
+            releasePath,
+          ],
+          { stdio: 'pipe' },
+        ),
+      /occurred 0 times/u,
+    );
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});

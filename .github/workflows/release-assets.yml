@@ -249,18 +249,25 @@ jobs:
           await writeFile('SHA256SUMS.txt', `${manifest.assets.map((asset) => `${asset.sha256}  ${asset.name}`).join('\n')}\n`);
           NODE
 
-      - name: Upload assets to draft GitHub release
+      - name: Upload the manifest-owned asset set to the draft GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ needs.prepare-release.outputs.release_tag }}
+          REPOSITORY: ${{ github.repository }}
         shell: bash
         run: |
-          mapfile -d '' files < <(find artifacts -type f \
-            \( -name '*Setup.exe' -o -name '*Setup.zip' -o -name '*.blockmap' -o \
-               -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' -o -name '*.dmg' -o -name 'latest*.yml' \) \
-            -print0 | sort -z)
-          if [ "${#files[@]}" -eq 0 ]; then
-            echo "No release assets were found in downloaded artifacts."
+          set -euo pipefail
+          mapfile -d '' files < <(
+            node ./tools/ci-cd-platform/release-tools/resolve-desktop-release-assets.mjs \
+              desktop-release-manifest.json artifacts
+          )
+          expected_count="$(jq '.assets | length' desktop-release-manifest.json)"
+          [ "${#files[@]}" -eq "$expected_count" ] || {
+            echo "resolved ${#files[@]} Desktop assets; manifest requires $expected_count" >&2
             exit 1
-          fi
-          gh release upload "$RELEASE_TAG" "${files[@]}" desktop-release-manifest.json SHA256SUMS.txt --clobber
+          }
+          gh release upload "$RELEASE_TAG" "${files[@]}" \
+            desktop-release-manifest.json SHA256SUMS.txt --clobber
+          gh api "repos/${REPOSITORY}/releases/tags/${RELEASE_TAG}" > github-release-assets.json
+          node ./tools/ci-cd-platform/release-tools/verify-desktop-release-assets.mjs \
+            desktop-release-manifest.json github-release-assets.json
