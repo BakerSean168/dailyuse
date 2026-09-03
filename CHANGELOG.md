@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.12.1](https://github.com/BakerSean168/memoflow/compare/v0.12.0...v0.12.1) (2026-09-03)
+
+
+### Bug Fixes
+
+* **desktop:** harden packaged runtime release gates ([a3c77f3](https://github.com/BakerSean168/memoflow/commit/a3c77f3542534a1660b3c14a2e921905acbd9129))
+* **desktop:** harden packaged runtime release gates ([086babd](https://github.com/BakerSean168/memoflow/commit/086babd1d9bed0bdf9d167b5e07b18a22a571e31))
+* **desktop:** restore draggable window header ([c9e4b9e](https://github.com/BakerSean168/memoflow/commit/c9e4b9e83d0bb68d327150d2365200e8b5d6e918))
+* **release:** verify manifest-owned Desktop assets ([e890fc6](https://github.com/BakerSean168/memoflow/commit/e890fc659e5f5e914b423fc2cdde8915136c4756))
+* **release:** verify manifest-owned Desktop assets ([c3d398c](https://github.com/BakerSean168/memoflow/commit/c3d398c6dd036059bf9bdef387e147f04cd7c411))
+
 ## [0.12.0](https://github.com/BakerSean168/memoflow/compare/v0.11.0...v0.12.0) (2026-09-02)
 
 
