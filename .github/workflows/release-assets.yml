@@ -368,6 +368,8 @@ jobs:
           }
           gh release upload "$RELEASE_TAG" "${files[@]}" \
             desktop-release-manifest.json SHA256SUMS.txt --clobber
-          gh api "repos/${REPOSITORY}/releases/tags/${RELEASE_TAG}" > github-release-assets.json
+          release_api_url="$(gh release view "$RELEASE_TAG" --json apiUrl --jq .apiUrl)"
+          test -n "$release_api_url"
+          gh api "$release_api_url" > github-release-assets.json
           node ./tools/ci-cd-platform/release-tools/verify-desktop-release-assets.mjs \
             desktop-release-manifest.json github-release-assets.json

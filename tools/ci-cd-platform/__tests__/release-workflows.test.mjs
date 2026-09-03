@@ -302,13 +302,18 @@ test('Desktop upload and release publication are manifest-owned and verify the r
   assert.match(upload, /resolve-desktop-release-assets\.mjs/);
   assert.match(upload, /expected_count=.*\.assets \| length/);
   assert.match(upload, /verify-desktop-release-assets\.mjs/);
+  assert.match(upload, /gh release view .*--json apiUrl/u);
+  assert.match(upload, /gh api "\$release_api_url"/u);
+  assert.doesNotMatch(upload, /releases\/tags\//u);
   assert.doesNotMatch(upload, /find artifacts.*-name/);
 
   const remoteGate = workflowStep(
     publish,
     'Verify the remote Draft contains every manifest-owned Desktop asset',
   );
-  assert.match(remoteGate, /gh api .*releases\/tags/);
+  assert.match(remoteGate, /gh release view .*--json apiUrl/u);
+  assert.match(remoteGate, /gh api "\$release_api_url"/u);
+  assert.doesNotMatch(remoteGate, /releases\/tags\//u);
   assert.match(remoteGate, /verify-desktop-release-assets\.mjs/);
   assert.ok(
     publish.indexOf('Verify the remote Draft contains every manifest-owned Desktop asset') <
