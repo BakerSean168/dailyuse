@@ -97,7 +97,7 @@ const utilityCapsules = computed(() =>
     :data-header-mode="props.mode ?? 'workspace'"
   >
     <!-- 左：workspace 导航；settings 则直接承载独立场景页头，避免双 header 空白。 -->
-    <div class="flex shrink-0 items-center gap-2 no-drag">
+    <div class="flex shrink-0 items-center gap-2">
       <template v-if="props.mode === 'settings'">
         <button
           type="button"
@@ -148,11 +148,12 @@ const utilityCapsules = computed(() =>
 
     <div
       v-if="props.mode !== 'settings'"
-      class="no-drag flex min-w-0 flex-1 items-center justify-center gap-1.5 overflow-hidden"
+      class="window-header__drag-surface flex min-w-0 flex-1 items-center justify-center gap-1.5 overflow-hidden"
+      data-testid="window-header-drag-surface"
     >
       <nav
         v-if="primaryCapsules.length"
-        class="flex min-w-0 items-center gap-1 overflow-x-auto py-1"
+        class="no-drag flex min-w-0 items-center gap-1 overflow-x-auto py-1"
         :aria-label="t('shell.moduleNav')"
         data-testid="shell-primary-capsules"
       >
@@ -173,10 +174,10 @@ const utilityCapsules = computed(() =>
     </div>
 
     <!-- 右：日程/通知入口、面板与桌面窗控。 -->
-    <div class="flex shrink-0 items-center gap-3 no-drag">
+    <div class="flex shrink-0 items-center gap-3">
       <nav
         v-if="props.mode !== 'settings' && utilityCapsules.length"
-        class="flex max-w-[35vw] items-center gap-1 overflow-x-auto"
+        class="no-drag flex max-w-[35vw] items-center gap-1 overflow-x-auto"
         :aria-label="t('shell.moduleNav')"
         data-testid="shell-utility-capsules"
       >
@@ -255,7 +256,20 @@ const utilityCapsules = computed(() =>
 <style scoped>
 .window-header--drag {
   -webkit-app-region: drag;
+  user-select: none;
 }
+
+/*
+ * Keep the header itself draggable and opt only real interaction surfaces out.
+ * Marking a flex-1 wrapper as no-drag effectively erases the entire titlebar
+ * drag target, especially in the centered capsule region.
+ */
+.window-header--drag button,
+.window-header--drag a,
+.window-header--drag input,
+.window-header--drag select,
+.window-header--drag textarea,
+.window-header--drag [role='button'],
 .no-drag {
   -webkit-app-region: no-drag;
 }

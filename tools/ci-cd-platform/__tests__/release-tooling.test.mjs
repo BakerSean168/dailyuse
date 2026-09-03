@@ -131,6 +131,7 @@ test('release evidence builders require and bind all Desktop platforms', async (
       os: 'windows',
       arch: 'x64',
       signing: 'unsigned',
+      runtimeKind: 'packaged-exe',
       files: ['MemoFlow-Windows-1.2.3-Setup.exe', 'latest.yml'],
     },
     {
@@ -138,6 +139,7 @@ test('release evidence builders require and bind all Desktop platforms', async (
       os: 'linux',
       arch: 'x64',
       signing: 'unsigned',
+      runtimeKind: 'installed-deb',
       files: [
         'MemoFlow-Linux-1.2.3.AppImage',
         'MemoFlow-Linux-1.2.3.deb',
@@ -150,6 +152,7 @@ test('release evidence builders require and bind all Desktop platforms', async (
       os: 'macos',
       arch: 'x64',
       signing: 'unsigned-pilot',
+      runtimeKind: 'packaged-app',
       files: ['MemoFlow-macOS-x64-1.2.3.dmg', 'MemoFlow-macOS-x64-1.2.3.zip'],
     },
     {
@@ -157,6 +160,7 @@ test('release evidence builders require and bind all Desktop platforms', async (
       os: 'macos',
       arch: 'arm64',
       signing: 'unsigned-pilot',
+      runtimeKind: 'packaged-app',
       files: ['MemoFlow-macOS-arm64-1.2.3.dmg', 'MemoFlow-macOS-arm64-1.2.3.zip'],
     },
   ];
@@ -180,6 +184,9 @@ test('release evidence builders require and bind all Desktop platforms', async (
           fixture.signing,
           'v1.2.3',
           'abc123',
+          'passed',
+          'packaged-electron-playwright',
+          fixture.runtimeKind,
         ],
         { cwd: repoRoot },
       );
@@ -240,6 +247,8 @@ test('release evidence builders require and bind all Desktop platforms', async (
     assert.equal(manifest.desktop.schemaVersion, 2);
     assert.equal(manifest.desktop.assets.length, 10);
     assert.equal(manifest.desktop.platforms['macos-arm64'].signingState, 'unsigned-pilot');
+    assert.equal(manifest.desktop.platforms['linux-x64'].runtimeValidation.status, 'passed');
+    assert.equal(manifest.desktop.platforms['linux-x64'].runtimeValidation.executableKind, 'installed-deb');
     assert.equal(manifest.docker.images.api.digest, 'sha256:api');
     assert.deepEqual(manifest.docker.images.api.tags, ['v1.2.3', 'v1.2.3-abc123']);
     assert.equal(
@@ -278,6 +287,9 @@ test('Desktop release manifest fails closed when a required platform is missing'
         'unsigned',
         'v1.2.3',
         'abc123',
+        'passed',
+        'packaged-electron-playwright',
+        'packaged-exe',
       ],
       { cwd: repoRoot },
     );
@@ -364,6 +376,37 @@ test('Desktop asset resolution follows the manifest and remote verification reje
           { stdio: 'pipe' },
         ),
       /occurred 0 times/u,
+    );
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test('Desktop platform receipt refuses failed runtime validation evidence', async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), 'memoflow-runtime-receipt-fail-'));
+  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../..');
+  try {
+    await writeFile(path.join(cwd, 'MemoFlow-Windows-1.2.3-Setup.exe'), 'asset');
+    assert.throws(
+      () =>
+        execFileSync(
+          process.execPath,
+          [
+            path.join(repoRoot, 'tools/ci-cd-platform/release-tools/write-desktop-platform-receipt.mjs'),
+            cwd,
+            'windows-x64',
+            'windows',
+            'x64',
+            'unsigned',
+            'v1.2.3',
+            'abc123',
+            'failed',
+            'packaged-electron-playwright',
+            'packaged-exe',
+          ],
+          { cwd: repoRoot, stdio: 'pipe' },
+        ),
+      /runtime validation must pass/u,
     );
   } finally {
     await rm(cwd, { recursive: true, force: true });

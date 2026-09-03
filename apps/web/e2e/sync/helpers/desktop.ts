@@ -126,15 +126,18 @@ export class DesktopAppController {
     });
 
     if (process.platform === 'linux') {
-      // Headless Linux runners do not provide a Secret Service keyring. Keep
-      // Electron's weaker basic_text backend confined to this isolated E2E
-      // process so real login and encrypted-token restart flows remain testable.
-      const encryptionAvailable = await this.electronApp.evaluate(({ safeStorage }) => {
-        safeStorage.setUsePlainTextEncryption(true);
-        return safeStorage.isEncryptionAvailable();
-      });
-      if (!encryptionAvailable) {
-        throw new Error('Electron safeStorage is unavailable in the Linux E2E runtime.');
+      const storage = await this.electronApp.evaluate(({ safeStorage }) => ({
+        encryptionAvailable: safeStorage.isEncryptionAvailable(),
+        backend: safeStorage.getSelectedStorageBackend(),
+      }));
+      if (
+        !storage.encryptionAvailable ||
+        storage.backend === 'basic_text' ||
+        storage.backend === 'unknown'
+      ) {
+        throw new Error(
+          `Electron sync E2E requires a real Linux Secret Service/keyring; backend=${storage.backend}, available=${storage.encryptionAvailable}`,
+        );
       }
     }
 

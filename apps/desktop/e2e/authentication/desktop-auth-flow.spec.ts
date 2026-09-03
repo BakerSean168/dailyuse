@@ -29,15 +29,15 @@ async function launchDesktop(
     console.log(`[electron-main:${message.type()}] ${message.text()}`);
   });
 
-  // Headless Linux hosts have no Secret Service keyring. This disposable
-  // process uses Electron's shipped fallback, matching the sync E2E helper.
   if (process.platform === 'linux') {
-    const encryptionAvailable = await electronApp.evaluate(({ safeStorage }) => {
-      safeStorage.setUsePlainTextEncryption(true);
-      return safeStorage.isEncryptionAvailable();
-    });
-    if (!encryptionAvailable) {
-      throw new Error('Electron safeStorage is unavailable in the Linux E2E runtime.');
+    const storage = await electronApp.evaluate(({ safeStorage }) => ({
+      encryptionAvailable: safeStorage.isEncryptionAvailable(),
+      backend: safeStorage.getSelectedStorageBackend(),
+    }));
+    if (!storage.encryptionAvailable || storage.backend === 'basic_text' || storage.backend === 'unknown') {
+      throw new Error(
+        `Electron E2E requires a real Linux Secret Service/keyring; backend=${storage.backend}, available=${storage.encryptionAvailable}`,
+      );
     }
   }
 

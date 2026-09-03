@@ -41,6 +41,26 @@ const i18n = createI18n({
   },
 });
 
+describe('WindowHeader desktop drag contract', () => {
+  it('keeps the flexible titlebar surface draggable while interactive navigation opts out', () => {
+    const wrapper = mount(WindowHeader, {
+      props: {
+        sidebarCollapsed: false,
+        rightPanelOpen: true,
+        isDesktop: true,
+        capsules: [{ id: 'goal', label: 'Goals', route: '/goals', icon: Target }],
+      },
+      global: { plugins: [i18n] },
+    });
+
+    expect(wrapper.get('[data-testid="window-header"]').classes()).toContain('window-header--drag');
+    expect(wrapper.get('[data-testid="window-header-drag-surface"]').classes()).not.toContain(
+      'no-drag',
+    );
+    expect(wrapper.get('[data-testid="shell-primary-capsules"]').classes()).toContain('no-drag');
+  });
+});
+
 describe('WindowHeader workspace navigation', () => {
   it('renders compound module capsules without the redundant workspace launcher', async () => {
     const wrapper = mount(WindowHeader, {

@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { safeStorage } from 'electron';
+import { decryptSafeStorageString, encryptSafeStorageString } from './safe-storage-codec';
 
 export interface ProfileKeyStore {
   ensure(profileId: string): Promise<void>;
@@ -19,22 +19,30 @@ export class ElectronProfileKeyStore implements ProfileKeyStore {
   async ensure(profileId: string): Promise<void> {
     const filePath = this.filePath(profileId);
     if (await this.exists(filePath)) return;
-    if (!safeStorage.isEncryptionAvailable()) {
-      throw new Error('本机安全存储不可用，无法创建 Profile 解锁凭据');
-    }
     await fs.promises.mkdir(this.directory, { recursive: true });
     const key = crypto.randomBytes(32);
-    const envelope = safeStorage.encryptString(key.toString('base64'));
+    let envelope: Buffer;
+    try {
+      envelope = await encryptSafeStorageString(key.toString('base64'));
+    } catch {
+      throw new Error('本机安全存储不可用，无法创建 Profile 解锁凭据');
+    }
     await fs.promises.writeFile(filePath, envelope);
   }
 
   async unlock(profileId: string): Promise<Buffer> {
     const filePath = this.filePath(profileId);
     const envelope = await fs.promises.readFile(filePath);
-    if (!safeStorage.isEncryptionAvailable()) {
+    let decoded: string;
+    try {
+      const result = await decryptSafeStorageString(envelope);
+      decoded = result.value;
+      if (result.shouldReEncrypt) {
+        await fs.promises.writeFile(filePath, await encryptSafeStorageString(decoded));
+      }
+    } catch {
       throw new Error('本机安全存储不可用，无法解锁 Profile');
     }
-    const decoded = safeStorage.decryptString(envelope);
     const key = Buffer.from(decoded, 'base64');
     if (key.length !== 32) throw new Error('Profile 解锁凭据损坏');
     return key;

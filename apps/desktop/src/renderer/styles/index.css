@@ -26,6 +26,27 @@
   }
 }
 
+/*
+ * Desktop host chrome contract. The production renderer consumes @memoflow/app-vue
+ * as a built JS library, whose component CSS is emitted separately. Window dragging
+ * is host behavior, so keep the authoritative app-region rules in the Desktop bundle
+ * rather than depending on library CSS side effects.
+ */
+.window-header.window-header--drag {
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+.window-header.window-header--drag button,
+.window-header.window-header--drag a,
+.window-header.window-header--drag input,
+.window-header.window-header--drag select,
+.window-header.window-header--drag textarea,
+.window-header.window-header--drag [role='button'],
+.window-header.window-header--drag .no-drag {
+  -webkit-app-region: no-drag;
+}
+
 /* Minimal scrollbar for Electron */
 ::-webkit-scrollbar {
   width: 6px;

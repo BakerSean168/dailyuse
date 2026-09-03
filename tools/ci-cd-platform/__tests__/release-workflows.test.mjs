@@ -301,3 +301,44 @@ test('Desktop upload and release publication are manifest-owned and verify the r
     }
   }
 });
+
+test('Desktop release runtime gates execute before receipts and cannot be bypassed', async () => {
+  const [workflow, receipt, manifest, helper] = await Promise.all([
+    readRepoFile('.github/workflows/release-assets.yml'),
+    readRepoFile('tools/ci-cd-platform/release-tools/write-desktop-platform-receipt.mjs'),
+    readRepoFile('tools/ci-cd-platform/release-tools/create-desktop-manifest.mjs'),
+    readRepoFile('apps/desktop/scripts/run-linux-packaged-smoke-with-keyring.sh'),
+  ]);
+
+  const packageIndex = workflow.indexOf('- name: Package desktop application');
+  const packagedSmokeIndex = workflow.indexOf('- name: Run packaged Desktop runtime smoke');
+  const installDebIndex = workflow.indexOf('- name: Install Linux Debian package');
+  const installedSmokeIndex = workflow.indexOf('- name: Run installed Linux Debian runtime smoke');
+  const receiptIndex = workflow.indexOf('- name: Write Desktop platform receipt');
+  const uploadIndex = workflow.indexOf('- name: Upload build artifacts');
+  assert.ok(packageIndex < packagedSmokeIndex);
+  assert.ok(packagedSmokeIndex < installDebIndex);
+  assert.ok(installDebIndex < installedSmokeIndex);
+  assert.ok(installedSmokeIndex < receiptIndex);
+  assert.ok(receiptIndex < uploadIndex);
+
+  const packagedSmoke = workflowStep(workflow, 'Run packaged Desktop runtime smoke');
+  const installedSmoke = workflowStep(workflow, 'Run installed Linux Debian runtime smoke');
+  for (const step of [packagedSmoke, installedSmoke]) {
+    assert.doesNotMatch(step, /continue-on-error\s*:\s*true/u);
+    assert.doesNotMatch(step, /\|\|\s*true/u);
+  }
+  assert.match(packagedSmoke, /run-linux-packaged-smoke-with-keyring|test:packaged-smoke/u);
+  assert.match(installedSmoke, /run-linux-packaged-smoke-with-keyring/u);
+  assert.match(helper, /test:packaged-smoke/u);
+  assert.match(workflow, /runtime_executable_kind: installed-deb/u);
+  assert.match(workflow, /gnome-keyring/u);
+  assert.match(workflow, /write-desktop-platform-receipt\.mjs[\s\S]*?packaged-electron-playwright[\s\S]*?runtime_executable_kind/u);
+  assert.match(receipt, /schemaVersion:\s*2/u);
+  assert.match(receipt, /runtimeValidation/u);
+  assert.match(receipt, /runtime validation must pass/u);
+  assert.match(manifest, /runtime validation missing or failed/u);
+  assert.match(helper, /org\.freedesktop\.secrets/u);
+  assert.match(helper, /MEMOFLOW_PACKAGED_USE_GNOME_KEYRING=1/u);
+  assert.doesNotMatch(helper, /setUsePlainTextEncryption|password-store=basic/u);
+});

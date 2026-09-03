@@ -34,6 +34,7 @@ import { PowerSyncAppSchema } from '@memoflow/powersync-schema';
 import { getApiBaseUrl } from '../utils/api-config';
 import { serializeCrudTransaction } from './powersync-crud';
 import { normalizePowerSyncTableName, POWER_SYNC_CHANGE_TABLES } from './powersync-table-changes';
+import { resolvePackagedWorkerPath } from './packaged-worker-path';
 
 export interface CloudCredentialProvider {
   getAccessToken(): Promise<string | null>;
@@ -84,30 +85,13 @@ function assertCompatibleDbPath(dbPath: string): void {
   }
 }
 
-function resolvePackagedWorkerPath(workerPath: string): string {
-  if (!app.isPackaged) {
-    return workerPath;
-  }
-
-  const asarSegment = `${path.sep}app.asar${path.sep}`;
-  const unpackedSegment = `${path.sep}app.asar.unpacked${path.sep}`;
-
-  if (!workerPath.includes(asarSegment)) {
-    return workerPath;
-  }
-
-  const candidatePath = workerPath.replace(asarSegment, unpackedSegment);
-  return fs.existsSync(candidatePath) ? candidatePath : workerPath;
-}
-
 function createPowerSyncDatabase(dbPath: string): PowerSyncDatabase {
   return new PowerSyncDatabase({
     schema: PowerSyncAppSchema,
     database: {
       dbFilename: dbPath,
       openWorker: (filename, options) => {
-        const resolvedFilename =
-          typeof filename === 'string' ? resolvePackagedWorkerPath(filename) : filename;
+        const resolvedFilename = resolvePackagedWorkerPath(filename, { isPackaged: app.isPackaged });
 
         return new Worker(resolvedFilename, options);
       },

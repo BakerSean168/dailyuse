@@ -245,8 +245,16 @@ export const ipcMain = createEmitterApi({
 
 export const safeStorage = {
   isEncryptionAvailable: vi.fn(() => true),
+  isAsyncEncryptionAvailable: vi.fn(async () => true),
+  getSelectedStorageBackend: vi.fn(() => 'gnome_libsecret' as const),
   encryptString: vi.fn((value: string) => Buffer.from(value, 'utf8')),
+  encryptStringAsync: vi.fn(async (value: string) => Buffer.from(value, 'utf8')),
   decryptString: vi.fn((value: Buffer) => value.toString('utf8')),
+  decryptStringAsync: vi.fn(async (value: Buffer) => ({
+    result: value.toString('utf8'),
+    shouldReEncrypt: false,
+  })),
+  setUsePlainTextEncryption: vi.fn(),
 };
 
 export const net = {
