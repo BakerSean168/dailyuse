@@ -47,6 +47,11 @@ test('release publish waits for exact CI then calls both reusable release lanes 
   assert.match(workflow, /--draft=false/);
   assert.match(workflow, /pull-requests: write/);
   assert.match(workflow, /merge_commit_sha === sha/);
+  assert.match(workflow, /github\.paginate\(github\.rest\.repos\.listReleases/u);
+  assert.match(workflow, /release\.tag_name === tag/u);
+  assert.match(workflow, /matches\.length > 1/u);
+  assert.match(workflow, /ambiguous release records/u);
+  assert.doesNotMatch(workflow, /getReleaseByTag/u);
   assert.match(workflow, /autorelease: pending/);
   assert.match(workflow, /autorelease: tagged/);
   assert.match(workflow, /already_published == 'true' \|\| needs\.finalize\.result == 'success'/);
