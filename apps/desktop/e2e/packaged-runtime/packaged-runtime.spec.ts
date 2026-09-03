@@ -64,6 +64,22 @@ test('packaged MemoFlow boots through renderer readiness', async ({}, testInfo) 
     mainWindow.on('pageerror', (error) => appendLog(logs, 'renderer:pageerror', error.stack ?? error.message));
 
     await expect(mainWindow.getByTestId('app-shell')).toBeVisible({ timeout: 45_000 });
+
+    const windowHeader = mainWindow.getByTestId('window-header');
+    await expect(windowHeader).toBeVisible();
+    const headerAppRegion = await windowHeader.evaluate((element) =>
+      getComputedStyle(element).getPropertyValue('-webkit-app-region').trim(),
+    );
+    expect(headerAppRegion, 'packaged Desktop titlebar must remain a native drag region').toBe('drag');
+
+    const rightPanelToggle = mainWindow.getByTestId('shell-right-panel-toggle');
+    await expect(rightPanelToggle).toBeVisible();
+    const controlAppRegion = await rightPanelToggle.evaluate((element) =>
+      getComputedStyle(element).getPropertyValue('-webkit-app-region').trim(),
+    );
+    expect(controlAppRegion, 'interactive titlebar controls must opt out of native dragging').toBe(
+      'no-drag',
+    );
   } catch (error) {
     testFailure = error;
     appendLog(logs, 'smoke-error', error instanceof Error ? (error.stack ?? error.message) : error);

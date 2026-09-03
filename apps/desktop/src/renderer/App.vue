@@ -80,7 +80,6 @@ body,
 .desktop-content {
   min-height: 0;
   overflow: hidden;
-  -webkit-app-region: no-drag;
 }
 
 .desktop-toaster {
