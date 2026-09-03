@@ -140,7 +140,8 @@ test('desktop packaging has one stable product identity and one native rebuild o
   );
   assert.match(windowsNativeRebuild, /if: runner\.os == 'Windows'/u);
   assert.match(windowsNativeRebuild, /working-directory: release-source/u);
-  assert.match(windowsNativeRebuild, /from '@electron\/rebuild'/u);
+  assert.match(windowsNativeRebuild, /await import\('@electron\/rebuild'\)/u);
+  assert.doesNotMatch(windowsNativeRebuild, /--input-type/u);
   assert.match(windowsNativeRebuild, /devDependencies\?\.electron/u);
   assert.match(windowsNativeRebuild, /buildPath: desktop/u);
   assert.match(windowsNativeRebuild, /projectRootPath: root/u);

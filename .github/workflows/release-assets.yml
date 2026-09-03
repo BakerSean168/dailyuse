@@ -181,10 +181,12 @@ jobs:
         working-directory: release-source
         shell: bash
         run: |
-          node --input-type=module <<'NODE'
-          import { readFile } from 'node:fs/promises';
-          import path from 'node:path';
-          import { rebuild } from '@electron/rebuild';
+          node <<'NODE'
+          const { readFile } = require('node:fs/promises');
+          const path = require('node:path');
+
+          (async () => {
+          const { rebuild } = await import('@electron/rebuild');
 
           const root = process.cwd();
           const desktop = path.join(root, 'apps', 'desktop');
@@ -215,6 +217,10 @@ jobs:
             }
           }
           console.log(`[release] Electron ${electronVersion} native rebuild complete: ${foundModules.join(', ')}`);
+          })().catch((error) => {
+            console.error(error);
+            process.exitCode = 1;
+          });
           NODE
 
       - name: Package desktop application
