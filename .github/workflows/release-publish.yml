@@ -255,7 +255,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh api "repos/${REPOSITORY}/releases/tags/${RELEASE_TAG}" > .release-evidence/github-release.json
+          release_api_url="$(gh release view "$RELEASE_TAG" --json apiUrl --jq .apiUrl)"
+          test -n "$release_api_url"
+          gh api "$release_api_url" > .release-evidence/github-release.json
           node ./tools/ci-cd-platform/release-tools/verify-desktop-release-assets.mjs \
             .release-evidence/desktop-release-manifest.json \
             .release-evidence/github-release.json
