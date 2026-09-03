@@ -363,5 +363,10 @@ test('Desktop release runtime gates execute before receipts and cannot be bypass
   assert.match(manifest, /runtime validation missing or failed/u);
   assert.match(helper, /org\.freedesktop\.secrets/u);
   assert.match(helper, /MEMOFLOW_PACKAGED_USE_GNOME_KEYRING=1/u);
+  assert.match(helper, /xvfb-run -a dbus-run-session -- bash -lc/u);
+  assert.ok(helper.indexOf('xvfb-run -a dbus-run-session') < helper.indexOf('gnome-keyring-daemon --unlock'));
+  assert.match(helper, /secret-tool store/u);
+  assert.match(helper, /secret-tool lookup/u);
+  assert.match(workflow, /libglib2\.0-bin/u);
   assert.doesNotMatch(helper, /setUsePlainTextEncryption|password-store=basic/u);
 });

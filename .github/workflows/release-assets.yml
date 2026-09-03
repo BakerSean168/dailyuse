@@ -151,7 +151,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y rpm fakeroot xvfb dbus-x11 gnome-keyring libsecret-tools
+          sudo apt-get install -y rpm fakeroot xvfb dbus-x11 gnome-keyring libsecret-tools libglib2.0-bin
 
       - name: Install dependencies
         working-directory: release-source
