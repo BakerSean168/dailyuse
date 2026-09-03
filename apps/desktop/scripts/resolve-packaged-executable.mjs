@@ -21,14 +21,15 @@ async function walk(directory, depth = 0) {
 
 const files = await walk(root);
 const normalizePath = (file) => file.split(path.sep).join('/');
+const macExecutable = /\/[^/]+\.app\/Contents\/MacOS\/memoflow$/iu;
 const matchers = {
   'linux-x64': (file) => /\/linux-unpacked\/memoflow$/u.test(normalizePath(file)),
   'windows-x64': (file) => /\/win-unpacked\/memoflow\.exe$/iu.test(normalizePath(file)),
-  'macos-x64': (file) =>
-    /\/MemoFlow\.app\/Contents\/MacOS\/memoflow$/u.test(normalizePath(file)) &&
-    !/arm64/iu.test(normalizePath(file)),
-  'macos-arm64': (file) =>
-    /\/MemoFlow\.app\/Contents\/MacOS\/memoflow$/u.test(normalizePath(file)),
+  'macos-x64': (file) => {
+    const normalized = normalizePath(file);
+    return macExecutable.test(normalized) && !/arm64/iu.test(normalized);
+  },
+  'macos-arm64': (file) => macExecutable.test(normalizePath(file)),
 };
 const matcher = matchers[platform];
 if (!matcher) throw new Error(`unsupported packaged Desktop platform: ${platform}`);
@@ -38,7 +39,11 @@ if (platform === 'macos-arm64' && candidates.length > 1) {
   if (arm.length === 1) candidates.splice(0, candidates.length, arm[0]);
 }
 if (candidates.length !== 1) {
-  throw new Error(`expected exactly one packaged executable for ${platform}, found ${candidates.length}: ${candidates.join(', ')}`);
+  throw new Error(
+    `expected exactly one packaged executable for ${platform}, found ${candidates.length}: ${candidates.join(', ')}`,
+  );
 }
-if ((await stat(candidates[0])).size <= 0) throw new Error(`packaged executable is empty: ${candidates[0]}`);
+if ((await stat(candidates[0])).size <= 0) {
+  throw new Error(`packaged executable is empty: ${candidates[0]}`);
+}
 process.stdout.write(candidates[0]);

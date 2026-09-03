@@ -176,6 +176,47 @@ jobs:
           npm_config_python: ${{ env.pythonLocation }}/python
         run: pnpm nx run desktop:build:production --outputStyle=static
 
+      - name: Rebuild hoisted Windows native dependencies for Electron
+        if: runner.os == 'Windows'
+        working-directory: release-source
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile } from 'node:fs/promises';
+          import path from 'node:path';
+          import { rebuild } from '@electron/rebuild';
+
+          const root = process.cwd();
+          const desktop = path.join(root, 'apps', 'desktop');
+          const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
+          const electronVersion = packageJson.devDependencies?.electron;
+          if (!electronVersion) throw new Error('release source does not declare an Electron version');
+
+          const requiredModules = ['argon2', 'better-sqlite3'];
+          const task = rebuild({
+            buildPath: desktop,
+            projectRootPath: root,
+            electronVersion,
+            arch: 'x64',
+            platform: 'win32',
+            onlyModules: requiredModules,
+            force: true,
+            mode: 'sequential',
+            disablePreGypCopy: true,
+          });
+          let foundModules = [];
+          task.lifecycle.on('modules-found', (modules) => {
+            foundModules = modules;
+          });
+          await task;
+          for (const moduleName of requiredModules) {
+            if (!foundModules.includes(moduleName)) {
+              throw new Error(`Electron rebuild did not discover required native module: ${moduleName}`);
+            }
+          }
+          console.log(`[release] Electron ${electronVersion} native rebuild complete: ${foundModules.join(', ')}`);
+          NODE
+
       - name: Package desktop application
         working-directory: release-source/apps/desktop
         shell: bash
@@ -197,7 +238,9 @@ jobs:
         working-directory: release-source
         shell: bash
         run: |
-          executable="$(node ./apps/desktop/scripts/resolve-packaged-executable.mjs apps/desktop/dist-package "${{ matrix.platform }}")"
+          resolver="${{ github.workspace }}/release-tooling/apps/desktop/scripts/resolve-packaged-executable.mjs"
+          test -f "$resolver"
+          executable="$(node "$resolver" apps/desktop/dist-package "${{ matrix.platform }}")"
           test -n "$executable"
           echo "path=$executable" >> "$GITHUB_OUTPUT"
 
@@ -222,7 +265,9 @@ jobs:
           debs=(apps/desktop/dist-package/*.deb)
           test "${#debs[@]}" -eq 1
           dpkg-deb -f "${debs[0]}" Package Version Architecture Depends
-          sudo apt-get install -y "${debs[0]}"
+          deb_path="$(realpath "${debs[0]}")"
+          test -f "$deb_path"
+          sudo apt-get install -y "$deb_path"
           test -x /opt/MemoFlow/memoflow
           test -f /usr/share/applications/memoflow.desktop
 
