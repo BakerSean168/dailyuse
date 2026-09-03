@@ -34,7 +34,7 @@ const assets = [];
 const names = new Set();
 for (const receiptFile of receiptFiles) {
   const receipt = JSON.parse(await readFile(receiptFile, 'utf8'));
-  if (receipt.kind !== 'desktop-platform-receipt' || receipt.schemaVersion !== 1) {
+  if (receipt.kind !== 'desktop-platform-receipt' || receipt.schemaVersion !== 2) {
     throw new Error(`invalid Desktop platform receipt: ${receiptFile}`);
   }
   if (
@@ -43,6 +43,13 @@ for (const receiptFile of receiptFiles) {
     receipt.gitSha !== gitSha
   ) {
     throw new Error(`Desktop platform receipt identity mismatch: ${receipt.platform}`);
+  }
+  if (
+    receipt.runtimeValidation?.status !== 'passed' ||
+    receipt.runtimeValidation?.method !== 'packaged-electron-playwright' ||
+    !receipt.runtimeValidation?.executableKind
+  ) {
+    throw new Error(`Desktop platform runtime validation missing or failed: ${receipt.platform}`);
   }
   const directory = path.dirname(receiptFile);
   const actualNames = (await readdir(directory, { withFileTypes: true }))
@@ -95,6 +102,7 @@ const platformEvidence = Object.fromEntries(
         os: receipt.os,
         arch: receipt.arch,
         signingState: receipt.signingState,
+        runtimeValidation: receipt.runtimeValidation,
         assets: receipt.assets,
       },
     ];

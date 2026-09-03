@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { safeStorage } from 'electron';
+import { decryptSafeStorageString, encryptSafeStorageString } from './safe-storage-codec';
 
 export interface StoredCloudSession {
   token: string;
@@ -17,9 +17,13 @@ export class CloudSessionStore {
   }
 
   async save(profileId: string, session: StoredCloudSession): Promise<void> {
-    if (!safeStorage.isEncryptionAvailable()) throw new Error('本机安全存储不可用');
     await fs.promises.mkdir(this.directory, { recursive: true });
-    const encrypted = safeStorage.encryptString(JSON.stringify(session));
+    let encrypted: Buffer;
+    try {
+      encrypted = await encryptSafeStorageString(JSON.stringify(session));
+    } catch {
+      throw new Error('本机安全存储不可用');
+    }
     const target = path.join(this.directory, `${profileId}.bin`);
     const temp = `${target}.tmp`;
     await fs.promises.writeFile(temp, encrypted);
@@ -28,9 +32,13 @@ export class CloudSessionStore {
 
   async load(profileId: string): Promise<StoredCloudSession | null> {
     try {
-      if (!safeStorage.isEncryptionAvailable()) return null;
-      const encrypted = await fs.promises.readFile(path.join(this.directory, `${profileId}.bin`));
-      return JSON.parse(safeStorage.decryptString(encrypted)) as StoredCloudSession;
+      const target = path.join(this.directory, `${profileId}.bin`);
+      const encrypted = await fs.promises.readFile(target);
+      const decoded = await decryptSafeStorageString(encrypted);
+      if (decoded.shouldReEncrypt) {
+        await fs.promises.writeFile(target, await encryptSafeStorageString(decoded.value));
+      }
+      return JSON.parse(decoded.value) as StoredCloudSession;
     } catch {
       return null;
     }

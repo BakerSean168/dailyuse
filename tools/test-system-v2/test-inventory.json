@@ -678,7 +678,23 @@
       "measurementCollectors": []
     },
     {
+      "path": "apps/desktop/e2e/packaged-runtime/packaged-runtime.spec.ts",
+      "primarySuite": "e2e",
+      "collectors": [
+        "apps/desktop/playwright.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "apps/desktop/src/main/__tests__/bootstrap.spec.ts",
+      "primarySuite": "boundary-main",
+      "collectors": [
+        "apps/desktop/vitest.main.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "apps/desktop/src/main/database/__tests__/packaged-worker-path.spec.ts",
       "primarySuite": "boundary-main",
       "collectors": [
         "apps/desktop/vitest.main.config.ts"
@@ -1054,7 +1070,31 @@
       "measurementCollectors": []
     },
     {
+      "path": "apps/desktop/src/main/profile/profile-key-store.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "apps/desktop/src/main/profile/profile-pin-store.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "apps/desktop/src/main/profile/safe-storage-codec.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "apps/desktop/src/main/profile/wsl-dpapi.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "apps/desktop/vitest.config.ts"
@@ -10511,14 +10551,14 @@
       "type": "primary",
       "suite": "boundary-main",
       "runner": "vitest",
-      "fileCount": 5
+      "fileCount": 6
     },
     {
       "id": "apps/desktop/playwright.config.ts",
       "type": "primary",
       "suite": "e2e",
       "runner": "playwright",
-      "fileCount": 1
+      "fileCount": 2
     },
     {
       "id": "apps/web/playwright.ai-workspace.config.ts",
@@ -10714,7 +10754,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 57
+      "fileCount": 60
     },
     {
       "id": "apps/migrator/vitest.config.ts",
@@ -11490,12 +11530,12 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 994,
+    "unit": 997,
     "integration": 31,
     "smoke": 3,
     "boundary-ipc": 9,
-    "boundary-main": 5,
-    "e2e": 63,
+    "boundary-main": 6,
+    "e2e": 64,
     "perf": 1,
     "governance": 38
   }

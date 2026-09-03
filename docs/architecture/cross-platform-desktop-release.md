@@ -8,14 +8,14 @@ tags:
   - macos
 description: MemoFlow Desktop Windows、Linux、macOS Intel/Apple Silicon 构建、签名、资产与更新契约
 created: 2026-09-02T16:15:00+08:00
-updated: 2026-09-02T16:15:00+08:00
+updated: 2026-09-03T17:00:00+08:00
 ---
 
 # Cross-platform Desktop Release Contract
 
 ## 1. Scope
 
-This document governs release-time packaging for MemoFlow Desktop. It does not change application runtime behavior or cloud/server deployment.
+This document governs release-time packaging and packaged-runtime acceptance for MemoFlow Desktop. It does not change cloud/server deployment.
 
 ## 2. Required platform set
 
@@ -60,6 +60,22 @@ Every platform build must:
 
 A single upload/postflight job downloads all children, validates coverage and names, builds the manifest, then uploads to the existing Draft Release.
 
+### 4.1 Packaged-runtime gate
+
+A package is not release evidence merely because Electron Builder produced files. Every native matrix child must launch the exact packaged executable and prove renderer readiness through the shared Playwright packaged smoke. The receipt is written only after this gate passes.
+
+Linux has an additional installed-package boundary: after the packaged executable passes, the `.deb` must be installed with APT and the smoke must run again from `/opt/MemoFlow/memoflow`. The Linux receipt therefore records `installed-deb`, while Windows records `packaged-exe` and macOS records `packaged-app`.
+
+The Linux smoke must run with a real Freedesktop Secret Service provider. CI creates an ephemeral D-Bus session and GNOME Keyring; `basic_text`, `safeStorage.setUsePlainTextEncryption(true)` and `--password-store=basic` are not valid release-test substitutions.
+
+### 4.2 Packaged Linux native resources
+
+Worker paths and native extensions that Electron unpacks must be resolved from `app.asar.unpacked` at runtime. In particular, PowerSync Worker URLs must not be allowed to carry an `app.asar/...` path into SQLite native-extension loading.
+
+### 4.3 Secure storage boundary
+
+MemoFlow uses OS-backed Electron `safeStorage` when a secure provider is available. Linux rejects the Chromium `basic_text` backend and `v10` ciphertext for Profile keys and cloud sessions. On WSL, where a Linux Secret Service is commonly absent, MemoFlow may bridge to Windows CurrentUser DPAPI through WSL interoperability; that ciphertext has an explicit MemoFlow envelope and is never treated as the Linux `basic_text` fallback.
+
 ## 5. macOS pilot policy
 
 At implementation start the repository has no Apple signing/notarization secret. Therefore:
@@ -83,7 +99,11 @@ Postflight rejects:
 - architecture mismatch between platform receipt and package name;
 - unknown signing state;
 - update metadata referring to a missing file;
-- asset version not equal to release tag version.
+- asset version not equal to release tag version;
+- platform receipt missing `runtimeValidation.status = passed`;
+- runtime validation method other than `packaged-electron-playwright`;
+- Linux receipt not proving the installed `.deb` executable;
+- Linux packaged smoke using an insecure `basic_text`/`v10` secret-storage fallback.
 
 ## 7. Acceptance evidence
 
@@ -96,4 +116,5 @@ The first V3 cross-platform release is accepted only when the Published GitHub R
 - Desktop manifest with all four platform receipts;
 - SHA256SUMS covering every published Desktop asset;
 - no duplicate names;
-- exact tag/SHA identity.
+- exact tag/SHA identity;
+- schema-v2 platform receipts containing packaged-runtime evidence for all four platforms.

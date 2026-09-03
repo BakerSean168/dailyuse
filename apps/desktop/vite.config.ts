@@ -111,6 +111,7 @@ export default defineConfig(({ command, mode }) => {
     assetsInclude: ['**/*.icns'],
     resolve: {
       conditions: ['import', 'module', 'default'],
+      dedupe: ['vue', 'vue-router', 'pinia', 'vue-i18n'],
       alias: rendererAliases,
     },
     define: {

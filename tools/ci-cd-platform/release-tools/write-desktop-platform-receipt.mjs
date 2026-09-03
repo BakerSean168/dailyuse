@@ -1,25 +1,59 @@
 import { readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const [root, platform, os, arch, signingState, tag, gitSha] = process.argv.slice(2);
-if (!root || !platform || !os || !arch || !signingState || !tag || !gitSha) {
+const [
+  root,
+  platform,
+  os,
+  arch,
+  signingState,
+  tag,
+  gitSha,
+  runtimeStatus,
+  runtimeMethod,
+  runtimeExecutableKind,
+] = process.argv.slice(2);
+if (
+  !root ||
+  !platform ||
+  !os ||
+  !arch ||
+  !signingState ||
+  !tag ||
+  !gitSha ||
+  !runtimeStatus ||
+  !runtimeMethod ||
+  !runtimeExecutableKind
+) {
   throw new Error(
-    'usage: write-desktop-platform-receipt.mjs <artifact-root> <platform> <os> <arch> <signing-state> <tag> <git-sha>',
+    'usage: write-desktop-platform-receipt.mjs <artifact-root> <platform> <os> <arch> <signing-state> <tag> <git-sha> <runtime-status> <runtime-method> <runtime-executable-kind>',
   );
 }
 
 const PLATFORM_POLICY = Object.freeze({
-  'windows-x64': { os: 'windows', arch: 'x64', signing: new Set(['unsigned', 'signed']) },
-  'linux-x64': { os: 'linux', arch: 'x64', signing: new Set(['unsigned']) },
+  'windows-x64': {
+    os: 'windows',
+    arch: 'x64',
+    signing: new Set(['unsigned', 'signed']),
+    runtimeExecutableKind: 'packaged-exe',
+  },
+  'linux-x64': {
+    os: 'linux',
+    arch: 'x64',
+    signing: new Set(['unsigned']),
+    runtimeExecutableKind: 'installed-deb',
+  },
   'macos-x64': {
     os: 'macos',
     arch: 'x64',
     signing: new Set(['unsigned-pilot', 'signed-notarized']),
+    runtimeExecutableKind: 'packaged-app',
   },
   'macos-arm64': {
     os: 'macos',
     arch: 'arm64',
     signing: new Set(['unsigned-pilot', 'signed-notarized']),
+    runtimeExecutableKind: 'packaged-app',
   },
 });
 
@@ -30,6 +64,17 @@ if (policy.os !== os || policy.arch !== arch) {
 }
 if (!policy.signing.has(signingState)) {
   throw new Error(`unsupported signing state ${signingState} for ${platform}`);
+}
+if (runtimeStatus !== 'passed') {
+  throw new Error(`Desktop runtime validation must pass before receipt creation: ${platform}`);
+}
+if (runtimeMethod !== 'packaged-electron-playwright') {
+  throw new Error(`unsupported Desktop runtime validation method: ${runtimeMethod}`);
+}
+if (runtimeExecutableKind !== policy.runtimeExecutableKind) {
+  throw new Error(
+    `Desktop runtime executable kind mismatch for ${platform}: expected ${policy.runtimeExecutableKind}, got ${runtimeExecutableKind}`,
+  );
 }
 
 const selected = (name) =>
@@ -58,7 +103,7 @@ if (os === 'macos' && assets.some((asset) => !architectureToken.test(asset))) {
 }
 
 const receipt = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   kind: 'desktop-platform-receipt',
   platform,
   os,
@@ -67,6 +112,11 @@ const receipt = {
   version: tag.replace(/^v/u, ''),
   tag,
   gitSha,
+  runtimeValidation: {
+    status: runtimeStatus,
+    method: runtimeMethod,
+    executableKind: runtimeExecutableKind,
+  },
   assets,
 };
 await writeFile(
