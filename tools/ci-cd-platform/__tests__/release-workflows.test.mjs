@@ -127,10 +127,28 @@ test('desktop packaging has one stable product identity and one native rebuild o
   assert.match(workflow, /Checkout exact release source/);
   assert.match(workflow, /path: release-source/);
   assert.match(workflow, /release-tooling\/apps\/desktop\/electron-builder\.json5/);
+  const resolverStep = workflowStep(workflow, 'Resolve packaged Desktop executable');
+  assert.match(resolverStep, /release-tooling\/apps\/desktop\/scripts\/resolve-packaged-executable\.mjs/);
+  assert.doesNotMatch(resolverStep, /node \.\/apps\/desktop\/scripts\/resolve-packaged-executable\.mjs/u);
   assert.match(workflow, /name: Download build artifacts[\s\S]*?pattern: desktop-\*/);
   assert.doesNotMatch(workflow, /desktop:dist/);
   assert.doesNotMatch(workflow, /npm_config_msvs_version/);
   assert.match(workflow, /msbuild-architecture: x64/);
+  const windowsNativeRebuild = workflowStep(
+    workflow,
+    'Rebuild hoisted Windows native dependencies for Electron',
+  );
+  assert.match(windowsNativeRebuild, /if: runner\.os == 'Windows'/u);
+  assert.match(windowsNativeRebuild, /working-directory: release-source/u);
+  assert.match(windowsNativeRebuild, /from '@electron\/rebuild'/u);
+  assert.match(windowsNativeRebuild, /devDependencies\?\.electron/u);
+  assert.match(windowsNativeRebuild, /buildPath: desktop/u);
+  assert.match(windowsNativeRebuild, /projectRootPath: root/u);
+  assert.match(windowsNativeRebuild, /onlyModules: requiredModules/u);
+  assert.match(windowsNativeRebuild, /\['argon2', 'better-sqlite3'\]/u);
+  assert.match(windowsNativeRebuild, /platform: 'win32'/u);
+  assert.match(windowsNativeRebuild, /mode: 'sequential'/u);
+  assert.match(windowsNativeRebuild, /modules-found/u);
 });
 
 test('release image publication uses registry-compatible image manifests', async () => {
@@ -324,6 +342,10 @@ test('Desktop release runtime gates execute before receipts and cannot be bypass
 
   const packagedSmoke = workflowStep(workflow, 'Run packaged Desktop runtime smoke');
   const installedSmoke = workflowStep(workflow, 'Run installed Linux Debian runtime smoke');
+  const installDeb = workflowStep(workflow, 'Install Linux Debian package');
+  assert.match(installDeb, /deb_path="\$\(realpath/u);
+  assert.match(installDeb, /apt-get install -y "\$deb_path"/u);
+  assert.doesNotMatch(installDeb, /apt-get install -y "\$\{debs\[0\]\}"/u);
   for (const step of [packagedSmoke, installedSmoke]) {
     assert.doesNotMatch(step, /continue-on-error\s*:\s*true/u);
     assert.doesNotMatch(step, /\|\|\s*true/u);

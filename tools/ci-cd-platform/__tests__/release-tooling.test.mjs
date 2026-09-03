@@ -3,12 +3,15 @@ import { execFileSync } from 'node:child_process';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { readReleaseContract } from '../release-tools/release-contract.mjs';
 
 function git(cwd, args) {
   return execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
 }
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 
 async function createReleaseRepo({ desktopVersion = '1.2.3', manifestVersion = '1.2.3' } = {}) {
   const cwd = await mkdtemp(path.join(os.tmpdir(), 'memoflow-release-contract-'));
@@ -116,7 +119,6 @@ test('release evidence builders require and bind all Desktop platforms', async (
   const desktopPath = path.join(cwd, 'desktop-release-manifest.json');
   const dockerPath = path.join(cwd, 'docker-release-manifest.json');
   const releasePath = path.join(cwd, 'release-manifest.json');
-  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../..');
   const receiptTool = path.join(
     repoRoot,
     'tools/ci-cd-platform/release-tools/write-desktop-platform-receipt.mjs',
@@ -268,7 +270,6 @@ test('release evidence builders require and bind all Desktop platforms', async (
 
 test('Desktop release manifest fails closed when a required platform is missing', async () => {
   const cwd = await mkdtemp(path.join(os.tmpdir(), 'memoflow-desktop-platform-missing-'));
-  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../..');
   const directory = path.join(cwd, 'desktop-windows-x64');
   await mkdir(directory, { recursive: true });
   await writeFile(path.join(directory, 'MemoFlow-Windows-1.2.3-Setup.exe'), 'asset');
@@ -321,7 +322,6 @@ test('Desktop asset resolution follows the manifest and remote verification reje
   const releasePath = path.join(cwd, 'release.json');
   const assetName = 'MemoFlow-macOS-arm64-1.2.3.zip';
   const assetPath = path.join(platformRoot, assetName);
-  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../..');
   try {
     await mkdir(platformRoot, { recursive: true });
     await writeFile(assetPath, 'exact-macos-archive');
@@ -384,7 +384,6 @@ test('Desktop asset resolution follows the manifest and remote verification reje
 
 test('Desktop platform receipt refuses failed runtime validation evidence', async () => {
   const cwd = await mkdtemp(path.join(os.tmpdir(), 'memoflow-runtime-receipt-fail-'));
-  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../..');
   try {
     await writeFile(path.join(cwd, 'MemoFlow-Windows-1.2.3-Setup.exe'), 'asset');
     assert.throws(
@@ -408,6 +407,35 @@ test('Desktop platform receipt refuses failed runtime validation evidence', asyn
         ),
       /runtime validation must pass/u,
     );
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+
+test('packaged executable resolver follows electron-builder output conventions across four Desktop targets', async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), 'memoflow-packaged-executable-'));
+  const resolver = path.join(repoRoot, 'apps/desktop/scripts/resolve-packaged-executable.mjs');
+  const fixtures = [
+    ['linux-unpacked/memoflow', 'linux-x64'],
+    ['win-unpacked/memoflow.exe', 'windows-x64'],
+    ['mac/memoflow.app/Contents/MacOS/memoflow', 'macos-x64'],
+    ['mac-arm64/memoflow.app/Contents/MacOS/memoflow', 'macos-arm64'],
+  ];
+
+  try {
+    for (const [relative] of fixtures) {
+      const target = path.join(cwd, ...relative.split('/'));
+      await mkdir(path.dirname(target), { recursive: true });
+      await writeFile(target, 'runtime-binary');
+    }
+
+    for (const [relative, platform] of fixtures) {
+      const resolved = execFileSync(process.execPath, [resolver, cwd, platform], {
+        encoding: 'utf8',
+      }).trim();
+      assert.equal(resolved, path.join(cwd, ...relative.split('/')));
+    }
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
