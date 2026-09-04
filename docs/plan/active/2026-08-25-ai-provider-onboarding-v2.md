@@ -424,27 +424,39 @@ Mastra 仍是唯一 Agent/Workflow/Memory runtime。
 - key rotation / provider edit / default change；
 - MagicDNS Docker journey + required CI 全绿。
 
+## Implementation evidence — 2026-09-04
+
+- `web:e2e:ai-provider` 已以真实 PostgreSQL/API/Vite/Chromium + 临时本地 CA 的 HTTPS Custom Provider 跑通：probe `/models` → 显式选模型 → 原子保存 → replacement → 上游撤销旧 Key → refresh → `/chat/completions` connection test；验证阶段 Provider 数量保持 0。
+- 真实 E2E 发现并修复 PostgreSQL `pg_advisory_xact_lock()` 的 Prisma `void` 反序列化问题；锁调用现显式 cast 为 text，并覆盖 create/default/replacement 相关路径。
+- `affected typecheck`：36 projects + 30 dependency tasks PASS；`affected test`：35 projects PASS。AI 完整测试 76 files / 422 tests PASS；Task 72/732、Reminder 73/527、Goal 81/445、Notification 45/242 均 PASS。
+- `contracts:test`：66 files / 481 tests PASS；CI/CD workflow governance 65/65 PASS；Web shard/oracle contract 8/8 PASS；全局 governance PASS。
+- `validate-local-deploy` 最终 verdict=`pass`、`readyForPr=yes`；fresh `docker compose ... build --no-cache` 后 API/Web/PowerSync/Postgres/Redis 全部 healthy，Web/API revision 与预期 dirty revision 匹配。
+- OpenRouter real-key acceptance 已作为显式 opt-in 子用例接入 `web:e2e:ai-provider`，只读取 `E2E_OPENROUTER_API_KEY`；当前环境未配置专用测试 Key，因此该子用例保持 SKIP，不复用普通用户 Key，也不产生推理调用费用。
+- PR required `Web Flow` 已接入无外部凭据的 HTTPS Custom Provider acceptance；nightly trusted `Web Flow Audit` 可在配置 `E2E_OPENROUTER_API_KEY` 后执行真实 OpenRouter `/key` + `/models` + atomic save acceptance。
+
 ## Acceptance criteria
 
-- [ ] Quick Provider 不再在用户不可见的情况下提交模板默认 `model`
-- [ ] 首次 Provider 接入在验证/选模型前零持久化 side effect
-- [ ] raw API Key 在首次 onboarding 中只从 browser 上传一次；后续选择/commit 使用短时 one-time handle
-- [ ] Settings 首页不再平铺未配置 Provider；Add Provider picker 支持搜索预设 + Custom
-- [ ] Custom Base URL 有 SSRF/redirect/DNS-rebinding 防护与部署级 private-address allowlist
-- [ ] request/access/trace logs 有测试锁定不会捕获 `apiKey`/Authorization/body secret
-- [ ] production HTTPS 为硬门槛；MagicDNS validation 的 HTTP/Tailscale 特例有明确边界
-- [ ] OpenRouter Key 有 dedicated authenticated validation；无效 Key 无法保存为 connected
-- [ ] OpenRouter live models 可搜索选择，用户必须显式选 default model
-- [ ] Custom OpenAI-compatible 默认尝试 `/models` 自动发现
-- [ ] Custom 不支持 `/models` 时有 manual model ID fallback，而不是整个接入失败
-- [ ] 最终 Provider + encrypted secret + default model 原子保存
-- [ ] 已保存 Provider 刷新模型无需重新输入 key
-- [ ] `availableModels` 不再作为超大、易漂移的 Provider aggregate 长期真值（或有明确 TTL/cache 边界）
-- [ ] OpenRouter pricing 单位修正并有 fixture test
-- [ ] `AI_PROVIDER_ENCRYPTION_KEY` 缺失在 deployment/preflight 阶段暴露，不再以用户操作 500 首次发现
-- [ ] Web + Desktop contracts 统一，Mastra 继续是唯一 runtime
-- [ ] real OpenRouter + Custom provider product E2E 通过
-- [ ] required CI / governance / MagicDNS prod-like acceptance 全绿
+- [x] Quick Provider 不再在用户不可见的情况下提交模板默认 `model`
+- [x] 首次 Provider 接入在验证/选模型前零持久化 side effect
+- [x] raw API Key 在首次 onboarding 中只从 browser 上传一次；后续选择/commit 使用短时 one-time handle
+- [x] Settings 首页不再平铺未配置 Provider；Add Provider picker 支持搜索预设 + Custom
+- [x] Custom Base URL 有 SSRF/redirect/DNS-rebinding 防护与部署级 private-address allowlist
+- [x] request/access/trace logs 有测试锁定不会捕获 `apiKey`/Authorization/body secret
+- [x] production HTTPS 为硬门槛；MagicDNS validation 的 HTTP/Tailscale 特例有明确边界
+- [x] OpenRouter Key 有 dedicated authenticated validation；无效 Key 无法保存为 connected
+- [x] OpenRouter live models 可搜索选择，用户必须显式选 default model
+- [x] Custom OpenAI-compatible 默认尝试 `/models` 自动发现
+- [x] Custom 不支持 `/models` 时有 manual model ID fallback，而不是整个接入失败
+- [x] 最终 Provider + encrypted secret + default model 原子保存
+- [x] 已保存 Provider 刷新模型无需重新输入 key
+- [x] `availableModels` 不再作为超大、易漂移的 Provider aggregate 长期真值；模型目录为 transient read model
+- [x] OpenRouter pricing 单位修正并有 fixture test
+- [x] `AI_PROVIDER_ENCRYPTION_KEY` 缺失在 deployment/preflight 阶段暴露，不再以用户操作 500 首次发现
+- [x] Web + Desktop contracts 统一，Mastra 继续是唯一 runtime
+- [x] real HTTPS Custom provider product E2E 通过
+- [ ] real OpenRouter product E2E 通过（opt-in gate 已实现；等待专用 `E2E_OPENROUTER_API_KEY`）
+- [x] local governance + MagicDNS/local-Docker prod-like acceptance 全绿
+- [ ] GitHub required CI 全绿（required Web Flow 已接入 Provider acceptance；等待 push 后远端执行）
 
 ## Non-goals
 

@@ -78,3 +78,42 @@ test('[P0] Custom Provider add → atomic save → verified replacement uses the
   await button(page, /测试连接|Test connection/i).click();
   await expect(list).toContainText(/连接测试通过|Connection test passed/i);
 });
+
+test('[opt-in] real OpenRouter credential → live catalog → explicit model → atomic save', async ({ page }) => {
+  const openRouterKey = process.env.E2E_OPENROUTER_API_KEY?.trim();
+  test.skip(!openRouterKey, 'Set E2E_OPENROUTER_API_KEY explicitly to run the real OpenRouter acceptance path.');
+
+  const email = `e2e-openrouter-${Date.now()}-${Math.random().toString(36).slice(2)}@test.com`;
+  await registerAndLogin(page, { email, password });
+  await page.goto('/settings?tab=ai', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByTestId('ai-settings-panel')).toBeVisible({ timeout: TIMEOUT_CONFIG.NAVIGATION });
+  expect(await providerCount(page)).toBe(0);
+
+  await page.getByTestId('ai-provider-add').click();
+  await page.getByTestId('ai-provider-catalog-openrouter').click();
+  await page.locator('#ai-provider-api-key').fill(openRouterKey!);
+  await page.getByTestId('ai-provider-probe').click();
+
+  const modelList = page.getByTestId('ai-provider-model-list');
+  await expect(modelList).toBeVisible({ timeout: 30_000 });
+  expect(await providerCount(page)).toBe(0);
+
+  let selected = false;
+  for (const recommended of ['google/gemini-2.5-flash', 'openai/gpt-4o-mini']) {
+    const model = modelList.getByText(recommended, { exact: true });
+    if (await model.isVisible().catch(() => false)) {
+      await model.click();
+      selected = true;
+      break;
+    }
+  }
+  if (!selected) {
+    await modelList.locator('button').first().click();
+  }
+  await button(page, /继续|Continue/i).click();
+  await page.getByTestId('ai-provider-commit').click();
+
+  const list = page.getByTestId('ai-provider-list');
+  await expect(list.getByText('OpenRouter', { exact: true })).toBeVisible();
+  expect(await providerCount(page)).toBe(1);
+});

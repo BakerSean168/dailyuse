@@ -22,17 +22,21 @@ describe('ai repository factories surface', () => {
     'executionLogPort',
     'knowledgeIndexRepository',
     'providerConfigRepository',
+    'providerOnboardingCommitPort',
+    'providerOnboardingSessionRepository',
   ];
 
-  it('PowerSync returns the four product persistence ports', () => {
+  it('PowerSync returns the six product persistence ports', () => {
     const set = createAIPowerSyncRepositories(fakeElectronDb);
     expect(Object.keys(set).sort()).toEqual(expectedKeys);
     const typed: AIPowerSyncRepositorySet = set;
     expect(typeof typed.conversationRepository.findByIdForIdentity).toBe('function');
     expect(typeof typed.executionLogPort.record).toBe('function');
+    expect(typeof typed.providerOnboardingSessionRepository.create).toBe('function');
+    expect(typeof typed.providerOnboardingCommitPort.commit).toBe('function');
   });
 
-  it('Prisma returns the same four product persistence ports with no runtime checkpoints', () => {
+  it('Prisma returns the same six product persistence ports with no runtime checkpoints', () => {
     const set = createAIPrismaRepositories(fakePrisma);
     expect(Object.keys(set).sort()).toEqual(expectedKeys);
     expect(set).not.toHaveProperty('agentCheckpointPort');
@@ -40,6 +44,8 @@ describe('ai repository factories surface', () => {
     const typed: AIPrismaRepositorySet = set;
     expect(typeof typed.conversationRepository.findByIdForIdentity).toBe('function');
     expect(typeof typed.executionLogPort.record).toBe('function');
+    expect(typeof typed.providerOnboardingSessionRepository.create).toBe('function');
+    expect(typeof typed.providerOnboardingCommitPort.commit).toBe('function');
   });
 
   it('host capability/runtime ports stay out of both repository sets', () => {
@@ -59,6 +65,8 @@ describe('ai repository factories surface', () => {
     const instance = createAIModule({
       conversationRepository: repositories.conversationRepository,
       providerConfigRepository: repositories.providerConfigRepository,
+      providerOnboardingSessionRepository: repositories.providerOnboardingSessionRepository,
+      providerOnboardingCommitPort: repositories.providerOnboardingCommitPort,
       knowledgeIndexRepository: repositories.knowledgeIndexRepository,
       executionLogPort: repositories.executionLogPort,
     });

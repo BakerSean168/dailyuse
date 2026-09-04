@@ -103,7 +103,7 @@ export function AIScreen() {
             </View>
           </SectionCard>
 
-          <SectionCard title="Provider" description="消息发送时可以显式选择 provider 和 model，也可以直接把当前 provider 设为默认。">
+          <SectionCard title="Provider" description="消息发送时可以选择 provider；默认模型来自已保存配置，完整模型目录按需读取而不缓存到 Provider。">
             {providers.length > 0 ? (
               <>
                 <View style={styles.listColumn}>
@@ -143,22 +143,10 @@ export function AIScreen() {
                   ))}
                 </View>
 
-                {selectedProvider?.availableModels && selectedProvider.availableModels.length > 0 ? (
-                  <View style={styles.listColumn}>
-                    <ThemedText type="small" themeColor="textSecondary">
-                      Available models for {selectedProvider.name}
-                    </ThemedText>
-                    <View style={styles.actionRow}>
-                      {selectedProvider.availableModels.slice(0, 8).map((model) => (
-                        <PrimaryButton
-                          key={model.id}
-                          label={model.name}
-                          onPress={() => setSelectedModel(model.id)}
-                          variant={selectedModel === model.id ? 'solid' : 'ghost'}
-                        />
-                      ))}
-                    </View>
-                  </View>
+                {selectedProvider ? (
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Selected model: {selectedModel ?? selectedProvider.defaultModel ?? 'No model selected'}. Model inventory is loaded on demand and is not stored on the Provider.
+                  </ThemedText>
                 ) : null}
               </>
             ) : (

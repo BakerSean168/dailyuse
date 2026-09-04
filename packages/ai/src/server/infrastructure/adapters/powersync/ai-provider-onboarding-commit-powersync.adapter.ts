@@ -207,7 +207,13 @@ export class PowerSyncAIProviderOnboardingCommitAdapter implements IAIProviderOn
   }
 }
 
+const SQLITE_UNIQUE_CONSTRAINT_CODES = new Set([
+  'SQLITE_CONSTRAINT_UNIQUE',
+  'SQLITE_CONSTRAINT_PRIMARYKEY',
+]);
+
 function isUniqueConstraintError(error: unknown): boolean {
-  if (!(error instanceof Error)) return false;
-  return /unique constraint|constraint failed.*unique|already exists/i.test(error.message);
+  if (!error || typeof error !== 'object') return false;
+  const code = (error as { code?: unknown }).code;
+  return typeof code === 'string' && SQLITE_UNIQUE_CONSTRAINT_CODES.has(code);
 }

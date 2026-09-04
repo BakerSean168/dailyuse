@@ -48,7 +48,13 @@ function databaseFixture(tx: IElectronDatabaseTransaction, events: string[]) {
 }
 
 function createFixture(
-  options: { session?: boolean; sessionTarget?: string | null; duplicate?: boolean; insertFails?: boolean } = {},
+  options: {
+    session?: boolean;
+    sessionTarget?: string | null;
+    duplicate?: boolean;
+    insertFails?: boolean;
+    insertErrorCode?: string;
+  } = {},
 ) {
   const events: string[] = [];
   let optionalCall = 0;
@@ -81,6 +87,9 @@ function createFixture(
       }
       if (sql.includes('INSERT INTO ai_provider_configs')) {
         events.push('insert-provider');
+        if (options.insertErrorCode) {
+          throw Object.assign(new Error('provider insert failed'), { code: options.insertErrorCode });
+        }
         if (options.insertFails) throw new Error('provider insert failed');
         return { rowsAffected: 1 };
       }
@@ -181,6 +190,41 @@ describe('PowerSyncAIProviderOnboardingCommitAdapter create', () => {
 
     expect(tx.execute).not.toHaveBeenCalled();
     expect(events).toEqual(['tx-start', 'read-session', 'tx-commit']);
+  });
+
+  it.each(['SQLITE_CONSTRAINT_UNIQUE', 'SQLITE_CONSTRAINT_PRIMARYKEY'])(
+    'maps the structured SQLite unique code %s to CONFLICT',
+    async (insertErrorCode) => {
+      const { db, events } = createFixture({ insertErrorCode });
+      const adapter = new PowerSyncAIProviderOnboardingCommitAdapter(db, vault);
+
+      await expect(
+        adapter.commit({
+          identityId: 'identity-1',
+          onboardingId: 'onboarding-1234567890',
+          provider,
+          now: 1_750_000_000_000,
+        }),
+      ).resolves.toBe('CONFLICT');
+
+      expect(events.at(-1)).toBe('tx-rollback');
+    },
+  );
+
+  it('does not misclassify non-unique SQLite constraints as a Provider conflict', async () => {
+    const { db, events } = createFixture({ insertErrorCode: 'SQLITE_CONSTRAINT_NOTNULL' });
+    const adapter = new PowerSyncAIProviderOnboardingCommitAdapter(db, vault);
+
+    await expect(
+      adapter.commit({
+        identityId: 'identity-1',
+        onboardingId: 'onboarding-1234567890',
+        provider,
+        now: 1_750_000_000_000,
+      }),
+    ).rejects.toMatchObject({ code: 'SQLITE_CONSTRAINT_NOTNULL' });
+
+    expect(events.at(-1)).toBe('tx-rollback');
   });
 
   it('keeps consume and insert in the same rollback boundary when Provider persistence fails', async () => {
