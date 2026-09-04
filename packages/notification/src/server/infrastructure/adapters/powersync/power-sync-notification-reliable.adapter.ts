@@ -268,45 +268,10 @@ export class PowerSyncNotificationReliableAdapter implements NotificationReliabl
 
   private async ensureTablesExist(): Promise<void> {
     if (this.tableInitialized) return;
-    await this.db.execute(`
-      CREATE TABLE IF NOT EXISTS notification_dispatch_outbox (
-        id TEXT PRIMARY KEY,
-        identity_id TEXT NOT NULL,
-        notification_id TEXT NOT NULL,
-        source TEXT NOT NULL DEFAULT 'notification',
-        occurrence_key TEXT NOT NULL,
-        channel TEXT NOT NULL,
-        payload_json TEXT NOT NULL,
-        idempotency_key TEXT UNIQUE NOT NULL,
-        status TEXT NOT NULL,
-        attempt INTEGER NOT NULL DEFAULT 0,
-        owner_token TEXT,
-        claim_id TEXT,
-        fencing_token INTEGER NOT NULL DEFAULT 0,
-        lease_expires_at TEXT,
-        last_heartbeat_at TEXT,
-        heartbeat_interval_ms INTEGER,
-        last_error TEXT,
-        next_retry_at TEXT,
-        dead_letter_at TEXT,
-        correlation_id TEXT,
-        causation_id TEXT,
-        attempts_history_json TEXT,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL,
-        finished_at TEXT
-      );
-    `);
-    await this.db.execute(
-      `CREATE INDEX IF NOT EXISTS idx_ndo_identity_id ON notification_dispatch_outbox(identity_id);`,
-    );
-    await this.db.execute(
-      `CREATE INDEX IF NOT EXISTS idx_ndo_status ON notification_dispatch_outbox(status);`,
-    );
-    await this.db.execute(
-      `CREATE INDEX IF NOT EXISTS idx_ndo_lease_expires_at ON notification_dispatch_outbox(lease_expires_at);`,
-    );
-
+    // `notification_dispatch_outbox` and `desktop_delivery_acks` are owned by the
+    // canonical PowerSync schema. At runtime they are writable SQLite views, so
+    // this adapter must never try to create tables or indexes for them. Only the
+    // shared `outbox_messages` table is adapter-owned local SQLite state.
     await this.db.execute(`
       CREATE TABLE IF NOT EXISTS outbox_messages (
         id TEXT PRIMARY KEY,
@@ -338,17 +303,6 @@ export class PowerSyncNotificationReliableAdapter implements NotificationReliabl
     await this.db.execute(
       `CREATE INDEX IF NOT EXISTS idx_om_status ON outbox_messages(status);`,
     );
-    await this.db.execute(`
-      CREATE TABLE IF NOT EXISTS desktop_delivery_acks (
-        idempotency_key TEXT PRIMARY KEY,
-        status TEXT NOT NULL,
-        ack_id TEXT,
-        payload_json TEXT,
-        error TEXT,
-        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
     this.tableInitialized = true;
   }
 

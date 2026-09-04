@@ -7068,6 +7068,16 @@
       ]
     },
     {
+      "path": "packages/notification/src/server/infrastructure/adapters/powersync/power-sync-notification-reliable.adapter.test.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/notification/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/notification/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-ownership.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10467,7 +10477,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 44
+      "fileCount": 45
     },
     {
       "id": "packages/reminder/vitest.config.ts",
@@ -10880,7 +10890,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 44
+      "fileCount": 45
     },
     {
       "id": "packages/patterns/vitest.config.ts",
@@ -11305,6 +11315,7 @@
       "packages/notification/src/server/infrastructure/adapters/powersync/__tests__/notification-powersync-durable-worker.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/powersync/__tests__/notification-powersync.closure-checker.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/powersync/__tests__/notification-requested-writer.powersync.spec.ts",
+      "packages/notification/src/server/infrastructure/adapters/powersync/power-sync-notification-reliable.adapter.test.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-ownership.surface.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-preference-ownership.surface.spec.ts",
       "packages/notification/src/server/infrastructure/adapters/prisma/__tests__/notification-preference-schema-migration.surface.spec.ts",
@@ -11530,7 +11541,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 997,
+    "unit": 998,
     "integration": 31,
     "smoke": 3,
     "boundary-ipc": 9,

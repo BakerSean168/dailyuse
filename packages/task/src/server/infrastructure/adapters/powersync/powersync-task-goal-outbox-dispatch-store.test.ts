@@ -7,7 +7,7 @@ import type {
 import { PowerSyncTaskGoalOutboxDispatchStore } from './powersync-task-goal-outbox-dispatch-store';
 
 interface OutboxRow {
-  event_id: string;
+  id: string;
   payload: string;
   status: string;
   attempts: number;
@@ -42,6 +42,8 @@ class FakeOutboxDatabase implements IElectronDatabase {
 
   async getAll<T>(sql: string, parameters: unknown[] = []): Promise<T[]> {
     if (!sql.includes('FROM task_goal_outbox')) return [];
+    expect(sql).not.toContain('event_id');
+    expect(sql).toContain('SELECT id, payload, attempts, status');
     const now = String(parameters[0]);
     const limit = Number(parameters[1]);
     return this.rows
@@ -55,7 +57,9 @@ class FakeOutboxDatabase implements IElectronDatabase {
 
   async getOptional<T>(sql: string, parameters: unknown[] = []): Promise<T | null> {
     if (!sql.includes('FROM task_goal_outbox')) return null;
-    const row = this.rows.find((candidate) => candidate.event_id === String(parameters[0]));
+    expect(sql).not.toContain('event_id');
+    expect(sql).toContain('WHERE id = ?');
+    const row = this.rows.find((candidate) => candidate.id === String(parameters[0]));
     return (row ?? null) as T | null;
   }
 
@@ -75,8 +79,12 @@ class FakeOutboxDatabase implements IElectronDatabase {
     sql: string,
     parameters: unknown[],
   ): Promise<IElectronDatabaseQueryResult> {
+    if (sql.includes('task_goal_outbox')) {
+      expect(sql).not.toContain('event_id');
+      expect(sql).toMatch(/\bid = \?/u);
+    }
     const eventId = String(parameters.at(-1));
-    const row = this.rows.find((candidate) => candidate.event_id === eventId);
+    const row = this.rows.find((candidate) => candidate.id === eventId);
     if (!row) return { rowsAffected: 0 };
 
     if (sql.includes("SET status = 'DELIVERED'")) {
@@ -129,7 +137,7 @@ class FakeOutboxDatabase implements IElectronDatabase {
 
 function pendingRow(): OutboxRow {
   return {
-    event_id: payload.eventId,
+    id: payload.eventId,
     payload: JSON.stringify(payload),
     status: 'PENDING',
     attempts: 0,

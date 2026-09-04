@@ -95,11 +95,12 @@ test('desktop assets and image publishing are reusable retryable lanes, not publ
 });
 
 test('desktop packaging has one stable product identity and one native rebuild owner', async () => {
-  const [packageText, builder, projectText, workflow] = await Promise.all([
+  const [packageText, builder, projectText, workflow, nativeRebuildHelper] = await Promise.all([
     readRepoFile('apps/desktop/package.json'),
     readRepoFile('apps/desktop/electron-builder.json5'),
     readRepoFile('apps/desktop/project.json'),
     readRepoFile('.github/workflows/release-assets.yml'),
+    readRepoFile('apps/desktop/scripts/rebuild-native-dependencies.mjs'),
   ]);
   const packageJson = JSON.parse(packageText);
   const project = JSON.parse(projectText);
@@ -113,7 +114,7 @@ test('desktop packaging has one stable product identity and one native rebuild o
   assert.match(builder, /"executableName": "memoflow"/);
   assert.match(builder, /"desktopName": "memoflow\.desktop"/);
   assert.match(builder, /"syncDesktopName": true/);
-  assert.match(builder, /"npmRebuild": true/);
+  assert.match(builder, /"npmRebuild": false/);
   assert.match(builder, /\.\.\/\.\.\/packages\/assets\/dist\/images\/logos\/MemoFlow\.ico/);
   assert.match(builder, /\.\.\/\.\.\/packages\/assets\/dist\/images\/logos\/MemoFlow-512\.png/);
   assert.match(builder, /"from": "\.\.\/\.\.\/packages\/database"/);
@@ -122,8 +123,16 @@ test('desktop packaging has one stable product identity and one native rebuild o
   assert.deepEqual(project.targets.package.dependsOn, ['build']);
   assert.deepEqual(project.targets.dist.dependsOn, ['build']);
   assert.match(
+    project.targets.package.options.commands[0],
+    /rebuild-native-dependencies\.mjs/,
+  );
+  assert.match(
+    project.targets.dist.options.commands[0],
+    /rebuild-native-dependencies\.mjs/,
+  );
+  assert.match(
     project.targets['native-rebuild'].options.command,
-    /electron-builder install-app-deps/,
+    /rebuild-native-dependencies\.mjs/,
   );
 
   assert.match(workflow, /Checkout release packaging tooling/);
@@ -139,22 +148,22 @@ test('desktop packaging has one stable product identity and one native rebuild o
   assert.doesNotMatch(workflow, /desktop:dist/);
   assert.doesNotMatch(workflow, /npm_config_msvs_version/);
   assert.match(workflow, /msbuild-architecture: x64/);
-  const windowsNativeRebuild = workflowStep(
-    workflow,
-    'Rebuild hoisted Windows native dependencies for Electron',
+  const nativeRebuild = workflowStep(workflow, 'Rebuild native dependencies for Electron');
+  assert.match(nativeRebuild, /working-directory: release-source/u);
+  assert.match(
+    nativeRebuild,
+    /release-tooling\/apps\/desktop\/scripts\/rebuild-native-dependencies\.mjs/u,
   );
-  assert.match(windowsNativeRebuild, /if: runner\.os == 'Windows'/u);
-  assert.match(windowsNativeRebuild, /working-directory: release-source/u);
-  assert.match(windowsNativeRebuild, /await import\('@electron\/rebuild'\)/u);
-  assert.doesNotMatch(windowsNativeRebuild, /--input-type/u);
-  assert.match(windowsNativeRebuild, /devDependencies\?\.electron/u);
-  assert.match(windowsNativeRebuild, /buildPath: desktop/u);
-  assert.match(windowsNativeRebuild, /projectRootPath: root/u);
-  assert.match(windowsNativeRebuild, /onlyModules: requiredModules/u);
-  assert.match(windowsNativeRebuild, /\['argon2', 'better-sqlite3'\]/u);
-  assert.match(windowsNativeRebuild, /platform: 'win32'/u);
-  assert.match(windowsNativeRebuild, /mode: 'sequential'/u);
-  assert.match(windowsNativeRebuild, /modules-found/u);
+  assert.match(nativeRebuild, /--workspace-root/u);
+  assert.match(nativeRebuild, /matrix\.platform_os/u);
+  assert.match(nativeRebuild, /matrix\.arch/u);
+  assert.doesNotMatch(nativeRebuild, /if: runner\.os == 'Windows'/u);
+  assert.match(nativeRebuildHelper, /projectRootPath: workspaceRoot/u);
+  assert.match(nativeRebuildHelper, /onlyModules: REQUIRED_MODULES/u);
+  assert.match(nativeRebuildHelper, /\['argon2', 'better-sqlite3'\]/u);
+  assert.match(nativeRebuildHelper, /mode: 'sequential'/u);
+  assert.match(nativeRebuildHelper, /modules-found/u);
+  assert.match(nativeRebuildHelper, /Electron rebuild did not discover required native module/u);
 });
 
 test('release image publication uses registry-compatible image manifests', async () => {

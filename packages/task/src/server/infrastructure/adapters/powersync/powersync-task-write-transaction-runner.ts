@@ -33,7 +33,7 @@ export class PowerSyncTaskWriteTransactionRunner implements TaskWriteTransaction
         const record = toTaskGoalOutboxRecord(event);
         if (record) {
           await tx.execute(
-            `INSERT OR IGNORE INTO task_goal_outbox (event_id, identity_id, task_instance_id, task_template_id, goal_id, key_result_id, payload, status, attempts, available_at, created_at, updated_at)
+            `INSERT OR IGNORE INTO task_goal_outbox (id, identity_id, task_instance_id, task_template_id, goal_id, key_result_id, payload, status, attempts, available_at, created_at, updated_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING', 0, ?, ?, ?)`,
             [
               record.eventId,
