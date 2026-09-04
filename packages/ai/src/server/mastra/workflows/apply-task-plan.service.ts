@@ -93,10 +93,13 @@ function taskRequest(
             keyResultId: task.keyResultId as NonNullable<
               NonNullable<CreateTaskTemplateReq['goalBinding']>['keyResultId']
             >,
-            contribution: {
-              value: 1,
-              trigger: TaskGoalBindingTrigger.EachCompletion,
-            },
+            contribution:
+              task.contributionValue === null
+                ? null
+                : {
+                    value: task.contributionValue,
+                    trigger: TaskGoalBindingTrigger.EachCompletion,
+                  },
           }
         : null,
   };
