@@ -9,11 +9,13 @@ tags:
   - staging
 description: MemoFlow GitHub App durable installation intent、环境路由与 Web/Desktop 安装完成闭环实施方案
 created: 2026-08-28T12:00:00+08:00
-updated: 2026-08-29T13:35:00+08:00
-status: active
+updated: 2026-09-04T23:25:00+08:00
+status: active # implementation complete; one Windows Desktop live acceptance remains
 ---
 
 # GitHub App Durable Installation Intent + Setup Gateway
+
+> **Truth audit 2026-09-04:** implementation and automated contract coverage are complete. Production Web install/connect/webhook acceptance is complete. The plan remains Active only for one release-level acceptance: run a Published Windows Desktop package through external browser → GitHub installation → authenticated polling/finalize → repository inventory/connect, then archive if it passes. `v0.12.1` provides a Published Windows x64 Setup/zip suitable for this acceptance.
 
 ## 0. Executive decision
 

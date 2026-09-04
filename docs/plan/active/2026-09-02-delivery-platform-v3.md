@@ -9,12 +9,12 @@ tags:
   - desktop
 description: MemoFlow Delivery Platform V3 分阶段实施计划与可验证票据
 created: 2026-09-02T16:15:00+08:00
-updated: 2026-09-02T16:15:00+08:00
+updated: 2026-09-04T23:25:00+08:00
 ---
 
 # MemoFlow Delivery Platform V3 Implementation Plan
 
-> Status: ACTIVE  
+> Status: ACTIVE — Phase 1 closed; Phase 2 is the next implementation boundary
 > Governing ADR: [ADR-066](../../architecture/adr/ADR-066-adopt-delivery-platform-v3.md)  
 > Architecture: [Delivery Platform V3](../../architecture/delivery-platform-v3.md)  
 > Release contract: [Release Lifecycle V3](../../architecture/release-lifecycle-v3.md)
@@ -35,29 +35,32 @@ runtime watchers deploy coherently with migration/health/rollback evidence
 
 The first externally visible milestone is a Published MemoFlow release containing Windows x64, Linux x64, macOS x64 and macOS arm64 assets.
 
-## Current implementation checkpoint
+## Current implementation checkpoint — truth audit 2026-09-04
 
-| Ticket    | Repository state                                                                                         | Runtime / GitHub state                                      |
-| --------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| DLV3-0001 | Implemented; document indexes and ADR registry updated                                                   | Awaiting Phase 1 PR                                         |
-| DLV3-1101 | Implemented; historical Desktop/Electron fixture, main full override and 60/60 platform tests pass       | Awaiting real PR manifest evidence                          |
-| DLV3-1102 | Implemented; successful-main-CI `workflow_run` plus manual retry, prepare-only contract                  | Awaiting merged workflow and first automatic run            |
-| DLV3-1103 | Implemented; Windows x64, Linux x64, macOS x64 and macOS arm64 matrix plus fail-closed receipts/manifest | Awaiting first native GitHub-hosted builds                  |
-| DLV3-1104 | Complete for the two touched release workflows                                                           | Repository-wide pin convergence remains Phase 4             |
-| DLV3-1105 | Not started                                                                                              | Requires Phase 1 merge and a real Release PR                |
-| Phase 2+  | Designed only                                                                                            | No candidate/staging/production authority has been cut over |
+| Ticket / phase | Current truth                  | Evidence / remaining boundary                                                                                                                                                                                                              |
+| -------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| DLV3-0001      | **COMPLETE**                   | ADR-066, Delivery Platform V3 architecture, Release Lifecycle V3 and runbooks are published.                                                                                                                                               |
+| DLV3-1101      | **COMPLETE**                   | Desktop-aware scope/risk selection is merged; `main` still forces full verification.                                                                                                                                                       |
+| DLV3-1102      | **COMPLETE**                   | successful-main-CI release-please maintenance and manual recovery paths are live and have been exercised repeatedly by v0.12.x release PRs.                                                                                                |
+| DLV3-1103      | **COMPLETE**                   | native matrix builds Windows x64, Linux x64, macOS x64 and macOS arm64 with packaged-runtime receipts and fail-closed manifest checks.                                                                                                     |
+| DLV3-1104      | **COMPLETE for Phase 1 scope** | touched release workflows use pinned reviewed Actions; repository-wide convergence remains DLV3-4402.                                                                                                                                      |
+| DLV3-1105      | **COMPLETE**                   | `v0.12.1` was Published on 2026-09-03 with Windows x64, Linux x64, macOS x64 and macOS arm64 assets, `desktop-release-manifest.json`, `release-manifest.json` and `SHA256SUMS.txt`; tag target `257c74eccbe87bba5f63a72217301ab8a17048e6`. |
+| Phase 2        | **NOT IMPLEMENTED**            | `memoflow.candidate-set/v1`, exact-SHA server candidate publication, coherent `staging-latest`, GCP staging watcher and canonical staging cutover remain architecture/docs only.                                                           |
+| Phase 3        | **PARTIAL FOUNDATION ONLY**    | canonical release manifests exist, but they do not yet bind/promote a Phase-2 candidate-set; production selector and Alibaba watcher do not exist.                                                                                         |
+| Phase 4        | **PARTIAL / DEFERRED**         | some Action pinning and delivery observations exist; consolidated-runner evidence, repository-wide Action pinning, macOS signing/notarization and final observation closure remain.                                                        |
 
-Local evidence at this checkpoint:
+Phase 1 release evidence:
 
 ```text
-CI/CD platform tests        60/60 PASS
-Governance tool tests       101/101 PASS
-Test-system tests           17/17 PASS
-Desktop tests               57 files / 302 tests PASS
-Desktop typecheck           PASS
-Desktop lint                PASS (0 errors; existing warnings retained)
-Desktop production build    PASS
+v0.12.1 Published / non-prerelease
+Windows x64 Setup + zip
+Linux x64 AppImage + deb + rpm
+macOS x64 dmg + zip
+macOS arm64 dmg + zip
+desktop-release-manifest.json + release-manifest.json + SHA256SUMS.txt
 ```
+
+The next implementation boundary is **Phase 2**, not more Desktop release plumbing.
 
 ## 2. Baseline and measurable targets
 
@@ -71,7 +74,7 @@ Baseline Desktop-heavy PR #286:
 | Missing required evidence |        0 |                                        0 |
 | Main skipped safety lanes |        0 |                                        0 |
 
-Current release platform coverage: Windows x64 + Linux x64. Target: add macOS Intel x64 + Apple Silicon arm64.
+Current release platform coverage: **Windows x64 + Linux x64 + macOS Intel x64 + macOS Apple Silicon arm64**. The original Phase-1 platform target is complete.
 
 ## 3. Protected contracts
 

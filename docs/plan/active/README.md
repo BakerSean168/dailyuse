@@ -4,7 +4,7 @@ tags:
   - active
 description: 进行中的计划目录与当前状态
 created: 2026-04-26T00:00:00
-updated: 2026-09-04T22:15:00+08:00
+updated: 2026-09-04T23:25:00+08:00
 ---
 
 # Active Plans
@@ -13,11 +13,11 @@ updated: 2026-09-04T22:15:00+08:00
 
 ## 当前计划
 
-| 计划                                                                                                     | 当前状态                                                                                                                                                                                                                         |
-| -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [MemoFlow Delivery Platform V3](./2026-09-02-delivery-platform-v3.md)                                    | **ACTIVE / Phase 1 implementing**：Desktop-aware scope、自动维护 Release PR、Windows/Linux/macOS x64+arm64 发版先行；随后实施 exact-SHA server candidate、canonical staging 与 production selector/watcher。                     |
-| [MemoFlow Core vNext — Unified Refactor Orchestration](./2026-08-25-core-vnext-orchestration.md)         | **v0.11 merge milestone closed / post-v0.11 follow-up active**：Wave 0–4 与 Web/Desktop 主产品面已完成；Mobile/AI parity、Routine method library、legacy physical cleanup、pg-boss PoC 与剩余 hardening 明确延期，不阻塞 v0.11。 |
-| [GitHub Durable Installation Intent + Setup Gateway](./2026-08-28-github-installation-intent-gateway.md) | **Release acceptance**：Production Web install/connect/webhook E2E 已通过；仅保留新 Windows release 的 Desktop external-browser + polling/finalize live acceptance。                                                             |
+| 计划                                                                                                     | 当前状态                                                                                                                                                                                                                             |
+| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [MemoFlow Delivery Platform V3](./2026-09-02-delivery-platform-v3.md)                                    | **ACTIVE / Phase 1 closed, Phase 2 next**：Desktop-aware scope、Release PR 自动维护与 Windows/Linux/macOS x64+arm64 正式发布已完成；`candidate-set`、`staging-latest`、GCP watcher、production selector / Alibaba watcher 仍未实施。 |
+| [MemoFlow Core vNext — Unified Refactor Orchestration](./2026-08-25-core-vnext-orchestration.md)         | **v0.11 milestone closed / residual-only active**：Wave 0–5 主产品面已完成；真实 residual 收敛为 Routine method library、AI parity、Mobile parity、ScheduleTask/SourceModule legacy cleanup、pg-boss 决策与最终 hardening。          |
+| [GitHub Durable Installation Intent + Setup Gateway](./2026-08-28-github-installation-intent-gateway.md) | **Implementation complete / one live acceptance pending**：Production Web install/connect/webhook E2E 已通过；仅剩正式 Windows Desktop 包的 external-browser → polling/finalize 实机验收，完成后即可归档。                           |
 
 ## 近期完成的基础计划
 
