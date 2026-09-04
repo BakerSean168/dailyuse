@@ -48,7 +48,7 @@ describe('AITaskWorkflowPanel', () => {
                 occurrences: null,
                 goalId: null,
                 keyResultId: null,
-                folderId: null,
+                contributionValue: null,
                 tags: [],
               },
               rationale: 'Do it',
