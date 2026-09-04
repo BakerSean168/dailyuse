@@ -83,7 +83,6 @@ import type {
 
 // Value imports for services assembled directly by this module.
 import {
-  CreateAIProviderUseCase,
   UpdateAIProviderUseCase,
   DeleteAIProviderUseCase,
   GetAIProviderUseCase,
@@ -202,7 +201,6 @@ export interface AIModuleRuntimeContribution {
  * Provider config decomposed use cases.
  */
 export interface AIProviderServices {
-  readonly create: CreateAIProviderUseCase;
   readonly update: UpdateAIProviderUseCase;
   readonly delete: DeleteAIProviderUseCase;
   readonly get: GetAIProviderUseCase;
@@ -433,7 +431,6 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
   const onboardingAvailable = Boolean(onboardingSessionRepository && onboardingCommitPort);
 
   const providerServices: AIProviderServices = {
-    create: new CreateAIProviderUseCase(providerConfigRepository),
     update: new UpdateAIProviderUseCase(providerConfigRepository),
     delete: new DeleteAIProviderUseCase(providerConfigRepository),
     get: new GetAIProviderUseCase(providerConfigRepository),
@@ -655,7 +652,6 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     },
 
     // -- Saved Provider Config / legacy compatibility --
-    createProvider: (req, cx) => services.providerServices.create.execute(req, cx),
     updateProvider: (id, req, cx) =>
       services.providerServices.update.execute(cx.identityId, id, req),
     deleteProvider: (id, cx) => services.providerServices.delete.execute(cx.identityId, id),

@@ -4,7 +4,6 @@ export * from './manage-ai-evaluation-report.use-case';
 
 // AI Provider Config helpers and individual use cases
 export * from './ai-provider-config-helpers';
-export * from './create-ai-provider.use-case';
 export * from './update-ai-provider.use-case';
 export * from './delete-ai-provider.use-case';
 export * from './get-ai-provider.use-case';

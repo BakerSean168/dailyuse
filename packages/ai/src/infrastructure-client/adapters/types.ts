@@ -7,7 +7,6 @@ import type {
   AIConversationClientDTO,
   AIProviderConfigClientDTO,
   ConversationListRes,
-  CreateAIProviderConfigReq,
   CreateConversationReq,
   ExpandKnowledgeReq,
   ExpandKnowledgeRes,
@@ -65,7 +64,6 @@ export interface IAIProviderConfigApiClient {
   probeProviderConnection(request: ProbeAIProviderConnectionReq): Promise<Result<ProbeAIProviderConnectionRes>>;
   testProviderOnboardingModel(request: TestAIProviderOnboardingModelReq): Promise<Result<TestAIProviderOnboardingModelRes>>;
   commitProviderOnboarding(request: CommitAIProviderOnboardingReq): Promise<Result<AIProviderConfigClientDTO>>;
-  createProvider(request: CreateAIProviderConfigReq): Promise<Result<AIProviderConfigClientDTO>>;
   getProviders(): Promise<Result<AIProviderConfigClientDTO[]>>;
   getProviderById(id: string): Promise<Result<AIProviderConfigClientDTO>>;
   updateProvider(

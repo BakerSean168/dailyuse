@@ -134,7 +134,6 @@ export function createAIApiModule(options: AIApiModuleOptions): AIApiModuleDef {
           probeProviderConnection: handlers.probeProviderConnection,
           testProviderOnboardingModel: handlers.testProviderOnboardingModel,
           commitProviderOnboarding: handlers.commitProviderOnboarding,
-          createProvider: handlers.createProvider,
           updateProvider: handlers.updateProvider,
           listProviders: handlers.listProviders,
           getProvider: handlers.getProvider,

@@ -199,12 +199,6 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
           ),
         );
         installed.push(AIChannels.PROVIDER_ONBOARDING_COMMIT);
-        ipcMain.handle(AIChannels.PROVIDER_CREATE, async (_, dto) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            aiModule.api.createProvider(dto, requestContext),
-          ),
-        );
-        installed.push(AIChannels.PROVIDER_CREATE);
         ipcMain.handle(AIChannels.PROVIDER_LIST, async () =>
           withAuthenticatedValue(ctx, async (requestContext) => {
             const result = await aiModule.api.listProviders(requestContext);

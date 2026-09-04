@@ -16,7 +16,6 @@ import type {
   AIConversationClientDTO,
   AIProviderConfigClientDTO,
   ConversationListRes,
-  CreateAIProviderConfigReq,
   CreateConversationReq,
   ExpandKnowledgeReq,
   ExpandKnowledgeRes,
@@ -60,7 +59,6 @@ export interface AIClientPort {
   testProviderOnboardingModel(request: TestAIProviderOnboardingModelReq): Promise<Result<TestAIProviderOnboardingModelRes>>;
   commitProviderOnboarding(request: CommitAIProviderOnboardingReq): Promise<Result<AIProviderConfigClientDTO>>;
 
-  createProvider(request: CreateAIProviderConfigReq): Promise<Result<AIProviderConfigClientDTO>>;
   updateProvider(
     id: string,
     request: UpdateAIProviderConfigReq,
@@ -112,7 +110,6 @@ function createProductClient(adapters: ProductAdapters): AIClientPort {
     testProviderOnboardingModel: (request) => adapters.providerConfig.testProviderOnboardingModel(request),
     commitProviderOnboarding: (request) => adapters.providerConfig.commitProviderOnboarding(request),
 
-    createProvider: (request) => adapters.providerConfig.createProvider(request),
     updateProvider: (id, request) => adapters.providerConfig.updateProvider(id, request),
     listProviders: () => adapters.providerConfig.getProviders(),
     getProvider: (id) => adapters.providerConfig.getProviderById(id),

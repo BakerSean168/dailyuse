@@ -25,11 +25,13 @@ export type AIProviderCatalogEntryDTO = z.infer<typeof AIProviderCatalogEntrySch
 export const ListAIProviderCatalogResSchema = z.array(AIProviderCatalogEntrySchema);
 export type ListAIProviderCatalogRes = z.infer<typeof ListAIProviderCatalogResSchema>;
 
-export const ProbeAIProviderConnectionSchema = z.object({
-  catalogId: AIProviderCatalogIdSchema,
-  baseUrl: z.string().trim().url().optional(),
-  apiKey: z.string().trim().min(1).max(4096),
-});
+export const ProbeAIProviderConnectionSchema = z
+  .object({
+    catalogId: AIProviderCatalogIdSchema,
+    baseUrl: z.string().trim().url().optional(),
+    apiKey: z.string().trim().min(1).max(4096),
+  })
+  .strict();
 export type ProbeAIProviderConnectionReq = z.infer<typeof ProbeAIProviderConnectionSchema>;
 
 export const AIProviderCredentialStatusSchema = z.enum(['valid', 'requires_model_test']);
@@ -50,10 +52,12 @@ export const ProbeAIProviderConnectionResSchema = z.object({
 });
 export type ProbeAIProviderConnectionRes = z.infer<typeof ProbeAIProviderConnectionResSchema>;
 
-export const TestAIProviderOnboardingModelSchema = z.object({
-  onboardingId: z.string().min(16),
-  modelId: z.string().trim().min(1).max(200),
-});
+export const TestAIProviderOnboardingModelSchema = z
+  .object({
+    onboardingId: z.string().min(16),
+    modelId: z.string().trim().min(1).max(200),
+  })
+  .strict();
 export type TestAIProviderOnboardingModelReq = z.infer<typeof TestAIProviderOnboardingModelSchema>;
 
 export const TestAIProviderOnboardingModelResSchema = z.object({
@@ -63,10 +67,12 @@ export const TestAIProviderOnboardingModelResSchema = z.object({
 });
 export type TestAIProviderOnboardingModelRes = z.infer<typeof TestAIProviderOnboardingModelResSchema>;
 
-export const CommitAIProviderOnboardingSchema = z.object({
-  onboardingId: z.string().min(16),
-  name: z.string().trim().min(1).max(100),
-  defaultModelId: z.string().trim().min(1).max(200),
-  isDefault: z.boolean().default(false).optional(),
-});
+export const CommitAIProviderOnboardingSchema = z
+  .object({
+    onboardingId: z.string().min(16),
+    name: z.string().trim().min(1).max(100),
+    defaultModelId: z.string().trim().min(1).max(200),
+    isDefault: z.boolean().default(false).optional(),
+  })
+  .strict();
 export type CommitAIProviderOnboardingReq = z.infer<typeof CommitAIProviderOnboardingSchema>;

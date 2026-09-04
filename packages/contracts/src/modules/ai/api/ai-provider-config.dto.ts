@@ -7,25 +7,16 @@ import { ListAIProviderConfigsResSchema } from './response-schemas';
 
 export const OpenAICompatibleProviderType = 'openai_compatible' as const;
 
-// Residual 683: create request owns the provider base body (no private base schema name dual).
-export const CreateAIProviderConfigSchema = z.object({
-  name: z.string().trim().min(1).max(100),
-  baseUrl: z.string().trim().url(),
-  apiKey: z.string().trim().min(1),
-  model: z.string().trim().min(1).max(120),
-  isDefault: z.boolean().default(false).optional(),
-});
-export type CreateAIProviderConfigReq = z.infer<typeof CreateAIProviderConfigSchema>;
-export type CreateAIProviderConfigRes = AIProviderConfigClientDTO;
-
-export const UpdateAIProviderConfigSchema = z.object({
-  name: z.string().trim().min(1).max(100).optional(),
-  baseUrl: z.string().trim().url().optional(),
-  apiKey: z.string().trim().min(1).optional(),
-  model: z.string().trim().min(1).max(120).optional(),
-  isDefault: z.boolean().optional(),
-  isActive: z.boolean().optional(),
-});
+export const UpdateAIProviderConfigSchema = z
+  .object({
+    name: z.string().trim().min(1).max(100).optional(),
+    isDefault: z.boolean().optional(),
+    isActive: z.boolean().optional(),
+  })
+  .strict()
+  .refine((value) => Object.values(value).some((entry) => entry !== undefined), {
+    message: 'At least one mutable provider metadata field is required',
+  });
 export type UpdateAIProviderConfigReq = z.infer<typeof UpdateAIProviderConfigSchema>;
 export type UpdateAIProviderConfigRes = AIProviderConfigClientDTO;
 
@@ -53,25 +44,10 @@ export type RefreshAIProviderModelsRes = z.infer<typeof AIProviderModelCatalogSn
 
 export const TestAIProviderSchema = z
   .object({
-    providerId: brandedId<AiProviderConfigId>().optional(),
-    baseUrl: z.string().trim().url().optional(),
-    apiKey: z.string().trim().min(1).optional(),
-    model: z.string().trim().min(1).max(120).optional(),
-    testPrompt: z.string().trim().min(1).default('Hello, this is a test.').optional(),
+    providerId: brandedId<AiProviderConfigId>(),
+    testPrompt: z.string().trim().min(1).max(500).optional(),
   })
-  .refine(
-    (value) => {
-      if (value.providerId) {
-        return true;
-      }
-
-      return Boolean(value.baseUrl && value.apiKey && value.model);
-    },
-    {
-      message: 'Either providerId or baseUrl/apiKey/model is required',
-      path: ['providerId'],
-    },
-  );
+  .strict();
 export type TestAIProviderReq = z.infer<typeof TestAIProviderSchema>;
 export type TestAIProviderRes = TestAIProviderResultDTO;
 

@@ -6,8 +6,6 @@ import type {
   ConversationListRes,
   UpdateConversationReq,
   UpdateConversationRes,
-  CreateAIProviderConfigReq,
-  CreateAIProviderConfigRes,
   UpdateAIProviderConfigReq,
   UpdateAIProviderConfigRes,
   TestAIProviderReq,
@@ -58,11 +56,7 @@ export interface AIApplicationPort {
     cx: ExecutionContext,
   ): Promise<Result<AIProviderConfigClientDTO>>;
 
-  // Saved provider config / legacy compatibility
-  createProvider(
-    req: CreateAIProviderConfigReq,
-    cx: ExecutionContext,
-  ): Promise<Result<CreateAIProviderConfigRes>>;
+  // Saved provider operations. Secrets/endpoints are changed only through V2 flows.
   updateProvider(
     id: string,
     req: UpdateAIProviderConfigReq,

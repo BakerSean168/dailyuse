@@ -2,7 +2,6 @@ import { computed, ref } from 'vue';
 import type {
   AICapabilities,
   AIProviderConfigClientDTO,
-  CreateAIProviderConfigReq,
   ExpandKnowledgeReq,
   TestAIProviderReq,
   TestAIProviderRes,
@@ -75,12 +74,6 @@ export function useAI() {
     return provider;
   }
 
-  async function createProvider(request: CreateAIProviderConfigReq) {
-    const provider = unwrap(await client.createProvider(request));
-    await loadProviders();
-    return provider;
-  }
-
   async function updateProvider(id: string, request: UpdateAIProviderConfigReq) {
     const provider = unwrap(await client.updateProvider(id, request));
     await loadProviders();
@@ -123,7 +116,6 @@ export function useAI() {
     probeProviderConnection,
     testProviderOnboardingModel,
     commitProviderOnboarding,
-    createProvider,
     updateProvider,
     deleteProvider,
     setDefaultProvider,

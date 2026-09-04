@@ -2,7 +2,6 @@ import type { IAIProviderConfigApiClient, IResultIpcClient } from '../types';
 import { AIChannels } from '@memoflow/contracts/electron';
 import type {
   AIProviderConfigClientDTO,
-  CreateAIProviderConfigReq,
   ListAIProviderConfigsRes,
   SetDefaultAIProviderReq,
   TestAIProviderReq,
@@ -54,12 +53,6 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
       AIChannels.PROVIDER_ONBOARDING_COMMIT,
       request,
     );
-  }
-
-  async createProvider(
-    request: CreateAIProviderConfigReq,
-  ): Promise<Result<AIProviderConfigClientDTO>> {
-    return this.ipcClient.invoke<AIProviderConfigClientDTO>(AIChannels.PROVIDER_CREATE, request);
   }
 
   async getProviders(): Promise<Result<AIProviderConfigClientDTO[]>> {

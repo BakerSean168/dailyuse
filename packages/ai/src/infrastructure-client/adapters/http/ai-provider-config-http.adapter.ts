@@ -1,7 +1,6 @@
 import type { IAIProviderConfigApiClient, IResultHttpClient } from '../types';
 import type {
   AIProviderConfigClientDTO,
-  CreateAIProviderConfigReq,
   ListAIProviderConfigsRes,
   SetDefaultAIProviderReq,
   TestAIProviderReq,
@@ -51,12 +50,6 @@ export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
 
   async commitProviderOnboarding(
     request: CommitAIProviderOnboardingReq,
-  ): Promise<Result<AIProviderConfigClientDTO>> {
-    return this.httpClient.post<AIProviderConfigClientDTO>(this.baseUrl, request);
-  }
-
-  async createProvider(
-    request: CreateAIProviderConfigReq,
   ): Promise<Result<AIProviderConfigClientDTO>> {
     return this.httpClient.post<AIProviderConfigClientDTO>(this.baseUrl, request);
   }

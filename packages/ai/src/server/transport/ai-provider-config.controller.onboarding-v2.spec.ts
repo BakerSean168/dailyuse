@@ -11,7 +11,6 @@ function service() {
     probeProviderConnection: vi.fn(async () => ok({} as never)),
     testProviderOnboardingModel: vi.fn(async () => ok({} as never)),
     commitProviderOnboarding: vi.fn(async () => ok({} as never)),
-    createProvider: vi.fn(async () => ok({} as never)),
     updateProvider: vi.fn(async () => ok({} as never)),
     listProviders: vi.fn(async () => ok([])),
     getProvider: vi.fn(async () => ok({} as never)),
@@ -36,10 +35,9 @@ describe('AIProviderConfigController onboarding V2 dispatch', () => {
     await controller.create(request, cx);
 
     expect(fake.commitProviderOnboarding).toHaveBeenCalledWith(request, cx);
-    expect(fake.createProvider).not.toHaveBeenCalled();
   });
 
-  it('rejects an invalid onboarding payload instead of accidentally dispatching it to legacy create', async () => {
+  it('rejects an invalid onboarding payload without any fallback create path', async () => {
     const fake = service();
     const controller = new AIProviderConfigController(fake);
 
@@ -50,6 +48,5 @@ describe('AIProviderConfigController onboarding V2 dispatch', () => {
 
     expect(result).toMatchObject({ ok: false, error: { code: 'VALIDATION_ERROR' } });
     expect(fake.commitProviderOnboarding).not.toHaveBeenCalled();
-    expect(fake.createProvider).not.toHaveBeenCalled();
   });
 });

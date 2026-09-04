@@ -13,9 +13,9 @@ describe('AI Provider onboarding V2 HTTP route surface', () => {
     expect(routes).toContain("path: '/provider-connections/test-model'");
   });
 
-  it('makes POST /providers V2-first while retaining the temporary legacy compatibility schema', () => {
+  it('makes POST /providers V2-only with no raw-secret legacy create schema', () => {
     expect(providerRoutes).toContain('CommitAIProviderOnboardingSchema');
-    expect(providerRoutes).toContain('CreateAIProviderConfigSchema');
-    expect(providerRoutes).toContain('z.union([CommitAIProviderOnboardingSchema, CreateAIProviderConfigSchema])');
+    expect(providerRoutes).not.toContain('CreateAIProviderConfigSchema');
+    expect(providerRoutes).not.toContain('z.union(');
   });
 });

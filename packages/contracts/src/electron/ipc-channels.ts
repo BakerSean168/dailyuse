@@ -146,7 +146,6 @@ export const AIChannels = {
   PROVIDER_ONBOARDING_PROBE: 'ai:provider:onboarding:probe',
   PROVIDER_ONBOARDING_TEST_MODEL: 'ai:provider:onboarding:test-model',
   PROVIDER_ONBOARDING_COMMIT: 'ai:provider:onboarding:commit',
-  PROVIDER_CREATE: 'ai:provider:create',
   PROVIDER_LIST: 'ai:provider:list',
   PROVIDER_GET: 'ai:provider:get',
   PROVIDER_UPDATE: 'ai:provider:update',

@@ -1,12 +1,9 @@
 import { fail, ok, type Result } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
-  CreateAIProviderConfigSchema,
   CommitAIProviderOnboardingSchema,
   ProbeAIProviderConnectionSchema,
   TestAIProviderOnboardingModelSchema,
-  type CreateAIProviderConfigRes,
-  type CreateAIProviderConfigReq,
   TestAIProviderSchema,
   type TestAIProviderReq,
   type TestAIProviderRes,
@@ -39,10 +36,6 @@ interface AIProviderConfigControllerService {
     request: CommitAIProviderOnboardingReq,
     cx: ExecutionContext,
   ): Promise<Result<AIProviderConfigClientDTO>>;
-  createProvider(
-    request: CreateAIProviderConfigReq,
-    cx: ExecutionContext,
-  ): Promise<Result<CreateAIProviderConfigRes>>;
   updateProvider(
     id: string,
     request: UpdateAIProviderConfigReq,
@@ -59,23 +52,19 @@ interface AIProviderConfigControllerService {
 export class AIProviderConfigController {
   constructor(private readonly service: AIProviderConfigControllerService) {}
 
-  async create(input: unknown, cx: ExecutionContext): Promise<Result<CreateAIProviderConfigRes>> {
-    const onboarding = CommitAIProviderOnboardingSchema.safeParse(input);
-    if (onboarding.success) {
-      return this.service.commitProviderOnboarding(onboarding.data, cx);
-    }
-
-    // Temporary compatibility lane for clients that have not migrated to V2 yet.
-    const legacy = CreateAIProviderConfigSchema.safeParse(input);
-    if (!legacy.success) {
+  async create(
+    input: unknown,
+    cx: ExecutionContext,
+  ): Promise<Result<AIProviderConfigClientDTO>> {
+    const parsed = CommitAIProviderOnboardingSchema.safeParse(input);
+    if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',
         message: '参数验证失败',
-        details: formatZodErrors([...onboarding.error.issues, ...legacy.error.issues]),
+        details: formatZodErrors(parsed.error.issues),
       });
     }
-
-    return this.service.createProvider(legacy.data, cx);
+    return this.service.commitProviderOnboarding(parsed.data, cx);
   }
 
   async catalog(): Promise<Result<ListAIProviderCatalogRes>> {
