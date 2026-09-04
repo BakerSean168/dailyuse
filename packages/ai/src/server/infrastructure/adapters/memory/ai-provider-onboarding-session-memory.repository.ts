@@ -15,6 +15,7 @@ export class AIProviderOnboardingSessionMemoryRepository implements IAIProviderO
       identityId: input.identityId,
       catalogId: input.catalogId,
       baseUrl: input.baseUrl,
+      targetProviderId: input.targetProviderId ?? null,
       apiKey: input.apiKey,
       credentialStatus: input.credentialStatus,
       discoveryStatus: input.discoveryStatus,

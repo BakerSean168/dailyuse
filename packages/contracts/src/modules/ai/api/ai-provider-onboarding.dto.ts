@@ -76,3 +76,16 @@ export const CommitAIProviderOnboardingSchema = z
   })
   .strict();
 export type CommitAIProviderOnboardingReq = z.infer<typeof CommitAIProviderOnboardingSchema>;
+
+/** Saved Provider connection replacement reuses probe semantics but binds the
+ * resulting one-time handle to the Provider id from the route/IPC argument. */
+export const ProbeAIProviderReplacementSchema = ProbeAIProviderConnectionSchema;
+export type ProbeAIProviderReplacementReq = z.infer<typeof ProbeAIProviderReplacementSchema>;
+
+export const CommitAIProviderReplacementSchema = z
+  .object({
+    onboardingId: z.string().min(16),
+    defaultModelId: z.string().trim().min(1).max(200),
+  })
+  .strict();
+export type CommitAIProviderReplacementReq = z.infer<typeof CommitAIProviderReplacementSchema>;

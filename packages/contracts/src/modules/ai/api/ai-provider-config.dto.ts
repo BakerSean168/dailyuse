@@ -40,7 +40,7 @@ export const AIProviderModelCatalogSnapshotSchema = z.object({
   models: z.array(AIModelInfoSchema),
   fetchedAt: z.number().int().nonnegative(),
 });
-export type RefreshAIProviderModelsRes = z.infer<typeof AIProviderModelCatalogSnapshotSchema>;
+export type AIProviderModelCatalogSnapshot = z.infer<typeof AIProviderModelCatalogSnapshotSchema>;
 
 export const TestAIProviderSchema = z
   .object({

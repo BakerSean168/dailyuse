@@ -1,6 +1,7 @@
 import {
   AI_PROVIDER_ONBOARDING_EXPIRY_INDEX,
   AI_PROVIDER_ONBOARDING_IDENTITY_EXPIRY_INDEX,
+  AI_PROVIDER_ONBOARDING_TARGET_EXPIRY_INDEX,
   AI_PROVIDER_ONBOARDING_IDENTITY_FK,
   prepareAIProviderOnboardingSessions,
 } from './ai-provider-onboarding-sessions';
@@ -15,8 +16,14 @@ function clientWithTable(tablePresent = true) {
     if (sql.includes(`to_regclass('public.${AI_PROVIDER_ONBOARDING_IDENTITY_EXPIRY_INDEX}')`)) {
       return { rows: [{ regclass: AI_PROVIDER_ONBOARDING_IDENTITY_EXPIRY_INDEX }], rowCount: 1 };
     }
+    if (sql.includes(`to_regclass('public.${AI_PROVIDER_ONBOARDING_TARGET_EXPIRY_INDEX}')`)) {
+      return { rows: [{ regclass: AI_PROVIDER_ONBOARDING_TARGET_EXPIRY_INDEX }], rowCount: 1 };
+    }
     if (sql.includes(`to_regclass('public.${AI_PROVIDER_ONBOARDING_EXPIRY_INDEX}')`)) {
       return { rows: [{ regclass: AI_PROVIDER_ONBOARDING_EXPIRY_INDEX }], rowCount: 1 };
+    }
+    if (sql.includes('information_schema.columns') && sql.includes("target_provider_id")) {
+      return { rows: [{ present: 1 }], rowCount: 1 };
     }
     if (sql.includes('FROM pg_constraint') && sql.includes('LIMIT 1')) {
       return { rows: [{ present: 1 }], rowCount: 1 };
@@ -31,7 +38,9 @@ describe('prepareAIProviderOnboardingSessions', () => {
     const client = clientWithTable(false);
     await expect(prepareAIProviderOnboardingSessions(client)).resolves.toEqual({
       tablePresent: false,
+      targetProviderColumnPresent: false,
       identityExpiryIndexPresent: false,
+      targetExpiryIndexPresent: false,
       expiryIndexPresent: false,
       identityForeignKeyPresent: false,
     });
@@ -42,12 +51,16 @@ describe('prepareAIProviderOnboardingSessions', () => {
     const client = clientWithTable(true);
     await expect(prepareAIProviderOnboardingSessions(client)).resolves.toEqual({
       tablePresent: true,
+      targetProviderColumnPresent: true,
       identityExpiryIndexPresent: true,
+      targetExpiryIndexPresent: true,
       expiryIndexPresent: true,
       identityForeignKeyPresent: true,
     });
     const executed = client.queries.join('\n');
+    expect(executed).toContain('ADD COLUMN IF NOT EXISTS "target_provider_id" TEXT');
     expect(executed).toContain(`CREATE INDEX IF NOT EXISTS "${AI_PROVIDER_ONBOARDING_IDENTITY_EXPIRY_INDEX}"`);
+    expect(executed).toContain(`CREATE INDEX IF NOT EXISTS "${AI_PROVIDER_ONBOARDING_TARGET_EXPIRY_INDEX}"`);
     expect(executed).toContain(`CREATE INDEX IF NOT EXISTS "${AI_PROVIDER_ONBOARDING_EXPIRY_INDEX}"`);
     expect(executed).toContain(`ADD CONSTRAINT "${AI_PROVIDER_ONBOARDING_IDENTITY_FK}"`);
     expect(executed).toContain('ON DELETE CASCADE ON UPDATE CASCADE');

@@ -27,7 +27,11 @@ export class ProbeAIProviderConnectionUseCase {
     },
   ) {}
 
-  async execute(request: ProbeAIProviderConnectionReq, cx: ExecutionContext): Promise<ProbeAIProviderConnectionRes> {
+  async execute(
+    request: ProbeAIProviderConnectionReq,
+    cx: ExecutionContext,
+    options: { targetProviderId?: string | null } = {},
+  ): Promise<ProbeAIProviderConnectionRes> {
     const catalog = getAIProviderCatalogEntry(request.catalogId);
     if (!catalog) throw new AIExecutionError('validation', 'Unknown AI provider catalog entry');
 
@@ -68,6 +72,7 @@ export class ProbeAIProviderConnectionUseCase {
       identityId: cx.identityId,
       catalogId: catalog.id,
       baseUrl,
+      targetProviderId: options.targetProviderId ?? null,
       apiKey: request.apiKey,
       credentialStatus,
       discoveryStatus,

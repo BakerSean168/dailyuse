@@ -241,6 +241,7 @@ exports.Prisma.AiProviderOnboardingSessionScalarFieldEnum = {
   identityId: 'identityId',
   catalogId: 'catalogId',
   baseUrl: 'baseUrl',
+  targetProviderId: 'targetProviderId',
   credentialEncrypted: 'credentialEncrypted',
   credentialStatus: 'credentialStatus',
   discoveryStatus: 'discoveryStatus',

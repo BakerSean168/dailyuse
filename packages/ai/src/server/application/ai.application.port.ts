@@ -27,7 +27,9 @@ import type {
   TestAIProviderOnboardingModelReq,
   TestAIProviderOnboardingModelRes,
   CommitAIProviderOnboardingReq,
-  RefreshAIProviderModelsRes,
+  ProbeAIProviderReplacementReq,
+  CommitAIProviderReplacementReq,
+  AIProviderModelCatalogSnapshot,
 } from '@memoflow/contracts/ai';
 
 /**
@@ -55,6 +57,16 @@ export interface AIApplicationPort {
     req: CommitAIProviderOnboardingReq,
     cx: ExecutionContext,
   ): Promise<Result<AIProviderConfigClientDTO>>;
+  probeProviderReplacement(
+    providerId: string,
+    req: ProbeAIProviderReplacementReq,
+    cx: ExecutionContext,
+  ): Promise<Result<ProbeAIProviderConnectionRes>>;
+  commitProviderReplacement(
+    providerId: string,
+    req: CommitAIProviderReplacementReq,
+    cx: ExecutionContext,
+  ): Promise<Result<AIProviderConfigClientDTO>>;
 
   // Saved provider operations. Secrets/endpoints are changed only through V2 flows.
   updateProvider(
@@ -70,7 +82,7 @@ export interface AIApplicationPort {
   refreshProviderModels(
     providerId: string,
     cx: ExecutionContext,
-  ): Promise<Result<RefreshAIProviderModelsRes>>;
+  ): Promise<Result<AIProviderModelCatalogSnapshot>>;
 
   // Conversation product shell. Message history/execution is Mastra-owned.
   createConversation(cx: ExecutionContext, name?: string): Promise<Result<AIConversationClientDTO>>;

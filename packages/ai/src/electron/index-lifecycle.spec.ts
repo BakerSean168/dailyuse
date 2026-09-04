@@ -22,6 +22,8 @@ const CURRENT_CHANNELS = [
   AIChannels.PROVIDER_ONBOARDING_PROBE,
   AIChannels.PROVIDER_ONBOARDING_TEST_MODEL,
   AIChannels.PROVIDER_ONBOARDING_COMMIT,
+  AIChannels.PROVIDER_REPLACEMENT_PROBE,
+  AIChannels.PROVIDER_REPLACEMENT_COMMIT,
   AIChannels.PROVIDER_LIST,
   AIChannels.PROVIDER_GET,
   AIChannels.PROVIDER_UPDATE,
@@ -58,6 +60,8 @@ function createFakeInstance() {
     probeProviderConnection: vi.fn(async () => ok(null as never)),
     testProviderOnboardingModel: vi.fn(async () => ok(null as never)),
     commitProviderOnboarding: vi.fn(async () => ok(null as never)),
+    probeProviderReplacement: vi.fn(async () => ok(null as never)),
+    commitProviderReplacement: vi.fn(async () => ok(null as never)),
     listProviders: vi.fn(async () => ok([] as never)),
     getProvider: vi.fn(async () => ok(null as never)),
     updateProvider: vi.fn(async () => ok(null as never)),
@@ -145,6 +149,33 @@ describe('createAIElectronModule lifecycle', () => {
     expect(result).toMatchObject({ ok: true });
     expect(fake.api.probeProviderConnection).toHaveBeenCalledWith(
       request,
+      expect.objectContaining({ identityId: 'identity-1' }),
+    );
+  });
+
+  it('routes Provider replacement IPC through the identity-bound one-time replacement contract', async () => {
+    await moduleDef.register(createFakeContext());
+    const probePayload = {
+      providerId: 'provider-1',
+      request: { catalogId: 'custom', baseUrl: 'https://provider.example/v1', apiKey: 'sk-new' },
+    };
+    const probeHandler = mocks.handlers.get(AIChannels.PROVIDER_REPLACEMENT_PROBE)!;
+    expect(await probeHandler(undefined, probePayload)).toMatchObject({ ok: true });
+    expect(fake.api.probeProviderReplacement).toHaveBeenCalledWith(
+      'provider-1',
+      probePayload.request,
+      expect.objectContaining({ identityId: 'identity-1' }),
+    );
+
+    const commitPayload = {
+      providerId: 'provider-1',
+      request: { onboardingId: 'onboarding-replacement-123456', defaultModelId: 'model-1' },
+    };
+    const commitHandler = mocks.handlers.get(AIChannels.PROVIDER_REPLACEMENT_COMMIT)!;
+    expect(await commitHandler(undefined, commitPayload)).toMatchObject({ ok: true });
+    expect(fake.api.commitProviderReplacement).toHaveBeenCalledWith(
+      'provider-1',
+      commitPayload.request,
       expect.objectContaining({ identityId: 'identity-1' }),
     );
   });

@@ -13,7 +13,9 @@ import type {
   TestAIProviderOnboardingModelReq,
   TestAIProviderOnboardingModelRes,
   CommitAIProviderOnboardingReq,
-  RefreshAIProviderModelsRes,
+  ProbeAIProviderReplacementReq,
+  CommitAIProviderReplacementReq,
+  AIProviderModelCatalogSnapshot,
 } from '@memoflow/contracts/ai';
 import { map, type Result } from '@memoflow/contracts/result';
 
@@ -55,6 +57,26 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
     );
   }
 
+  async probeProviderReplacement(
+    id: string,
+    request: ProbeAIProviderReplacementReq,
+  ): Promise<Result<ProbeAIProviderConnectionRes>> {
+    return this.ipcClient.invoke<ProbeAIProviderConnectionRes>(
+      AIChannels.PROVIDER_REPLACEMENT_PROBE,
+      { providerId: id, request },
+    );
+  }
+
+  async commitProviderReplacement(
+    id: string,
+    request: CommitAIProviderReplacementReq,
+  ): Promise<Result<AIProviderConfigClientDTO>> {
+    return this.ipcClient.invoke<AIProviderConfigClientDTO>(
+      AIChannels.PROVIDER_REPLACEMENT_COMMIT,
+      { providerId: id, request },
+    );
+  }
+
   async getProviders(): Promise<Result<AIProviderConfigClientDTO[]>> {
     const result = await this.ipcClient.invoke<ListAIProviderConfigsRes>(AIChannels.PROVIDER_LIST);
     return map(result, (envelope) => envelope.data);
@@ -86,8 +108,8 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
     return this.ipcClient.invoke<void>(AIChannels.PROVIDER_SET_DEFAULT, request);
   }
 
-  async refreshProviderModels(id: string): Promise<Result<RefreshAIProviderModelsRes>> {
-    return this.ipcClient.invoke<RefreshAIProviderModelsRes>(
+  async refreshProviderModels(id: string): Promise<Result<AIProviderModelCatalogSnapshot>> {
+    return this.ipcClient.invoke<AIProviderModelCatalogSnapshot>(
       AIChannels.PROVIDER_REFRESH_MODELS,
       id,
     );

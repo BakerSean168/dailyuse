@@ -37,7 +37,9 @@ import type {
   TestAIProviderOnboardingModelReq,
   TestAIProviderOnboardingModelRes,
   CommitAIProviderOnboardingReq,
-  RefreshAIProviderModelsRes,
+  ProbeAIProviderReplacementReq,
+  CommitAIProviderReplacementReq,
+  AIProviderModelCatalogSnapshot,
 } from '@memoflow/contracts/ai';
 import {
   createAIHttpAdapters,
@@ -58,6 +60,14 @@ export interface AIClientPort {
   probeProviderConnection(request: ProbeAIProviderConnectionReq): Promise<Result<ProbeAIProviderConnectionRes>>;
   testProviderOnboardingModel(request: TestAIProviderOnboardingModelReq): Promise<Result<TestAIProviderOnboardingModelRes>>;
   commitProviderOnboarding(request: CommitAIProviderOnboardingReq): Promise<Result<AIProviderConfigClientDTO>>;
+  probeProviderReplacement(
+    id: string,
+    request: ProbeAIProviderReplacementReq,
+  ): Promise<Result<ProbeAIProviderConnectionRes>>;
+  commitProviderReplacement(
+    id: string,
+    request: CommitAIProviderReplacementReq,
+  ): Promise<Result<AIProviderConfigClientDTO>>;
 
   updateProvider(
     id: string,
@@ -68,7 +78,7 @@ export interface AIClientPort {
   deleteProvider(id: string): Promise<Result<void>>;
   testProvider(request: TestAIProviderReq): Promise<Result<TestAIProviderRes>>;
   setDefaultProvider(providerId: string): Promise<Result<void>>;
-  refreshProviderModels(id: string): Promise<Result<RefreshAIProviderModelsRes>>;
+  refreshProviderModels(id: string): Promise<Result<AIProviderModelCatalogSnapshot>>;
 
   createConversation(request: CreateConversationReq): Promise<Result<AIConversationClientDTO>>;
   updateConversation(
@@ -109,6 +119,10 @@ function createProductClient(adapters: ProductAdapters): AIClientPort {
     probeProviderConnection: (request) => adapters.providerConfig.probeProviderConnection(request),
     testProviderOnboardingModel: (request) => adapters.providerConfig.testProviderOnboardingModel(request),
     commitProviderOnboarding: (request) => adapters.providerConfig.commitProviderOnboarding(request),
+    probeProviderReplacement: (id, request) =>
+      adapters.providerConfig.probeProviderReplacement(id, request),
+    commitProviderReplacement: (id, request) =>
+      adapters.providerConfig.commitProviderReplacement(id, request),
 
     updateProvider: (id, request) => adapters.providerConfig.updateProvider(id, request),
     listProviders: () => adapters.providerConfig.getProviders(),

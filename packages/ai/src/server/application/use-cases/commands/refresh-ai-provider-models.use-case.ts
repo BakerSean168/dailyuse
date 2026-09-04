@@ -1,7 +1,7 @@
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
-import type { RefreshAIProviderModelsRes } from '@memoflow/contracts/ai';
+import type { AIProviderModelCatalogSnapshot } from '@memoflow/contracts/ai';
 import { createLogger } from '@memoflow/utils/logger';
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import type { IAIProviderModelCatalogPort } from '../../ports';
@@ -23,7 +23,7 @@ export class RefreshAIProviderModelsUseCase {
   async execute(
     providerId: string,
     cx: ExecutionContext,
-  ): Promise<Result<RefreshAIProviderModelsRes>> {
+  ): Promise<Result<AIProviderModelCatalogSnapshot>> {
     const provider = await this.providerConfigRepository.findByIdForIdentity(
       cx.identityId,
       providerId,

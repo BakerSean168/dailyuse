@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS "ai_provider_onboarding_sessions" (
     "identity_id" TEXT NOT NULL,
     "catalog_id" TEXT NOT NULL,
     "base_url" TEXT NOT NULL,
+    "target_provider_id" TEXT,
     "credential_encrypted" TEXT NOT NULL,
     "credential_status" TEXT NOT NULL,
     "discovery_status" TEXT NOT NULL,
@@ -23,6 +24,9 @@ CREATE TABLE IF NOT EXISTS "ai_provider_onboarding_sessions" (
 
 CREATE INDEX IF NOT EXISTS "ai_provider_onboarding_sessions_identity_id_expires_at_idx"
 ON "ai_provider_onboarding_sessions"("identity_id", "expires_at");
+
+CREATE INDEX IF NOT EXISTS "ai_provider_onboarding_sessions_identity_id_target_provider_id_expires_at_idx"
+ON "ai_provider_onboarding_sessions"("identity_id", "target_provider_id", "expires_at");
 
 CREATE INDEX IF NOT EXISTS "ai_provider_onboarding_sessions_expires_at_idx"
 ON "ai_provider_onboarding_sessions"("expires_at");

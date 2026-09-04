@@ -199,6 +199,26 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
           ),
         );
         installed.push(AIChannels.PROVIDER_ONBOARDING_COMMIT);
+        ipcMain.handle(AIChannels.PROVIDER_REPLACEMENT_PROBE, async (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            aiModule.api.probeProviderReplacement(
+              String(payload.providerId),
+              payload.request,
+              requestContext,
+            ),
+          ),
+        );
+        installed.push(AIChannels.PROVIDER_REPLACEMENT_PROBE);
+        ipcMain.handle(AIChannels.PROVIDER_REPLACEMENT_COMMIT, async (_, payload) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            aiModule.api.commitProviderReplacement(
+              String(payload.providerId),
+              payload.request,
+              requestContext,
+            ),
+          ),
+        );
+        installed.push(AIChannels.PROVIDER_REPLACEMENT_COMMIT);
         ipcMain.handle(AIChannels.PROVIDER_LIST, async () =>
           withAuthenticatedValue(ctx, async (requestContext) => {
             const result = await aiModule.api.listProviders(requestContext);

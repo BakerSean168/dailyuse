@@ -30,7 +30,7 @@ describe('CommitAIProviderOnboardingUseCase', () => {
   it('persists only after an explicit discovered model selection', async () => {
     const sessions = await sessionFixture();
     const commit = vi.fn(async () => 'COMMITTED' as const);
-    const useCase = new CommitAIProviderOnboardingUseCase(sessions, { commit }, () => 2_000);
+    const useCase = new CommitAIProviderOnboardingUseCase(sessions, { commit, replace: vi.fn() }, () => 2_000);
 
     const result = await useCase.execute(
       {
@@ -59,7 +59,7 @@ describe('CommitAIProviderOnboardingUseCase', () => {
   it('requires a successful model probe when discovery was unsupported', async () => {
     const sessions = await sessionFixture({ unsupported: true });
     const commit = vi.fn(async () => 'COMMITTED' as const);
-    const useCase = new CommitAIProviderOnboardingUseCase(sessions, { commit }, () => 2_000);
+    const useCase = new CommitAIProviderOnboardingUseCase(sessions, { commit, replace: vi.fn() }, () => 2_000);
 
     const rejected = await useCase.execute(
       { onboardingId: 'onboarding_0123456789abcdef', name: 'Custom', defaultModelId: 'manual-model' },
@@ -85,7 +85,7 @@ describe('CommitAIProviderOnboardingUseCase', () => {
     const sessions = await sessionFixture();
     const useCase = new CommitAIProviderOnboardingUseCase(
       sessions,
-      { commit: vi.fn(async () => 'SESSION_UNAVAILABLE' as const) },
+      { commit: vi.fn(async () => 'SESSION_UNAVAILABLE' as const), replace: vi.fn() },
       () => 2_000,
     );
     const result = await useCase.execute(
@@ -94,4 +94,39 @@ describe('CommitAIProviderOnboardingUseCase', () => {
     );
     expect(result).toMatchObject({ ok: false, error: { code: 'CONFLICT' } });
   });
+
+  it('refuses a replacement-bound handle even when its model is valid', async () => {
+    const sessions = new AIProviderOnboardingSessionMemoryRepository();
+    await sessions.create({
+      id: 'onboarding_replacement_1234567890',
+      identityId: 'identity-1',
+      catalogId: 'custom',
+      baseUrl: 'https://llm.example/v1',
+      targetProviderId: 'provider-existing',
+      apiKey: 'secret',
+      credentialStatus: 'valid',
+      discoveryStatus: 'available',
+      models: [{ id: 'model-a', name: 'Model A' }],
+      expiresAt: 10_000,
+      now: 1_000,
+    });
+    const commit = vi.fn();
+    const useCase = new CommitAIProviderOnboardingUseCase(
+      sessions,
+      { commit, replace: vi.fn() },
+      () => 2_000,
+    );
+
+    const result = await useCase.execute(
+      {
+        onboardingId: 'onboarding_replacement_1234567890',
+        name: 'Must Not Create',
+        defaultModelId: 'model-a',
+      },
+      cx as never,
+    );
+    expect(result).toMatchObject({ ok: false, error: { code: 'CONFLICT' } });
+    expect(commit).not.toHaveBeenCalled();
+  });
+
 });

@@ -35,3 +35,5 @@ export * from './reindex-knowledge.use-case';
 
 export * from './test-ai-provider-onboarding-model.use-case';
 export * from './commit-ai-provider-onboarding.use-case';
+export * from './probe-ai-provider-replacement.use-case';
+export * from './commit-ai-provider-replacement.use-case';

@@ -921,6 +921,7 @@ const ai_provider_onboarding_sessions = new Table(
     identity_id: column.text,
     catalog_id: column.text,
     base_url: column.text,
+    target_provider_id: column.text,
     credential_encrypted: column.text,
     credential_status: column.text,
     discovery_status: column.text,

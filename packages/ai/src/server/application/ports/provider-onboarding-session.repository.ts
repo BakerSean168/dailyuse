@@ -12,6 +12,8 @@ export interface AIProviderOnboardingSessionRecord {
   readonly identityId: string;
   readonly catalogId: AIProviderCatalogId;
   readonly baseUrl: string;
+  /** Null for create onboarding; set for credential/endpoint replacement. */
+  readonly targetProviderId: string | null;
   /** Server-only plaintext after repository decryption. Never expose to transport DTOs. */
   readonly apiKey: string;
   readonly credentialStatus: AIProviderOnboardingCredentialStatus;
@@ -29,6 +31,7 @@ export interface CreateAIProviderOnboardingSessionInput {
   readonly identityId: string;
   readonly catalogId: AIProviderCatalogId;
   readonly baseUrl: string;
+  readonly targetProviderId?: string | null;
   readonly apiKey: string;
   readonly credentialStatus: AIProviderOnboardingCredentialStatus;
   readonly discoveryStatus: AIProviderOnboardingDiscoveryStatus;

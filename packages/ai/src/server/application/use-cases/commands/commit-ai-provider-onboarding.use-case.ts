@@ -28,6 +28,9 @@ export class CommitAIProviderOnboardingUseCase {
     const now = this.now();
     const session = await this.sessionRepository.findUsable(cx.identityId, request.onboardingId, now);
     if (!session) return error('NOT_FOUND', 'Provider onboarding session expired or was already used');
+    if (session.targetProviderId !== null) {
+      return error('CONFLICT', 'This onboarding handle is bound to an existing Provider replacement');
+    }
     if (session.credentialStatus !== 'valid') {
       return error('VALIDATION_ERROR', 'Test a model successfully before saving this provider');
     }

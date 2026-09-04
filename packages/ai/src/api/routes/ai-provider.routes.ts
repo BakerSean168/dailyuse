@@ -8,6 +8,9 @@ import {
 } from '@memoflow/utils/result';
 import {
   CommitAIProviderOnboardingSchema,
+  ProbeAIProviderReplacementSchema,
+  CommitAIProviderReplacementSchema,
+  ProbeAIProviderConnectionResSchema,
   UpdateAIProviderConfigSchema,
   TestAIProviderSchema,
   AIProviderConfigClientDTOSchema,
@@ -141,6 +144,48 @@ export function registerAIProviderRoutes(
     },
     [auth],
     (req, ctx) => controller.test(req.body, ctx),
+  );
+
+  // POST /:id/replacement/probe — Validate a replacement connection without mutating Provider
+  r.route(
+    {
+      method: 'post',
+      path: '/:id/replacement/probe',
+      summary: '验证已有 AI Provider 的替换连接',
+      request: {
+        params: z.object({ id: brandedId<AiProviderConfigId>() }),
+        body: { content: { 'application/json': { schema: ProbeAIProviderReplacementSchema } } },
+      },
+      responses: {
+        200: successResponse(ProbeAIProviderConnectionResSchema, '验证成功'),
+        400: errorResponse('参数或 endpoint 不可用'),
+        404: errorResponse('Provider 未找到'),
+        503: errorResponse('Provider unavailable'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.probeReplacement(req.params!.id, req.body, ctx),
+  );
+
+  // POST /:id/replacement/commit — Atomically replace endpoint/secret/default model
+  r.route(
+    {
+      method: 'post',
+      path: '/:id/replacement/commit',
+      summary: '提交已有 AI Provider 的已验证替换连接',
+      request: {
+        params: z.object({ id: brandedId<AiProviderConfigId>() }),
+        body: { content: { 'application/json': { schema: CommitAIProviderReplacementSchema } } },
+      },
+      responses: {
+        200: successResponse(AIProviderConfigClientDTOSchema, '替换成功'),
+        400: errorResponse('参数错误'),
+        404: errorResponse('Provider 未找到'),
+        409: errorResponse('Provider 或 onboarding session 已发生并发变化'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.commitReplacement(req.params!.id, req.body, ctx),
   );
 
   // POST /:id/set-default — Set default provider

@@ -15,6 +15,7 @@ interface PowerSyncProviderOnboardingRow {
   identity_id: string;
   catalog_id: string;
   base_url: string;
+  target_provider_id: string | null;
   credential_encrypted: string;
   credential_status: string;
   discovery_status: string;
@@ -45,15 +46,16 @@ export class PowerSyncAIProviderOnboardingSessionRepository
   async create(input: CreateAIProviderOnboardingSessionInput): Promise<void> {
     await this.db.execute(
       `INSERT INTO ai_provider_onboarding_sessions (
-        id, identity_id, catalog_id, base_url, credential_encrypted,
+        id, identity_id, catalog_id, base_url, target_provider_id, credential_encrypted,
         credential_status, discovery_status, models_json,
         verified_model_ids_json, expires_at, consumed_at, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)`,
       [
         input.id,
         input.identityId,
         input.catalogId,
         input.baseUrl,
+        input.targetProviderId ?? null,
         this.secretCipher.encrypt(input.apiKey),
         input.credentialStatus,
         input.discoveryStatus,
@@ -132,6 +134,7 @@ export class PowerSyncAIProviderOnboardingSessionRepository
       identityId: row.identity_id,
       catalogId: row.catalog_id as AIProviderCatalogId,
       baseUrl: row.base_url,
+      targetProviderId: row.target_provider_id,
       apiKey: this.secretCipher.decrypt(row.credential_encrypted),
       credentialStatus: row.credential_status as AIProviderOnboardingCredentialStatus,
       discoveryStatus: row.discovery_status as AIProviderOnboardingDiscoveryStatus,

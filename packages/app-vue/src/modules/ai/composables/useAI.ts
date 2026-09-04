@@ -10,6 +10,8 @@ import type {
   ProbeAIProviderConnectionReq,
   TestAIProviderOnboardingModelReq,
   CommitAIProviderOnboardingReq,
+  ProbeAIProviderReplacementReq,
+  CommitAIProviderReplacementReq,
 } from '@memoflow/contracts/ai';
 import { unwrap } from '@memoflow/contracts/result';
 import { AI_CLIENT_KEY } from '../../../di/keys';
@@ -74,6 +76,22 @@ export function useAI() {
     return provider;
   }
 
+  async function probeProviderReplacement(
+    providerId: string,
+    request: ProbeAIProviderReplacementReq,
+  ) {
+    return unwrap(await client.probeProviderReplacement(providerId, request));
+  }
+
+  async function commitProviderReplacement(
+    providerId: string,
+    request: CommitAIProviderReplacementReq,
+  ) {
+    const provider = unwrap(await client.commitProviderReplacement(providerId, request));
+    await loadProviders();
+    return provider;
+  }
+
   async function updateProvider(id: string, request: UpdateAIProviderConfigReq) {
     const provider = unwrap(await client.updateProvider(id, request));
     await loadProviders();
@@ -116,6 +134,8 @@ export function useAI() {
     probeProviderConnection,
     testProviderOnboardingModel,
     commitProviderOnboarding,
+    probeProviderReplacement,
+    commitProviderReplacement,
     updateProvider,
     deleteProvider,
     setDefaultProvider,

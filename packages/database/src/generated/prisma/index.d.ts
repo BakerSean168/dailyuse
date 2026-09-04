@@ -21084,6 +21084,7 @@ export namespace Prisma {
     identityId: string | null
     catalogId: string | null
     baseUrl: string | null
+    targetProviderId: string | null
     credentialEncrypted: string | null
     credentialStatus: string | null
     discoveryStatus: string | null
@@ -21100,6 +21101,7 @@ export namespace Prisma {
     identityId: string | null
     catalogId: string | null
     baseUrl: string | null
+    targetProviderId: string | null
     credentialEncrypted: string | null
     credentialStatus: string | null
     discoveryStatus: string | null
@@ -21116,6 +21118,7 @@ export namespace Prisma {
     identityId: number
     catalogId: number
     baseUrl: number
+    targetProviderId: number
     credentialEncrypted: number
     credentialStatus: number
     discoveryStatus: number
@@ -21134,6 +21137,7 @@ export namespace Prisma {
     identityId?: true
     catalogId?: true
     baseUrl?: true
+    targetProviderId?: true
     credentialEncrypted?: true
     credentialStatus?: true
     discoveryStatus?: true
@@ -21150,6 +21154,7 @@ export namespace Prisma {
     identityId?: true
     catalogId?: true
     baseUrl?: true
+    targetProviderId?: true
     credentialEncrypted?: true
     credentialStatus?: true
     discoveryStatus?: true
@@ -21166,6 +21171,7 @@ export namespace Prisma {
     identityId?: true
     catalogId?: true
     baseUrl?: true
+    targetProviderId?: true
     credentialEncrypted?: true
     credentialStatus?: true
     discoveryStatus?: true
@@ -21255,6 +21261,7 @@ export namespace Prisma {
     identityId: string
     catalogId: string
     baseUrl: string
+    targetProviderId: string | null
     credentialEncrypted: string
     credentialStatus: string
     discoveryStatus: string
@@ -21288,6 +21295,7 @@ export namespace Prisma {
     identityId?: boolean
     catalogId?: boolean
     baseUrl?: boolean
+    targetProviderId?: boolean
     credentialEncrypted?: boolean
     credentialStatus?: boolean
     discoveryStatus?: boolean
@@ -21305,6 +21313,7 @@ export namespace Prisma {
     identityId?: boolean
     catalogId?: boolean
     baseUrl?: boolean
+    targetProviderId?: boolean
     credentialEncrypted?: boolean
     credentialStatus?: boolean
     discoveryStatus?: boolean
@@ -21322,6 +21331,7 @@ export namespace Prisma {
     identityId?: boolean
     catalogId?: boolean
     baseUrl?: boolean
+    targetProviderId?: boolean
     credentialEncrypted?: boolean
     credentialStatus?: boolean
     discoveryStatus?: boolean
@@ -21339,6 +21349,7 @@ export namespace Prisma {
     identityId?: boolean
     catalogId?: boolean
     baseUrl?: boolean
+    targetProviderId?: boolean
     credentialEncrypted?: boolean
     credentialStatus?: boolean
     discoveryStatus?: boolean
@@ -21350,7 +21361,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type AiProviderOnboardingSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "catalogId" | "baseUrl" | "credentialEncrypted" | "credentialStatus" | "discoveryStatus" | "modelsJson" | "verifiedModelIds" | "expiresAt" | "consumedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["aiProviderOnboardingSession"]>
+  export type AiProviderOnboardingSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "catalogId" | "baseUrl" | "targetProviderId" | "credentialEncrypted" | "credentialStatus" | "discoveryStatus" | "modelsJson" | "verifiedModelIds" | "expiresAt" | "consumedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["aiProviderOnboardingSession"]>
   export type AiProviderOnboardingSessionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     account?: boolean | AccountDefaultArgs<ExtArgs>
   }
@@ -21371,6 +21382,7 @@ export namespace Prisma {
       identityId: string
       catalogId: string
       baseUrl: string
+      targetProviderId: string | null
       credentialEncrypted: string
       credentialStatus: string
       discoveryStatus: string
@@ -21808,6 +21820,7 @@ export namespace Prisma {
     readonly identityId: FieldRef<"AiProviderOnboardingSession", 'String'>
     readonly catalogId: FieldRef<"AiProviderOnboardingSession", 'String'>
     readonly baseUrl: FieldRef<"AiProviderOnboardingSession", 'String'>
+    readonly targetProviderId: FieldRef<"AiProviderOnboardingSession", 'String'>
     readonly credentialEncrypted: FieldRef<"AiProviderOnboardingSession", 'String'>
     readonly credentialStatus: FieldRef<"AiProviderOnboardingSession", 'String'>
     readonly discoveryStatus: FieldRef<"AiProviderOnboardingSession", 'String'>
@@ -127735,6 +127748,7 @@ export namespace Prisma {
     identityId: 'identityId',
     catalogId: 'catalogId',
     baseUrl: 'baseUrl',
+    targetProviderId: 'targetProviderId',
     credentialEncrypted: 'credentialEncrypted',
     credentialStatus: 'credentialStatus',
     discoveryStatus: 'discoveryStatus',
@@ -130451,6 +130465,7 @@ export namespace Prisma {
     identityId?: StringFilter<"AiProviderOnboardingSession"> | string
     catalogId?: StringFilter<"AiProviderOnboardingSession"> | string
     baseUrl?: StringFilter<"AiProviderOnboardingSession"> | string
+    targetProviderId?: StringNullableFilter<"AiProviderOnboardingSession"> | string | null
     credentialEncrypted?: StringFilter<"AiProviderOnboardingSession"> | string
     credentialStatus?: StringFilter<"AiProviderOnboardingSession"> | string
     discoveryStatus?: StringFilter<"AiProviderOnboardingSession"> | string
@@ -130468,6 +130483,7 @@ export namespace Prisma {
     identityId?: SortOrder
     catalogId?: SortOrder
     baseUrl?: SortOrder
+    targetProviderId?: SortOrderInput | SortOrder
     credentialEncrypted?: SortOrder
     credentialStatus?: SortOrder
     discoveryStatus?: SortOrder
@@ -130488,6 +130504,7 @@ export namespace Prisma {
     identityId?: StringFilter<"AiProviderOnboardingSession"> | string
     catalogId?: StringFilter<"AiProviderOnboardingSession"> | string
     baseUrl?: StringFilter<"AiProviderOnboardingSession"> | string
+    targetProviderId?: StringNullableFilter<"AiProviderOnboardingSession"> | string | null
     credentialEncrypted?: StringFilter<"AiProviderOnboardingSession"> | string
     credentialStatus?: StringFilter<"AiProviderOnboardingSession"> | string
     discoveryStatus?: StringFilter<"AiProviderOnboardingSession"> | string
@@ -130505,6 +130522,7 @@ export namespace Prisma {
     identityId?: SortOrder
     catalogId?: SortOrder
     baseUrl?: SortOrder
+    targetProviderId?: SortOrderInput | SortOrder
     credentialEncrypted?: SortOrder
     credentialStatus?: SortOrder
     discoveryStatus?: SortOrder
@@ -130527,6 +130545,7 @@ export namespace Prisma {
     identityId?: StringWithAggregatesFilter<"AiProviderOnboardingSession"> | string
     catalogId?: StringWithAggregatesFilter<"AiProviderOnboardingSession"> | string
     baseUrl?: StringWithAggregatesFilter<"AiProviderOnboardingSession"> | string
+    targetProviderId?: StringNullableWithAggregatesFilter<"AiProviderOnboardingSession"> | string | null
     credentialEncrypted?: StringWithAggregatesFilter<"AiProviderOnboardingSession"> | string
     credentialStatus?: StringWithAggregatesFilter<"AiProviderOnboardingSession"> | string
     discoveryStatus?: StringWithAggregatesFilter<"AiProviderOnboardingSession"> | string
@@ -140134,6 +140153,7 @@ export namespace Prisma {
     id: string
     catalogId: string
     baseUrl: string
+    targetProviderId?: string | null
     credentialEncrypted: string
     credentialStatus: string
     discoveryStatus: string
@@ -140151,6 +140171,7 @@ export namespace Prisma {
     identityId: string
     catalogId: string
     baseUrl: string
+    targetProviderId?: string | null
     credentialEncrypted: string
     credentialStatus: string
     discoveryStatus: string
@@ -140166,6 +140187,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     catalogId?: StringFieldUpdateOperationsInput | string
     baseUrl?: StringFieldUpdateOperationsInput | string
+    targetProviderId?: NullableStringFieldUpdateOperationsInput | string | null
     credentialEncrypted?: StringFieldUpdateOperationsInput | string
     credentialStatus?: StringFieldUpdateOperationsInput | string
     discoveryStatus?: StringFieldUpdateOperationsInput | string
@@ -140183,6 +140205,7 @@ export namespace Prisma {
     identityId?: StringFieldUpdateOperationsInput | string
     catalogId?: StringFieldUpdateOperationsInput | string
     baseUrl?: StringFieldUpdateOperationsInput | string
+    targetProviderId?: NullableStringFieldUpdateOperationsInput | string | null
     credentialEncrypted?: StringFieldUpdateOperationsInput | string
     credentialStatus?: StringFieldUpdateOperationsInput | string
     discoveryStatus?: StringFieldUpdateOperationsInput | string
@@ -140199,6 +140222,7 @@ export namespace Prisma {
     identityId: string
     catalogId: string
     baseUrl: string
+    targetProviderId?: string | null
     credentialEncrypted: string
     credentialStatus: string
     discoveryStatus: string
@@ -140214,6 +140238,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     catalogId?: StringFieldUpdateOperationsInput | string
     baseUrl?: StringFieldUpdateOperationsInput | string
+    targetProviderId?: NullableStringFieldUpdateOperationsInput | string | null
     credentialEncrypted?: StringFieldUpdateOperationsInput | string
     credentialStatus?: StringFieldUpdateOperationsInput | string
     discoveryStatus?: StringFieldUpdateOperationsInput | string
@@ -140230,6 +140255,7 @@ export namespace Prisma {
     identityId?: StringFieldUpdateOperationsInput | string
     catalogId?: StringFieldUpdateOperationsInput | string
     baseUrl?: StringFieldUpdateOperationsInput | string
+    targetProviderId?: NullableStringFieldUpdateOperationsInput | string | null
     credentialEncrypted?: StringFieldUpdateOperationsInput | string
     credentialStatus?: StringFieldUpdateOperationsInput | string
     discoveryStatus?: StringFieldUpdateOperationsInput | string
@@ -151206,6 +151232,7 @@ export namespace Prisma {
     identityId?: SortOrder
     catalogId?: SortOrder
     baseUrl?: SortOrder
+    targetProviderId?: SortOrder
     credentialEncrypted?: SortOrder
     credentialStatus?: SortOrder
     discoveryStatus?: SortOrder
@@ -151222,6 +151249,7 @@ export namespace Prisma {
     identityId?: SortOrder
     catalogId?: SortOrder
     baseUrl?: SortOrder
+    targetProviderId?: SortOrder
     credentialEncrypted?: SortOrder
     credentialStatus?: SortOrder
     discoveryStatus?: SortOrder
@@ -151238,6 +151266,7 @@ export namespace Prisma {
     identityId?: SortOrder
     catalogId?: SortOrder
     baseUrl?: SortOrder
+    targetProviderId?: SortOrder
     credentialEncrypted?: SortOrder
     credentialStatus?: SortOrder
     discoveryStatus?: SortOrder
@@ -165095,6 +165124,7 @@ export namespace Prisma {
     id: string
     catalogId: string
     baseUrl: string
+    targetProviderId?: string | null
     credentialEncrypted: string
     credentialStatus: string
     discoveryStatus: string
@@ -165110,6 +165140,7 @@ export namespace Prisma {
     id: string
     catalogId: string
     baseUrl: string
+    targetProviderId?: string | null
     credentialEncrypted: string
     credentialStatus: string
     discoveryStatus: string
@@ -167454,6 +167485,7 @@ export namespace Prisma {
     identityId?: StringFilter<"AiProviderOnboardingSession"> | string
     catalogId?: StringFilter<"AiProviderOnboardingSession"> | string
     baseUrl?: StringFilter<"AiProviderOnboardingSession"> | string
+    targetProviderId?: StringNullableFilter<"AiProviderOnboardingSession"> | string | null
     credentialEncrypted?: StringFilter<"AiProviderOnboardingSession"> | string
     credentialStatus?: StringFilter<"AiProviderOnboardingSession"> | string
     discoveryStatus?: StringFilter<"AiProviderOnboardingSession"> | string
@@ -196956,6 +196988,7 @@ export namespace Prisma {
     id: string
     catalogId: string
     baseUrl: string
+    targetProviderId?: string | null
     credentialEncrypted: string
     credentialStatus: string
     discoveryStatus: string
@@ -198970,6 +199003,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     catalogId?: StringFieldUpdateOperationsInput | string
     baseUrl?: StringFieldUpdateOperationsInput | string
+    targetProviderId?: NullableStringFieldUpdateOperationsInput | string | null
     credentialEncrypted?: StringFieldUpdateOperationsInput | string
     credentialStatus?: StringFieldUpdateOperationsInput | string
     discoveryStatus?: StringFieldUpdateOperationsInput | string
@@ -198985,6 +199019,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     catalogId?: StringFieldUpdateOperationsInput | string
     baseUrl?: StringFieldUpdateOperationsInput | string
+    targetProviderId?: NullableStringFieldUpdateOperationsInput | string | null
     credentialEncrypted?: StringFieldUpdateOperationsInput | string
     credentialStatus?: StringFieldUpdateOperationsInput | string
     discoveryStatus?: StringFieldUpdateOperationsInput | string
@@ -199000,6 +199035,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     catalogId?: StringFieldUpdateOperationsInput | string
     baseUrl?: StringFieldUpdateOperationsInput | string
+    targetProviderId?: NullableStringFieldUpdateOperationsInput | string | null
     credentialEncrypted?: StringFieldUpdateOperationsInput | string
     credentialStatus?: StringFieldUpdateOperationsInput | string
     discoveryStatus?: StringFieldUpdateOperationsInput | string

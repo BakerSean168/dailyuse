@@ -29,7 +29,9 @@ import type {
   TestAIProviderOnboardingModelReq,
   TestAIProviderOnboardingModelRes,
   CommitAIProviderOnboardingReq,
-  RefreshAIProviderModelsRes,
+  ProbeAIProviderReplacementReq,
+  CommitAIProviderReplacementReq,
+  AIProviderModelCatalogSnapshot,
 } from '@memoflow/contracts/ai';
 
 export type { IResultHttpClient };
@@ -64,6 +66,14 @@ export interface IAIProviderConfigApiClient {
   probeProviderConnection(request: ProbeAIProviderConnectionReq): Promise<Result<ProbeAIProviderConnectionRes>>;
   testProviderOnboardingModel(request: TestAIProviderOnboardingModelReq): Promise<Result<TestAIProviderOnboardingModelRes>>;
   commitProviderOnboarding(request: CommitAIProviderOnboardingReq): Promise<Result<AIProviderConfigClientDTO>>;
+  probeProviderReplacement(
+    id: string,
+    request: ProbeAIProviderReplacementReq,
+  ): Promise<Result<ProbeAIProviderConnectionRes>>;
+  commitProviderReplacement(
+    id: string,
+    request: CommitAIProviderReplacementReq,
+  ): Promise<Result<AIProviderConfigClientDTO>>;
   getProviders(): Promise<Result<AIProviderConfigClientDTO[]>>;
   getProviderById(id: string): Promise<Result<AIProviderConfigClientDTO>>;
   updateProvider(
@@ -73,7 +83,7 @@ export interface IAIProviderConfigApiClient {
   deleteProvider(id: string): Promise<Result<void>>;
   testConnection(request: TestAIProviderReq): Promise<Result<TestAIProviderRes>>;
   setDefaultProvider(request: SetDefaultAIProviderReq): Promise<Result<void>>;
-  refreshProviderModels(id: string): Promise<Result<RefreshAIProviderModelsRes>>;
+  refreshProviderModels(id: string): Promise<Result<AIProviderModelCatalogSnapshot>>;
 }
 
 export interface AIKnowledgeQueryApiClient {

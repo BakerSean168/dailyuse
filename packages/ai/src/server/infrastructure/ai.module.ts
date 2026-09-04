@@ -108,6 +108,8 @@ import {
   ProbeAIProviderConnectionUseCase,
   TestAIProviderOnboardingModelUseCase,
   CommitAIProviderOnboardingUseCase,
+  ProbeAIProviderReplacementUseCase,
+  CommitAIProviderReplacementUseCase,
 } from '../application/use-cases';
 
 const logger = createLogger('AIModule');
@@ -211,6 +213,8 @@ export interface AIProviderServices {
   readonly probe?: ProbeAIProviderConnectionUseCase;
   readonly testOnboardingModel?: TestAIProviderOnboardingModelUseCase;
   readonly commitOnboarding?: CommitAIProviderOnboardingUseCase;
+  readonly probeReplacement?: ProbeAIProviderReplacementUseCase;
+  readonly commitReplacement?: CommitAIProviderReplacementUseCase;
 }
 
 /**
@@ -429,6 +433,15 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
   const onboardingSessionRepository = dependencies.providerOnboardingSessionRepository;
   const onboardingCommitPort = dependencies.providerOnboardingCommitPort;
   const onboardingAvailable = Boolean(onboardingSessionRepository && onboardingCommitPort);
+  const probeProviderConnection =
+    onboardingAvailable && onboardingSessionRepository
+      ? new ProbeAIProviderConnectionUseCase({
+          sessionRepository: onboardingSessionRepository,
+          modelCatalog: modelCatalogGateway,
+          credentialProbe: new OpenAICompatibleCredentialProbeGateway(providerSafeFetch.fetch),
+          endpointPolicy: providerEndpointPolicy,
+        })
+      : null;
 
   const providerServices: AIProviderServices = {
     update: new UpdateAIProviderUseCase(providerConfigRepository),
@@ -440,17 +453,21 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     refreshModels: new RefreshAIProviderModelsUseCase(providerConfigRepository, modelCatalogGateway),
     ...(onboardingAvailable && onboardingSessionRepository && onboardingCommitPort
       ? {
-          probe: new ProbeAIProviderConnectionUseCase({
-            sessionRepository: onboardingSessionRepository,
-            modelCatalog: modelCatalogGateway,
-            credentialProbe: new OpenAICompatibleCredentialProbeGateway(providerSafeFetch.fetch),
-            endpointPolicy: providerEndpointPolicy,
-          }),
+          probe: probeProviderConnection!,
+          probeReplacement: new ProbeAIProviderReplacementUseCase(
+            providerConfigRepository,
+            probeProviderConnection!,
+          ),
           testOnboardingModel: new TestAIProviderOnboardingModelUseCase(
             onboardingSessionRepository,
             chatExecutionAdapter,
           ),
           commitOnboarding: new CommitAIProviderOnboardingUseCase(
+            onboardingSessionRepository,
+            onboardingCommitPort,
+          ),
+          commitReplacement: new CommitAIProviderReplacementUseCase(
+            providerConfigRepository,
             onboardingSessionRepository,
             onboardingCommitPort,
           ),
@@ -650,8 +667,24 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
         return providerOnboardingFailure(cause);
       }
     },
+    probeProviderReplacement: async (providerId, req, cx) => {
+      if (!services.providerServices.probeReplacement) return unavailable<ProbeAIProviderConnectionRes>();
+      try {
+        return ok(await services.providerServices.probeReplacement.execute(providerId, req, cx));
+      } catch (cause) {
+        return providerOnboardingFailure<ProbeAIProviderConnectionRes>(cause);
+      }
+    },
+    commitProviderReplacement: async (providerId, req, cx) => {
+      if (!services.providerServices.commitReplacement) return unavailable();
+      try {
+        return await services.providerServices.commitReplacement.execute(providerId, req, cx);
+      } catch (cause) {
+        return providerOnboardingFailure(cause);
+      }
+    },
 
-    // -- Saved Provider Config / legacy compatibility --
+    // -- Saved Provider Config --
     updateProvider: (id, req, cx) =>
       services.providerServices.update.execute(cx.identityId, id, req),
     deleteProvider: (id, cx) => services.providerServices.delete.execute(cx.identityId, id),

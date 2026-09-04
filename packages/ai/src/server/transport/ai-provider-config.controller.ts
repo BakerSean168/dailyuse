@@ -4,6 +4,8 @@ import {
   CommitAIProviderOnboardingSchema,
   ProbeAIProviderConnectionSchema,
   TestAIProviderOnboardingModelSchema,
+  ProbeAIProviderReplacementSchema,
+  CommitAIProviderReplacementSchema,
   TestAIProviderSchema,
   type TestAIProviderReq,
   type TestAIProviderRes,
@@ -14,11 +16,13 @@ import {
   type ListAIProviderConfigsRes,
   type ListAIProviderCatalogRes,
   type CommitAIProviderOnboardingReq,
+  type ProbeAIProviderReplacementReq,
+  type CommitAIProviderReplacementReq,
   type ProbeAIProviderConnectionReq,
   type ProbeAIProviderConnectionRes,
   type TestAIProviderOnboardingModelReq,
   type TestAIProviderOnboardingModelRes,
-  type RefreshAIProviderModelsRes,
+  type AIProviderModelCatalogSnapshot,
 } from '@memoflow/contracts/ai';
 import { formatZodErrors } from '@memoflow/utils/result';
 
@@ -36,6 +40,16 @@ interface AIProviderConfigControllerService {
     request: CommitAIProviderOnboardingReq,
     cx: ExecutionContext,
   ): Promise<Result<AIProviderConfigClientDTO>>;
+  probeProviderReplacement(
+    providerId: string,
+    request: ProbeAIProviderReplacementReq,
+    cx: ExecutionContext,
+  ): Promise<Result<ProbeAIProviderConnectionRes>>;
+  commitProviderReplacement(
+    providerId: string,
+    request: CommitAIProviderReplacementReq,
+    cx: ExecutionContext,
+  ): Promise<Result<AIProviderConfigClientDTO>>;
   updateProvider(
     id: string,
     request: UpdateAIProviderConfigReq,
@@ -46,7 +60,7 @@ interface AIProviderConfigControllerService {
   deleteProvider(id: string, cx: ExecutionContext): Promise<Result<void>>;
   testConnection(request: TestAIProviderReq, cx: ExecutionContext): Promise<Result<TestAIProviderRes>>;
   setDefaultProvider(id: string, cx: ExecutionContext): Promise<Result<void>>;
-  refreshProviderModels(providerId: string, cx: ExecutionContext): Promise<Result<RefreshAIProviderModelsRes>>;
+  refreshProviderModels(providerId: string, cx: ExecutionContext): Promise<Result<AIProviderModelCatalogSnapshot>>;
 }
 
 export class AIProviderConfigController {
@@ -96,6 +110,30 @@ export class AIProviderConfigController {
       });
     }
     return this.service.testProviderOnboardingModel(parsed.data, cx);
+  }
+
+  async probeReplacement(
+    id: string,
+    input: unknown,
+    cx: ExecutionContext,
+  ): Promise<Result<ProbeAIProviderConnectionRes>> {
+    const parsed = ProbeAIProviderReplacementSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({ code: 'VALIDATION_ERROR', message: '参数验证失败', details: formatZodErrors(parsed.error.issues) });
+    }
+    return this.service.probeProviderReplacement(id, parsed.data, cx);
+  }
+
+  async commitReplacement(
+    id: string,
+    input: unknown,
+    cx: ExecutionContext,
+  ): Promise<Result<AIProviderConfigClientDTO>> {
+    const parsed = CommitAIProviderReplacementSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({ code: 'VALIDATION_ERROR', message: '参数验证失败', details: formatZodErrors(parsed.error.issues) });
+    }
+    return this.service.commitProviderReplacement(id, parsed.data, cx);
   }
 
   async update(
@@ -152,7 +190,7 @@ export class AIProviderConfigController {
     return ok(null);
   }
 
-  async refreshModels(id: string, cx: ExecutionContext): Promise<Result<RefreshAIProviderModelsRes>> {
+  async refreshModels(id: string, cx: ExecutionContext): Promise<Result<AIProviderModelCatalogSnapshot>> {
     return this.service.refreshProviderModels(id, cx);
   }
 }

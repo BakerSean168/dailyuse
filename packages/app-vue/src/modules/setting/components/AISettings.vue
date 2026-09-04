@@ -86,6 +86,14 @@
               <Button
                 variant="outline"
                 size="sm"
+                :data-testid="`ai-provider-replace-${provider.id}`"
+                @click="openProviderReplacement(provider)"
+              >
+                {{ t('setting.ai.replaceConnection') }}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 :disabled="providerRefreshLoading[String(provider.id)] === true"
                 @click="handleRefreshModels(String(provider.id))"
               >
@@ -124,13 +132,10 @@
     <DialogContent class="flex max-h-[88vh] min-h-0 max-w-3xl flex-col overflow-hidden p-0" data-testid="ai-provider-onboarding">
       <DialogHeader class="shrink-0 border-b px-6 py-5 text-left">
         <div class="flex items-center gap-2 text-xs text-muted-foreground">
-          <span :class="stepClass('picker')">1</span>
-          <span>—</span>
-          <span :class="stepClass('connection')">2</span>
-          <span>—</span>
-          <span :class="stepClass('model')">3</span>
-          <span>—</span>
-          <span :class="stepClass('review')">4</span>
+          <template v-for="(step, index) in flowSteps" :key="step">
+            <span v-if="index > 0">—</span>
+            <span :class="stepClass(step)">{{ index + 1 }}</span>
+          </template>
         </div>
         <DialogTitle class="mt-2">{{ onboardingTitle }}</DialogTitle>
         <DialogDescription>{{ onboardingDescription }}</DialogDescription>
@@ -183,7 +188,7 @@
             </div>
           </div>
 
-          <div v-if="selectedCatalog.id === 'custom'" class="space-y-2">
+          <div v-if="selectedCatalog.id === 'custom' && onboardingMode === 'create'" class="space-y-2">
             <Label for="ai-provider-name">{{ t('setting.ai.providerName') }}</Label>
             <Input id="ai-provider-name" v-model="connectionName" :placeholder="t('setting.ai.providerNamePlaceholder')" />
           </div>
@@ -315,7 +320,10 @@
             </div>
           </div>
 
-          <div class="flex items-center justify-between gap-4 rounded-xl border border-border/60 px-4 py-3">
+          <div
+            v-if="onboardingMode === 'create'"
+            class="flex items-center justify-between gap-4 rounded-xl border border-border/60 px-4 py-3"
+          >
             <div>
               <p class="text-sm font-medium">{{ t('setting.ai.markAsDefault') }}</p>
               <p class="text-xs text-muted-foreground">{{ t('setting.ai.markAsDefaultDescription') }}</p>
@@ -326,14 +334,23 @@
               @update:model-value="isDefaultSelection = $event"
             />
           </div>
+          <div
+            v-else
+            class="rounded-xl border border-border/60 bg-muted/25 px-4 py-3 text-sm text-muted-foreground"
+            data-testid="ai-provider-replacement-preserved-metadata"
+          >
+            {{ t('setting.ai.replacementPreservesMetadata') }}
+          </div>
 
-          <p class="text-xs text-muted-foreground">{{ t('setting.ai.reviewSecretHint') }}</p>
+          <p class="text-xs text-muted-foreground">
+            {{ onboardingMode === 'replace' ? t('setting.ai.replacementSecretHint') : t('setting.ai.reviewSecretHint') }}
+          </p>
         </div>
       </div>
 
       <DialogFooter class="shrink-0 border-t px-6 py-4">
         <div class="flex w-full items-center justify-between gap-3">
-          <Button v-if="onboardingStep !== 'picker'" variant="ghost" :disabled="isBusy" @click="goBack">
+          <Button v-if="onboardingStep !== flowSteps[0]" variant="ghost" :disabled="isBusy" @click="goBack">
             {{ t('setting.ai.back') }}
           </Button>
           <span v-else />
@@ -363,7 +380,11 @@
               data-testid="ai-provider-commit"
               @click="saveProvider"
             >
-              {{ isSaving ? t('setting.ai.savingProvider') : t('setting.ai.saveAndFinish') }}
+              {{
+                isSaving
+                  ? t(onboardingMode === 'replace' ? 'setting.ai.replacingProvider' : 'setting.ai.savingProvider')
+                  : t(onboardingMode === 'replace' ? 'setting.ai.replaceAndFinish' : 'setting.ai.saveAndFinish')
+              }}
             </Button>
           </div>
         </div>
@@ -403,6 +424,7 @@ import { useAI } from '../../ai/composables/useAI';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 type OnboardingStep = 'picker' | 'connection' | 'model' | 'review';
+type OnboardingMode = 'create' | 'replace';
 type ProviderStatusState = { tone: 'success' | 'error'; message: string };
 
 const { t } = useI18n();
@@ -415,12 +437,16 @@ const {
   probeProviderConnection,
   testProviderOnboardingModel,
   commitProviderOnboarding,
+  probeProviderReplacement,
+  commitProviderReplacement,
   deleteProvider,
   setDefaultProvider,
   refreshProviderModels,
 } = useAI();
 
 const onboardingOpen = ref(false);
+const onboardingMode = ref<OnboardingMode>('create');
+const replacementProvider = ref<AIProviderConfigClientDTO | null>(null);
 const onboardingStep = ref<OnboardingStep>('picker');
 const catalogSearch = ref('');
 const selectedCatalog = ref<AIProviderCatalogEntryDTO | null>(null);
@@ -443,6 +469,11 @@ const providerStatusMap = ref<Record<string, ProviderStatusState | null>>({});
 const providerItems = computed(() => providers.value);
 const defaultProvider = computed(() => providerItems.value.find((provider) => provider.isDefault) ?? null);
 const isBusy = computed(() => isProbing.value || isTestingModel.value || isSaving.value);
+const flowSteps = computed<OnboardingStep[]>(() =>
+  onboardingMode.value === 'replace'
+    ? ['connection', 'model', 'review']
+    : ['picker', 'connection', 'model', 'review'],
+);
 const filteredCatalog = computed(() => {
   const query = catalogSearch.value.trim().toLowerCase();
   if (!query) return providerCatalog.value;
@@ -483,19 +514,21 @@ const canContinueFromModel = computed(() => {
   return true;
 });
 const onboardingTitle = computed(() => {
+  const replacing = onboardingMode.value === 'replace';
   switch (onboardingStep.value) {
     case 'picker': return t('setting.ai.pickerTitle');
-    case 'connection': return t('setting.ai.connectionTitle');
+    case 'connection': return t(replacing ? 'setting.ai.replacementConnectionTitle' : 'setting.ai.connectionTitle');
     case 'model': return t('setting.ai.modelTitle');
-    case 'review': return t('setting.ai.reviewTitle');
+    case 'review': return t(replacing ? 'setting.ai.replacementReviewTitle' : 'setting.ai.reviewTitle');
   }
 });
 const onboardingDescription = computed(() => {
+  const replacing = onboardingMode.value === 'replace';
   switch (onboardingStep.value) {
     case 'picker': return t('setting.ai.pickerDescription');
-    case 'connection': return t('setting.ai.connectionDescription');
-    case 'model': return t('setting.ai.modelDescription');
-    case 'review': return t('setting.ai.reviewDescription');
+    case 'connection': return t(replacing ? 'setting.ai.replacementConnectionDescription' : 'setting.ai.connectionDescription');
+    case 'model': return t(replacing ? 'setting.ai.replacementModelDescription' : 'setting.ai.modelDescription');
+    case 'review': return t(replacing ? 'setting.ai.replacementReviewDescription' : 'setting.ai.reviewDescription');
   }
 });
 
@@ -507,19 +540,51 @@ function getAISettingErrorMessage(error: unknown, fallbackKey: string) {
   return translateResultError(error, t, { fallbackKey });
 }
 
+async function ensureProviderCatalog(): Promise<boolean> {
+  if (providerCatalog.value.length) return true;
+  isLoadingCatalog.value = true;
+  try {
+    await loadProviderCatalog();
+    return providerCatalog.value.length > 0;
+  } catch (error) {
+    toast.error(getAISettingErrorMessage(error, 'setting.ai.providerCatalogFailed'));
+    return false;
+  } finally {
+    isLoadingCatalog.value = false;
+  }
+}
+
 async function openOnboarding() {
   resetOnboarding();
   onboardingOpen.value = true;
-  if (!providerCatalog.value.length) {
-    isLoadingCatalog.value = true;
-    try {
-      await loadProviderCatalog();
-    } catch (error) {
-      toast.error(getAISettingErrorMessage(error, 'setting.ai.providerCatalogFailed'));
-    } finally {
-      isLoadingCatalog.value = false;
-    }
+  await ensureProviderCatalog();
+}
+
+async function openProviderReplacement(provider: AIProviderConfigClientDTO) {
+  resetOnboarding();
+  onboardingMode.value = 'replace';
+  replacementProvider.value = provider;
+  isDefaultSelection.value = provider.isDefault;
+  onboardingOpen.value = true;
+  if (!(await ensureProviderCatalog())) return;
+
+  const currentEndpoint = normalizeEndpointForCatalog(provider.baseUrl);
+  const matchedPreset = providerCatalog.value.find(
+    (entry) =>
+      entry.id !== 'custom' &&
+      normalizeEndpointForCatalog(entry.defaultBaseUrl) === currentEndpoint,
+  );
+  const entry = matchedPreset ?? providerCatalog.value.find((candidate) => candidate.id === 'custom');
+  if (!entry) {
+    toast.error(t('setting.ai.providerCatalogFailed'));
+    return;
   }
+
+  selectedCatalog.value = entry;
+  connectionName.value = provider.name;
+  connectionBaseUrl.value = entry.id === 'custom' ? provider.baseUrl : entry.defaultBaseUrl;
+  connectionApiKey.value = '';
+  onboardingStep.value = 'connection';
 }
 
 function closeOnboarding() {
@@ -536,6 +601,8 @@ function handleDialogOpenChange(open: boolean) {
 }
 
 function resetOnboarding() {
+  onboardingMode.value = 'create';
+  replacementProvider.value = null;
   onboardingStep.value = 'picker';
   catalogSearch.value = '';
   selectedCatalog.value = null;
@@ -566,11 +633,15 @@ async function probeConnection() {
   if (!canProbe.value || !selectedCatalog.value) return;
   isProbing.value = true;
   try {
-    const result = await probeProviderConnection({
+    const request = {
       catalogId: selectedCatalog.value.id,
       ...(selectedCatalog.value.baseUrlEditable ? { baseUrl: connectionBaseUrl.value.trim() } : {}),
       apiKey: connectionApiKey.value.trim(),
-    });
+    };
+    const result =
+      onboardingMode.value === 'replace' && replacementProvider.value
+        ? await probeProviderReplacement(String(replacementProvider.value.id), request)
+        : await probeProviderConnection(request);
     probeResult.value = result;
     // Security contract: after a successful probe the browser keeps only the
     // opaque onboarding handle, never the raw credential.
@@ -619,13 +690,21 @@ async function saveProvider() {
   if (!probeResult.value || !effectiveModelId.value) return;
   isSaving.value = true;
   try {
-    await commitProviderOnboarding({
-      onboardingId: probeResult.value.onboardingId,
-      name: connectionName.value.trim(),
-      defaultModelId: effectiveModelId.value,
-      isDefault: isDefaultSelection.value,
-    });
-    toast.success(t('setting.ai.providerCreated'));
+    if (onboardingMode.value === 'replace' && replacementProvider.value) {
+      await commitProviderReplacement(String(replacementProvider.value.id), {
+        onboardingId: probeResult.value.onboardingId,
+        defaultModelId: effectiveModelId.value,
+      });
+      toast.success(t('setting.ai.providerConnectionReplaced'));
+    } else {
+      await commitProviderOnboarding({
+        onboardingId: probeResult.value.onboardingId,
+        name: connectionName.value.trim(),
+        defaultModelId: effectiveModelId.value,
+        isDefault: isDefaultSelection.value,
+      });
+      toast.success(t('setting.ai.providerCreated'));
+    }
     closeOnboarding();
   } catch (error) {
     toast.error(getAISettingErrorMessage(error, 'setting.ai.providerActionFailed'));
@@ -638,7 +717,7 @@ function goBack() {
   switch (onboardingStep.value) {
     case 'connection':
       connectionApiKey.value = '';
-      onboardingStep.value = 'picker';
+      if (onboardingMode.value === 'create') onboardingStep.value = 'picker';
       break;
     case 'model':
       // A successful probe has already exchanged the raw key for an opaque
@@ -701,6 +780,10 @@ function isRecommendedModel(modelId: string): boolean {
   return selectedCatalog.value?.recommendedModelIds.includes(modelId) ?? false;
 }
 
+function normalizeEndpointForCatalog(value: string): string {
+  return value.trim().replace(/\/+$/, '').toLowerCase();
+}
+
 function providerGlyph(id: string): string {
   const glyphs: Record<string, string> = {
     openrouter: 'OR',
@@ -713,7 +796,7 @@ function providerGlyph(id: string): string {
 }
 
 function stepClass(step: OnboardingStep): string {
-  const order: OnboardingStep[] = ['picker', 'connection', 'model', 'review'];
+  const order = flowSteps.value;
   return order.indexOf(onboardingStep.value) >= order.indexOf(step)
     ? 'flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground'
     : 'flex size-5 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-muted-foreground';

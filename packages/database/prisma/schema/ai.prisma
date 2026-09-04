@@ -130,6 +130,7 @@ model AiProviderOnboardingSession {
   identityId          String    @map("identity_id")
   catalogId           String    @map("catalog_id")
   baseUrl             String    @map("base_url")
+  targetProviderId    String?   @map("target_provider_id")
   credentialEncrypted String    @map("credential_encrypted")
   credentialStatus    String    @map("credential_status")
   discoveryStatus     String    @map("discovery_status")
@@ -143,6 +144,7 @@ model AiProviderOnboardingSession {
   account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   @@index([identityId, expiresAt])
+  @@index([identityId, targetProviderId, expiresAt])
   @@index([expiresAt])
   @@map("ai_provider_onboarding_sessions")
 }

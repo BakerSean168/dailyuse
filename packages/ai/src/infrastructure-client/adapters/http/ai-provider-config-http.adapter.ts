@@ -12,7 +12,9 @@ import type {
   TestAIProviderOnboardingModelReq,
   TestAIProviderOnboardingModelRes,
   CommitAIProviderOnboardingReq,
-  RefreshAIProviderModelsRes,
+  ProbeAIProviderReplacementReq,
+  CommitAIProviderReplacementReq,
+  AIProviderModelCatalogSnapshot,
 } from '@memoflow/contracts/ai';
 import { map, type Result } from '@memoflow/contracts/result';
 
@@ -54,6 +56,26 @@ export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
     return this.httpClient.post<AIProviderConfigClientDTO>(this.baseUrl, request);
   }
 
+  async probeProviderReplacement(
+    id: string,
+    request: ProbeAIProviderReplacementReq,
+  ): Promise<Result<ProbeAIProviderConnectionRes>> {
+    return this.httpClient.post<ProbeAIProviderConnectionRes>(
+      `${this.baseUrl}/${id}/replacement/probe`,
+      request,
+    );
+  }
+
+  async commitProviderReplacement(
+    id: string,
+    request: CommitAIProviderReplacementReq,
+  ): Promise<Result<AIProviderConfigClientDTO>> {
+    return this.httpClient.post<AIProviderConfigClientDTO>(
+      `${this.baseUrl}/${id}/replacement/commit`,
+      request,
+    );
+  }
+
   async getProviders(): Promise<Result<AIProviderConfigClientDTO[]>> {
     const result = await this.httpClient.get<ListAIProviderConfigsRes>(this.baseUrl);
     return map(result, (envelope) => envelope.data);
@@ -82,8 +104,8 @@ export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
     return this.httpClient.post<void>(`${this.baseUrl}/${request.providerId}/set-default`);
   }
 
-  async refreshProviderModels(id: string): Promise<Result<RefreshAIProviderModelsRes>> {
-    return this.httpClient.post<RefreshAIProviderModelsRes>(
+  async refreshProviderModels(id: string): Promise<Result<AIProviderModelCatalogSnapshot>> {
+    return this.httpClient.post<AIProviderModelCatalogSnapshot>(
       `${this.baseUrl}/${id}/refresh-models`,
     );
   }
