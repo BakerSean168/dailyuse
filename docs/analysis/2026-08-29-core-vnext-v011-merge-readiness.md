@@ -49,7 +49,7 @@ The following work remains real and is **not relabeled as completed**:
 - Residual legacy/physical cleanup (`CLEAN-6301~6304`), including product-facing raw ScheduleTask remnants outside the already-governed normal Planner path.
 - pg-boss PoC (`POC-6401`).
 - Remaining full long-horizon failure/acceptance/docs closure that depends on deferred surfaces (`HARD-7101~7104`).
-- AI Provider Onboarding V2, tracked independently in its own active plan.
+- AI Provider Onboarding V2 was tracked independently and is now archived at `docs/plan/archive/2026-08-25-ai-provider-onboarding-v2.md` after full implementation/acceptance.
 
 Residual audit intentionally remains visible rather than being hidden by checkbox churn. Examples include React/mobile legacy cards/hooks and legacy Reminder/ScheduleTask compatibility surfaces. Those are follow-up debt, not newly discovered regressions in the already production-accepted Web/Desktop v0.11 path.
 

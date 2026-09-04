@@ -4,7 +4,7 @@ tags:
   - archive
 description: 归档计划目录
 created: 2026-04-26T00:00:00
-updated: 2026-08-23T00:05:00+08:00
+updated: 2026-09-04T22:15:00+08:00
 ---
 
 # Archived Plans
@@ -27,6 +27,7 @@ updated: 2026-08-23T00:05:00+08:00
 
 | 日期       | 计划                                                                                                     | 结果                                                                                         |
 | ---------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 2026-09-04 | [AI Provider Onboarding V2](./2026-08-25-ai-provider-onboarding-v2.md) | CC Switch/LobeChat 风格 onboarding、SSRF / DNS pinning、one-time handle、atomic encrypted save/replacement、Custom + real OpenRouter E2E、PR required CI/local Docker acceptance 全闭环 |
 | 2026-08-23 | [MemoFlow AI vNext — Mastra-native 一次性大重构](./2026-08-20-mastra-native-ai-vnext-refactor.md) | AI-VNEXT-01–09 完成；PR #252 全绿合并；Mastra 唯一 runtime、legacy hard-delete、eval/usage/local Docker 验收闭合 |
 | 2026-08-20 | [UI Shell Focus Polish](./2026-08-19-ui-shell-focus-polish.md)                                           | #250：Settings 单顶栏、300ms hover intent、移除冗余控件、按 AI 会话记忆 focus/split          |
 | 2026-08-08 | [基础 UI 与 Shell 重构](./2026-08-06-ui-foundation-and-shell-refactor.md)                               | 三栏最小宽度与拖拽收缩、compound capsule、设置页扁平化；local-docker 产品旅程 7/7            |

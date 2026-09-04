@@ -1,18 +1,20 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - ai
   - provider
   - mastra
   - byok
 description: MemoFlow AI Provider 连接、凭据验证、模型发现与选择的一次性重构计划
 created: 2026-08-25T12:20:00+08:00
-updated: 2026-08-25T12:29:00+08:00
-status: active
+updated: 2026-09-04T22:15:00+08:00
+status: completed
 ---
 
 # AI Provider Onboarding V2 — 连接、发现、选型与原子保存重构
+
+> **Archived 2026-09-04:** Provider Catalog → credential probe → live model discovery → explicit model selection → one-time onboarding handle → atomic encrypted save / verified replacement 已在 Web + Desktop 闭环。PR #303 current-head required CI、local Docker prod-like、真实 HTTPS Custom Provider E2E 均通过；trusted audit run `33881744993` 中 real OpenRouter `/key` + `/models` + explicit model + atomic save 子用例 10.9s PASS。该 audit job 总体仍因独立的历史 Account/Profile E2E 失败而为 red，不影响本计划 Provider acceptance 结论。
 
 ## Outcome
 
@@ -431,8 +433,8 @@ Mastra 仍是唯一 Agent/Workflow/Memory runtime。
 - `affected typecheck`：36 projects + 30 dependency tasks PASS；`affected test`：35 projects PASS。AI 完整测试 76 files / 422 tests PASS；Task 72/732、Reminder 73/527、Goal 81/445、Notification 45/242 均 PASS。
 - `contracts:test`：66 files / 481 tests PASS；CI/CD workflow governance 65/65 PASS；Web shard/oracle contract 8/8 PASS；全局 governance PASS。
 - `validate-local-deploy` 最终 verdict=`pass`、`readyForPr=yes`；fresh `docker compose ... build --no-cache` 后 API/Web/PowerSync/Postgres/Redis 全部 healthy，Web/API revision 与预期 dirty revision 匹配。
-- OpenRouter real-key acceptance 已作为显式 opt-in 子用例接入 `web:e2e:ai-provider`，只读取 `E2E_OPENROUTER_API_KEY`；当前环境未配置专用测试 Key，因此该子用例保持 SKIP，不复用普通用户 Key，也不产生推理调用费用。
-- PR #303 required CI run `33866087666` 已 `completed/success`；Governance / Typecheck / Build / Static Analysis / Unit Tests / Verification Oracles / Web Flow 1–4 / Web Flow Oracle / Delivery Observation 全绿，其中 Shard 1 的 `Secure AI Provider product acceptance` 明确 `success`。nightly trusted `Web Flow Audit` 可在配置 `E2E_OPENROUTER_API_KEY` 后执行真实 OpenRouter `/key` + `/models` + atomic save acceptance。
+- OpenRouter real-key acceptance 已通过 trusted `Web Flow Audit` run `33881744993`：真实 `https://openrouter.ai/api/v1` credential probe、live `/models`、显式模型选择与 atomic save 全部完成；Playwright `[opt-in] real OpenRouter credential → live catalog → explicit model → atomic save` **10.9s PASS**。该路径不调用 `/chat/completions`，因此不产生推理测试费用。
+- PR #303 required CI 已在 feature head 上完整跑绿；Governance / Typecheck / Build / Static Analysis / Unit Tests / Verification Oracles / Web Flow 1–4 / Web Flow Oracle / Delivery Observation 全绿，其中 Shard 1 的 `Secure AI Provider product acceptance` 明确 `success`。后续 trusted audit 又用专用 `E2E_OPENROUTER_API_KEY` 完成真实 OpenRouter acceptance；Secret 未写入仓库、日志或产品配置。
 
 ## Acceptance criteria
 
@@ -454,7 +456,7 @@ Mastra 仍是唯一 Agent/Workflow/Memory runtime。
 - [x] `AI_PROVIDER_ENCRYPTION_KEY` 缺失在 deployment/preflight 阶段暴露，不再以用户操作 500 首次发现
 - [x] Web + Desktop contracts 统一，Mastra 继续是唯一 runtime
 - [x] real HTTPS Custom provider product E2E 通过
-- [ ] real OpenRouter product E2E 通过（opt-in gate 已实现；等待专用 `E2E_OPENROUTER_API_KEY`）
+- [x] real OpenRouter product E2E 通过（trusted audit run `33881744993`；10.9s PASS）
 - [x] local governance + MagicDNS/local-Docker prod-like acceptance 全绿
 - [x] GitHub required CI 全绿（PR #303 / CI run `33866087666`；Secure AI Provider product acceptance PASS）
 
