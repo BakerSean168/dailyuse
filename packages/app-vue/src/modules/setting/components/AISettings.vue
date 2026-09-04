@@ -86,6 +86,18 @@
               <Button
                 variant="outline"
                 size="sm"
+                :disabled="providerTestLoading[String(provider.id)] === true"
+                @click="handleTestProvider(String(provider.id))"
+              >
+                {{
+                  providerTestLoading[String(provider.id)]
+                    ? t('setting.ai.testingProvider')
+                    : t('setting.ai.testProvider')
+                }}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 :data-testid="`ai-provider-replace-${provider.id}`"
                 @click="openProviderReplacement(provider)"
               >
@@ -442,6 +454,7 @@ const {
   deleteProvider,
   setDefaultProvider,
   refreshProviderModels,
+  testProvider,
 } = useAI();
 
 const onboardingOpen = ref(false);
@@ -464,6 +477,7 @@ const isProbing = ref(false);
 const isTestingModel = ref(false);
 const isSaving = ref(false);
 const providerRefreshLoading = ref<Record<string, boolean>>({});
+const providerTestLoading = ref<Record<string, boolean>>({});
 const providerStatusMap = ref<Record<string, ProviderStatusState | null>>({});
 
 const providerItems = computed(() => providers.value);
@@ -521,6 +535,7 @@ const onboardingTitle = computed(() => {
     case 'model': return t('setting.ai.modelTitle');
     case 'review': return t(replacing ? 'setting.ai.replacementReviewTitle' : 'setting.ai.reviewTitle');
   }
+  return '';
 });
 const onboardingDescription = computed(() => {
   const replacing = onboardingMode.value === 'replace';
@@ -530,6 +545,7 @@ const onboardingDescription = computed(() => {
     case 'model': return t(replacing ? 'setting.ai.replacementModelDescription' : 'setting.ai.modelDescription');
     case 'review': return t(replacing ? 'setting.ai.replacementReviewDescription' : 'setting.ai.reviewDescription');
   }
+  return '';
 });
 
 onMounted(() => {
@@ -743,6 +759,26 @@ async function handleSetDefault(providerId: string) {
     toast.success(t('setting.ai.providerDefaultUpdated'));
   } catch (error) {
     toast.error(getAISettingErrorMessage(error, 'setting.ai.providerActionFailed'));
+  }
+}
+
+async function handleTestProvider(providerId: string) {
+  providerTestLoading.value[providerId] = true;
+  providerStatusMap.value[providerId] = null;
+  try {
+    const result = await testProvider({ providerId: providerId as never });
+    if (!result.ok) {
+      throw new Error(result.error || t('setting.ai.providerTestFailed'));
+    }
+    const message = t('setting.ai.providerTestPassed');
+    providerStatusMap.value[providerId] = { tone: 'success', message };
+    toast.success(message);
+  } catch (error) {
+    const message = getAISettingErrorMessage(error, 'setting.ai.providerTestFailed');
+    providerStatusMap.value[providerId] = { tone: 'error', message };
+    toast.error(message);
+  } finally {
+    providerTestLoading.value[providerId] = false;
   }
 }
 

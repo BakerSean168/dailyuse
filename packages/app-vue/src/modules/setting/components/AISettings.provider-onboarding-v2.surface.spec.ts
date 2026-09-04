@@ -44,6 +44,12 @@ describe('AISettings Provider onboarding V2 surface', () => {
     expect(backBlock).toContain('probeResult.value = null');
   });
 
+  it('keeps saved Provider connection testing on the identity-bound server path', () => {
+    expect(source).toContain('handleTestProvider(String(provider.id))');
+    expect(source).toContain('testProvider({ providerId: providerId as never })');
+    expect(source).not.toContain('apiKey: provider.apiKey');
+  });
+
   it('ranks recommendations without auto-selecting one as the persisted default', () => {
     expect(source).toContain('recommendedModelIds');
     expect(source).not.toMatch(/selectedModelId\.value\s*=\s*.*recommendedModelIds/);

@@ -45,7 +45,7 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
     return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       if (config.isDefault) {
         await tx.$queryRawUnsafe(
-          'SELECT pg_advisory_xact_lock(hashtext($1))',
+          'SELECT pg_advisory_xact_lock(hashtext($1))::text AS acquired',
           String(config.identityId),
         );
       }
@@ -147,7 +147,7 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
 
   async setDefaultForIdentity(identityId: string, id: string) {
     return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      await tx.$queryRawUnsafe('SELECT pg_advisory_xact_lock(hashtext($1))', identityId);
+      await tx.$queryRawUnsafe('SELECT pg_advisory_xact_lock(hashtext($1))::text AS acquired', identityId);
 
       const provider = await tx.aiProviderConfig.findFirst({
         where: { id, identityId, isActive: true, deletedAt: null },

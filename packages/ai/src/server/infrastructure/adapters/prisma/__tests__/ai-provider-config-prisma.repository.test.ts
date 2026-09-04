@@ -189,7 +189,7 @@ describe('AIProviderConfigPrismaRepository', () => {
 
     await expect(repository.setDefaultForIdentity('identity-1', 'provider-2')).resolves.toBe('SET');
     expect(transactionClient.$queryRawUnsafe).toHaveBeenCalledWith(
-      'SELECT pg_advisory_xact_lock(hashtext($1))',
+      'SELECT pg_advisory_xact_lock(hashtext($1))::text AS acquired',
       'identity-1',
     );
     expect(aiProviderConfig.findFirst).toHaveBeenCalledOnce();

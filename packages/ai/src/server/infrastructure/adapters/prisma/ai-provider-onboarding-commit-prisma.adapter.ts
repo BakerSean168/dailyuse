@@ -46,7 +46,7 @@ export class AIProviderOnboardingCommitPrismaAdapter implements IAIProviderOnboa
 
         if (input.provider.isDefault) {
           await tx.$queryRawUnsafe(
-            'SELECT pg_advisory_xact_lock(hashtext($1))',
+            'SELECT pg_advisory_xact_lock(hashtext($1))::text AS acquired',
             input.identityId,
           );
           await tx.aiProviderConfig.updateMany({
