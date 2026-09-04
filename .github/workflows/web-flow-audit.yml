@@ -35,6 +35,8 @@ jobs:
           --health-retries 10
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
       - uses: ./.github/actions/setup-nx-affected-job
         with:
           node-version: '24'
