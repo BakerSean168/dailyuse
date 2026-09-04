@@ -4837,6 +4837,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/contracts/src/modules/ai/api/ai-task-create-workflow.dto.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/contracts/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/contracts/src/modules/ai/api/dual-registry.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10979,7 +10987,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 66
+      "fileCount": 67
     },
     {
       "id": "packages/dashboard/vitest.config.ts",
@@ -11712,7 +11720,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 1013,
+    "unit": 1014,
     "integration": 31,
     "smoke": 3,
     "boundary-ipc": 9,
