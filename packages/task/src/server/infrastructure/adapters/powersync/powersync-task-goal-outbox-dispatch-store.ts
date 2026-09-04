@@ -12,7 +12,7 @@ import {
 } from '../../task-goal-outbox-dispatch-policy';
 
 interface PowerSyncOutboxRow {
-  event_id: string;
+  id: string;
   payload: string;
   attempts: number;
   status: string;
@@ -39,7 +39,7 @@ export class PowerSyncTaskGoalOutboxDispatchStore implements TaskGoalOutboxDispa
 
     return this.db.writeTransaction(async (tx) => {
       const candidates = await tx.getAll<PowerSyncOutboxRow>(
-        `SELECT event_id, payload, attempts, status
+        `SELECT id, payload, attempts, status
            FROM task_goal_outbox
           WHERE status IN ('PENDING', 'PROCESSING')
             AND available_at <= ?
@@ -55,13 +55,13 @@ export class PowerSyncTaskGoalOutboxDispatchStore implements TaskGoalOutboxDispa
               SET status = 'PROCESSING', updated_at = ?, available_at = ?
             WHERE available_at <= ?
               AND status IN ('PENDING', 'PROCESSING')
-              AND event_id = ?`,
-          [nowIso, leaseUntilIso, nowIso, candidate.event_id],
+              AND id = ?`,
+          [nowIso, leaseUntilIso, nowIso, candidate.id],
         );
         if (result.rowsAffected !== 1) continue;
 
         claimed.push({
-          eventId: candidate.event_id,
+          eventId: candidate.id,
           payload: candidate.payload,
         });
       }
@@ -77,7 +77,7 @@ export class PowerSyncTaskGoalOutboxDispatchStore implements TaskGoalOutboxDispa
         `UPDATE task_goal_outbox
             SET status = 'DELIVERED', dispatched_at = ?, last_error = NULL, updated_at = ?
           WHERE status = 'PROCESSING'
-            AND event_id = ?`,
+            AND id = ?`,
         [nowIso, nowIso, eventId],
       );
     });
@@ -86,9 +86,9 @@ export class PowerSyncTaskGoalOutboxDispatchStore implements TaskGoalOutboxDispa
   async markRetry(eventId: string, error: string): Promise<void> {
     await this.db.writeTransaction(async (tx) => {
       const row = await tx.getOptional<PowerSyncOutboxRow>(
-        `SELECT event_id, payload, attempts, status
+        `SELECT id, payload, attempts, status
            FROM task_goal_outbox
-          WHERE event_id = ?`,
+          WHERE id = ?`,
         [eventId],
       );
       if (!row || row.status !== 'PROCESSING') return;
@@ -102,7 +102,7 @@ export class PowerSyncTaskGoalOutboxDispatchStore implements TaskGoalOutboxDispa
                 available_at = ?, updated_at = ?
           WHERE status = 'PROCESSING'
             AND attempts = ?
-            AND event_id = ?`,
+            AND id = ?`,
         [
           deadLetter ? 'DEAD_LETTER' : 'PENDING',
           error,
@@ -122,7 +122,7 @@ export class PowerSyncTaskGoalOutboxDispatchStore implements TaskGoalOutboxDispa
           SET status = 'PENDING', attempts = 0, available_at = ?,
               last_error = NULL, dispatched_at = NULL, updated_at = ?
         WHERE status = 'DEAD_LETTER'
-          AND event_id = ?`,
+          AND id = ?`,
       [nowIso, nowIso, eventId],
     );
     return result.rowsAffected === 1;

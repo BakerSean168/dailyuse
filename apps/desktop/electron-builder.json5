@@ -125,5 +125,5 @@
     "releaseType": "release" // 配置发布选项
   },
   "generateUpdatesFilesForAllChannels": true, // 为所有渠道生成更新文件
-  "npmRebuild": true // electron-builder owns the Electron ABI rebuild for packaged native dependencies
+  "npmRebuild": false // explicit rebuild-native-dependencies.mjs is the sole Electron ABI owner
 }

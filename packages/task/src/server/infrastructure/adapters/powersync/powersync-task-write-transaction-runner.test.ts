@@ -103,6 +103,8 @@ class FakePowerSyncTaskDb implements IElectronDatabase {
     parameters?: unknown[],
   ): Promise<IElectronDatabaseQueryResult> {
     if (sql.includes('INSERT OR IGNORE INTO task_goal_outbox')) {
+      expect(sql).toContain('task_goal_outbox (id, identity_id');
+      expect(sql).not.toContain('event_id');
       if (this.failOutbox) {
         throw new Error('PowerSync outbox write failure simulation');
       }
