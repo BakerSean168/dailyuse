@@ -7,10 +7,6 @@ import {
 } from '../../shared/openai-compatible-normalize';
 import { OpenAICompatibleGateway } from './openai-compatible.gateway';
 
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
-
 describe('OpenAICompatibleGateway', () => {
   it('normalizes Gemini request and response fields at the HTTP boundary', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
@@ -37,9 +33,7 @@ describe('OpenAICompatibleGateway', () => {
         { status: 200, headers: { 'Content-Type': 'application/json' } },
       ),
     );
-    vi.stubGlobal('fetch', fetchMock);
-
-    const result = await new OpenAICompatibleGateway().complete({
+    const result = await new OpenAICompatibleGateway(fetchMock as typeof fetch).complete({
       baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
       apiKey: 'test-key',
       model: 'models/gemini-2.5-flash',
@@ -64,20 +58,17 @@ describe('OpenAICompatibleGateway', () => {
   });
 
   it('includes finish_reason when the provider returns empty content', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        new Response(
-          JSON.stringify({
-            choices: [{ message: { content: '' }, finish_reason: 'length' }],
-          }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } },
-        ),
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: '' }, finish_reason: 'length' }],
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       ),
     );
 
     await expect(
-      new OpenAICompatibleGateway().complete({
+      new OpenAICompatibleGateway(fetchMock as typeof fetch).complete({
         baseUrl: 'https://api.example.com/v1',
         apiKey: 'test-key',
         model: 'gemini-2.5-flash',

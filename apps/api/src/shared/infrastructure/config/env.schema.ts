@@ -188,6 +188,39 @@ export const envSchema = z
     AI_PROVIDER_ENCRYPTION_PREVIOUS_KEYS: z
       .preprocess(emptyStringToUndefined, z.string().optional())
       .describe('AI Provider previous decrypt-only keys，格式 kid=secret,kid=secret'),
+    AI_PROVIDER_PRIVATE_ENDPOINT_ALLOWLIST: z
+      .preprocess(
+        emptyStringToUndefined,
+        z.string().superRefine((value, context) => {
+          for (const raw of value.split(',')) {
+            const candidate = raw.trim();
+            if (!candidate) continue;
+            try {
+              const parsed = new URL(`https://${candidate}`);
+              if (
+                parsed.username ||
+                parsed.password ||
+                parsed.pathname !== '/' ||
+                parsed.search ||
+                parsed.hash ||
+                !parsed.port
+              ) {
+                throw new Error('not exact host:port');
+              }
+            } catch {
+              context.addIssue({
+                code: 'custom',
+                message:
+                  'AI_PROVIDER_PRIVATE_ENDPOINT_ALLOWLIST must contain comma-separated exact host:port values',
+              });
+              return;
+            }
+          }
+        }).optional(),
+      )
+      .describe(
+        'Deployment-approved private OpenAI-compatible endpoints, comma-separated exact host:port values',
+      ),
 
     // ========== 邮件服务配置 ==========
     // EMAIL_PROVIDER: console (default) | smtp | resend. Never infer from NODE_ENV alone

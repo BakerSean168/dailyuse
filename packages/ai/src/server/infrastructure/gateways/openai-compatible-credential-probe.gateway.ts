@@ -1,4 +1,5 @@
 import { AIExecutionError } from '../../../shared/ai-execution-error';
+import type { ProviderFetch } from '../security/provider-safe-fetch';
 import type {
   IAIProviderCredentialProbePort,
   ProviderCredentialProbeInput,
@@ -8,6 +9,8 @@ import { normalizeOpenAICompatibleBaseUrl } from '../../shared/openai-compatible
 const PROBE_TIMEOUT_MS = 15_000;
 
 export class OpenAICompatibleCredentialProbeGateway implements IAIProviderCredentialProbePort {
+  constructor(private readonly fetchImpl: ProviderFetch) {}
+
   async validate(input: ProviderCredentialProbeInput): Promise<void> {
     if (input.strategy !== 'openrouter_key') return;
 
@@ -15,7 +18,7 @@ export class OpenAICompatibleCredentialProbeGateway implements IAIProviderCreden
     const timeoutId = setTimeout(() => controller.abort(), PROBE_TIMEOUT_MS);
     try {
       const url = new URL('key', normalizeOpenAICompatibleBaseUrl(input.baseUrl)).toString();
-      const response = await fetch(url, {
+      const response = await this.fetchImpl(url, {
         method: 'GET',
         headers: { Authorization: `Bearer ${input.apiKey}` },
         redirect: 'manual',
@@ -27,12 +30,12 @@ export class OpenAICompatibleCredentialProbeGateway implements IAIProviderCreden
         });
       }
       if (!response.ok) {
-        await response.text();
+        await response.body?.cancel().catch(() => undefined);
         throw new AIExecutionError(mapStatus(response.status), 'AI provider credential validation failed', {
           statusCode: response.status,
         });
       }
-      await response.text();
+      await response.body?.cancel().catch(() => undefined);
     } catch (error) {
       if (error instanceof AIExecutionError) throw error;
       if (error instanceof Error && error.name === 'AbortError') {

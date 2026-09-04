@@ -1098,6 +1098,9 @@ importers:
 
   packages/ai:
     dependencies:
+      '@ai-sdk/openai-compatible-v6':
+        specifier: npm:@ai-sdk/openai-compatible@2.0.62
+        version: '@ai-sdk/openai-compatible@2.0.62(zod@4.4.3)'
       '@mastra/core':
         specifier: 1.60.0
         version: 1.60.0(@grpc/grpc-js@1.14.4)(express@5.2.1(supports-color@10.2.2))(rxjs@7.8.2)(supports-color@10.2.2)(zod@4.4.3)
@@ -1140,6 +1143,9 @@ importers:
       express:
         specifier: ^5.2.1
         version: 5.2.1(supports-color@10.2.2)
+      undici:
+        specifier: ^8.7.0
+        version: 8.7.0
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -2297,6 +2303,12 @@ packages:
 
   '@adobe/css-tools@4.4.4':
     resolution: {integrity: sha512-Elp+iwUx5rN5+Y8xLt5/GRoG20WGoDCQ/1Fb+1LiGtvwbDavuSk0jhD/eZdckHAuzcDzccnkv+rEjyWfRx18gg==}
+
+  '@ai-sdk/openai-compatible@2.0.62':
+    resolution: {integrity: sha512-lRe54zvyIS1a60N8UVhnwKZRI5I+GSV8uhKkPpId+aiKO7z7UgSbNqFmXkBBMD3yc9UrLnQnATV2EQyXNhzEkA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
 
   '@ai-sdk/provider-utils@3.0.30':
     resolution: {integrity: sha512-NCJ9JKow5ENAgEZxzvEvF20thwDiH+hutvzmrUDbloRX0azpJHNst8+7pZIVryYhLM9wgpT5/ShTSjPTFhkxEQ==}
@@ -14873,10 +14885,6 @@ packages:
     resolution: {integrity: sha512-YmfV3YnEDzXRC5lZ2jWtWWHKGUm1zIt8AhesR1tens+HTNv+YZlN/dp6G727LOvMJ8xjP9Be7Y2Sdr96LDm+pg==}
     engines: {node: '>=18.17'}
 
-  undici@7.21.0:
-    resolution: {integrity: sha512-Hn2tCQpoDt1wv23a68Ctc8Cr/BHpUSfaPYrkajTXOS9IKpxVRx/X5m1K2YkbK2ipgZgxXSgsUinl3x+2YdSSfg==}
-    engines: {node: '>=20.18.1'}
-
   undici@7.28.0:
     resolution: {integrity: sha512-cRZYrTDwWznlnRiPjggAGxZXanty6M8RV1ff8Wm4LWXBp7/IG8v5DnOm74DtUBp9OONpK75YlPnIjQqX0dBDtA==}
     engines: {node: '>=20.18.1'}
@@ -15820,6 +15828,12 @@ snapshots:
       express: 5.2.1(supports-color@10.2.2)
 
   '@adobe/css-tools@4.4.4': {}
+
+  '@ai-sdk/openai-compatible@2.0.62(zod@4.4.3)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.14
+      '@ai-sdk/provider-utils': 4.0.40(zod@4.4.3)
+      zod: 4.4.3
 
   '@ai-sdk/provider-utils@3.0.30(zod@4.4.3)':
     dependencies:
@@ -19611,7 +19625,7 @@ snapshots:
     dependencies:
       '@powersync/common': 1.57.2
       comlink: 4.4.2
-      undici: 7.21.0
+      undici: 7.28.0
     optionalDependencies:
       better-sqlite3: 12.11.1
 
@@ -21770,7 +21784,7 @@ snapshots:
       '@vue/shared': 3.5.39
       estree-walker: 2.0.2
       magic-string: 0.30.21
-      postcss: 8.5.19
+      postcss: 8.5.27
       source-map-js: 1.2.1
 
   '@vue/compiler-ssr@3.5.25':
@@ -29894,7 +29908,7 @@ snapshots:
       tinyexec: 1.0.2
       tinyglobby: 0.2.15
       ts-morph: 27.0.2
-      undici: 7.21.0
+      undici: 7.28.0
       validate-npm-package-name: 5.0.1
       vue-metamorph: 3.3.4(eslint@10.7.0(jiti@2.4.2)(supports-color@10.2.2))(supports-color@10.2.2)
       zod: 3.25.76
@@ -30964,8 +30978,6 @@ snapshots:
   undici-types@7.18.2: {}
 
   undici@6.27.0: {}
-
-  undici@7.21.0: {}
 
   undici@7.28.0: {}
 

@@ -57,9 +57,11 @@ import { OpenAICompatibleChatExecutionAdapter } from './adapters/openai-compatib
 import { OpenAICompatibleAnalyticsQueryAdapter } from './adapters/openai-compatible-analytics-query.adapter';
 import { DeterministicKnowledgeIngestionAdapter } from './adapters/deterministic-knowledge-ingestion.adapter';
 import { OpenAICompatibleKnowledgeQueryAdapter } from './adapters/openai-compatible-knowledge-query.adapter';
+import { OpenAICompatibleGateway } from './gateways/openai-compatible.gateway';
 import { OpenAICompatibleModelCatalogGateway } from './gateways/openai-compatible-model-catalog.gateway';
 import { OpenAICompatibleCredentialProbeGateway } from './gateways/openai-compatible-credential-probe.gateway';
 import { ProviderEndpointPolicy } from './security/provider-endpoint-policy';
+import { ProviderSafeFetch } from './security/provider-safe-fetch';
 import { isAIExecutionError } from '../../shared/ai-execution-error';
 
 import type { Result } from '@memoflow/contracts/result';
@@ -421,8 +423,11 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
 
   // --- Services assembled directly from canonical use cases ---
 
-  const chatExecutionAdapter = new OpenAICompatibleChatExecutionAdapter();
-  const modelCatalogGateway = new OpenAICompatibleModelCatalogGateway();
+  const providerEndpointPolicy = new ProviderEndpointPolicy();
+  const providerSafeFetch = new ProviderSafeFetch({ policy: providerEndpointPolicy });
+  const openAICompatibleGateway = new OpenAICompatibleGateway(providerSafeFetch.fetch);
+  const chatExecutionAdapter = new OpenAICompatibleChatExecutionAdapter(openAICompatibleGateway);
+  const modelCatalogGateway = new OpenAICompatibleModelCatalogGateway(providerSafeFetch.fetch);
   const onboardingSessionRepository = dependencies.providerOnboardingSessionRepository;
   const onboardingCommitPort = dependencies.providerOnboardingCommitPort;
   const onboardingAvailable = Boolean(onboardingSessionRepository && onboardingCommitPort);
@@ -441,8 +446,8 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
           probe: new ProbeAIProviderConnectionUseCase({
             sessionRepository: onboardingSessionRepository,
             modelCatalog: modelCatalogGateway,
-            credentialProbe: new OpenAICompatibleCredentialProbeGateway(),
-            endpointPolicy: new ProviderEndpointPolicy(),
+            credentialProbe: new OpenAICompatibleCredentialProbeGateway(providerSafeFetch.fetch),
+            endpointPolicy: providerEndpointPolicy,
           }),
           testOnboardingModel: new TestAIProviderOnboardingModelUseCase(
             onboardingSessionRepository,
@@ -467,7 +472,7 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
   const knowledgeIngestionPort =
     dependencies.knowledgeIngestionPort ?? new DeterministicKnowledgeIngestionAdapter();
   const knowledgeQueryPort =
-    dependencies.knowledgeQueryPort ?? new OpenAICompatibleKnowledgeQueryAdapter();
+    dependencies.knowledgeQueryPort ?? new OpenAICompatibleKnowledgeQueryAdapter(openAICompatibleGateway);
   const hasKnowledgeIndexStack = Boolean(
     dependencies.knowledgeIndexRepository && dependencies.knowledgeSourcePort,
   );
@@ -557,7 +562,7 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
         };
 
   const analyticsQueryPort =
-    dependencies.analyticsQueryPort ?? new OpenAICompatibleAnalyticsQueryAdapter();
+    dependencies.analyticsQueryPort ?? new OpenAICompatibleAnalyticsQueryAdapter(openAICompatibleGateway);
   const analyticsQueryService: AIAnalyticsQueryService = dependencies.analyticsReadPort
     ? {
         isAvailable: true,
@@ -745,10 +750,13 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
         } catch (disposeError) {
           logger.error('AIModule: Mastra dispose failed during init rollback', disposeError);
         }
+        await providerSafeFetch.close().catch((closeError) => {
+          logger.error('AIModule: provider egress transport close failed during init rollback', closeError);
+        });
         throw error;
       });
     },
-    dispose(): Promise<void> | void {
+    async dispose(): Promise<void> {
       if (!started) {
         return;
       }
@@ -758,7 +766,11 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       }
 
       started = false;
-      return dependencies.mastraRuntime?.dispose();
+      try {
+        await dependencies.mastraRuntime?.dispose();
+      } finally {
+        await providerSafeFetch.close();
+      }
     },
   };
 }

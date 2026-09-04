@@ -5,6 +5,8 @@ import {
 } from '../../../testing/ai-test-support';
 import { MastraModelResolver } from './model-resolver';
 
+const inertFetch = vi.fn(async () => { throw new Error('network must not run in resolver tests'); }) as unknown as typeof fetch;
+
 describe('MastraModelResolver', () => {
   it('resolves an explicitly selected provider only through the authenticated identity lookup', async () => {
     const provider = createAIProviderConfigServerDTO({
@@ -15,7 +17,7 @@ describe('MastraModelResolver', () => {
     });
     const findByIdForIdentity = vi.fn(async () => provider);
     const repository = createAIProviderConfigRepositoryStub({ findByIdForIdentity });
-    const resolver = new MastraModelResolver(repository);
+    const resolver = new MastraModelResolver(repository, inertFetch);
 
     const resolved = await resolver.resolve({
       identityId: 'identity-1',
@@ -27,10 +29,12 @@ describe('MastraModelResolver', () => {
     expect(resolved.providerId).toBe('provider-selected');
     expect(resolved.modelId).toBe('model-override');
     expect(resolved.model).toMatchObject({
-      providerId: 'memoflow-byok',
       modelId: 'model-override',
-      apiKey: 'server-secret',
     });
+    expect(JSON.stringify(resolved.model)).not.toContain('server-secret');
+    expect(
+      (resolved.model as unknown as { config?: { fetch?: unknown } }).config?.fetch,
+    ).toBe(inertFetch);
   });
 
   it('never selects an inactive requested provider and falls back only within the same identity', async () => {
@@ -51,7 +55,7 @@ describe('MastraModelResolver', () => {
       findByIdForIdentity,
       findDefaultByIdentityId,
     });
-    const resolver = new MastraModelResolver(repository);
+    const resolver = new MastraModelResolver(repository, inertFetch);
 
     const resolved = await resolver.resolve({
       identityId: 'identity-1',
@@ -68,7 +72,7 @@ describe('MastraModelResolver', () => {
       findDefaultByIdentityId: async () => null,
       findByIdentityId: async () => [],
     });
-    const resolver = new MastraModelResolver(repository);
+    const resolver = new MastraModelResolver(repository, inertFetch);
 
     await expect(resolver.resolve({ identityId: 'identity-1' })).rejects.toMatchObject({
       category: 'provider_unavailable',
@@ -80,7 +84,7 @@ describe('MastraModelResolver', () => {
     const repository = createAIProviderConfigRepositoryStub({
       findDefaultByIdentityId: async () => provider,
     });
-    const resolver = new MastraModelResolver(repository);
+    const resolver = new MastraModelResolver(repository, inertFetch);
 
     await expect(resolver.resolve({ identityId: String(provider.identityId) })).rejects.toThrow(
       /has no selected model/,

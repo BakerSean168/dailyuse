@@ -30,7 +30,7 @@ function parseAnswer(content: string): { answer: string; highlights: string[] } 
 
 /** Provider-backed analytics synthesis over a host-built, identity-scoped context snapshot. */
 export class OpenAICompatibleAnalyticsQueryAdapter implements IAnalyticsQueryPort {
-  constructor(private readonly gateway: OpenAICompatibleGateway = new OpenAICompatibleGateway()) {}
+  constructor(private readonly gateway: OpenAICompatibleGateway) {}
 
   async query(input: AnalyticsQueryInput): Promise<AnalyticsQueryResult> {
     const completion = await this.gateway.complete({

@@ -192,6 +192,31 @@ describe('envSchema remote origins require HTTPS', () => {
   });
 });
 
+describe('envSchema AI Provider private endpoint allowlist', () => {
+  const required = {
+    JWT_SECRET: 'local-validation-secret-at-least-32-characters',
+    AI_PROVIDER_ENCRYPTION_KEY: 'provider-encryption-secret-at-least-32-chars',
+  };
+
+  it('accepts comma-separated exact host:port entries', () => {
+    expect(
+      envSchema.parse({
+        ...required,
+        AI_PROVIDER_PRIVATE_ENDPOINT_ALLOWLIST: 'localhost:11434,10.0.0.5:8443,[fd00::1]:9443',
+      }).AI_PROVIDER_PRIVATE_ENDPOINT_ALLOWLIST,
+    ).toBe('localhost:11434,10.0.0.5:8443,[fd00::1]:9443');
+  });
+
+  it.each(['localhost', 'https://localhost:11434', 'localhost:11434/path']) (
+    'rejects malformed allowlist entry %s',
+    (value) => {
+      expect(() =>
+        envSchema.parse({ ...required, AI_PROVIDER_PRIVATE_ENDPOINT_ALLOWLIST: value }),
+      ).toThrow(/exact host:port/);
+    },
+  );
+});
+
 describe('envSchema OpenTelemetry (Phase 6 opt-in)', () => {
   const required = {
     JWT_SECRET: 'local-validation-secret-at-least-32-characters',
