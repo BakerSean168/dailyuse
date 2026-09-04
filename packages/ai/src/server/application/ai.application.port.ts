@@ -6,8 +6,6 @@ import type {
   ConversationListRes,
   UpdateConversationReq,
   UpdateConversationRes,
-  CreateAIProviderConfigReq,
-  CreateAIProviderConfigRes,
   UpdateAIProviderConfigReq,
   UpdateAIProviderConfigRes,
   TestAIProviderReq,
@@ -23,6 +21,15 @@ import type {
   QueryKnowledgeRes,
   ReindexKnowledgeReq,
   ReindexKnowledgeRes,
+  ListAIProviderCatalogRes,
+  ProbeAIProviderConnectionReq,
+  ProbeAIProviderConnectionRes,
+  TestAIProviderOnboardingModelReq,
+  TestAIProviderOnboardingModelRes,
+  CommitAIProviderOnboardingReq,
+  ProbeAIProviderReplacementReq,
+  CommitAIProviderReplacementReq,
+  AIProviderModelCatalogSnapshot,
 } from '@memoflow/contracts/ai';
 
 /**
@@ -36,11 +43,32 @@ import type {
 export interface AIApplicationPort {
   getCapabilities(): Promise<Result<AICapabilities>>;
 
-  // Provider config
-  createProvider(
-    req: CreateAIProviderConfigReq,
+  // Provider onboarding V2
+  getProviderCatalog(): Promise<Result<ListAIProviderCatalogRes>>;
+  probeProviderConnection(
+    req: ProbeAIProviderConnectionReq,
     cx: ExecutionContext,
-  ): Promise<Result<CreateAIProviderConfigRes>>;
+  ): Promise<Result<ProbeAIProviderConnectionRes>>;
+  testProviderOnboardingModel(
+    req: TestAIProviderOnboardingModelReq,
+    cx: ExecutionContext,
+  ): Promise<Result<TestAIProviderOnboardingModelRes>>;
+  commitProviderOnboarding(
+    req: CommitAIProviderOnboardingReq,
+    cx: ExecutionContext,
+  ): Promise<Result<AIProviderConfigClientDTO>>;
+  probeProviderReplacement(
+    providerId: string,
+    req: ProbeAIProviderReplacementReq,
+    cx: ExecutionContext,
+  ): Promise<Result<ProbeAIProviderConnectionRes>>;
+  commitProviderReplacement(
+    providerId: string,
+    req: CommitAIProviderReplacementReq,
+    cx: ExecutionContext,
+  ): Promise<Result<AIProviderConfigClientDTO>>;
+
+  // Saved provider operations. Secrets/endpoints are changed only through V2 flows.
   updateProvider(
     id: string,
     req: UpdateAIProviderConfigReq,
@@ -54,7 +82,7 @@ export interface AIApplicationPort {
   refreshProviderModels(
     providerId: string,
     cx: ExecutionContext,
-  ): Promise<Result<AIProviderConfigClientDTO>>;
+  ): Promise<Result<AIProviderModelCatalogSnapshot>>;
 
   // Conversation product shell. Message history/execution is Mastra-owned.
   createConversation(cx: ExecutionContext, name?: string): Promise<Result<AIConversationClientDTO>>;

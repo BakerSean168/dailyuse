@@ -135,8 +135,8 @@ import { describe, expect, it } from 'vitest';
         'export { AIModelInfoSchema, AIProviderConfigClientDTOSchema }',
       );
       expect(responseSchemas).not.toMatch(/const AIModelInfoSchema = z\.object\(\{/);
-      // Residual 811: availableModels lives on aggregate-owned ClientDTOSchema, not response-schemas body.
-      expect(aggregate).toContain('availableModels: z.array(AIModelInfoSchema)');
+      // Provider V2: dynamic model inventory is a transient catalog snapshot, never Provider aggregate truth.
+      expect(aggregate).not.toContain('availableModels: z.array(AIModelInfoSchema)');
     });
   });
 }
@@ -455,15 +455,12 @@ import { describe, expect, it } from 'vitest';
   });
 }
 
-// --- merged from provider-create-schema-dual.surface.spec.ts ---
+// --- Provider onboarding V2 single write path ---
 {
-  /**
-   * Residual 683: AI provider create request schema name dual retired.
-   * CreateAIProviderConfigSchema owns the body; no private base schema alias.
-   */
-  describe('ai provider create schema name dual retired (residual 683)', () => {
+  describe('ai provider onboarding V2 owns the only credential-bearing create path', () => {
     const apiDir = __dirname;
     const dto = readFileSync(resolve(apiDir, 'ai-provider-config.dto.ts'), 'utf8');
+    const onboardingDto = readFileSync(resolve(apiDir, 'ai-provider-onboarding.dto.ts'), 'utf8');
     const routes = readFileSync(
       resolve(apiDir, '../../../../../ai/src/api/routes/ai-provider.routes.ts'),
       'utf8',
@@ -473,21 +470,23 @@ import { describe, expect, it } from 'vitest';
       'utf8',
     );
 
-    it('exports CreateAIProviderConfigSchema body without private base schema dual', () => {
-      expect(dto).toContain('Residual 683');
-      expect(dto).toContain('export const CreateAIProviderConfigSchema = z.object({');
-      expect(dto).not.toMatch(/export const CreateAIProviderConfigSchema\s*=\s*\w+Schema\s*;/);
-      expect(dto).not.toMatch(/const ProviderBaseSchema\b/);
-      expect(dto).toContain(
-        'export type CreateAIProviderConfigReq = z.infer<typeof CreateAIProviderConfigSchema>',
+    it('retires the legacy raw-secret create schema', () => {
+      expect(dto).not.toContain('CreateAIProviderConfigSchema');
+      expect(dto).not.toContain('CreateAIProviderConfigReq');
+      expect(onboardingDto).toContain('CommitAIProviderOnboardingSchema');
+      const commitBlock = onboardingDto.slice(
+        onboardingDto.indexOf('export const CommitAIProviderOnboardingSchema'),
+        onboardingDto.indexOf('export type CommitAIProviderOnboardingReq'),
       );
+      expect(commitBlock).toContain('onboardingId: z.string().min(16)');
+      expect(commitBlock).not.toContain('apiKey:');
     });
 
-    it('routes and controller parse CreateAIProviderConfigSchema only', () => {
-      expect(routes).toContain('CreateAIProviderConfigSchema');
-      expect(routes).not.toMatch(/ProviderBaseSchema\b/);
-      expect(controller).toContain('CreateAIProviderConfigSchema');
-      expect(controller).not.toMatch(/ProviderBaseSchema\b/);
+    it('routes POST /providers through the one-time onboarding commit only', () => {
+      expect(routes).toContain('schema: CommitAIProviderOnboardingSchema');
+      expect(routes).not.toContain('CreateAIProviderConfigSchema');
+      expect(controller).toContain('CommitAIProviderOnboardingSchema.safeParse(input)');
+      expect(controller).not.toContain('CreateAIProviderConfigSchema');
     });
   });
 }

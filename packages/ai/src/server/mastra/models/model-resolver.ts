@@ -1,21 +1,34 @@
-import type { OpenAICompatibleConfig } from '@mastra/core/llm';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible-v6';
+import type { MastraModelConfig } from '@mastra/core/llm';
 import type { IAIProviderConfigRepository } from '../../domain/repositories/i-ai-provider-config-repository';
 import { resolveActiveProviderConfig } from '../../application/use-cases/commands/ai-provider-resolution';
+import { ProviderSafeFetch, type ProviderFetch } from '../../infrastructure/security/provider-safe-fetch';
 
 export interface ResolvedAIModel {
   readonly providerId: string;
   readonly providerName: string;
   readonly modelId: string;
-  readonly model: OpenAICompatibleConfig;
+  readonly model: MastraModelConfig;
+}
+
+function createDefaultProviderFetch(): ProviderFetch {
+  return new ProviderSafeFetch().fetch;
 }
 
 /**
  * Request-scoped BYOK model resolution for the Mastra runtime.
- * Credentials stay server-side and are never placed in RequestContext, memory,
- * workflow input, snapshots, or client events.
+ *
+ * Instead of returning Mastra's shorthand `{ url, apiKey }` config (which lets
+ * the framework perform unrestricted DNS/fetch itself), MemoFlow constructs the
+ * concrete AI SDK OpenAI-compatible language model and injects ProviderSafeFetch.
+ * Custom endpoints therefore keep the same HTTPS/SSRF/DNS-rebinding boundary
+ * during real Agent/Workflow execution as they had during onboarding.
  */
 export class MastraModelResolver {
-  constructor(private readonly providers: IAIProviderConfigRepository) {}
+  constructor(
+    private readonly providers: IAIProviderConfigRepository,
+    private readonly providerFetch: ProviderFetch = createDefaultProviderFetch(),
+  ) {}
 
   async resolve(input: {
     identityId: string;
@@ -32,19 +45,19 @@ export class MastraModelResolver {
       throw new Error(`AI provider ${provider.id} has no selected model`);
     }
 
+    const sdkProvider = createOpenAICompatible({
+      name: 'memoflow-byok',
+      baseURL: provider.baseUrl,
+      apiKey: provider.apiKey,
+      fetch: this.providerFetch,
+      supportsStructuredOutputs: true,
+    });
+
     return {
       providerId: provider.id,
       providerName: provider.name,
       modelId,
-      model: {
-        // Use a fixed runtime provider id so arbitrary user/provider ids never
-        // become framework registration keys. The real product provider id is
-        // retained only in MemoFlow metadata above.
-        providerId: 'memoflow-byok',
-        modelId,
-        url: provider.baseUrl,
-        apiKey: provider.apiKey,
-      },
+      model: sdkProvider.chatModel(modelId) as unknown as MastraModelConfig,
     };
   }
 }

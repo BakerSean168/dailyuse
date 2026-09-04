@@ -14,5 +14,6 @@ export * from './ai-knowledge-expansion.dto';
 export * from './ai-knowledge-query.dto';
 export * from './ai-knowledge-note.dto';
 export * from './ai-provider-config.dto';
+export * from './ai-provider-onboarding.dto';
 
 export * from './response-schemas';

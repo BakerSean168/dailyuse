@@ -30,7 +30,6 @@ function createProvider(
     baseUrl: 'https://api.example.com/v1',
     apiKeyMasked: 'sk-****1234',
     defaultModel: 'gpt-4.1-mini',
-    availableModels: [{ id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini' }],
     isActive: true,
     isDefault: true,
     priority: 1,
@@ -141,9 +140,7 @@ describe('useAI', () => {
       expandKnowledge: vi.fn().mockResolvedValue(ok(expandKnowledgeResult)),
     });
     const request: TestAIProviderReq = {
-      baseUrl: 'https://api.example.com/v1',
-      apiKey: 'secret',
-      model: 'gpt-4.1-mini',
+      providerId: 'provider-1' as TestAIProviderReq['providerId'],
     };
 
     const loadedCapabilities: AICapabilities = await composable.loadCapabilities();

@@ -57,6 +57,8 @@ export function composeAI(dependencies: ComposeAIElectronDependencies): AIElectr
     providerConfigRepository,
     knowledgeIndexRepository,
     executionLogPort,
+    providerOnboardingSessionRepository,
+    providerOnboardingCommitPort,
   } = createAIPowerSyncRepositories(dependencies.db);
   const goalPlanMutationPort = new DesktopGoalPlanMutationAdapter(
     dependencies.goalApplicationPort,
@@ -80,6 +82,8 @@ export function composeAI(dependencies: ComposeAIElectronDependencies): AIElectr
   const instance = createAIModule({
     conversationRepository,
     providerConfigRepository,
+    providerOnboardingSessionRepository,
+    providerOnboardingCommitPort,
     mastraRuntime,
     workflowRuntime: mastraRuntime,
     knowledgeIndexRepository,

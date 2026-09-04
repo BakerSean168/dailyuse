@@ -12,7 +12,6 @@ function provider(id: string, isDefault = false): AIProviderConfigServerDTO {
     baseUrl: 'https://api.example.com/v1',
     apiKey: 'secret',
     defaultModel: 'model-1',
-    availableModels: [],
     isActive: true,
     isDefault,
     priority: 100,

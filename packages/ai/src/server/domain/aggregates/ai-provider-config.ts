@@ -6,7 +6,6 @@ import { AggregateRoot } from '@memoflow/utils/domain';
 import { AIProviderType } from '@memoflow/contracts/ai';
 import type {
   AIEventMap,
-  AIModelInfo,
   AIProviderConfigClientDTO,
   AIProviderConfigServerDTO,
 } from '@memoflow/contracts/ai';
@@ -22,7 +21,6 @@ export interface AIProviderConfigState {
   baseUrl: string;
   apiKey: string;
   defaultModel: string | null;
-  availableModels: AIModelInfo[];
   isActive: boolean;
   isDefault: boolean;
   priority: number;
@@ -68,9 +66,6 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
     return this._props.defaultModel;
   }
 
-  public get availableModels(): AIModelInfo[] {
-    return [...this._props.availableModels];
-  }
 
   public get isActive(): boolean {
     return this._props.isActive;
@@ -122,7 +117,6 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
       baseUrl: AIProviderConfig.normalizeBaseUrl(params.baseUrl),
       apiKey: params.apiKey,
       defaultModel: params.defaultModel ?? null,
-      availableModels: [],
       isActive: true,
       isDefault: params.isDefault ?? false,
       priority: params.priority ?? 100,
@@ -169,25 +163,8 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
   }
 
   public setDefaultModel(modelId: string | null): void {
-    if (modelId && !this._props.availableModels.some((m) => m.id === modelId)) {
-      console.warn(`Model ${modelId} not in available models list`);
-    }
     this._props.defaultModel = modelId;
     this._props.updatedAt = new Date();
-  }
-
-  public updateAvailableModels(models: AIModelInfo[]): void {
-    this._props.availableModels = models;
-    this._props.updatedAt = new Date();
-
-    this.addDomainEvent<AIEventMap['ai:provider-config-models-updated']>(
-      'ai:provider-config-models-updated',
-      {
-        identityId: this._props.identityId,
-        providerConfig: this.toServerDTO(),
-        modelCount: models.length,
-      },
-    );
   }
 
   public activate(): void {
@@ -243,7 +220,6 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
       baseUrl: this._props.baseUrl,
       apiKey: this._props.apiKey,
       defaultModel: this._props.defaultModel,
-      availableModels: [...this._props.availableModels],
       isActive: this._props.isActive,
       isDefault: this._props.isDefault,
       priority: this._props.priority,
@@ -263,7 +239,6 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
       baseUrl: this._props.baseUrl,
       apiKeyMasked: AIProviderConfig.maskApiKey(this._props.apiKey),
       defaultModel: this._props.defaultModel,
-      availableModels: [...this._props.availableModels],
       isActive: this._props.isActive,
       isDefault: this._props.isDefault,
       priority: this._props.priority,

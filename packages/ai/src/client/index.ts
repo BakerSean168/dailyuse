@@ -16,7 +16,6 @@ import type {
   AIConversationClientDTO,
   AIProviderConfigClientDTO,
   ConversationListRes,
-  CreateAIProviderConfigReq,
   CreateConversationReq,
   ExpandKnowledgeReq,
   ExpandKnowledgeRes,
@@ -32,6 +31,15 @@ import type {
   TestAIProviderRes,
   UpdateAIProviderConfigReq,
   UpdateConversationReq,
+  ListAIProviderCatalogRes,
+  ProbeAIProviderConnectionReq,
+  ProbeAIProviderConnectionRes,
+  TestAIProviderOnboardingModelReq,
+  TestAIProviderOnboardingModelRes,
+  CommitAIProviderOnboardingReq,
+  ProbeAIProviderReplacementReq,
+  CommitAIProviderReplacementReq,
+  AIProviderModelCatalogSnapshot,
 } from '@memoflow/contracts/ai';
 import {
   createAIHttpAdapters,
@@ -48,7 +56,19 @@ export interface AIClientPort {
     request?: GetAIEvaluationOverviewReq,
   ): Promise<Result<GetAIEvaluationOverviewRes>>;
 
-  createProvider(request: CreateAIProviderConfigReq): Promise<Result<AIProviderConfigClientDTO>>;
+  getProviderCatalog(): Promise<Result<ListAIProviderCatalogRes>>;
+  probeProviderConnection(request: ProbeAIProviderConnectionReq): Promise<Result<ProbeAIProviderConnectionRes>>;
+  testProviderOnboardingModel(request: TestAIProviderOnboardingModelReq): Promise<Result<TestAIProviderOnboardingModelRes>>;
+  commitProviderOnboarding(request: CommitAIProviderOnboardingReq): Promise<Result<AIProviderConfigClientDTO>>;
+  probeProviderReplacement(
+    id: string,
+    request: ProbeAIProviderReplacementReq,
+  ): Promise<Result<ProbeAIProviderConnectionRes>>;
+  commitProviderReplacement(
+    id: string,
+    request: CommitAIProviderReplacementReq,
+  ): Promise<Result<AIProviderConfigClientDTO>>;
+
   updateProvider(
     id: string,
     request: UpdateAIProviderConfigReq,
@@ -58,7 +78,7 @@ export interface AIClientPort {
   deleteProvider(id: string): Promise<Result<void>>;
   testProvider(request: TestAIProviderReq): Promise<Result<TestAIProviderRes>>;
   setDefaultProvider(providerId: string): Promise<Result<void>>;
-  refreshProviderModels(id: string): Promise<Result<AIProviderConfigClientDTO>>;
+  refreshProviderModels(id: string): Promise<Result<AIProviderModelCatalogSnapshot>>;
 
   createConversation(request: CreateConversationReq): Promise<Result<AIConversationClientDTO>>;
   updateConversation(
@@ -95,7 +115,15 @@ function createProductClient(adapters: ProductAdapters): AIClientPort {
     getEvaluationOverview: (request) =>
       adapters.evaluationReport.getEvaluationOverview(request),
 
-    createProvider: (request) => adapters.providerConfig.createProvider(request),
+    getProviderCatalog: () => adapters.providerConfig.getProviderCatalog(),
+    probeProviderConnection: (request) => adapters.providerConfig.probeProviderConnection(request),
+    testProviderOnboardingModel: (request) => adapters.providerConfig.testProviderOnboardingModel(request),
+    commitProviderOnboarding: (request) => adapters.providerConfig.commitProviderOnboarding(request),
+    probeProviderReplacement: (id, request) =>
+      adapters.providerConfig.probeProviderReplacement(id, request),
+    commitProviderReplacement: (id, request) =>
+      adapters.providerConfig.commitProviderReplacement(id, request),
+
     updateProvider: (id, request) => adapters.providerConfig.updateProvider(id, request),
     listProviders: () => adapters.providerConfig.getProviders(),
     getProvider: (id) => adapters.providerConfig.getProviderById(id),

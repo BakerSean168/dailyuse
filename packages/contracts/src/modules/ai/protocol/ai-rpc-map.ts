@@ -1,6 +1,4 @@
 import type {
-  CreateAIProviderConfigReq,
-  CreateAIProviderConfigRes,
   UpdateAIProviderConfigReq,
   UpdateAIProviderConfigRes,
   ListAIProviderConfigsRes,
@@ -40,7 +38,6 @@ import type { AiProviderConfigId, AiConversationId } from '../../../primitives';
 
 /** Canonical cross-process AI RPC map after the Mastra cutover. */
 export type AIRpcMap = {
-  'ai:provider:create': [CreateAIProviderConfigReq, CreateAIProviderConfigRes];
   'ai:provider:update': [UpdateAIProviderConfigReq, UpdateAIProviderConfigRes];
   'ai:provider:list': [void, ListAIProviderConfigsRes];
   'ai:provider:get': [AiProviderConfigId, GetAIProviderConfigRes];

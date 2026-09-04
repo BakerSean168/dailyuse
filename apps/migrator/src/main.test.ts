@@ -38,6 +38,7 @@ describe('migrator interface', () => {
       'prepare vNext unique constraints',
       'migrate legacy authentication to Better Auth',
       'reconcile Prisma schema',
+      'prepare AI provider onboarding sessions',
       'prepare AI provider default invariant',
       'ensure Task goal-binding constraint',
       'bootstrap AI knowledge index',

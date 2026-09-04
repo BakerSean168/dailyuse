@@ -107,6 +107,26 @@ describe('OpenTelemetryHttpRequestTrace (opt-in)', () => {
     expect(JSON.stringify(attributes)).not.toContain('identity-secret');
   });
 
+  it('never exports Provider onboarding apiKey or Authorization as span attributes', async () => {
+    const request = {
+      method: 'POST',
+      headers: { authorization: 'Bearer provider-session-secret' },
+      body: { catalogId: 'openrouter', apiKey: 'sk-provider-onboarding-secret' },
+    } as unknown as Request;
+    const span = new OpenTelemetryHttpRequestTrace().startSpan(request);
+    span.complete(observation({
+      method: 'POST',
+      routeTemplate: '/api/v1/ai/provider-connections/probe',
+    }));
+
+    await flush();
+    const serialized = JSON.stringify(exporter.getFinishedSpans()[0]!.attributes);
+    expect(serialized).not.toContain('provider-session-secret');
+    expect(serialized).not.toContain('sk-provider-onboarding-secret');
+    expect(serialized).not.toContain('apiKey');
+    expect(serialized).not.toContain('authorization');
+  });
+
   it('marks 401/500 and aborted outcomes as error spans', async () => {
     const serverError = new OpenTelemetryHttpRequestTrace().startSpan(mockRequest());
     serverError.complete(observation({ statusCode: 500 }));

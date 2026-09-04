@@ -7,7 +7,6 @@ import type {
   AIConversationClientDTO,
   AIProviderConfigClientDTO,
   ConversationListRes,
-  CreateAIProviderConfigReq,
   CreateConversationReq,
   ExpandKnowledgeReq,
   ExpandKnowledgeRes,
@@ -24,6 +23,15 @@ import type {
   TestAIProviderRes,
   UpdateAIProviderConfigReq,
   UpdateConversationReq,
+  ListAIProviderCatalogRes,
+  ProbeAIProviderConnectionReq,
+  ProbeAIProviderConnectionRes,
+  TestAIProviderOnboardingModelReq,
+  TestAIProviderOnboardingModelRes,
+  CommitAIProviderOnboardingReq,
+  ProbeAIProviderReplacementReq,
+  CommitAIProviderReplacementReq,
+  AIProviderModelCatalogSnapshot,
 } from '@memoflow/contracts/ai';
 
 export type { IResultHttpClient };
@@ -54,7 +62,18 @@ export interface IAIConversationApiClient {
 }
 
 export interface IAIProviderConfigApiClient {
-  createProvider(request: CreateAIProviderConfigReq): Promise<Result<AIProviderConfigClientDTO>>;
+  getProviderCatalog(): Promise<Result<ListAIProviderCatalogRes>>;
+  probeProviderConnection(request: ProbeAIProviderConnectionReq): Promise<Result<ProbeAIProviderConnectionRes>>;
+  testProviderOnboardingModel(request: TestAIProviderOnboardingModelReq): Promise<Result<TestAIProviderOnboardingModelRes>>;
+  commitProviderOnboarding(request: CommitAIProviderOnboardingReq): Promise<Result<AIProviderConfigClientDTO>>;
+  probeProviderReplacement(
+    id: string,
+    request: ProbeAIProviderReplacementReq,
+  ): Promise<Result<ProbeAIProviderConnectionRes>>;
+  commitProviderReplacement(
+    id: string,
+    request: CommitAIProviderReplacementReq,
+  ): Promise<Result<AIProviderConfigClientDTO>>;
   getProviders(): Promise<Result<AIProviderConfigClientDTO[]>>;
   getProviderById(id: string): Promise<Result<AIProviderConfigClientDTO>>;
   updateProvider(
@@ -64,7 +83,7 @@ export interface IAIProviderConfigApiClient {
   deleteProvider(id: string): Promise<Result<void>>;
   testConnection(request: TestAIProviderReq): Promise<Result<TestAIProviderRes>>;
   setDefaultProvider(request: SetDefaultAIProviderReq): Promise<Result<void>>;
-  refreshProviderModels(id: string): Promise<Result<AIProviderConfigClientDTO>>;
+  refreshProviderModels(id: string): Promise<Result<AIProviderModelCatalogSnapshot>>;
 }
 
 export interface AIKnowledgeQueryApiClient {

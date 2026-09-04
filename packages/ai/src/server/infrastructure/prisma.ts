@@ -8,12 +8,20 @@
 import type { PrismaClient } from '@memoflow/database';
 import type { IAIConversationRepository } from '../domain/repositories/i-ai-conversation-repository';
 import type { IAIProviderConfigRepository } from '../domain/repositories/i-ai-provider-config-repository';
-import type { IAIExecutionLogPort, IAIUsageReadPort, IKnowledgeIndexRepository } from '../application/ports';
+import type {
+  IAIExecutionLogPort,
+  IAIUsageReadPort,
+  IKnowledgeIndexRepository,
+  IAIProviderOnboardingCommitPort,
+  IAIProviderOnboardingSessionRepository,
+} from '../application/ports';
 import {
   AIConversationPrismaRepository,
   AIExecutionLogPrismaAdapter,
   AIKnowledgeIndexPrismaRepository,
   AIProviderConfigPrismaRepository,
+  AIProviderOnboardingCommitPrismaAdapter,
+  AIProviderOnboardingSessionPrismaRepository,
 } from './adapters/prisma';
 
 export interface AIPrismaRepositorySet {
@@ -21,6 +29,8 @@ export interface AIPrismaRepositorySet {
   readonly providerConfigRepository: IAIProviderConfigRepository;
   readonly knowledgeIndexRepository: IKnowledgeIndexRepository;
   readonly executionLogPort: IAIExecutionLogPort & IAIUsageReadPort;
+  readonly providerOnboardingSessionRepository: IAIProviderOnboardingSessionRepository;
+  readonly providerOnboardingCommitPort: IAIProviderOnboardingCommitPort;
 }
 
 export function createAIPrismaRepositories(db: PrismaClient): AIPrismaRepositorySet {
@@ -29,5 +39,7 @@ export function createAIPrismaRepositories(db: PrismaClient): AIPrismaRepository
     providerConfigRepository: new AIProviderConfigPrismaRepository(db),
     knowledgeIndexRepository: new AIKnowledgeIndexPrismaRepository(db),
     executionLogPort: new AIExecutionLogPrismaAdapter(db),
+    providerOnboardingSessionRepository: new AIProviderOnboardingSessionPrismaRepository(db),
+    providerOnboardingCommitPort: new AIProviderOnboardingCommitPrismaAdapter(db),
   };
 }

@@ -1327,6 +1327,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "apps/web/e2e/ai/provider-onboarding.spec.ts",
+      "primarySuite": "e2e",
+      "collectors": [
+        "apps/web/playwright.ai-provider.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "apps/web/e2e/authentication/auth-flow.spec.ts",
       "primarySuite": "e2e",
       "collectors": [
@@ -2243,6 +2251,16 @@
       ]
     },
     {
+      "path": "packages/ai/src/api/routes/ai-provider-onboarding.routes.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/ai/src/api/routes/ai-runtime.routes.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -2333,6 +2351,16 @@
       ]
     },
     {
+      "path": "packages/ai/src/infrastructure-client/adapters/__tests__/ai-provider-onboarding-v2.adapters.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/ai/src/infrastructure-client/adapters/__tests__/ai-transport-types.surface.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -2414,6 +2442,66 @@
     },
     {
       "path": "packages/ai/src/server/application/use-cases/commands/__tests__/update-ai-provider.use-case.test.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/application/use-cases/commands/commit-ai-provider-onboarding.use-case.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/application/use-cases/commands/commit-ai-provider-replacement.use-case.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/application/use-cases/commands/probe-ai-provider-connection.use-case.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/application/use-cases/commands/probe-ai-provider-replacement.use-case.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/application/use-cases/commands/refresh-ai-provider-models.use-case.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/application/use-cases/commands/test-ai-provider-onboarding-model.use-case.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/ai/vitest.config.ts"
@@ -2643,6 +2731,16 @@
       ]
     },
     {
+      "path": "packages/ai/src/server/infrastructure/adapters/powersync/ai-provider-onboarding-commit-powersync.adapter.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
       "path": "packages/ai/src/server/infrastructure/adapters/prisma/__tests__/ai-knowledge-index-prisma.repository.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -2724,6 +2822,26 @@
     },
     {
       "path": "packages/ai/src/server/infrastructure/security/ai-secret-cipher.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/infrastructure/security/provider-endpoint-policy.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/infrastructure/security/provider-safe-fetch.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/ai/vitest.config.ts"
@@ -2864,6 +2982,16 @@
     },
     {
       "path": "packages/ai/src/server/shared/__tests__/assemble-capabilities.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/ai/vitest.config.ts"
+      ],
+      "measurementCollectors": [
+        "packages/ai/vitest.config.ts"
+      ]
+    },
+    {
+      "path": "packages/ai/src/server/transport/ai-provider-config.controller.onboarding-v2.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/ai/vitest.config.ts"
@@ -3839,6 +3967,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/app-vue/src/modules/setting/components/AISettings.provider-onboarding-v2.surface.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/app-vue/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/app-vue/src/modules/setting/components/KnowledgeRepositorySettings.spec.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -4685,6 +4821,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "packages/contracts/src/modules/ai/api/ai-provider-onboarding.dto.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/contracts/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "packages/contracts/src/modules/ai/api/ai-runtime.dto.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -5430,6 +5574,14 @@
     },
     {
       "path": "packages/database/src/schema/ai-provider-default-invariant.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "packages/database/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "packages/database/src/schema/ai-provider-onboarding-sessions.spec.ts",
       "primarySuite": "unit",
       "collectors": [
         "packages/database/vitest.config.ts"
@@ -10421,7 +10573,7 @@
       "type": "measurement",
       "suite": "coverage",
       "runner": "vitest",
-      "fileCount": 64
+      "fileCount": 76
     },
     {
       "id": "packages/app-vue/vitest.store-coverage.config.ts",
@@ -10569,6 +10721,13 @@
       "suite": "e2e",
       "runner": "playwright",
       "fileCount": 2
+    },
+    {
+      "id": "apps/web/playwright.ai-provider.config.ts",
+      "type": "primary",
+      "suite": "e2e",
+      "runner": "playwright",
+      "fileCount": 1
     },
     {
       "id": "apps/web/playwright.ai-workspace.config.ts",
@@ -10792,14 +10951,14 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 64
+      "fileCount": 76
     },
     {
       "id": "packages/app-vue/vitest.config.ts",
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 200
+      "fileCount": 201
     },
     {
       "id": "packages/assets/vitest.config.ts",
@@ -10820,7 +10979,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 65
+      "fileCount": 66
     },
     {
       "id": "packages/dashboard/vitest.config.ts",
@@ -10841,7 +11000,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 8
+      "fileCount": 9
     },
     {
       "id": "packages/domain-shared/vitest.config.ts",
@@ -11069,6 +11228,7 @@
       "packages/account/src/server/infrastructure/cloud-account-provisioner.spec.ts",
       "packages/account/src/server/transport/__tests__/account.controller.test.ts",
       "packages/ai/src/api/routes/ai-chat.routes.spec.ts",
+      "packages/ai/src/api/routes/ai-provider-onboarding.routes.spec.ts",
       "packages/ai/src/api/routes/ai-runtime.routes.test.ts",
       "packages/ai/src/api/routes/ai-void-success-envelope.surface.spec.ts",
       "packages/ai/src/client/runtime-assistant.spec.ts",
@@ -11078,6 +11238,7 @@
       "packages/ai/src/electron/index-lifecycle.spec.ts",
       "packages/ai/src/evals/eval-runner.spec.ts",
       "packages/ai/src/infrastructure-client/adapters/__tests__/ai-provider-list-envelope.surface.spec.ts",
+      "packages/ai/src/infrastructure-client/adapters/__tests__/ai-provider-onboarding-v2.adapters.spec.ts",
       "packages/ai/src/infrastructure-client/adapters/__tests__/ai-transport-types.surface.spec.ts",
       "packages/ai/src/infrastructure-client/adapters/read-string-keep-boundary.surface.spec.ts",
       "packages/ai/src/infrastructure-client/adapters/result-client-error.test.ts",
@@ -11087,6 +11248,12 @@
       "packages/ai/src/server/application/use-cases/commands/__tests__/set-default-ai-provider.test.ts",
       "packages/ai/src/server/application/use-cases/commands/__tests__/set-default-ai-provider.use-case.test.ts",
       "packages/ai/src/server/application/use-cases/commands/__tests__/update-ai-provider.use-case.test.ts",
+      "packages/ai/src/server/application/use-cases/commands/commit-ai-provider-onboarding.use-case.spec.ts",
+      "packages/ai/src/server/application/use-cases/commands/commit-ai-provider-replacement.use-case.spec.ts",
+      "packages/ai/src/server/application/use-cases/commands/probe-ai-provider-connection.use-case.spec.ts",
+      "packages/ai/src/server/application/use-cases/commands/probe-ai-provider-replacement.use-case.spec.ts",
+      "packages/ai/src/server/application/use-cases/commands/refresh-ai-provider-models.use-case.spec.ts",
+      "packages/ai/src/server/application/use-cases/commands/test-ai-provider-onboarding-model.use-case.spec.ts",
       "packages/ai/src/server/domain/aggregates/__tests__/ai-conversation.spec.ts",
       "packages/ai/src/server/domain/aggregates/__tests__/ai-provider-config.spec.ts",
       "packages/ai/src/server/domain/ai-provider-config-barrel.surface.spec.ts",
@@ -11109,6 +11276,7 @@
       "packages/ai/src/server/infrastructure/adapters/mastra-vnext-native-ai-adapters.spec.ts",
       "packages/ai/src/server/infrastructure/adapters/memory/__tests__/ai-conversation-ownership.spec.ts",
       "packages/ai/src/server/infrastructure/adapters/memory/__tests__/ai-provider-config-ownership.spec.ts",
+      "packages/ai/src/server/infrastructure/adapters/powersync/ai-provider-onboarding-commit-powersync.adapter.spec.ts",
       "packages/ai/src/server/infrastructure/adapters/prisma/__tests__/ai-knowledge-index-prisma.repository.test.ts",
       "packages/ai/src/server/infrastructure/adapters/prisma/__tests__/ai-provider-config-ownership.surface.spec.ts",
       "packages/ai/src/server/infrastructure/adapters/prisma/__tests__/ai-provider-config-prisma.repository.test.ts",
@@ -11118,6 +11286,8 @@
       "packages/ai/src/server/infrastructure/gateways/openai-compatible.gateway.spec.ts",
       "packages/ai/src/server/infrastructure/migrations/conversation-transcript-bootstrap.source.spec.ts",
       "packages/ai/src/server/infrastructure/security/ai-secret-cipher.spec.ts",
+      "packages/ai/src/server/infrastructure/security/provider-endpoint-policy.spec.ts",
+      "packages/ai/src/server/infrastructure/security/provider-safe-fetch.spec.ts",
       "packages/ai/src/server/mastra/agents/planner-observability.spec.ts",
       "packages/ai/src/server/mastra/ai-vnext-no-legacy.surface.spec.ts",
       "packages/ai/src/server/mastra/mastra-vnext-architecture.surface.spec.ts",
@@ -11132,6 +11302,7 @@
       "packages/ai/src/server/mastra/workflows/knowledge-capture-persistence.adapter.spec.ts",
       "packages/ai/src/server/mastra/workflows/task-create.workflow.spec.ts",
       "packages/ai/src/server/shared/__tests__/assemble-capabilities.spec.ts",
+      "packages/ai/src/server/transport/ai-provider-config.controller.onboarding-v2.spec.ts",
       "packages/app-vue/src/modules/account/stores/accountStore.spec.ts",
       "packages/app-vue/src/modules/authentication/stores/authenticationStore.spec.ts",
       "packages/app-vue/src/modules/goal/stores/goalStore.spec.ts",
@@ -11541,12 +11712,12 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 998,
+    "unit": 1013,
     "integration": 31,
     "smoke": 3,
     "boundary-ipc": 9,
     "boundary-main": 6,
-    "e2e": 64,
+    "e2e": 65,
     "perf": 1,
     "governance": 38
   }

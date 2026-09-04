@@ -2,11 +2,16 @@ import { computed, ref } from 'vue';
 import type {
   AICapabilities,
   AIProviderConfigClientDTO,
-  CreateAIProviderConfigReq,
   ExpandKnowledgeReq,
   TestAIProviderReq,
   TestAIProviderRes,
   UpdateAIProviderConfigReq,
+  AIProviderCatalogEntryDTO,
+  ProbeAIProviderConnectionReq,
+  TestAIProviderOnboardingModelReq,
+  CommitAIProviderOnboardingReq,
+  ProbeAIProviderReplacementReq,
+  CommitAIProviderReplacementReq,
 } from '@memoflow/contracts/ai';
 import { unwrap } from '@memoflow/contracts/result';
 import { AI_CLIENT_KEY } from '../../../di/keys';
@@ -21,6 +26,7 @@ export function useAI() {
   const client = useStrictInject(AI_CLIENT_KEY, 'AIClient');
   const providers = ref<AIProviderConfigClientDTO[]>([]);
   const capabilities = ref<AICapabilities | null>(null);
+  const providerCatalog = ref<AIProviderCatalogEntryDTO[]>([]);
   const isLoadingProviders = ref(false);
   const isLoadingCapabilities = ref(false);
 
@@ -51,8 +57,37 @@ export function useAI() {
     }
   }
 
-  async function createProvider(request: CreateAIProviderConfigReq) {
-    const provider = unwrap(await client.createProvider(request));
+  async function loadProviderCatalog() {
+    providerCatalog.value = unwrap(await client.getProviderCatalog());
+    return providerCatalog.value;
+  }
+
+  async function probeProviderConnection(request: ProbeAIProviderConnectionReq) {
+    return unwrap(await client.probeProviderConnection(request));
+  }
+
+  async function testProviderOnboardingModel(request: TestAIProviderOnboardingModelReq) {
+    return unwrap(await client.testProviderOnboardingModel(request));
+  }
+
+  async function commitProviderOnboarding(request: CommitAIProviderOnboardingReq) {
+    const provider = unwrap(await client.commitProviderOnboarding(request));
+    await loadProviders();
+    return provider;
+  }
+
+  async function probeProviderReplacement(
+    providerId: string,
+    request: ProbeAIProviderReplacementReq,
+  ) {
+    return unwrap(await client.probeProviderReplacement(providerId, request));
+  }
+
+  async function commitProviderReplacement(
+    providerId: string,
+    request: CommitAIProviderReplacementReq,
+  ) {
+    const provider = unwrap(await client.commitProviderReplacement(providerId, request));
     await loadProviders();
     return provider;
   }
@@ -74,9 +109,7 @@ export function useAI() {
   }
 
   async function refreshProviderModels(providerId: string) {
-    const provider = unwrap(await client.refreshProviderModels(providerId));
-    await loadProviders();
-    return provider;
+    return unwrap(await client.refreshProviderModels(providerId));
   }
 
   async function testProvider(request: TestAIProviderReq): Promise<TestAIProviderRes> {
@@ -91,12 +124,18 @@ export function useAI() {
     service: client,
     providers,
     capabilities,
+    providerCatalog,
     hasProviders,
     isLoadingProviders,
     isLoadingCapabilities,
     loadCapabilities,
     loadProviders,
-    createProvider,
+    loadProviderCatalog,
+    probeProviderConnection,
+    testProviderOnboardingModel,
+    commitProviderOnboarding,
+    probeProviderReplacement,
+    commitProviderReplacement,
     updateProvider,
     deleteProvider,
     setDefaultProvider,

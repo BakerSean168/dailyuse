@@ -100,7 +100,7 @@ function providerRequest(
  * only to synthesize an answer from explicitly supplied untrusted note text.
  */
 export class OpenAICompatibleKnowledgeQueryAdapter implements IKnowledgeQueryPort {
-  constructor(private readonly gateway: OpenAICompatibleGateway = new OpenAICompatibleGateway()) {}
+  constructor(private readonly gateway: OpenAICompatibleGateway) {}
 
   async query(input: KnowledgeQueryInput): Promise<KnowledgeQueryResult> {
     const ranked = selectChunks(input.indexedNotes, input.question, input.maxCitations ?? 3);

@@ -115,7 +115,7 @@ async function createRuntime() {
   }));
   const runtime = new MastraAIRuntime({
     storage,
-    modelResolver: new MastraModelResolver({} as never),
+    modelResolver: new MastraModelResolver({} as never, vi.fn() as unknown as typeof fetch),
     transcriptBootstrapSource: { load: vi.fn(async () => null) },
     goalPlanMutationPort: mutations,
     taskPlanMutationPort: { createTaskTemplate },

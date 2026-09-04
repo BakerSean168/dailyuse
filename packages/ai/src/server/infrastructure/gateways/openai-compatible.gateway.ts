@@ -1,4 +1,5 @@
 import { AIExecutionError } from '../../../shared/ai-execution-error';
+import type { ProviderFetch } from '../security/provider-safe-fetch';
 import type {
   OpenAICompatibleCompletionRequest,
   OpenAICompatibleCompletionResponse,
@@ -20,6 +21,8 @@ export {
 } from '../../shared/openai-compatible-normalize';
 
 export class OpenAICompatibleGateway {
+  constructor(private readonly fetchImpl: ProviderFetch) {}
+
   async complete(
     request: OpenAICompatibleCompletionRequest,
   ): Promise<OpenAICompatibleCompletionResult> {
@@ -27,7 +30,7 @@ export class OpenAICompatibleGateway {
     const timeoutId = setTimeout(() => controller.abort(), 60000);
 
     try {
-      const response = await fetch(buildCompletionUrl(request.baseUrl), {
+      const response = await this.fetchImpl(buildCompletionUrl(request.baseUrl), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${request.apiKey}`,
@@ -48,7 +51,7 @@ export class OpenAICompatibleGateway {
       });
 
       if (!response.ok) {
-        await response.text();
+        await response.body?.cancel().catch(() => undefined);
         throw new AIExecutionError(
           mapProviderStatus(response.status),
           'AI provider request failed',

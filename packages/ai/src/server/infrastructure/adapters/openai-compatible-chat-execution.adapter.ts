@@ -20,7 +20,7 @@ import { OpenAICompatibleGateway } from '../gateways/openai-compatible.gateway';
  * 也没有 Python AIService。
  */
 export class OpenAICompatibleChatExecutionAdapter implements IAIChatExecutionPort {
-  constructor(private readonly gateway: OpenAICompatibleGateway = new OpenAICompatibleGateway()) {}
+  constructor(private readonly gateway: OpenAICompatibleGateway) {}
 
   async complete(input: ChatExecutionCompleteInput): Promise<ChatExecutionCompleteResult> {
     const completion = await this.gateway.complete({

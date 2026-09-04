@@ -359,6 +359,36 @@ describe('createRequestContextMiddleware (terminal lifecycle log)', () => {
     expect(JSON.stringify(metadata)).not.toContain('secret-query');
   });
 
+  it('never records Provider onboarding apiKey or Authorization in terminal access metadata', () => {
+    const logger = createMockLogger();
+    const { response } = invoke(
+      createRequestContextMiddleware({ logger }),
+      createMockReq({
+        method: 'POST',
+        baseUrl: '/api/v1/ai',
+        route: { path: '/provider-connections/probe' },
+        headers: { authorization: 'Bearer provider-session-secret' },
+        body: {
+          catalogId: 'openrouter',
+          apiKey: 'sk-provider-onboarding-secret',
+        },
+      }),
+      new MockResponse(),
+    );
+
+    response.emit('finish');
+    const [, metadata] = (logger.info as ReturnType<typeof vi.fn>).mock.calls[0];
+    const serialized = JSON.stringify(metadata);
+    expect(metadata).toMatchObject({
+      method: 'POST',
+      routeTemplate: '/api/v1/ai/provider-connections/probe',
+    });
+    expect(serialized).not.toContain('provider-session-secret');
+    expect(serialized).not.toContain('sk-provider-onboarding-secret');
+    expect(serialized).not.toContain('apiKey');
+    expect(serialized).not.toContain('authorization');
+  });
+
   it('does not mutate response headers after headersSent', () => {
     const logger = createMockLogger();
     const { response } = invoke(

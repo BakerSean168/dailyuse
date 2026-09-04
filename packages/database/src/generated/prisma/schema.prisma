@@ -88,6 +88,7 @@ model Account {
   aiKnowledgeIndexEntries         AiKnowledgeIndexEntry[]
   aiUsageQuotas                   AiUsageQuota?
   aiProviderConfigs               AiProviderConfig[]
+  aiProviderOnboardingSessions    AiProviderOnboardingSession[]
   dashboardConfigs                DashboardConfig?
 
   // PowerSync: denormalized identity relations
@@ -265,6 +266,30 @@ model AiProviderConfig {
   @@index([isActive])
   @@index([priority])
   @@map("ai_provider_configs")
+}
+
+model AiProviderOnboardingSession {
+  id                  String    @id
+  identityId          String    @map("identity_id")
+  catalogId           String    @map("catalog_id")
+  baseUrl             String    @map("base_url")
+  targetProviderId    String?   @map("target_provider_id")
+  credentialEncrypted String    @map("credential_encrypted")
+  credentialStatus    String    @map("credential_status")
+  discoveryStatus     String    @map("discovery_status")
+  modelsJson          String    @default("[]") @map("models_json")
+  verifiedModelIds    String    @default("[]") @map("verified_model_ids")
+  expiresAt           DateTime  @map("expires_at")
+  consumedAt          DateTime? @map("consumed_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId, expiresAt])
+  @@index([identityId, targetProviderId, expiresAt])
+  @@index([expiresAt])
+  @@map("ai_provider_onboarding_sessions")
 }
 
 model KnowledgeGenerationTask {

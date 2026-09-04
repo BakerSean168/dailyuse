@@ -1,5 +1,4 @@
 import {
-  AIProviderType,
   type AIProviderConfigClientDTO,
   type AIProviderConfigServerDTO,
   type TestAIProviderReq,
@@ -19,7 +18,6 @@ export function toClientDTO(provider: AIProviderConfigServerDTO): AIProviderConf
     apiKeyMasked:
       plainApiKey.length > 8 ? `${plainApiKey.slice(0, 3)}****${plainApiKey.slice(-4)}` : '****',
     defaultModel: provider.defaultModel,
-    availableModels: provider.availableModels,
     isActive: provider.isActive,
     isDefault: provider.isDefault,
     priority: provider.priority,
@@ -35,33 +33,15 @@ export async function resolveProviderConfigForConnectionTest(
   identityId: string,
   request: TestAIProviderReq,
 ) {
-  if (request.providerId) {
-    const provider = await providerConfigRepository.findByIdForIdentity(
-      identityId,
-      request.providerId,
-    );
-    if (!provider) {
-      throw new Error('Provider not found');
-    }
-
-    return toChatExecutionProviderConfig(provider, {
-      temperature: 0.2,
-    });
-  }
-
-  if (!request.baseUrl || !request.apiKey || !request.model) {
-    throw new Error('Provider config is incomplete');
-  }
-
-  return toChatExecutionProviderConfig(
-    {
-      providerType: AIProviderType.OpenAICompatible,
-      baseUrl: request.baseUrl,
-      apiKey: request.apiKey,
-      defaultModel: request.model,
-    },
-    {
-      temperature: 0.2,
-    },
+  const provider = await providerConfigRepository.findByIdForIdentity(
+    identityId,
+    request.providerId,
   );
+  if (!provider) {
+    throw new Error('Provider not found');
+  }
+
+  return toChatExecutionProviderConfig(provider, {
+    temperature: 0.2,
+  });
 }

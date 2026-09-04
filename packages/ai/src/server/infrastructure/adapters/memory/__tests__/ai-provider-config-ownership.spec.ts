@@ -11,7 +11,6 @@ function provider(overrides: Partial<AIProviderConfigServerDTO> = {}): AIProvide
     baseUrl: 'https://api.openai.com/v1',
     apiKey: 'secret',
     defaultModel: 'gpt-4o-mini',
-    availableModels: [],
     isActive: true,
     isDefault: true,
     priority: 100,

@@ -236,6 +236,18 @@
         "command": "playwright show-report",
         "cwd": "apps/web"
       }
+    },
+    "e2e:ai-provider": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "outputs": [
+        "{workspaceRoot}/apps/web/test-results/ai-provider",
+        "{workspaceRoot}/apps/web/playwright-ai-provider-report"
+      ],
+      "options": {
+        "command": "node ../../node_modules/tsx/dist/cli.mjs ./e2e/helpers/run-ai-provider-playwright.ts",
+        "cwd": "apps/web"
+      }
     }
   }
 }

@@ -57,7 +57,6 @@ describe('AIProviderConfigPrismaRepository', () => {
       baseUrl: 'https://api.openai.com/v1',
       apiKey: 'plain-secret',
       defaultModel: 'gpt-4o-mini',
-      availableModels: [],
       isActive: true,
       isDefault: true,
       priority: 100,
@@ -77,6 +76,12 @@ describe('AIProviderConfigPrismaRepository', () => {
         }),
       }),
     );
+    const upsertInput = vi.mocked(prisma.aiProviderConfig.upsert).mock.calls[0]?.[0] as {
+      create: Record<string, unknown>;
+      update: Record<string, unknown>;
+    };
+    expect(upsertInput.create).not.toHaveProperty('availableModels');
+    expect(upsertInput.update).not.toHaveProperty('availableModels');
   });
 
   it('constructs without a cipher/key and only fails fast when a secret is actually encrypted', async () => {
@@ -113,8 +118,7 @@ describe('AIProviderConfigPrismaRepository', () => {
           baseUrl: 'https://api.openai.com/v1',
           apiKey: 'plain-secret',
           defaultModel: 'gpt-4o-mini',
-          availableModels: [],
-          isActive: true,
+              isActive: true,
           isDefault: true,
           priority: 100,
           version: 1,
@@ -185,7 +189,7 @@ describe('AIProviderConfigPrismaRepository', () => {
 
     await expect(repository.setDefaultForIdentity('identity-1', 'provider-2')).resolves.toBe('SET');
     expect(transactionClient.$queryRawUnsafe).toHaveBeenCalledWith(
-      'SELECT pg_advisory_xact_lock(hashtext($1))',
+      'SELECT pg_advisory_xact_lock(hashtext($1))::text AS acquired',
       'identity-1',
     );
     expect(aiProviderConfig.findFirst).toHaveBeenCalledOnce();

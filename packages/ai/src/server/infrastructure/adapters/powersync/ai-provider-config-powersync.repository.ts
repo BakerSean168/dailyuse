@@ -52,7 +52,6 @@ export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRep
              base_url = ?,
              api_key_encrypted = ?,
              default_model = ?,
-             available_models = ?,
              is_active = ?,
              is_default = ?,
              priority = ?,
@@ -67,7 +66,6 @@ export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRep
             d.base_url,
             d.api_key_encrypted,
             d.default_model,
-            d.available_models,
             d.is_active,
             d.is_default,
             d.priority,
@@ -81,9 +79,9 @@ export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRep
         await tx.execute(
           `INSERT INTO ai_provider_configs (
            id, identity_id, name, provider_type, base_url, api_key_encrypted,
-           default_model, available_models, is_active, is_default, priority,
+           default_model, is_active, is_default, priority,
            version, created_at, updated_at, deleted_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             d.id,
             d.identity_id,
@@ -92,7 +90,6 @@ export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRep
             d.base_url,
             d.api_key_encrypted,
             d.default_model,
-            d.available_models,
             d.is_active,
             d.is_default,
             d.priority,

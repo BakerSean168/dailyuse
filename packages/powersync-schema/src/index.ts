@@ -910,6 +910,31 @@ const ai_provider_configs = new Table({
   deleted_at: column.text,
 });
 
+
+/**
+ * Desktop-only Provider onboarding state. Credentials are encrypted with the
+ * same local provider vault and never enter the PowerSync upload queue.
+ * The final Provider write consumes this row in the same SQLite transaction.
+ */
+const ai_provider_onboarding_sessions = new Table(
+  {
+    identity_id: column.text,
+    catalog_id: column.text,
+    base_url: column.text,
+    target_provider_id: column.text,
+    credential_encrypted: column.text,
+    credential_status: column.text,
+    discovery_status: column.text,
+    models_json: column.text,
+    verified_model_ids_json: column.text,
+    expires_at: column.integer,
+    consumed_at: column.integer,
+    created_at: column.integer,
+    updated_at: column.integer,
+  },
+  { localOnly: true },
+);
+
 const task_goal_outbox = new Table({
   identity_id: column.text,
   task_instance_id: column.text,
@@ -1141,6 +1166,7 @@ export const PowerSyncAppSchema = new Schema({
   ai_generation_tasks,
   ai_usage_quotas,
   ai_provider_configs,
+  ai_provider_onboarding_sessions,
   task_goal_outbox,
   dashboard_configs,
   // Repository
