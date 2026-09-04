@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { envSchema } from './env.schema';
 
 describe('envSchema LOCAL_VALIDATION', () => {
-  const required = { JWT_SECRET: 'local-validation-secret-at-least-32-characters' };
+  const required = {
+    JWT_SECRET: 'local-validation-secret-at-least-32-characters',
+    AI_PROVIDER_ENCRYPTION_KEY: 'provider-encryption-secret-at-least-32-chars',
+  };
 
   it('keeps local validation controls disabled by default', () => {
     expect(envSchema.parse(required).LOCAL_VALIDATION).toBe(false);
@@ -11,6 +14,18 @@ describe('envSchema LOCAL_VALIDATION', () => {
   it('enables local validation controls only for the explicit 1 value', () => {
     expect(envSchema.parse({ ...required, LOCAL_VALIDATION: '1' }).LOCAL_VALIDATION).toBe(true);
     expect(envSchema.parse({ ...required, LOCAL_VALIDATION: '0' }).LOCAL_VALIDATION).toBe(false);
+  });
+
+
+  it('fails production preflight before serving Provider settings when the encryption key is missing', () => {
+    expect(() =>
+      envSchema.parse({
+        JWT_SECRET: 'local-validation-secret-at-least-32-characters',
+        NODE_ENV: 'production',
+        AUTH_BASE_URL: 'https://api.example.com/api/auth',
+        MEMOFLOW_WEB_URL: 'https://app.example.com',
+      }),
+    ).toThrow(/AI_PROVIDER_ENCRYPTION_KEY is required in production/);
   });
 
   it('requires explicit HTTPS auth origins in production', () => {
@@ -54,7 +69,10 @@ describe('envSchema LOCAL_VALIDATION', () => {
 });
 
 describe('envSchema GitHub installation routing', () => {
-  const required = { JWT_SECRET: 'local-validation-secret-at-least-32-characters' };
+  const required = {
+    JWT_SECRET: 'local-validation-secret-at-least-32-characters',
+    AI_PROVIDER_ENCRYPTION_KEY: 'provider-encryption-secret-at-least-32-chars',
+  };
 
   it('accepts bounded lowercase environment route keys', () => {
     expect(
@@ -78,7 +96,10 @@ describe('envSchema GitHub installation routing', () => {
 });
 
 describe('envSchema remote origins require HTTPS', () => {
-  const required = { JWT_SECRET: 'local-validation-secret-at-least-32-characters' };
+  const required = {
+    JWT_SECRET: 'local-validation-secret-at-least-32-characters',
+    AI_PROVIDER_ENCRYPTION_KEY: 'provider-encryption-secret-at-least-32-chars',
+  };
 
   it('rejects MagicDNS HTTP in production without LOCAL_VALIDATION', () => {
     expect(() =>
@@ -172,7 +193,10 @@ describe('envSchema remote origins require HTTPS', () => {
 });
 
 describe('envSchema OpenTelemetry (Phase 6 opt-in)', () => {
-  const required = { JWT_SECRET: 'local-validation-secret-at-least-32-characters' };
+  const required = {
+    JWT_SECRET: 'local-validation-secret-at-least-32-characters',
+    AI_PROVIDER_ENCRYPTION_KEY: 'provider-encryption-secret-at-least-32-chars',
+  };
 
   it('keeps tracing disabled by default with no collector requirement', () => {
     expect(envSchema.parse(required).OTEL_TRACING_ENABLED).toBe('0');

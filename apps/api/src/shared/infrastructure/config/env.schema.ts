@@ -168,9 +168,9 @@ export const envSchema = z
     QI_NIU_YUN_MODEL_ID: z.string().optional(),
 
     // AI Provider 加密密钥
-    // schema 层保持 optional：env 单例在任意 import（含不启用 AI 的测试）时即校验，
-    // 若强制必填会让这些场景无法加载 env。真正的“必填”语义由运行时承担 ——
-    // 启用 AI 模块时 AISecretCipher.fromEnv() 会 fail-fast。
+    // 字段本身保持 optional 以允许 development/test 导入 env；production 则在
+    // superRefine 中 fail-fast 必填。这样部署错误在 API preflight 暴露，而不是
+    // 等用户第一次保存 Provider 才以 500 暴露。
     // 密钥经 SHA-256 派生为 32 字节；配置层仍要求至少 32 字符，
     // 推荐使用 `openssl rand -hex 32`（64 字符）生成高熵 secret。
     AI_PROVIDER_ENCRYPTION_KEY: z
@@ -328,6 +328,14 @@ export const envSchema = z
     }
 
     if (env.NODE_ENV !== 'production') return;
+
+    if (!env.AI_PROVIDER_ENCRYPTION_KEY) {
+      context.addIssue({
+        code: 'custom',
+        path: ['AI_PROVIDER_ENCRYPTION_KEY'],
+        message: 'AI_PROVIDER_ENCRYPTION_KEY is required in production',
+      });
+    }
 
     for (const key of ['AUTH_BASE_URL', 'MEMOFLOW_WEB_URL'] as const) {
       const value = env[key];
