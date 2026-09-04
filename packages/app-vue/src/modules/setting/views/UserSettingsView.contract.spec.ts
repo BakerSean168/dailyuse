@@ -39,4 +39,11 @@ describe('UserSettingsView desktop settings IA (Phase 3)', () => {
     );
     expect(groupValues).not.toBeNull();
   });
+
+  it('gates cloud password settings on the full AuthService capability', () => {
+    expect(source).toContain('inject(AUTH_SERVICE_KEY, null)');
+    expect(source).toContain('<CloudPasswordSection v-if="cloudPasswordService" />');
+    // Desktop must degrade by capability, not by a platform-name branch.
+    expect(source).not.toMatch(/isDesktop[^\n]*CloudPasswordSection/);
+  });
 });

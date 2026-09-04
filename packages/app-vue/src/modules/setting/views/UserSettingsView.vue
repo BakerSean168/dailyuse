@@ -40,13 +40,18 @@ import { usePresentationPreferenceStore } from '../stores/presentation-preferenc
 import type { AppLocale } from '../../../plugins/i18n';
 import type { UserSettingPreferences } from '@memoflow/contracts/setting';
 import { inject } from 'vue';
-import { DESKTOP_AUTH_API_KEY } from '../../../di/keys';
+import { AUTH_SERVICE_KEY, DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const presentationStore = usePresentationPreferenceStore();
 const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
+// Cloud password management is a host capability: Web provides the full
+// CloudAuthClientPort, while Desktop currently exposes only its narrower
+// device-authorization/session port. Do not mount the strict password
+// composable unless the host actually provides AUTH_SERVICE_KEY.
+const cloudPasswordService = inject(AUTH_SERVICE_KEY, null);
 // 独立设置场景：适配依据设置内容容器，而不是整个窗口。
 const SETTINGS_NARROW_VIEWPORT = 1024;
 const contentWidth = ref(
@@ -412,9 +417,7 @@ onBeforeUnmount(() => {
         <nav
           class="flex shrink-0 gap-1"
           :class="
-            isNarrow
-              ? 'overflow-x-auto'
-              : 'sticky top-0 w-48 flex-col self-start overflow-visible'
+            isNarrow ? 'overflow-x-auto' : 'sticky top-0 w-48 flex-col self-start overflow-visible'
           "
           :data-testid="isNarrow ? 'settings-group-tabs' : 'settings-group-sidebar'"
           :aria-label="t('setting.title')"
@@ -458,7 +461,7 @@ onBeforeUnmount(() => {
 
           <template v-else-if="activeTab === 'account'">
             <AccountProfileSection />
-            <CloudPasswordSection />
+            <CloudPasswordSection v-if="cloudPasswordService" />
             <PrivacySettings v-model="privacy" />
           </template>
 
