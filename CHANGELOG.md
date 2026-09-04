@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.12.2](https://github.com/BakerSean168/memoflow/compare/v0.12.1...v0.12.2) (2026-09-04)
+
+
+### Bug Fixes
+
+* **desktop:** align powersync ownership and native rebuild ([08ccf6b](https://github.com/BakerSean168/memoflow/commit/08ccf6bf0b0049667efdfeec48a0e1f5eafa8c4e))
+* **desktop:** align PowerSync ownership and native rebuild ([f99e816](https://github.com/BakerSean168/memoflow/commit/f99e816db8f3b4f16e47119dded8ce1c87b57dbc))
+* **release:** harden Linux headless keyring smoke ([b4e4634](https://github.com/BakerSean168/memoflow/commit/b4e4634e2cc85f0e30594cc8befe091c1b7c1489))
+* **release:** harden Linux headless keyring smoke ([8ddfd52](https://github.com/BakerSean168/memoflow/commit/8ddfd525632ec250ccce0104e9d83ba3aecae10a))
+* **release:** isolate Windows native rebuild launcher ([2d905d8](https://github.com/BakerSean168/memoflow/commit/2d905d8adf95f4e4e297b1f49474797f3183688e))
+* **release:** isolate Windows native rebuild launcher ([8770c2c](https://github.com/BakerSean168/memoflow/commit/8770c2c8b0069d1f47efd0bea380691c92a465a5))
+* **release:** repair desktop asset retry tooling ([690f739](https://github.com/BakerSean168/memoflow/commit/690f73904204478bdee4d803b2c7ca44a3dbd504))
+* **release:** repair v0.12.1 desktop retry tooling ([3a5db7c](https://github.com/BakerSean168/memoflow/commit/3a5db7c3eeb48fd24334f7acacd2d18fd79c7176))
+* **release:** resume existing draft release records ([e785db4](https://github.com/BakerSean168/memoflow/commit/e785db4a43a7735c34ac6fb4628c0cdecc24ea86))
+* **release:** resume existing draft release records ([0362596](https://github.com/BakerSean168/memoflow/commit/03625965d5c6674323705c1af5f20ee89dd02351))
+* **release:** verify draft assets by release API URL ([401fe95](https://github.com/BakerSean168/memoflow/commit/401fe95c8564a77167cdb0f01542c555c33f5153))
+* **release:** verify draft assets by release API URL ([58be718](https://github.com/BakerSean168/memoflow/commit/58be718e3a3e01201b78667976f3bf192db2462a))
+
 ## [0.12.1](https://github.com/BakerSean168/memoflow/compare/v0.12.0...v0.12.1) (2026-09-03)
 
 
