@@ -78,6 +78,8 @@ const repositorySet = {
   providerConfigRepository: { tag: 'provider-repository' },
   knowledgeIndexRepository: { tag: 'knowledge-index-repository' },
   executionLogPort: { tag: 'execution-log' },
+  providerOnboardingSessionRepository: { tag: 'provider-onboarding-session' },
+  providerOnboardingCommitPort: { tag: 'provider-onboarding-commit' },
 };
 const dependencies = {
   db,
@@ -144,6 +146,10 @@ describe('Desktop composeAI Mastra-only ownership', () => {
     const moduleInput = vi.mocked(createAIModule).mock.calls[0][0];
     expect(moduleInput.conversationRepository).toBe(repositorySet.conversationRepository);
     expect(moduleInput.providerConfigRepository).toBe(repositorySet.providerConfigRepository);
+    expect(moduleInput.providerOnboardingSessionRepository).toBe(
+      repositorySet.providerOnboardingSessionRepository,
+    );
+    expect(moduleInput.providerOnboardingCommitPort).toBe(repositorySet.providerOnboardingCommitPort);
     expect(moduleInput.knowledgeIndexRepository).toBe(repositorySet.knowledgeIndexRepository);
     expect(moduleInput.executionLogPort).toBe(repositorySet.executionLogPort);
     expect(moduleInput.knowledgeNotePersistence).toBe(knowledgeNotePersistence);

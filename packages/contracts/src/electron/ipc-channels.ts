@@ -142,6 +142,10 @@ export const CloudAuthChannels = {
 
 export const AIChannels = {
   CAPABILITIES_GET: 'ai:capabilities:get',
+  PROVIDER_CATALOG_GET: 'ai:provider:catalog:get',
+  PROVIDER_ONBOARDING_PROBE: 'ai:provider:onboarding:probe',
+  PROVIDER_ONBOARDING_TEST_MODEL: 'ai:provider:onboarding:test-model',
+  PROVIDER_ONBOARDING_COMMIT: 'ai:provider:onboarding:commit',
   PROVIDER_CREATE: 'ai:provider:create',
   PROVIDER_LIST: 'ai:provider:list',
   PROVIDER_GET: 'ai:provider:get',

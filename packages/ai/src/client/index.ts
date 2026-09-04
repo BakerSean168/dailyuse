@@ -32,6 +32,12 @@ import type {
   TestAIProviderRes,
   UpdateAIProviderConfigReq,
   UpdateConversationReq,
+  ListAIProviderCatalogRes,
+  ProbeAIProviderConnectionReq,
+  ProbeAIProviderConnectionRes,
+  TestAIProviderOnboardingModelReq,
+  TestAIProviderOnboardingModelRes,
+  CommitAIProviderOnboardingReq,
 } from '@memoflow/contracts/ai';
 import {
   createAIHttpAdapters,
@@ -47,6 +53,11 @@ export interface AIClientPort {
   getEvaluationOverview(
     request?: GetAIEvaluationOverviewReq,
   ): Promise<Result<GetAIEvaluationOverviewRes>>;
+
+  getProviderCatalog(): Promise<Result<ListAIProviderCatalogRes>>;
+  probeProviderConnection(request: ProbeAIProviderConnectionReq): Promise<Result<ProbeAIProviderConnectionRes>>;
+  testProviderOnboardingModel(request: TestAIProviderOnboardingModelReq): Promise<Result<TestAIProviderOnboardingModelRes>>;
+  commitProviderOnboarding(request: CommitAIProviderOnboardingReq): Promise<Result<AIProviderConfigClientDTO>>;
 
   createProvider(request: CreateAIProviderConfigReq): Promise<Result<AIProviderConfigClientDTO>>;
   updateProvider(
@@ -94,6 +105,11 @@ function createProductClient(adapters: ProductAdapters): AIClientPort {
     getCapabilities: () => adapters.capabilities.getCapabilities(),
     getEvaluationOverview: (request) =>
       adapters.evaluationReport.getEvaluationOverview(request),
+
+    getProviderCatalog: () => adapters.providerConfig.getProviderCatalog(),
+    probeProviderConnection: (request) => adapters.providerConfig.probeProviderConnection(request),
+    testProviderOnboardingModel: (request) => adapters.providerConfig.testProviderOnboardingModel(request),
+    commitProviderOnboarding: (request) => adapters.providerConfig.commitProviderOnboarding(request),
 
     createProvider: (request) => adapters.providerConfig.createProvider(request),
     updateProvider: (id, request) => adapters.providerConfig.updateProvider(id, request),

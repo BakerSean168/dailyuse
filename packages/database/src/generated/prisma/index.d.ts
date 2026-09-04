@@ -49,6 +49,11 @@ export type AiUsageQuota = $Result.DefaultSelection<Prisma.$AiUsageQuotaPayload>
  */
 export type AiProviderConfig = $Result.DefaultSelection<Prisma.$AiProviderConfigPayload>
 /**
+ * Model AiProviderOnboardingSession
+ *
+ */
+export type AiProviderOnboardingSession = $Result.DefaultSelection<Prisma.$AiProviderOnboardingSessionPayload>
+/**
  * Model KnowledgeGenerationTask
  *
  */
@@ -707,6 +712,16 @@ export class PrismaClient<
     * ```
     */
   get aiProviderConfig(): Prisma.AiProviderConfigDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.aiProviderOnboardingSession`: Exposes CRUD operations for the **AiProviderOnboardingSession** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AiProviderOnboardingSessions
+    * const aiProviderOnboardingSessions = await prisma.aiProviderOnboardingSession.findMany()
+    * ```
+    */
+  get aiProviderOnboardingSession(): Prisma.AiProviderOnboardingSessionDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.knowledgeGenerationTask`: Exposes CRUD operations for the **KnowledgeGenerationTask** model.
@@ -2028,6 +2043,7 @@ export namespace Prisma {
     AiGenerationTask: 'AiGenerationTask',
     AiUsageQuota: 'AiUsageQuota',
     AiProviderConfig: 'AiProviderConfig',
+    AiProviderOnboardingSession: 'AiProviderOnboardingSession',
     KnowledgeGenerationTask: 'KnowledgeGenerationTask',
     AiKnowledgeIndexEntry: 'AiKnowledgeIndexEntry',
     DashboardConfig: 'DashboardConfig',
@@ -2131,7 +2147,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "activityLedger" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "cloudAuthUser" | "cloudAuthSession" | "cloudAuthProviderAccount" | "cloudAuthVerification" | "cloudAuthDeviceCode" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "rule" | "ruleRevision" | "habit" | "habitOccurrence" | "habitCheckIn" | "habitStreakProjection" | "label" | "goalLabel" | "taskLabel" | "notification" | "notificationChannel" | "notificationHistory" | "notificationDeliveryDecisionRecord" | "notificationPreference" | "notificationTemplate" | "notificationDispatchOutbox" | "relation" | "outboxMessage" | "inboxReceipt" | "projectionCursor" | "accountClosureOperation" | "operationAuditLog" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "reminderOccurrence" | "routineDefinition" | "routineProfile" | "routineProfileMembership" | "routineProtocolDefinition" | "routineProtocolSession" | "routineOccurrence" | "routineTemporaryOverride" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "knowledgeRepositoryInstallationIntent" | "knowledgeRepositoryConnection" | "githubWebhookDelivery" | "knowledgeNoteProjection" | "knowledgeAttachmentProjection" | "knowledgeAttachmentContentCache" | "knowledgeWriteRequest" | "knowledgeRepositoryLease" | "schedule" | "scheduleTask" | "schedulingReconcileOperation" | "scheduleExecution" | "scheduleStatistic" | "scheduleLease" | "scheduleRebuildOutbox" | "scheduleDomainEventOutbox" | "scheduleEventConsumerReceipt" | "scheduleEventDeliveryLog" | "userSetting" | "taskTemplate" | "taskInstance" | "taskGoalOutbox" | "taskTemplateHistory" | "taskStatistic" | "walletAccount" | "walletTransaction"
+      modelProps: "account" | "activityLedger" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "aiProviderOnboardingSession" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "cloudAuthUser" | "cloudAuthSession" | "cloudAuthProviderAccount" | "cloudAuthVerification" | "cloudAuthDeviceCode" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "rule" | "ruleRevision" | "habit" | "habitOccurrence" | "habitCheckIn" | "habitStreakProjection" | "label" | "goalLabel" | "taskLabel" | "notification" | "notificationChannel" | "notificationHistory" | "notificationDeliveryDecisionRecord" | "notificationPreference" | "notificationTemplate" | "notificationDispatchOutbox" | "relation" | "outboxMessage" | "inboxReceipt" | "projectionCursor" | "accountClosureOperation" | "operationAuditLog" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "reminderOccurrence" | "routineDefinition" | "routineProfile" | "routineProfileMembership" | "routineProtocolDefinition" | "routineProtocolSession" | "routineOccurrence" | "routineTemporaryOverride" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "knowledgeRepositoryInstallationIntent" | "knowledgeRepositoryConnection" | "githubWebhookDelivery" | "knowledgeNoteProjection" | "knowledgeAttachmentProjection" | "knowledgeAttachmentContentCache" | "knowledgeWriteRequest" | "knowledgeRepositoryLease" | "schedule" | "scheduleTask" | "schedulingReconcileOperation" | "scheduleExecution" | "scheduleStatistic" | "scheduleLease" | "scheduleRebuildOutbox" | "scheduleDomainEventOutbox" | "scheduleEventConsumerReceipt" | "scheduleEventDeliveryLog" | "userSetting" | "taskTemplate" | "taskInstance" | "taskGoalOutbox" | "taskTemplateHistory" | "taskStatistic" | "walletAccount" | "walletTransaction"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2650,6 +2666,80 @@ export namespace Prisma {
           count: {
             args: Prisma.AiProviderConfigCountArgs<ExtArgs>
             result: $Utils.Optional<AiProviderConfigCountAggregateOutputType> | number
+          }
+        }
+      }
+      AiProviderOnboardingSession: {
+        payload: Prisma.$AiProviderOnboardingSessionPayload<ExtArgs>
+        fields: Prisma.AiProviderOnboardingSessionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AiProviderOnboardingSessionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiProviderOnboardingSessionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AiProviderOnboardingSessionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiProviderOnboardingSessionPayload>
+          }
+          findFirst: {
+            args: Prisma.AiProviderOnboardingSessionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiProviderOnboardingSessionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AiProviderOnboardingSessionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiProviderOnboardingSessionPayload>
+          }
+          findMany: {
+            args: Prisma.AiProviderOnboardingSessionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiProviderOnboardingSessionPayload>[]
+          }
+          create: {
+            args: Prisma.AiProviderOnboardingSessionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiProviderOnboardingSessionPayload>
+          }
+          createMany: {
+            args: Prisma.AiProviderOnboardingSessionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AiProviderOnboardingSessionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiProviderOnboardingSessionPayload>[]
+          }
+          delete: {
+            args: Prisma.AiProviderOnboardingSessionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiProviderOnboardingSessionPayload>
+          }
+          update: {
+            args: Prisma.AiProviderOnboardingSessionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiProviderOnboardingSessionPayload>
+          }
+          deleteMany: {
+            args: Prisma.AiProviderOnboardingSessionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AiProviderOnboardingSessionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AiProviderOnboardingSessionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiProviderOnboardingSessionPayload>[]
+          }
+          upsert: {
+            args: Prisma.AiProviderOnboardingSessionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiProviderOnboardingSessionPayload>
+          }
+          aggregate: {
+            args: Prisma.AiProviderOnboardingSessionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAiProviderOnboardingSession>
+          }
+          groupBy: {
+            args: Prisma.AiProviderOnboardingSessionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AiProviderOnboardingSessionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AiProviderOnboardingSessionCountArgs<ExtArgs>
+            result: $Utils.Optional<AiProviderOnboardingSessionCountAggregateOutputType> | number
           }
         }
       }
@@ -9280,6 +9370,7 @@ export namespace Prisma {
     aiGenerationTask?: AiGenerationTaskOmit
     aiUsageQuota?: AiUsageQuotaOmit
     aiProviderConfig?: AiProviderConfigOmit
+    aiProviderOnboardingSession?: AiProviderOnboardingSessionOmit
     knowledgeGenerationTask?: KnowledgeGenerationTaskOmit
     aiKnowledgeIndexEntry?: AiKnowledgeIndexEntryOmit
     dashboardConfig?: DashboardConfigOmit
@@ -9482,6 +9573,7 @@ export namespace Prisma {
     aiGenerationTasks: number
     aiKnowledgeIndexEntries: number
     aiProviderConfigs: number
+    aiProviderOnboardingSessions: number
     taskTemplateHistory: number
     scheduleExecutions: number
     reminderHistory: number
@@ -9535,6 +9627,7 @@ export namespace Prisma {
     aiGenerationTasks?: boolean | AccountCountOutputTypeCountAiGenerationTasksArgs
     aiKnowledgeIndexEntries?: boolean | AccountCountOutputTypeCountAiKnowledgeIndexEntriesArgs
     aiProviderConfigs?: boolean | AccountCountOutputTypeCountAiProviderConfigsArgs
+    aiProviderOnboardingSessions?: boolean | AccountCountOutputTypeCountAiProviderOnboardingSessionsArgs
     taskTemplateHistory?: boolean | AccountCountOutputTypeCountTaskTemplateHistoryArgs
     scheduleExecutions?: boolean | AccountCountOutputTypeCountScheduleExecutionsArgs
     reminderHistory?: boolean | AccountCountOutputTypeCountReminderHistoryArgs
@@ -9800,6 +9893,13 @@ export namespace Prisma {
    */
   export type AccountCountOutputTypeCountAiProviderConfigsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AiProviderConfigWhereInput
+  }
+
+  /**
+   * AccountCountOutputType without action
+   */
+  export type AccountCountOutputTypeCountAiProviderOnboardingSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AiProviderOnboardingSessionWhereInput
   }
 
   /**
@@ -11225,6 +11325,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: boolean | Account$aiKnowledgeIndexEntriesArgs<ExtArgs>
     aiUsageQuotas?: boolean | Account$aiUsageQuotasArgs<ExtArgs>
     aiProviderConfigs?: boolean | Account$aiProviderConfigsArgs<ExtArgs>
+    aiProviderOnboardingSessions?: boolean | Account$aiProviderOnboardingSessionsArgs<ExtArgs>
     dashboardConfigs?: boolean | Account$dashboardConfigsArgs<ExtArgs>
     taskTemplateHistory?: boolean | Account$taskTemplateHistoryArgs<ExtArgs>
     scheduleExecutions?: boolean | Account$scheduleExecutionsArgs<ExtArgs>
@@ -11351,6 +11452,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: boolean | Account$aiKnowledgeIndexEntriesArgs<ExtArgs>
     aiUsageQuotas?: boolean | Account$aiUsageQuotasArgs<ExtArgs>
     aiProviderConfigs?: boolean | Account$aiProviderConfigsArgs<ExtArgs>
+    aiProviderOnboardingSessions?: boolean | Account$aiProviderOnboardingSessionsArgs<ExtArgs>
     dashboardConfigs?: boolean | Account$dashboardConfigsArgs<ExtArgs>
     taskTemplateHistory?: boolean | Account$taskTemplateHistoryArgs<ExtArgs>
     scheduleExecutions?: boolean | Account$scheduleExecutionsArgs<ExtArgs>
@@ -11422,6 +11524,7 @@ export namespace Prisma {
       aiKnowledgeIndexEntries: Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>[]
       aiUsageQuotas: Prisma.$AiUsageQuotaPayload<ExtArgs> | null
       aiProviderConfigs: Prisma.$AiProviderConfigPayload<ExtArgs>[]
+      aiProviderOnboardingSessions: Prisma.$AiProviderOnboardingSessionPayload<ExtArgs>[]
       dashboardConfigs: Prisma.$DashboardConfigPayload<ExtArgs> | null
       taskTemplateHistory: Prisma.$TaskTemplateHistoryPayload<ExtArgs>[]
       scheduleExecutions: Prisma.$ScheduleExecutionPayload<ExtArgs>[]
@@ -11894,6 +11997,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries<T extends Account$aiKnowledgeIndexEntriesArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiKnowledgeIndexEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiUsageQuotas<T extends Account$aiUsageQuotasArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiUsageQuotasArgs<ExtArgs>>): Prisma__AiUsageQuotaClient<$Result.GetResult<Prisma.$AiUsageQuotaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     aiProviderConfigs<T extends Account$aiProviderConfigsArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiProviderConfigsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiProviderConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    aiProviderOnboardingSessions<T extends Account$aiProviderOnboardingSessionsArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiProviderOnboardingSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiProviderOnboardingSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     dashboardConfigs<T extends Account$dashboardConfigsArgs<ExtArgs> = {}>(args?: Subset<T, Account$dashboardConfigsArgs<ExtArgs>>): Prisma__DashboardConfigClient<$Result.GetResult<Prisma.$DashboardConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     taskTemplateHistory<T extends Account$taskTemplateHistoryArgs<ExtArgs> = {}>(args?: Subset<T, Account$taskTemplateHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskTemplateHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     scheduleExecutions<T extends Account$scheduleExecutionsArgs<ExtArgs> = {}>(args?: Subset<T, Account$scheduleExecutionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleExecutionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -13304,6 +13408,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AiProviderConfigScalarFieldEnum | AiProviderConfigScalarFieldEnum[]
+  }
+
+  /**
+   * Account.aiProviderOnboardingSessions
+   */
+  export type Account$aiProviderOnboardingSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiProviderOnboardingSession
+     */
+    select?: AiProviderOnboardingSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiProviderOnboardingSession
+     */
+    omit?: AiProviderOnboardingSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiProviderOnboardingSessionInclude<ExtArgs> | null
+    where?: AiProviderOnboardingSessionWhereInput
+    orderBy?: AiProviderOnboardingSessionOrderByWithRelationInput | AiProviderOnboardingSessionOrderByWithRelationInput[]
+    cursor?: AiProviderOnboardingSessionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AiProviderOnboardingSessionScalarFieldEnum | AiProviderOnboardingSessionScalarFieldEnum[]
   }
 
   /**
@@ -20938,6 +21066,1173 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: AiProviderConfigInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AiProviderOnboardingSession
+   */
+
+  export type AggregateAiProviderOnboardingSession = {
+    _count: AiProviderOnboardingSessionCountAggregateOutputType | null
+    _min: AiProviderOnboardingSessionMinAggregateOutputType | null
+    _max: AiProviderOnboardingSessionMaxAggregateOutputType | null
+  }
+
+  export type AiProviderOnboardingSessionMinAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    catalogId: string | null
+    baseUrl: string | null
+    credentialEncrypted: string | null
+    credentialStatus: string | null
+    discoveryStatus: string | null
+    modelsJson: string | null
+    verifiedModelIds: string | null
+    expiresAt: Date | null
+    consumedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AiProviderOnboardingSessionMaxAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    catalogId: string | null
+    baseUrl: string | null
+    credentialEncrypted: string | null
+    credentialStatus: string | null
+    discoveryStatus: string | null
+    modelsJson: string | null
+    verifiedModelIds: string | null
+    expiresAt: Date | null
+    consumedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AiProviderOnboardingSessionCountAggregateOutputType = {
+    id: number
+    identityId: number
+    catalogId: number
+    baseUrl: number
+    credentialEncrypted: number
+    credentialStatus: number
+    discoveryStatus: number
+    modelsJson: number
+    verifiedModelIds: number
+    expiresAt: number
+    consumedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type AiProviderOnboardingSessionMinAggregateInputType = {
+    id?: true
+    identityId?: true
+    catalogId?: true
+    baseUrl?: true
+    credentialEncrypted?: true
+    credentialStatus?: true
+    discoveryStatus?: true
+    modelsJson?: true
+    verifiedModelIds?: true
+    expiresAt?: true
+    consumedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AiProviderOnboardingSessionMaxAggregateInputType = {
+    id?: true
+    identityId?: true
+    catalogId?: true
+    baseUrl?: true
+    credentialEncrypted?: true
+    credentialStatus?: true
+    discoveryStatus?: true
+    modelsJson?: true
+    verifiedModelIds?: true
+    expiresAt?: true
+    consumedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AiProviderOnboardingSessionCountAggregateInputType = {
+    id?: true
+    identityId?: true
+    catalogId?: true
+    baseUrl?: true
+    credentialEncrypted?: true
+    credentialStatus?: true
+    discoveryStatus?: true
+    modelsJson?: true
+    verifiedModelIds?: true
+    expiresAt?: true
+    consumedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type AiProviderOnboardingSessionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AiProviderOnboardingSession to aggregate.
+     */
+    where?: AiProviderOnboardingSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of AiProviderOnboardingSessions to fetch.
+     */
+    orderBy?: AiProviderOnboardingSessionOrderByWithRelationInput | AiProviderOnboardingSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: AiProviderOnboardingSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` AiProviderOnboardingSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` AiProviderOnboardingSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned AiProviderOnboardingSessions
+    **/
+    _count?: true | AiProviderOnboardingSessionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+    **/
+    _min?: AiProviderOnboardingSessionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+    **/
+    _max?: AiProviderOnboardingSessionMaxAggregateInputType
+  }
+
+  export type GetAiProviderOnboardingSessionAggregateType<T extends AiProviderOnboardingSessionAggregateArgs> = {
+        [P in keyof T & keyof AggregateAiProviderOnboardingSession]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAiProviderOnboardingSession[P]>
+      : GetScalarType<T[P], AggregateAiProviderOnboardingSession[P]>
+  }
+
+
+
+
+  export type AiProviderOnboardingSessionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AiProviderOnboardingSessionWhereInput
+    orderBy?: AiProviderOnboardingSessionOrderByWithAggregationInput | AiProviderOnboardingSessionOrderByWithAggregationInput[]
+    by: AiProviderOnboardingSessionScalarFieldEnum[] | AiProviderOnboardingSessionScalarFieldEnum
+    having?: AiProviderOnboardingSessionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AiProviderOnboardingSessionCountAggregateInputType | true
+    _min?: AiProviderOnboardingSessionMinAggregateInputType
+    _max?: AiProviderOnboardingSessionMaxAggregateInputType
+  }
+
+  export type AiProviderOnboardingSessionGroupByOutputType = {
+    id: string
+    identityId: string
+    catalogId: string
+    baseUrl: string
+    credentialEncrypted: string
+    credentialStatus: string
+    discoveryStatus: string
+    modelsJson: string
+    verifiedModelIds: string
+    expiresAt: Date
+    consumedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: AiProviderOnboardingSessionCountAggregateOutputType | null
+    _min: AiProviderOnboardingSessionMinAggregateOutputType | null
+    _max: AiProviderOnboardingSessionMaxAggregateOutputType | null
+  }
+
+  type GetAiProviderOnboardingSessionGroupByPayload<T extends AiProviderOnboardingSessionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AiProviderOnboardingSessionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AiProviderOnboardingSessionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AiProviderOnboardingSessionGroupByOutputType[P]>
+            : GetScalarType<T[P], AiProviderOnboardingSessionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AiProviderOnboardingSessionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    catalogId?: boolean
+    baseUrl?: boolean
+    credentialEncrypted?: boolean
+    credentialStatus?: boolean
+    discoveryStatus?: boolean
+    modelsJson?: boolean
+    verifiedModelIds?: boolean
+    expiresAt?: boolean
+    consumedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["aiProviderOnboardingSession"]>
+
+  export type AiProviderOnboardingSessionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    catalogId?: boolean
+    baseUrl?: boolean
+    credentialEncrypted?: boolean
+    credentialStatus?: boolean
+    discoveryStatus?: boolean
+    modelsJson?: boolean
+    verifiedModelIds?: boolean
+    expiresAt?: boolean
+    consumedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["aiProviderOnboardingSession"]>
+
+  export type AiProviderOnboardingSessionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    catalogId?: boolean
+    baseUrl?: boolean
+    credentialEncrypted?: boolean
+    credentialStatus?: boolean
+    discoveryStatus?: boolean
+    modelsJson?: boolean
+    verifiedModelIds?: boolean
+    expiresAt?: boolean
+    consumedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["aiProviderOnboardingSession"]>
+
+  export type AiProviderOnboardingSessionSelectScalar = {
+    id?: boolean
+    identityId?: boolean
+    catalogId?: boolean
+    baseUrl?: boolean
+    credentialEncrypted?: boolean
+    credentialStatus?: boolean
+    discoveryStatus?: boolean
+    modelsJson?: boolean
+    verifiedModelIds?: boolean
+    expiresAt?: boolean
+    consumedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type AiProviderOnboardingSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "catalogId" | "baseUrl" | "credentialEncrypted" | "credentialStatus" | "discoveryStatus" | "modelsJson" | "verifiedModelIds" | "expiresAt" | "consumedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["aiProviderOnboardingSession"]>
+  export type AiProviderOnboardingSessionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+  export type AiProviderOnboardingSessionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+  export type AiProviderOnboardingSessionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+
+  export type $AiProviderOnboardingSessionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AiProviderOnboardingSession"
+    objects: {
+      account: Prisma.$AccountPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      identityId: string
+      catalogId: string
+      baseUrl: string
+      credentialEncrypted: string
+      credentialStatus: string
+      discoveryStatus: string
+      modelsJson: string
+      verifiedModelIds: string
+      expiresAt: Date
+      consumedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["aiProviderOnboardingSession"]>
+    composites: {}
+  }
+
+  type AiProviderOnboardingSessionGetPayload<S extends boolean | null | undefined | AiProviderOnboardingSessionDefaultArgs> = $Result.GetResult<Prisma.$AiProviderOnboardingSessionPayload, S>
+
+  type AiProviderOnboardingSessionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AiProviderOnboardingSessionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AiProviderOnboardingSessionCountAggregateInputType | true
+    }
+
+  export interface AiProviderOnboardingSessionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AiProviderOnboardingSession'], meta: { name: 'AiProviderOnboardingSession' } }
+    /**
+     * Find zero or one AiProviderOnboardingSession that matches the filter.
+     * @param {AiProviderOnboardingSessionFindUniqueArgs} args - Arguments to find a AiProviderOnboardingSession
+     * @example
+     * // Get one AiProviderOnboardingSession
+     * const aiProviderOnboardingSession = await prisma.aiProviderOnboardingSession.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AiProviderOnboardingSessionFindUniqueArgs>(args: SelectSubset<T, AiProviderOnboardingSessionFindUniqueArgs<ExtArgs>>): Prisma__AiProviderOnboardingSessionClient<$Result.GetResult<Prisma.$AiProviderOnboardingSessionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AiProviderOnboardingSession that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AiProviderOnboardingSessionFindUniqueOrThrowArgs} args - Arguments to find a AiProviderOnboardingSession
+     * @example
+     * // Get one AiProviderOnboardingSession
+     * const aiProviderOnboardingSession = await prisma.aiProviderOnboardingSession.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AiProviderOnboardingSessionFindUniqueOrThrowArgs>(args: SelectSubset<T, AiProviderOnboardingSessionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AiProviderOnboardingSessionClient<$Result.GetResult<Prisma.$AiProviderOnboardingSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AiProviderOnboardingSession that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiProviderOnboardingSessionFindFirstArgs} args - Arguments to find a AiProviderOnboardingSession
+     * @example
+     * // Get one AiProviderOnboardingSession
+     * const aiProviderOnboardingSession = await prisma.aiProviderOnboardingSession.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AiProviderOnboardingSessionFindFirstArgs>(args?: SelectSubset<T, AiProviderOnboardingSessionFindFirstArgs<ExtArgs>>): Prisma__AiProviderOnboardingSessionClient<$Result.GetResult<Prisma.$AiProviderOnboardingSessionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AiProviderOnboardingSession that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiProviderOnboardingSessionFindFirstOrThrowArgs} args - Arguments to find a AiProviderOnboardingSession
+     * @example
+     * // Get one AiProviderOnboardingSession
+     * const aiProviderOnboardingSession = await prisma.aiProviderOnboardingSession.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AiProviderOnboardingSessionFindFirstOrThrowArgs>(args?: SelectSubset<T, AiProviderOnboardingSessionFindFirstOrThrowArgs<ExtArgs>>): Prisma__AiProviderOnboardingSessionClient<$Result.GetResult<Prisma.$AiProviderOnboardingSessionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AiProviderOnboardingSessions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiProviderOnboardingSessionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AiProviderOnboardingSessions
+     * const aiProviderOnboardingSessions = await prisma.aiProviderOnboardingSession.findMany()
+     *
+     * // Get first 10 AiProviderOnboardingSessions
+     * const aiProviderOnboardingSessions = await prisma.aiProviderOnboardingSession.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const aiProviderOnboardingSessionWithIdOnly = await prisma.aiProviderOnboardingSession.findMany({ select: { id: true } })
+     *
+     */
+    findMany<T extends AiProviderOnboardingSessionFindManyArgs>(args?: SelectSubset<T, AiProviderOnboardingSessionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiProviderOnboardingSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AiProviderOnboardingSession.
+     * @param {AiProviderOnboardingSessionCreateArgs} args - Arguments to create a AiProviderOnboardingSession.
+     * @example
+     * // Create one AiProviderOnboardingSession
+     * const AiProviderOnboardingSession = await prisma.aiProviderOnboardingSession.create({
+     *   data: {
+     *     // ... data to create a AiProviderOnboardingSession
+     *   }
+     * })
+     *
+     */
+    create<T extends AiProviderOnboardingSessionCreateArgs>(args: SelectSubset<T, AiProviderOnboardingSessionCreateArgs<ExtArgs>>): Prisma__AiProviderOnboardingSessionClient<$Result.GetResult<Prisma.$AiProviderOnboardingSessionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AiProviderOnboardingSessions.
+     * @param {AiProviderOnboardingSessionCreateManyArgs} args - Arguments to create many AiProviderOnboardingSessions.
+     * @example
+     * // Create many AiProviderOnboardingSessions
+     * const aiProviderOnboardingSession = await prisma.aiProviderOnboardingSession.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends AiProviderOnboardingSessionCreateManyArgs>(args?: SelectSubset<T, AiProviderOnboardingSessionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AiProviderOnboardingSessions and returns the data saved in the database.
+     * @param {AiProviderOnboardingSessionCreateManyAndReturnArgs} args - Arguments to create many AiProviderOnboardingSessions.
+     * @example
+     * // Create many AiProviderOnboardingSessions
+     * const aiProviderOnboardingSession = await prisma.aiProviderOnboardingSession.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many AiProviderOnboardingSessions and only return the `id`
+     * const aiProviderOnboardingSessionWithIdOnly = await prisma.aiProviderOnboardingSession.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends AiProviderOnboardingSessionCreateManyAndReturnArgs>(args?: SelectSubset<T, AiProviderOnboardingSessionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiProviderOnboardingSessionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AiProviderOnboardingSession.
+     * @param {AiProviderOnboardingSessionDeleteArgs} args - Arguments to delete one AiProviderOnboardingSession.
+     * @example
+     * // Delete one AiProviderOnboardingSession
+     * const AiProviderOnboardingSession = await prisma.aiProviderOnboardingSession.delete({
+     *   where: {
+     *     // ... filter to delete one AiProviderOnboardingSession
+     *   }
+     * })
+     *
+     */
+    delete<T extends AiProviderOnboardingSessionDeleteArgs>(args: SelectSubset<T, AiProviderOnboardingSessionDeleteArgs<ExtArgs>>): Prisma__AiProviderOnboardingSessionClient<$Result.GetResult<Prisma.$AiProviderOnboardingSessionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AiProviderOnboardingSession.
+     * @param {AiProviderOnboardingSessionUpdateArgs} args - Arguments to update one AiProviderOnboardingSession.
+     * @example
+     * // Update one AiProviderOnboardingSession
+     * const aiProviderOnboardingSession = await prisma.aiProviderOnboardingSession.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends AiProviderOnboardingSessionUpdateArgs>(args: SelectSubset<T, AiProviderOnboardingSessionUpdateArgs<ExtArgs>>): Prisma__AiProviderOnboardingSessionClient<$Result.GetResult<Prisma.$AiProviderOnboardingSessionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AiProviderOnboardingSessions.
+     * @param {AiProviderOnboardingSessionDeleteManyArgs} args - Arguments to filter AiProviderOnboardingSessions to delete.
+     * @example
+     * // Delete a few AiProviderOnboardingSessions
+     * const { count } = await prisma.aiProviderOnboardingSession.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends AiProviderOnboardingSessionDeleteManyArgs>(args?: SelectSubset<T, AiProviderOnboardingSessionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AiProviderOnboardingSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiProviderOnboardingSessionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AiProviderOnboardingSessions
+     * const aiProviderOnboardingSession = await prisma.aiProviderOnboardingSession.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends AiProviderOnboardingSessionUpdateManyArgs>(args: SelectSubset<T, AiProviderOnboardingSessionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AiProviderOnboardingSessions and returns the data updated in the database.
+     * @param {AiProviderOnboardingSessionUpdateManyAndReturnArgs} args - Arguments to update many AiProviderOnboardingSessions.
+     * @example
+     * // Update many AiProviderOnboardingSessions
+     * const aiProviderOnboardingSession = await prisma.aiProviderOnboardingSession.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more AiProviderOnboardingSessions and only return the `id`
+     * const aiProviderOnboardingSessionWithIdOnly = await prisma.aiProviderOnboardingSession.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    updateManyAndReturn<T extends AiProviderOnboardingSessionUpdateManyAndReturnArgs>(args: SelectSubset<T, AiProviderOnboardingSessionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiProviderOnboardingSessionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AiProviderOnboardingSession.
+     * @param {AiProviderOnboardingSessionUpsertArgs} args - Arguments to update or create a AiProviderOnboardingSession.
+     * @example
+     * // Update or create a AiProviderOnboardingSession
+     * const aiProviderOnboardingSession = await prisma.aiProviderOnboardingSession.upsert({
+     *   create: {
+     *     // ... data to create a AiProviderOnboardingSession
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AiProviderOnboardingSession we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AiProviderOnboardingSessionUpsertArgs>(args: SelectSubset<T, AiProviderOnboardingSessionUpsertArgs<ExtArgs>>): Prisma__AiProviderOnboardingSessionClient<$Result.GetResult<Prisma.$AiProviderOnboardingSessionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AiProviderOnboardingSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiProviderOnboardingSessionCountArgs} args - Arguments to filter AiProviderOnboardingSessions to count.
+     * @example
+     * // Count the number of AiProviderOnboardingSessions
+     * const count = await prisma.aiProviderOnboardingSession.count({
+     *   where: {
+     *     // ... the filter for the AiProviderOnboardingSessions we want to count
+     *   }
+     * })
+    **/
+    count<T extends AiProviderOnboardingSessionCountArgs>(
+      args?: Subset<T, AiProviderOnboardingSessionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AiProviderOnboardingSessionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AiProviderOnboardingSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiProviderOnboardingSessionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AiProviderOnboardingSessionAggregateArgs>(args: Subset<T, AiProviderOnboardingSessionAggregateArgs>): Prisma.PrismaPromise<GetAiProviderOnboardingSessionAggregateType<T>>
+
+    /**
+     * Group by AiProviderOnboardingSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiProviderOnboardingSessionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+    **/
+    groupBy<
+      T extends AiProviderOnboardingSessionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AiProviderOnboardingSessionGroupByArgs['orderBy'] }
+        : { orderBy?: AiProviderOnboardingSessionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AiProviderOnboardingSessionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAiProviderOnboardingSessionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AiProviderOnboardingSession model
+   */
+  readonly fields: AiProviderOnboardingSessionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AiProviderOnboardingSession.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AiProviderOnboardingSessionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AiProviderOnboardingSession model
+   */
+  interface AiProviderOnboardingSessionFieldRefs {
+    readonly id: FieldRef<"AiProviderOnboardingSession", 'String'>
+    readonly identityId: FieldRef<"AiProviderOnboardingSession", 'String'>
+    readonly catalogId: FieldRef<"AiProviderOnboardingSession", 'String'>
+    readonly baseUrl: FieldRef<"AiProviderOnboardingSession", 'String'>
+    readonly credentialEncrypted: FieldRef<"AiProviderOnboardingSession", 'String'>
+    readonly credentialStatus: FieldRef<"AiProviderOnboardingSession", 'String'>
+    readonly discoveryStatus: FieldRef<"AiProviderOnboardingSession", 'String'>
+    readonly modelsJson: FieldRef<"AiProviderOnboardingSession", 'String'>
+    readonly verifiedModelIds: FieldRef<"AiProviderOnboardingSession", 'String'>
+    readonly expiresAt: FieldRef<"AiProviderOnboardingSession", 'DateTime'>
+    readonly consumedAt: FieldRef<"AiProviderOnboardingSession", 'DateTime'>
+    readonly createdAt: FieldRef<"AiProviderOnboardingSession", 'DateTime'>
+    readonly updatedAt: FieldRef<"AiProviderOnboardingSession", 'DateTime'>
+  }
+
+
+  // Custom InputTypes
+  /**
+   * AiProviderOnboardingSession findUnique
+   */
+  export type AiProviderOnboardingSessionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiProviderOnboardingSession
+     */
+    select?: AiProviderOnboardingSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiProviderOnboardingSession
+     */
+    omit?: AiProviderOnboardingSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiProviderOnboardingSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which AiProviderOnboardingSession to fetch.
+     */
+    where: AiProviderOnboardingSessionWhereUniqueInput
+  }
+
+  /**
+   * AiProviderOnboardingSession findUniqueOrThrow
+   */
+  export type AiProviderOnboardingSessionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiProviderOnboardingSession
+     */
+    select?: AiProviderOnboardingSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiProviderOnboardingSession
+     */
+    omit?: AiProviderOnboardingSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiProviderOnboardingSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which AiProviderOnboardingSession to fetch.
+     */
+    where: AiProviderOnboardingSessionWhereUniqueInput
+  }
+
+  /**
+   * AiProviderOnboardingSession findFirst
+   */
+  export type AiProviderOnboardingSessionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiProviderOnboardingSession
+     */
+    select?: AiProviderOnboardingSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiProviderOnboardingSession
+     */
+    omit?: AiProviderOnboardingSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiProviderOnboardingSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which AiProviderOnboardingSession to fetch.
+     */
+    where?: AiProviderOnboardingSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of AiProviderOnboardingSessions to fetch.
+     */
+    orderBy?: AiProviderOnboardingSessionOrderByWithRelationInput | AiProviderOnboardingSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for AiProviderOnboardingSessions.
+     */
+    cursor?: AiProviderOnboardingSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` AiProviderOnboardingSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` AiProviderOnboardingSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of AiProviderOnboardingSessions.
+     */
+    distinct?: AiProviderOnboardingSessionScalarFieldEnum | AiProviderOnboardingSessionScalarFieldEnum[]
+  }
+
+  /**
+   * AiProviderOnboardingSession findFirstOrThrow
+   */
+  export type AiProviderOnboardingSessionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiProviderOnboardingSession
+     */
+    select?: AiProviderOnboardingSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiProviderOnboardingSession
+     */
+    omit?: AiProviderOnboardingSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiProviderOnboardingSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which AiProviderOnboardingSession to fetch.
+     */
+    where?: AiProviderOnboardingSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of AiProviderOnboardingSessions to fetch.
+     */
+    orderBy?: AiProviderOnboardingSessionOrderByWithRelationInput | AiProviderOnboardingSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for AiProviderOnboardingSessions.
+     */
+    cursor?: AiProviderOnboardingSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` AiProviderOnboardingSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` AiProviderOnboardingSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of AiProviderOnboardingSessions.
+     */
+    distinct?: AiProviderOnboardingSessionScalarFieldEnum | AiProviderOnboardingSessionScalarFieldEnum[]
+  }
+
+  /**
+   * AiProviderOnboardingSession findMany
+   */
+  export type AiProviderOnboardingSessionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiProviderOnboardingSession
+     */
+    select?: AiProviderOnboardingSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiProviderOnboardingSession
+     */
+    omit?: AiProviderOnboardingSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiProviderOnboardingSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which AiProviderOnboardingSessions to fetch.
+     */
+    where?: AiProviderOnboardingSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of AiProviderOnboardingSessions to fetch.
+     */
+    orderBy?: AiProviderOnboardingSessionOrderByWithRelationInput | AiProviderOnboardingSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing AiProviderOnboardingSessions.
+     */
+    cursor?: AiProviderOnboardingSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` AiProviderOnboardingSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` AiProviderOnboardingSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of AiProviderOnboardingSessions.
+     */
+    distinct?: AiProviderOnboardingSessionScalarFieldEnum | AiProviderOnboardingSessionScalarFieldEnum[]
+  }
+
+  /**
+   * AiProviderOnboardingSession create
+   */
+  export type AiProviderOnboardingSessionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiProviderOnboardingSession
+     */
+    select?: AiProviderOnboardingSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiProviderOnboardingSession
+     */
+    omit?: AiProviderOnboardingSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiProviderOnboardingSessionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AiProviderOnboardingSession.
+     */
+    data: XOR<AiProviderOnboardingSessionCreateInput, AiProviderOnboardingSessionUncheckedCreateInput>
+  }
+
+  /**
+   * AiProviderOnboardingSession createMany
+   */
+  export type AiProviderOnboardingSessionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AiProviderOnboardingSessions.
+     */
+    data: AiProviderOnboardingSessionCreateManyInput | AiProviderOnboardingSessionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AiProviderOnboardingSession createManyAndReturn
+   */
+  export type AiProviderOnboardingSessionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiProviderOnboardingSession
+     */
+    select?: AiProviderOnboardingSessionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiProviderOnboardingSession
+     */
+    omit?: AiProviderOnboardingSessionOmit<ExtArgs> | null
+    /**
+     * The data used to create many AiProviderOnboardingSessions.
+     */
+    data: AiProviderOnboardingSessionCreateManyInput | AiProviderOnboardingSessionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiProviderOnboardingSessionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AiProviderOnboardingSession update
+   */
+  export type AiProviderOnboardingSessionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiProviderOnboardingSession
+     */
+    select?: AiProviderOnboardingSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiProviderOnboardingSession
+     */
+    omit?: AiProviderOnboardingSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiProviderOnboardingSessionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AiProviderOnboardingSession.
+     */
+    data: XOR<AiProviderOnboardingSessionUpdateInput, AiProviderOnboardingSessionUncheckedUpdateInput>
+    /**
+     * Choose, which AiProviderOnboardingSession to update.
+     */
+    where: AiProviderOnboardingSessionWhereUniqueInput
+  }
+
+  /**
+   * AiProviderOnboardingSession updateMany
+   */
+  export type AiProviderOnboardingSessionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AiProviderOnboardingSessions.
+     */
+    data: XOR<AiProviderOnboardingSessionUpdateManyMutationInput, AiProviderOnboardingSessionUncheckedUpdateManyInput>
+    /**
+     * Filter which AiProviderOnboardingSessions to update
+     */
+    where?: AiProviderOnboardingSessionWhereInput
+    /**
+     * Limit how many AiProviderOnboardingSessions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AiProviderOnboardingSession updateManyAndReturn
+   */
+  export type AiProviderOnboardingSessionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiProviderOnboardingSession
+     */
+    select?: AiProviderOnboardingSessionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiProviderOnboardingSession
+     */
+    omit?: AiProviderOnboardingSessionOmit<ExtArgs> | null
+    /**
+     * The data used to update AiProviderOnboardingSessions.
+     */
+    data: XOR<AiProviderOnboardingSessionUpdateManyMutationInput, AiProviderOnboardingSessionUncheckedUpdateManyInput>
+    /**
+     * Filter which AiProviderOnboardingSessions to update
+     */
+    where?: AiProviderOnboardingSessionWhereInput
+    /**
+     * Limit how many AiProviderOnboardingSessions to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiProviderOnboardingSessionIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AiProviderOnboardingSession upsert
+   */
+  export type AiProviderOnboardingSessionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiProviderOnboardingSession
+     */
+    select?: AiProviderOnboardingSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiProviderOnboardingSession
+     */
+    omit?: AiProviderOnboardingSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiProviderOnboardingSessionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AiProviderOnboardingSession to update in case it exists.
+     */
+    where: AiProviderOnboardingSessionWhereUniqueInput
+    /**
+     * In case the AiProviderOnboardingSession found by the `where` argument doesn't exist, create a new AiProviderOnboardingSession with this data.
+     */
+    create: XOR<AiProviderOnboardingSessionCreateInput, AiProviderOnboardingSessionUncheckedCreateInput>
+    /**
+     * In case the AiProviderOnboardingSession was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AiProviderOnboardingSessionUpdateInput, AiProviderOnboardingSessionUncheckedUpdateInput>
+  }
+
+  /**
+   * AiProviderOnboardingSession delete
+   */
+  export type AiProviderOnboardingSessionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiProviderOnboardingSession
+     */
+    select?: AiProviderOnboardingSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiProviderOnboardingSession
+     */
+    omit?: AiProviderOnboardingSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiProviderOnboardingSessionInclude<ExtArgs> | null
+    /**
+     * Filter which AiProviderOnboardingSession to delete.
+     */
+    where: AiProviderOnboardingSessionWhereUniqueInput
+  }
+
+  /**
+   * AiProviderOnboardingSession deleteMany
+   */
+  export type AiProviderOnboardingSessionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AiProviderOnboardingSessions to delete
+     */
+    where?: AiProviderOnboardingSessionWhereInput
+    /**
+     * Limit how many AiProviderOnboardingSessions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AiProviderOnboardingSession without action
+   */
+  export type AiProviderOnboardingSessionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiProviderOnboardingSession
+     */
+    select?: AiProviderOnboardingSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiProviderOnboardingSession
+     */
+    omit?: AiProviderOnboardingSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiProviderOnboardingSessionInclude<ExtArgs> | null
   }
 
 
@@ -126435,6 +127730,25 @@ export namespace Prisma {
   export type AiProviderConfigScalarFieldEnum = (typeof AiProviderConfigScalarFieldEnum)[keyof typeof AiProviderConfigScalarFieldEnum]
 
 
+  export const AiProviderOnboardingSessionScalarFieldEnum: {
+    id: 'id',
+    identityId: 'identityId',
+    catalogId: 'catalogId',
+    baseUrl: 'baseUrl',
+    credentialEncrypted: 'credentialEncrypted',
+    credentialStatus: 'credentialStatus',
+    discoveryStatus: 'discoveryStatus',
+    modelsJson: 'modelsJson',
+    verifiedModelIds: 'verifiedModelIds',
+    expiresAt: 'expiresAt',
+    consumedAt: 'consumedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type AiProviderOnboardingSessionScalarFieldEnum = (typeof AiProviderOnboardingSessionScalarFieldEnum)[keyof typeof AiProviderOnboardingSessionScalarFieldEnum]
+
+
   export const KnowledgeGenerationTaskScalarFieldEnum: {
     id: 'id',
     identityId: 'identityId',
@@ -128313,6 +129627,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryListRelationFilter
     aiUsageQuotas?: XOR<AiUsageQuotaNullableScalarRelationFilter, AiUsageQuotaWhereInput> | null
     aiProviderConfigs?: AiProviderConfigListRelationFilter
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionListRelationFilter
     dashboardConfigs?: XOR<DashboardConfigNullableScalarRelationFilter, DashboardConfigWhereInput> | null
     taskTemplateHistory?: TaskTemplateHistoryListRelationFilter
     scheduleExecutions?: ScheduleExecutionListRelationFilter
@@ -128392,6 +129707,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryOrderByRelationAggregateInput
     aiUsageQuotas?: AiUsageQuotaOrderByWithRelationInput
     aiProviderConfigs?: AiProviderConfigOrderByRelationAggregateInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionOrderByRelationAggregateInput
     dashboardConfigs?: DashboardConfigOrderByWithRelationInput
     taskTemplateHistory?: TaskTemplateHistoryOrderByRelationAggregateInput
     scheduleExecutions?: ScheduleExecutionOrderByRelationAggregateInput
@@ -128474,6 +129790,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryListRelationFilter
     aiUsageQuotas?: XOR<AiUsageQuotaNullableScalarRelationFilter, AiUsageQuotaWhereInput> | null
     aiProviderConfigs?: AiProviderConfigListRelationFilter
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionListRelationFilter
     dashboardConfigs?: XOR<DashboardConfigNullableScalarRelationFilter, DashboardConfigWhereInput> | null
     taskTemplateHistory?: TaskTemplateHistoryListRelationFilter
     scheduleExecutions?: ScheduleExecutionListRelationFilter
@@ -129124,6 +130441,101 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"AiProviderConfig"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"AiProviderConfig"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"AiProviderConfig"> | Date | string | null
+  }
+
+  export type AiProviderOnboardingSessionWhereInput = {
+    AND?: AiProviderOnboardingSessionWhereInput | AiProviderOnboardingSessionWhereInput[]
+    OR?: AiProviderOnboardingSessionWhereInput[]
+    NOT?: AiProviderOnboardingSessionWhereInput | AiProviderOnboardingSessionWhereInput[]
+    id?: StringFilter<"AiProviderOnboardingSession"> | string
+    identityId?: StringFilter<"AiProviderOnboardingSession"> | string
+    catalogId?: StringFilter<"AiProviderOnboardingSession"> | string
+    baseUrl?: StringFilter<"AiProviderOnboardingSession"> | string
+    credentialEncrypted?: StringFilter<"AiProviderOnboardingSession"> | string
+    credentialStatus?: StringFilter<"AiProviderOnboardingSession"> | string
+    discoveryStatus?: StringFilter<"AiProviderOnboardingSession"> | string
+    modelsJson?: StringFilter<"AiProviderOnboardingSession"> | string
+    verifiedModelIds?: StringFilter<"AiProviderOnboardingSession"> | string
+    expiresAt?: DateTimeFilter<"AiProviderOnboardingSession"> | Date | string
+    consumedAt?: DateTimeNullableFilter<"AiProviderOnboardingSession"> | Date | string | null
+    createdAt?: DateTimeFilter<"AiProviderOnboardingSession"> | Date | string
+    updatedAt?: DateTimeFilter<"AiProviderOnboardingSession"> | Date | string
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+  }
+
+  export type AiProviderOnboardingSessionOrderByWithRelationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    catalogId?: SortOrder
+    baseUrl?: SortOrder
+    credentialEncrypted?: SortOrder
+    credentialStatus?: SortOrder
+    discoveryStatus?: SortOrder
+    modelsJson?: SortOrder
+    verifiedModelIds?: SortOrder
+    expiresAt?: SortOrder
+    consumedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    account?: AccountOrderByWithRelationInput
+  }
+
+  export type AiProviderOnboardingSessionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AiProviderOnboardingSessionWhereInput | AiProviderOnboardingSessionWhereInput[]
+    OR?: AiProviderOnboardingSessionWhereInput[]
+    NOT?: AiProviderOnboardingSessionWhereInput | AiProviderOnboardingSessionWhereInput[]
+    identityId?: StringFilter<"AiProviderOnboardingSession"> | string
+    catalogId?: StringFilter<"AiProviderOnboardingSession"> | string
+    baseUrl?: StringFilter<"AiProviderOnboardingSession"> | string
+    credentialEncrypted?: StringFilter<"AiProviderOnboardingSession"> | string
+    credentialStatus?: StringFilter<"AiProviderOnboardingSession"> | string
+    discoveryStatus?: StringFilter<"AiProviderOnboardingSession"> | string
+    modelsJson?: StringFilter<"AiProviderOnboardingSession"> | string
+    verifiedModelIds?: StringFilter<"AiProviderOnboardingSession"> | string
+    expiresAt?: DateTimeFilter<"AiProviderOnboardingSession"> | Date | string
+    consumedAt?: DateTimeNullableFilter<"AiProviderOnboardingSession"> | Date | string | null
+    createdAt?: DateTimeFilter<"AiProviderOnboardingSession"> | Date | string
+    updatedAt?: DateTimeFilter<"AiProviderOnboardingSession"> | Date | string
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+  }, "id">
+
+  export type AiProviderOnboardingSessionOrderByWithAggregationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    catalogId?: SortOrder
+    baseUrl?: SortOrder
+    credentialEncrypted?: SortOrder
+    credentialStatus?: SortOrder
+    discoveryStatus?: SortOrder
+    modelsJson?: SortOrder
+    verifiedModelIds?: SortOrder
+    expiresAt?: SortOrder
+    consumedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: AiProviderOnboardingSessionCountOrderByAggregateInput
+    _max?: AiProviderOnboardingSessionMaxOrderByAggregateInput
+    _min?: AiProviderOnboardingSessionMinOrderByAggregateInput
+  }
+
+  export type AiProviderOnboardingSessionScalarWhereWithAggregatesInput = {
+    AND?: AiProviderOnboardingSessionScalarWhereWithAggregatesInput | AiProviderOnboardingSessionScalarWhereWithAggregatesInput[]
+    OR?: AiProviderOnboardingSessionScalarWhereWithAggregatesInput[]
+    NOT?: AiProviderOnboardingSessionScalarWhereWithAggregatesInput | AiProviderOnboardingSessionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AiProviderOnboardingSession"> | string
+    identityId?: StringWithAggregatesFilter<"AiProviderOnboardingSession"> | string
+    catalogId?: StringWithAggregatesFilter<"AiProviderOnboardingSession"> | string
+    baseUrl?: StringWithAggregatesFilter<"AiProviderOnboardingSession"> | string
+    credentialEncrypted?: StringWithAggregatesFilter<"AiProviderOnboardingSession"> | string
+    credentialStatus?: StringWithAggregatesFilter<"AiProviderOnboardingSession"> | string
+    discoveryStatus?: StringWithAggregatesFilter<"AiProviderOnboardingSession"> | string
+    modelsJson?: StringWithAggregatesFilter<"AiProviderOnboardingSession"> | string
+    verifiedModelIds?: StringWithAggregatesFilter<"AiProviderOnboardingSession"> | string
+    expiresAt?: DateTimeWithAggregatesFilter<"AiProviderOnboardingSession"> | Date | string
+    consumedAt?: DateTimeNullableWithAggregatesFilter<"AiProviderOnboardingSession"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"AiProviderOnboardingSession"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AiProviderOnboardingSession"> | Date | string
   }
 
   export type KnowledgeGenerationTaskWhereInput = {
@@ -137733,6 +139145,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -137811,6 +139224,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -137889,6 +139303,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -137967,6 +139382,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -138712,6 +140128,117 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AiProviderOnboardingSessionCreateInput = {
+    id: string
+    catalogId: string
+    baseUrl: string
+    credentialEncrypted: string
+    credentialStatus: string
+    discoveryStatus: string
+    modelsJson?: string
+    verifiedModelIds?: string
+    expiresAt: Date | string
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    account: AccountCreateNestedOneWithoutAiProviderOnboardingSessionsInput
+  }
+
+  export type AiProviderOnboardingSessionUncheckedCreateInput = {
+    id: string
+    identityId: string
+    catalogId: string
+    baseUrl: string
+    credentialEncrypted: string
+    credentialStatus: string
+    discoveryStatus: string
+    modelsJson?: string
+    verifiedModelIds?: string
+    expiresAt: Date | string
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AiProviderOnboardingSessionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    catalogId?: StringFieldUpdateOperationsInput | string
+    baseUrl?: StringFieldUpdateOperationsInput | string
+    credentialEncrypted?: StringFieldUpdateOperationsInput | string
+    credentialStatus?: StringFieldUpdateOperationsInput | string
+    discoveryStatus?: StringFieldUpdateOperationsInput | string
+    modelsJson?: StringFieldUpdateOperationsInput | string
+    verifiedModelIds?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    account?: AccountUpdateOneRequiredWithoutAiProviderOnboardingSessionsNestedInput
+  }
+
+  export type AiProviderOnboardingSessionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    catalogId?: StringFieldUpdateOperationsInput | string
+    baseUrl?: StringFieldUpdateOperationsInput | string
+    credentialEncrypted?: StringFieldUpdateOperationsInput | string
+    credentialStatus?: StringFieldUpdateOperationsInput | string
+    discoveryStatus?: StringFieldUpdateOperationsInput | string
+    modelsJson?: StringFieldUpdateOperationsInput | string
+    verifiedModelIds?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiProviderOnboardingSessionCreateManyInput = {
+    id: string
+    identityId: string
+    catalogId: string
+    baseUrl: string
+    credentialEncrypted: string
+    credentialStatus: string
+    discoveryStatus: string
+    modelsJson?: string
+    verifiedModelIds?: string
+    expiresAt: Date | string
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AiProviderOnboardingSessionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    catalogId?: StringFieldUpdateOperationsInput | string
+    baseUrl?: StringFieldUpdateOperationsInput | string
+    credentialEncrypted?: StringFieldUpdateOperationsInput | string
+    credentialStatus?: StringFieldUpdateOperationsInput | string
+    discoveryStatus?: StringFieldUpdateOperationsInput | string
+    modelsJson?: StringFieldUpdateOperationsInput | string
+    verifiedModelIds?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiProviderOnboardingSessionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    catalogId?: StringFieldUpdateOperationsInput | string
+    baseUrl?: StringFieldUpdateOperationsInput | string
+    credentialEncrypted?: StringFieldUpdateOperationsInput | string
+    credentialStatus?: StringFieldUpdateOperationsInput | string
+    discoveryStatus?: StringFieldUpdateOperationsInput | string
+    modelsJson?: StringFieldUpdateOperationsInput | string
+    verifiedModelIds?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type KnowledgeGenerationTaskCreateInput = {
@@ -148769,6 +150296,12 @@ export namespace Prisma {
     none?: AiProviderConfigWhereInput
   }
 
+  export type AiProviderOnboardingSessionListRelationFilter = {
+    every?: AiProviderOnboardingSessionWhereInput
+    some?: AiProviderOnboardingSessionWhereInput
+    none?: AiProviderOnboardingSessionWhereInput
+  }
+
   export type DashboardConfigNullableScalarRelationFilter = {
     is?: DashboardConfigWhereInput | null
     isNot?: DashboardConfigWhereInput | null
@@ -149008,6 +150541,10 @@ export namespace Prisma {
   }
 
   export type AiProviderConfigOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AiProviderOnboardingSessionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -149662,6 +151199,54 @@ export namespace Prisma {
   export type AiProviderConfigSumOrderByAggregateInput = {
     priority?: SortOrder
     version?: SortOrder
+  }
+
+  export type AiProviderOnboardingSessionCountOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    catalogId?: SortOrder
+    baseUrl?: SortOrder
+    credentialEncrypted?: SortOrder
+    credentialStatus?: SortOrder
+    discoveryStatus?: SortOrder
+    modelsJson?: SortOrder
+    verifiedModelIds?: SortOrder
+    expiresAt?: SortOrder
+    consumedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AiProviderOnboardingSessionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    catalogId?: SortOrder
+    baseUrl?: SortOrder
+    credentialEncrypted?: SortOrder
+    credentialStatus?: SortOrder
+    discoveryStatus?: SortOrder
+    modelsJson?: SortOrder
+    verifiedModelIds?: SortOrder
+    expiresAt?: SortOrder
+    consumedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AiProviderOnboardingSessionMinOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    catalogId?: SortOrder
+    baseUrl?: SortOrder
+    credentialEncrypted?: SortOrder
+    credentialStatus?: SortOrder
+    discoveryStatus?: SortOrder
+    modelsJson?: SortOrder
+    verifiedModelIds?: SortOrder
+    expiresAt?: SortOrder
+    consumedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type StringNullableListFilter<$PrismaModel = never> = {
@@ -155365,6 +156950,13 @@ export namespace Prisma {
     connect?: AiProviderConfigWhereUniqueInput | AiProviderConfigWhereUniqueInput[]
   }
 
+  export type AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput = {
+    create?: XOR<AiProviderOnboardingSessionCreateWithoutAccountInput, AiProviderOnboardingSessionUncheckedCreateWithoutAccountInput> | AiProviderOnboardingSessionCreateWithoutAccountInput[] | AiProviderOnboardingSessionUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: AiProviderOnboardingSessionCreateOrConnectWithoutAccountInput | AiProviderOnboardingSessionCreateOrConnectWithoutAccountInput[]
+    createMany?: AiProviderOnboardingSessionCreateManyAccountInputEnvelope
+    connect?: AiProviderOnboardingSessionWhereUniqueInput | AiProviderOnboardingSessionWhereUniqueInput[]
+  }
+
   export type DashboardConfigCreateNestedOneWithoutAccountInput = {
     create?: XOR<DashboardConfigCreateWithoutAccountInput, DashboardConfigUncheckedCreateWithoutAccountInput>
     connectOrCreate?: DashboardConfigCreateOrConnectWithoutAccountInput
@@ -155761,6 +157353,13 @@ export namespace Prisma {
     connectOrCreate?: AiProviderConfigCreateOrConnectWithoutAccountInput | AiProviderConfigCreateOrConnectWithoutAccountInput[]
     createMany?: AiProviderConfigCreateManyAccountInputEnvelope
     connect?: AiProviderConfigWhereUniqueInput | AiProviderConfigWhereUniqueInput[]
+  }
+
+  export type AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput = {
+    create?: XOR<AiProviderOnboardingSessionCreateWithoutAccountInput, AiProviderOnboardingSessionUncheckedCreateWithoutAccountInput> | AiProviderOnboardingSessionCreateWithoutAccountInput[] | AiProviderOnboardingSessionUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: AiProviderOnboardingSessionCreateOrConnectWithoutAccountInput | AiProviderOnboardingSessionCreateOrConnectWithoutAccountInput[]
+    createMany?: AiProviderOnboardingSessionCreateManyAccountInputEnvelope
+    connect?: AiProviderOnboardingSessionWhereUniqueInput | AiProviderOnboardingSessionWhereUniqueInput[]
   }
 
   export type DashboardConfigUncheckedCreateNestedOneWithoutAccountInput = {
@@ -156465,6 +158064,20 @@ export namespace Prisma {
     update?: AiProviderConfigUpdateWithWhereUniqueWithoutAccountInput | AiProviderConfigUpdateWithWhereUniqueWithoutAccountInput[]
     updateMany?: AiProviderConfigUpdateManyWithWhereWithoutAccountInput | AiProviderConfigUpdateManyWithWhereWithoutAccountInput[]
     deleteMany?: AiProviderConfigScalarWhereInput | AiProviderConfigScalarWhereInput[]
+  }
+
+  export type AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<AiProviderOnboardingSessionCreateWithoutAccountInput, AiProviderOnboardingSessionUncheckedCreateWithoutAccountInput> | AiProviderOnboardingSessionCreateWithoutAccountInput[] | AiProviderOnboardingSessionUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: AiProviderOnboardingSessionCreateOrConnectWithoutAccountInput | AiProviderOnboardingSessionCreateOrConnectWithoutAccountInput[]
+    upsert?: AiProviderOnboardingSessionUpsertWithWhereUniqueWithoutAccountInput | AiProviderOnboardingSessionUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: AiProviderOnboardingSessionCreateManyAccountInputEnvelope
+    set?: AiProviderOnboardingSessionWhereUniqueInput | AiProviderOnboardingSessionWhereUniqueInput[]
+    disconnect?: AiProviderOnboardingSessionWhereUniqueInput | AiProviderOnboardingSessionWhereUniqueInput[]
+    delete?: AiProviderOnboardingSessionWhereUniqueInput | AiProviderOnboardingSessionWhereUniqueInput[]
+    connect?: AiProviderOnboardingSessionWhereUniqueInput | AiProviderOnboardingSessionWhereUniqueInput[]
+    update?: AiProviderOnboardingSessionUpdateWithWhereUniqueWithoutAccountInput | AiProviderOnboardingSessionUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: AiProviderOnboardingSessionUpdateManyWithWhereWithoutAccountInput | AiProviderOnboardingSessionUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: AiProviderOnboardingSessionScalarWhereInput | AiProviderOnboardingSessionScalarWhereInput[]
   }
 
   export type DashboardConfigUpdateOneWithoutAccountNestedInput = {
@@ -157247,6 +158860,20 @@ export namespace Prisma {
     deleteMany?: AiProviderConfigScalarWhereInput | AiProviderConfigScalarWhereInput[]
   }
 
+  export type AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<AiProviderOnboardingSessionCreateWithoutAccountInput, AiProviderOnboardingSessionUncheckedCreateWithoutAccountInput> | AiProviderOnboardingSessionCreateWithoutAccountInput[] | AiProviderOnboardingSessionUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: AiProviderOnboardingSessionCreateOrConnectWithoutAccountInput | AiProviderOnboardingSessionCreateOrConnectWithoutAccountInput[]
+    upsert?: AiProviderOnboardingSessionUpsertWithWhereUniqueWithoutAccountInput | AiProviderOnboardingSessionUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: AiProviderOnboardingSessionCreateManyAccountInputEnvelope
+    set?: AiProviderOnboardingSessionWhereUniqueInput | AiProviderOnboardingSessionWhereUniqueInput[]
+    disconnect?: AiProviderOnboardingSessionWhereUniqueInput | AiProviderOnboardingSessionWhereUniqueInput[]
+    delete?: AiProviderOnboardingSessionWhereUniqueInput | AiProviderOnboardingSessionWhereUniqueInput[]
+    connect?: AiProviderOnboardingSessionWhereUniqueInput | AiProviderOnboardingSessionWhereUniqueInput[]
+    update?: AiProviderOnboardingSessionUpdateWithWhereUniqueWithoutAccountInput | AiProviderOnboardingSessionUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: AiProviderOnboardingSessionUpdateManyWithWhereWithoutAccountInput | AiProviderOnboardingSessionUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: AiProviderOnboardingSessionScalarWhereInput | AiProviderOnboardingSessionScalarWhereInput[]
+  }
+
   export type DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput = {
     create?: XOR<DashboardConfigCreateWithoutAccountInput, DashboardConfigUncheckedCreateWithoutAccountInput>
     connectOrCreate?: DashboardConfigCreateOrConnectWithoutAccountInput
@@ -157635,6 +159262,20 @@ export namespace Prisma {
     upsert?: AccountUpsertWithoutAiProviderConfigsInput
     connect?: AccountWhereUniqueInput
     update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutAiProviderConfigsInput, AccountUpdateWithoutAiProviderConfigsInput>, AccountUncheckedUpdateWithoutAiProviderConfigsInput>
+  }
+
+  export type AccountCreateNestedOneWithoutAiProviderOnboardingSessionsInput = {
+    create?: XOR<AccountCreateWithoutAiProviderOnboardingSessionsInput, AccountUncheckedCreateWithoutAiProviderOnboardingSessionsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutAiProviderOnboardingSessionsInput
+    connect?: AccountWhereUniqueInput
+  }
+
+  export type AccountUpdateOneRequiredWithoutAiProviderOnboardingSessionsNestedInput = {
+    create?: XOR<AccountCreateWithoutAiProviderOnboardingSessionsInput, AccountUncheckedCreateWithoutAiProviderOnboardingSessionsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutAiProviderOnboardingSessionsInput
+    upsert?: AccountUpsertWithoutAiProviderOnboardingSessionsInput
+    connect?: AccountWhereUniqueInput
+    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutAiProviderOnboardingSessionsInput, AccountUpdateWithoutAiProviderOnboardingSessionsInput>, AccountUncheckedUpdateWithoutAiProviderOnboardingSessionsInput>
   }
 
   export type KnowledgeGenerationTaskCreategeneratedResourceIdsInput = {
@@ -163450,6 +165091,46 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type AiProviderOnboardingSessionCreateWithoutAccountInput = {
+    id: string
+    catalogId: string
+    baseUrl: string
+    credentialEncrypted: string
+    credentialStatus: string
+    discoveryStatus: string
+    modelsJson?: string
+    verifiedModelIds?: string
+    expiresAt: Date | string
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AiProviderOnboardingSessionUncheckedCreateWithoutAccountInput = {
+    id: string
+    catalogId: string
+    baseUrl: string
+    credentialEncrypted: string
+    credentialStatus: string
+    discoveryStatus: string
+    modelsJson?: string
+    verifiedModelIds?: string
+    expiresAt: Date | string
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AiProviderOnboardingSessionCreateOrConnectWithoutAccountInput = {
+    where: AiProviderOnboardingSessionWhereUniqueInput
+    create: XOR<AiProviderOnboardingSessionCreateWithoutAccountInput, AiProviderOnboardingSessionUncheckedCreateWithoutAccountInput>
+  }
+
+  export type AiProviderOnboardingSessionCreateManyAccountInputEnvelope = {
+    data: AiProviderOnboardingSessionCreateManyAccountInput | AiProviderOnboardingSessionCreateManyAccountInput[]
+    skipDuplicates?: boolean
+  }
+
   export type DashboardConfigCreateWithoutAccountInput = {
     widgetConfig: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -165749,6 +167430,41 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"AiProviderConfig"> | Date | string | null
   }
 
+  export type AiProviderOnboardingSessionUpsertWithWhereUniqueWithoutAccountInput = {
+    where: AiProviderOnboardingSessionWhereUniqueInput
+    update: XOR<AiProviderOnboardingSessionUpdateWithoutAccountInput, AiProviderOnboardingSessionUncheckedUpdateWithoutAccountInput>
+    create: XOR<AiProviderOnboardingSessionCreateWithoutAccountInput, AiProviderOnboardingSessionUncheckedCreateWithoutAccountInput>
+  }
+
+  export type AiProviderOnboardingSessionUpdateWithWhereUniqueWithoutAccountInput = {
+    where: AiProviderOnboardingSessionWhereUniqueInput
+    data: XOR<AiProviderOnboardingSessionUpdateWithoutAccountInput, AiProviderOnboardingSessionUncheckedUpdateWithoutAccountInput>
+  }
+
+  export type AiProviderOnboardingSessionUpdateManyWithWhereWithoutAccountInput = {
+    where: AiProviderOnboardingSessionScalarWhereInput
+    data: XOR<AiProviderOnboardingSessionUpdateManyMutationInput, AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountInput>
+  }
+
+  export type AiProviderOnboardingSessionScalarWhereInput = {
+    AND?: AiProviderOnboardingSessionScalarWhereInput | AiProviderOnboardingSessionScalarWhereInput[]
+    OR?: AiProviderOnboardingSessionScalarWhereInput[]
+    NOT?: AiProviderOnboardingSessionScalarWhereInput | AiProviderOnboardingSessionScalarWhereInput[]
+    id?: StringFilter<"AiProviderOnboardingSession"> | string
+    identityId?: StringFilter<"AiProviderOnboardingSession"> | string
+    catalogId?: StringFilter<"AiProviderOnboardingSession"> | string
+    baseUrl?: StringFilter<"AiProviderOnboardingSession"> | string
+    credentialEncrypted?: StringFilter<"AiProviderOnboardingSession"> | string
+    credentialStatus?: StringFilter<"AiProviderOnboardingSession"> | string
+    discoveryStatus?: StringFilter<"AiProviderOnboardingSession"> | string
+    modelsJson?: StringFilter<"AiProviderOnboardingSession"> | string
+    verifiedModelIds?: StringFilter<"AiProviderOnboardingSession"> | string
+    expiresAt?: DateTimeFilter<"AiProviderOnboardingSession"> | Date | string
+    consumedAt?: DateTimeNullableFilter<"AiProviderOnboardingSession"> | Date | string | null
+    createdAt?: DateTimeFilter<"AiProviderOnboardingSession"> | Date | string
+    updatedAt?: DateTimeFilter<"AiProviderOnboardingSession"> | Date | string
+  }
+
   export type DashboardConfigUpsertWithoutAccountInput = {
     update: XOR<DashboardConfigUpdateWithoutAccountInput, DashboardConfigUncheckedUpdateWithoutAccountInput>
     create: XOR<DashboardConfigCreateWithoutAccountInput, DashboardConfigUncheckedCreateWithoutAccountInput>
@@ -166416,6 +168132,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -166493,6 +168210,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -166586,6 +168304,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -166663,6 +168382,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -166740,6 +168460,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -166817,6 +168538,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -166938,6 +168660,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -167015,6 +168738,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -167109,6 +168833,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -167186,6 +168911,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -167310,6 +169036,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -167387,6 +169114,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -167500,6 +169228,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -167577,6 +169306,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -167670,6 +169400,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -167747,6 +169478,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -167824,6 +169556,7 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -167901,6 +169634,7 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -167994,6 +169728,7 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -168071,6 +169806,7 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -168148,6 +169884,7 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -168225,6 +169962,7 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -168318,6 +170056,7 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -168395,6 +170134,335 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderOccurrences?: ReminderOccurrenceUncheckedUpdateManyWithoutAccountNestedInput
+    routineOccurrences?: RoutineOccurrenceUncheckedUpdateManyWithoutAccountNestedInput
+    notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedUpdateManyWithoutAccountNestedInput
+    aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedUpdateManyWithoutAccountNestedInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedUpdateManyWithoutAccountNestedInput
+  }
+
+  export type AccountCreateWithoutAiProviderOnboardingSessionsInput = {
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    cloudUser: CloudAuthUserCreateNestedOneWithoutAccountInput
+    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
+    goals?: GoalCreateNestedManyWithoutAccountInput
+    labels?: LabelCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelCreateNestedManyWithoutAccountInput
+    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
+    routineDefinitions?: RoutineDefinitionCreateNestedManyWithoutAccountInput
+    routineTemporaryOverrides?: RoutineTemporaryOverrideCreateNestedManyWithoutAccountInput
+    routineProfiles?: RoutineProfileCreateNestedManyWithoutAccountInput
+    routineProfileMemberships?: RoutineProfileMembershipCreateNestedManyWithoutAccountInput
+    routineProtocolDefinitions?: RoutineProtocolDefinitionCreateNestedManyWithoutAccountInput
+    routineProtocolSessions?: RoutineProtocolSessionCreateNestedManyWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
+    habits?: HabitCreateNestedManyWithoutAccountInput
+    relations?: RelationCreateNestedManyWithoutAccountInput
+    walletAccounts?: WalletAccountCreateNestedManyWithoutAccountInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutAccount_identityInput
+    activityLedger?: ActivityLedgerCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
+    notifications?: NotificationCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
+    reminderOccurrences?: ReminderOccurrenceCreateNestedManyWithoutAccountInput
+    routineOccurrences?: RoutineOccurrenceCreateNestedManyWithoutAccountInput
+    notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxCreateNestedManyWithoutAccountInput
+    aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
+    folders?: FolderCreateNestedManyWithoutIdentityInput
+    resources?: ResourceCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentCreateNestedManyWithoutAccountInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestCreateNestedManyWithoutAccountInput
+  }
+
+  export type AccountUncheckedCreateWithoutAiProviderOnboardingSessionsInput = {
+    id: string
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
+    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    labels?: LabelUncheckedCreateNestedManyWithoutAccountInput
+    goalLabels?: GoalLabelUncheckedCreateNestedManyWithoutAccountInput
+    taskLabels?: TaskLabelUncheckedCreateNestedManyWithoutAccountInput
+    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
+    routineDefinitions?: RoutineDefinitionUncheckedCreateNestedManyWithoutAccountInput
+    routineTemporaryOverrides?: RoutineTemporaryOverrideUncheckedCreateNestedManyWithoutAccountInput
+    routineProfiles?: RoutineProfileUncheckedCreateNestedManyWithoutAccountInput
+    routineProfileMemberships?: RoutineProfileMembershipUncheckedCreateNestedManyWithoutAccountInput
+    routineProtocolDefinitions?: RoutineProtocolDefinitionUncheckedCreateNestedManyWithoutAccountInput
+    routineProtocolSessions?: RoutineProtocolSessionUncheckedCreateNestedManyWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
+    habits?: HabitUncheckedCreateNestedManyWithoutAccountInput
+    relations?: RelationUncheckedCreateNestedManyWithoutAccountInput
+    walletAccounts?: WalletAccountUncheckedCreateNestedManyWithoutAccountInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutAccount_identityInput
+    activityLedger?: ActivityLedgerUncheckedCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
+    reminderOccurrences?: ReminderOccurrenceUncheckedCreateNestedManyWithoutAccountInput
+    routineOccurrences?: RoutineOccurrenceUncheckedCreateNestedManyWithoutAccountInput
+    notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUncheckedCreateNestedManyWithoutAccountInput
+    aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
+    folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUncheckedCreateNestedManyWithoutAccountInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUncheckedCreateNestedManyWithoutAccountInput
+  }
+
+  export type AccountCreateOrConnectWithoutAiProviderOnboardingSessionsInput = {
+    where: AccountWhereUniqueInput
+    create: XOR<AccountCreateWithoutAiProviderOnboardingSessionsInput, AccountUncheckedCreateWithoutAiProviderOnboardingSessionsInput>
+  }
+
+  export type AccountUpsertWithoutAiProviderOnboardingSessionsInput = {
+    update: XOR<AccountUpdateWithoutAiProviderOnboardingSessionsInput, AccountUncheckedUpdateWithoutAiProviderOnboardingSessionsInput>
+    create: XOR<AccountCreateWithoutAiProviderOnboardingSessionsInput, AccountUncheckedCreateWithoutAiProviderOnboardingSessionsInput>
+    where?: AccountWhereInput
+  }
+
+  export type AccountUpdateToOneWithWhereWithoutAiProviderOnboardingSessionsInput = {
+    where?: AccountWhereInput
+    data: XOR<AccountUpdateWithoutAiProviderOnboardingSessionsInput, AccountUncheckedUpdateWithoutAiProviderOnboardingSessionsInput>
+  }
+
+  export type AccountUpdateWithoutAiProviderOnboardingSessionsInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cloudUser?: CloudAuthUserUpdateOneRequiredWithoutAccountNestedInput
+    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
+    goals?: GoalUpdateManyWithoutAccountNestedInput
+    labels?: LabelUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUpdateManyWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
+    routineDefinitions?: RoutineDefinitionUpdateManyWithoutAccountNestedInput
+    routineTemporaryOverrides?: RoutineTemporaryOverrideUpdateManyWithoutAccountNestedInput
+    routineProfiles?: RoutineProfileUpdateManyWithoutAccountNestedInput
+    routineProfileMemberships?: RoutineProfileMembershipUpdateManyWithoutAccountNestedInput
+    routineProtocolDefinitions?: RoutineProtocolDefinitionUpdateManyWithoutAccountNestedInput
+    routineProtocolSessions?: RoutineProtocolSessionUpdateManyWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
+    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
+    habits?: HabitUpdateManyWithoutAccountNestedInput
+    relations?: RelationUpdateManyWithoutAccountNestedInput
+    walletAccounts?: WalletAccountUpdateManyWithoutAccountNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutAccount_identityNestedInput
+    activityLedger?: ActivityLedgerUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
+    reminderOccurrences?: ReminderOccurrenceUpdateManyWithoutAccountNestedInput
+    routineOccurrences?: RoutineOccurrenceUpdateManyWithoutAccountNestedInput
+    notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
+    notificationDispatchOutboxes?: NotificationDispatchOutboxUpdateManyWithoutAccountNestedInput
+    aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
+    knowledgeRepositoryConnections?: KnowledgeRepositoryConnectionUpdateManyWithoutAccountNestedInput
+    knowledgeRepositoryInstallationIntents?: KnowledgeRepositoryInstallationIntentUpdateManyWithoutAccountNestedInput
+    knowledgeWriteRequests?: KnowledgeWriteRequestUpdateManyWithoutAccountNestedInput
+  }
+
+  export type AccountUncheckedUpdateWithoutAiProviderOnboardingSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    labels?: LabelUncheckedUpdateManyWithoutAccountNestedInput
+    goalLabels?: GoalLabelUncheckedUpdateManyWithoutAccountNestedInput
+    taskLabels?: TaskLabelUncheckedUpdateManyWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    routineDefinitions?: RoutineDefinitionUncheckedUpdateManyWithoutAccountNestedInput
+    routineTemporaryOverrides?: RoutineTemporaryOverrideUncheckedUpdateManyWithoutAccountNestedInput
+    routineProfiles?: RoutineProfileUncheckedUpdateManyWithoutAccountNestedInput
+    routineProfileMemberships?: RoutineProfileMembershipUncheckedUpdateManyWithoutAccountNestedInput
+    routineProtocolDefinitions?: RoutineProtocolDefinitionUncheckedUpdateManyWithoutAccountNestedInput
+    routineProtocolSessions?: RoutineProtocolSessionUncheckedUpdateManyWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    schedulingReconcileOperations?: SchedulingReconcileOperationUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    habits?: HabitUncheckedUpdateManyWithoutAccountNestedInput
+    relations?: RelationUncheckedUpdateManyWithoutAccountNestedInput
+    walletAccounts?: WalletAccountUncheckedUpdateManyWithoutAccountNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutAccount_identityNestedInput
+    activityLedger?: ActivityLedgerUncheckedUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -168472,6 +170540,7 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -168549,6 +170618,7 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -168642,6 +170712,7 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -168719,6 +170790,7 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -168797,6 +170869,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
     reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
@@ -168874,6 +170947,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
     reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
@@ -168967,6 +171041,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
     reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
@@ -169044,6 +171119,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
     reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
@@ -169224,6 +171300,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -169301,6 +171378,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -169491,6 +171569,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -169568,6 +171647,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -169909,6 +171989,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -169986,6 +172067,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -170095,6 +172177,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -170172,6 +172255,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -170287,6 +172371,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -170364,6 +172449,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -170512,6 +172598,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -170589,6 +172676,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -170757,6 +172845,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -170834,6 +172923,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -170974,6 +173064,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -171051,6 +173142,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -171165,6 +173257,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -171242,6 +173335,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -171368,6 +173462,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -171445,6 +173540,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -171561,6 +173657,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -171638,6 +173735,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -171866,6 +173964,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -171943,6 +174042,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -173030,6 +175130,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -173107,6 +175208,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -173249,6 +175351,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -173326,6 +175429,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -173705,6 +175809,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -173782,6 +175887,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -173913,6 +176019,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -173990,6 +176097,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -174099,6 +176207,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -174176,6 +176285,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -174347,6 +176457,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -174424,6 +176535,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -174591,6 +176703,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -174668,6 +176781,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -174882,6 +176996,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -174959,6 +177074,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -175335,6 +177451,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -175412,6 +177529,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -175585,6 +177703,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -175662,6 +177781,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -175740,6 +177860,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -175817,6 +177938,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -175977,6 +178099,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -176054,6 +178177,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -176204,6 +178328,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -176281,6 +178406,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -176441,6 +178567,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -176518,6 +178645,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -176875,6 +179003,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -176952,6 +179081,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -177118,6 +179248,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -177195,6 +179326,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -177271,6 +179403,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -177348,6 +179481,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -177441,6 +179575,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -177518,6 +179653,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -177751,6 +179887,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -177828,6 +179965,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -178026,6 +180164,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -178103,6 +180242,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -178227,6 +180367,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -178304,6 +180445,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -178493,6 +180635,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -178570,6 +180713,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -178663,6 +180807,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -178740,6 +180885,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -178924,6 +181070,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -179001,6 +181148,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -179176,6 +181324,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -179253,6 +181402,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -179437,6 +181587,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -179514,6 +181665,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -179687,6 +181839,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -179764,6 +181917,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -179857,6 +182011,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -179934,6 +182089,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -180012,6 +182168,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -180089,6 +182246,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -180273,6 +182431,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -180350,6 +182509,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -180523,6 +182683,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -180600,6 +182761,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -180693,6 +182855,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -180770,6 +182933,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -180939,6 +183103,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -181016,6 +183181,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -181206,6 +183372,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -181283,6 +183450,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -181359,6 +183527,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -181436,6 +183605,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -181635,6 +183805,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -181712,6 +183883,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -181845,6 +184017,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -181922,6 +184095,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -182042,6 +184216,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -182119,6 +184294,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -182212,6 +184388,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -182289,6 +184466,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -182444,6 +184622,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -182521,6 +184700,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -182672,6 +184852,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -182749,6 +184930,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -182877,6 +185059,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -182954,6 +185137,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -183047,6 +185231,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -183124,6 +185309,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -183242,6 +185428,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -183319,6 +185506,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -183461,6 +185649,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -183538,6 +185727,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -183670,6 +185860,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -183747,6 +185938,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -183856,6 +186048,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -183933,6 +186126,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -184065,6 +186259,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -184142,6 +186337,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -184219,6 +186415,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -184296,6 +186493,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -184577,6 +186775,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -184654,6 +186853,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -184796,6 +186996,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -184873,6 +187074,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -185088,6 +187290,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -185165,6 +187368,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -185354,6 +187558,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -185431,6 +187636,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -185575,6 +187781,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -185652,6 +187859,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -185828,6 +188036,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -185905,6 +188114,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -186145,6 +188355,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -186222,6 +188433,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -186713,6 +188925,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -186790,6 +189003,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -186934,6 +189148,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -187011,6 +189226,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -187145,6 +189361,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -187222,6 +189439,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -187315,6 +189533,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -187392,6 +189611,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -187470,6 +189690,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -187547,6 +189768,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -187640,6 +189862,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -187717,6 +189940,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -187794,6 +190018,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -187871,6 +190096,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -188152,6 +190378,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -188229,6 +190456,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -188897,6 +191125,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -188974,6 +191203,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -189120,6 +191350,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -189197,6 +191428,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -189332,6 +191564,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -189409,6 +191642,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -189502,6 +191736,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -189579,6 +191814,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -189690,6 +191926,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -189767,6 +192004,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -189876,6 +192114,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -189953,6 +192192,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -190030,6 +192270,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -190107,6 +192348,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -190200,6 +192442,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -190277,6 +192520,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -190355,6 +192599,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
@@ -190432,6 +192677,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
@@ -190612,6 +192858,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
@@ -190689,6 +192936,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
@@ -190858,6 +193106,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -190935,6 +193184,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -191028,6 +193278,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -191105,6 +193356,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -191182,6 +193434,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -191259,6 +193512,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -191352,6 +193606,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -191429,6 +193684,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -191506,6 +193762,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -191583,6 +193840,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -191809,6 +194067,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -191886,6 +194145,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -192061,6 +194321,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -192138,6 +194399,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -192325,6 +194587,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -192402,6 +194665,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -192580,6 +194844,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
     reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
@@ -192657,6 +194922,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
     reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
@@ -192844,6 +195110,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
     reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
@@ -192921,6 +195188,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
     reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
@@ -193097,6 +195365,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -193174,6 +195443,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -193267,6 +195537,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -193344,6 +195615,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -193421,6 +195693,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -193498,6 +195771,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -193625,6 +195899,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -193702,6 +195977,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -193820,6 +196096,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
@@ -193897,6 +196174,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
     scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
@@ -194021,6 +196299,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
@@ -194098,6 +196377,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    aiProviderOnboardingSessions?: AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
@@ -194670,6 +196950,21 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+  }
+
+  export type AiProviderOnboardingSessionCreateManyAccountInput = {
+    id: string
+    catalogId: string
+    baseUrl: string
+    credentialEncrypted: string
+    credentialStatus: string
+    discoveryStatus: string
+    modelsJson?: string
+    verifiedModelIds?: string
+    expiresAt: Date | string
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TaskTemplateHistoryCreateManyIdentityInput = {
@@ -196669,6 +198964,51 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AiProviderOnboardingSessionUpdateWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    catalogId?: StringFieldUpdateOperationsInput | string
+    baseUrl?: StringFieldUpdateOperationsInput | string
+    credentialEncrypted?: StringFieldUpdateOperationsInput | string
+    credentialStatus?: StringFieldUpdateOperationsInput | string
+    discoveryStatus?: StringFieldUpdateOperationsInput | string
+    modelsJson?: StringFieldUpdateOperationsInput | string
+    verifiedModelIds?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiProviderOnboardingSessionUncheckedUpdateWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    catalogId?: StringFieldUpdateOperationsInput | string
+    baseUrl?: StringFieldUpdateOperationsInput | string
+    credentialEncrypted?: StringFieldUpdateOperationsInput | string
+    credentialStatus?: StringFieldUpdateOperationsInput | string
+    discoveryStatus?: StringFieldUpdateOperationsInput | string
+    modelsJson?: StringFieldUpdateOperationsInput | string
+    verifiedModelIds?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiProviderOnboardingSessionUncheckedUpdateManyWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    catalogId?: StringFieldUpdateOperationsInput | string
+    baseUrl?: StringFieldUpdateOperationsInput | string
+    credentialEncrypted?: StringFieldUpdateOperationsInput | string
+    credentialStatus?: StringFieldUpdateOperationsInput | string
+    discoveryStatus?: StringFieldUpdateOperationsInput | string
+    modelsJson?: StringFieldUpdateOperationsInput | string
+    verifiedModelIds?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TaskTemplateHistoryUpdateWithoutIdentityInput = {

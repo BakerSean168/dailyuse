@@ -68,3 +68,9 @@ export type {
   KnowledgeQueryResult,
 } from './knowledge-query.port';
 export type { IKnowledgeSourcePort } from './knowledge-source.port';
+
+export type { IAIProviderCredentialProbePort, ProviderCredentialProbeInput } from './provider-credential-probe.port';
+export type { IAIProviderEndpointPolicyPort, ProviderEndpointValidationInput } from './provider-endpoint-policy.port';
+export type { IAIProviderOnboardingSessionRepository, AIProviderOnboardingSessionRecord, CreateAIProviderOnboardingSessionInput } from './provider-onboarding-session.repository';
+
+export type { IAIProviderOnboardingCommitPort, AIProviderOnboardingCommitOutcome } from './provider-onboarding-commit.port';

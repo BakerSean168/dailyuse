@@ -71,6 +71,7 @@ model Account {
   aiKnowledgeIndexEntries         AiKnowledgeIndexEntry[]
   aiUsageQuotas                   AiUsageQuota?
   aiProviderConfigs               AiProviderConfig[]
+  aiProviderOnboardingSessions     AiProviderOnboardingSession[]
   dashboardConfigs                DashboardConfig?
 
   // PowerSync: denormalized identity relations

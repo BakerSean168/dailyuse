@@ -12,6 +12,7 @@ export * from './list-ai-providers.use-case';
 export * from './test-ai-provider-connection.use-case';
 export * from './set-default-ai-provider.use-case';
 export * from './refresh-ai-provider-models.use-case';
+export * from './probe-ai-provider-connection.use-case';
 
 // AI Conversation use cases
 export * from './create-conversation.use-case';
@@ -32,3 +33,6 @@ export * from './remove-knowledge-index-note.use-case';
 export * from './query-knowledge.use-case';
 export * from './expand-knowledge.use-case';
 export * from './reindex-knowledge.use-case';
+
+export * from './test-ai-provider-onboarding-model.use-case';
+export * from './commit-ai-provider-onboarding.use-case';

@@ -177,6 +177,28 @@ export function createAIElectronModule(options: AIElectronModuleOptions): AIElec
           withAuthenticatedValue(ctx, async () => aiModule.api.getCapabilities()),
         );
         installed.push(AIChannels.CAPABILITIES_GET);
+        ipcMain.handle(AIChannels.PROVIDER_CATALOG_GET, async () =>
+          withAuthenticatedValue(ctx, async () => aiModule.api.getProviderCatalog()),
+        );
+        installed.push(AIChannels.PROVIDER_CATALOG_GET);
+        ipcMain.handle(AIChannels.PROVIDER_ONBOARDING_PROBE, async (_, dto) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            aiModule.api.probeProviderConnection(dto, requestContext),
+          ),
+        );
+        installed.push(AIChannels.PROVIDER_ONBOARDING_PROBE);
+        ipcMain.handle(AIChannels.PROVIDER_ONBOARDING_TEST_MODEL, async (_, dto) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            aiModule.api.testProviderOnboardingModel(dto, requestContext),
+          ),
+        );
+        installed.push(AIChannels.PROVIDER_ONBOARDING_TEST_MODEL);
+        ipcMain.handle(AIChannels.PROVIDER_ONBOARDING_COMMIT, async (_, dto) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            aiModule.api.commitProviderOnboarding(dto, requestContext),
+          ),
+        );
+        installed.push(AIChannels.PROVIDER_ONBOARDING_COMMIT);
         ipcMain.handle(AIChannels.PROVIDER_CREATE, async (_, dto) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
             aiModule.api.createProvider(dto, requestContext),

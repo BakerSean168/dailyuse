@@ -7,6 +7,12 @@ import type {
   TestAIProviderReq,
   TestAIProviderRes,
   UpdateAIProviderConfigReq,
+  ListAIProviderCatalogRes,
+  ProbeAIProviderConnectionReq,
+  ProbeAIProviderConnectionRes,
+  TestAIProviderOnboardingModelReq,
+  TestAIProviderOnboardingModelRes,
+  CommitAIProviderOnboardingReq,
 } from '@memoflow/contracts/ai';
 import { map, type Result } from '@memoflow/contracts/result';
 
@@ -15,9 +21,38 @@ import { map, type Result } from '@memoflow/contracts/result';
  * Returns Result envelopes — never throws (no unwrap dual-track).
  */
 export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
+  private readonly aiBaseUrl = '/ai';
   private readonly baseUrl = '/ai/providers';
 
   constructor(private readonly httpClient: IResultHttpClient) {}
+
+  async getProviderCatalog(): Promise<Result<ListAIProviderCatalogRes>> {
+    return this.httpClient.get<ListAIProviderCatalogRes>(`${this.aiBaseUrl}/provider-catalog`);
+  }
+
+  async probeProviderConnection(
+    request: ProbeAIProviderConnectionReq,
+  ): Promise<Result<ProbeAIProviderConnectionRes>> {
+    return this.httpClient.post<ProbeAIProviderConnectionRes>(
+      `${this.aiBaseUrl}/provider-connections/probe`,
+      request,
+    );
+  }
+
+  async testProviderOnboardingModel(
+    request: TestAIProviderOnboardingModelReq,
+  ): Promise<Result<TestAIProviderOnboardingModelRes>> {
+    return this.httpClient.post<TestAIProviderOnboardingModelRes>(
+      `${this.aiBaseUrl}/provider-connections/test-model`,
+      request,
+    );
+  }
+
+  async commitProviderOnboarding(
+    request: CommitAIProviderOnboardingReq,
+  ): Promise<Result<AIProviderConfigClientDTO>> {
+    return this.httpClient.post<AIProviderConfigClientDTO>(this.baseUrl, request);
+  }
 
   async createProvider(
     request: CreateAIProviderConfigReq,

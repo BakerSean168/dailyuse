@@ -45,9 +45,12 @@ import type {
   IKnowledgeNotePersistencePort,
   IKnowledgeSourcePort,
   IKnowledgeIngestionPort,
+  IAIProviderOnboardingCommitPort,
+  IAIProviderOnboardingSessionRepository,
 } from '../application/ports';
 
 import { createLogger } from '@memoflow/utils/logger';
+import { AI_PROVIDER_CATALOG } from '@memoflow/contracts/ai';
 import type { AIWorkflowRuntimePort, MastraAIRuntime } from '../mastra/runtime';
 import { assembleCapabilities } from '../shared/assemble-capabilities';
 import { OpenAICompatibleChatExecutionAdapter } from './adapters/openai-compatible-chat-execution.adapter';
@@ -55,6 +58,9 @@ import { OpenAICompatibleAnalyticsQueryAdapter } from './adapters/openai-compati
 import { DeterministicKnowledgeIngestionAdapter } from './adapters/deterministic-knowledge-ingestion.adapter';
 import { OpenAICompatibleKnowledgeQueryAdapter } from './adapters/openai-compatible-knowledge-query.adapter';
 import { OpenAICompatibleModelCatalogGateway } from './gateways/openai-compatible-model-catalog.gateway';
+import { OpenAICompatibleCredentialProbeGateway } from './gateways/openai-compatible-credential-probe.gateway';
+import { ProviderEndpointPolicy } from './security/provider-endpoint-policy';
+import { isAIExecutionError } from '../../shared/ai-execution-error';
 
 import type { Result } from '@memoflow/contracts/result';
 import type {
@@ -68,6 +74,9 @@ import type {
   QueryKnowledgeRes,
   ReindexKnowledgeReq,
   ReindexKnowledgeRes,
+  ListAIProviderCatalogRes,
+  ProbeAIProviderConnectionRes,
+  TestAIProviderOnboardingModelRes,
 } from '@memoflow/contracts/ai';
 
 // Value imports for services assembled directly by this module.
@@ -95,6 +104,9 @@ import {
   ReindexKnowledgeUseCase,
   QueryAIAnalyticsUseCase,
   ManageAIEvaluationReportUseCase,
+  ProbeAIProviderConnectionUseCase,
+  TestAIProviderOnboardingModelUseCase,
+  CommitAIProviderOnboardingUseCase,
 } from '../application/use-cases';
 
 const logger = createLogger('AIModule');
@@ -133,6 +145,10 @@ export interface AIModuleDependencies {
   readonly analyticsQueryPort?: IAnalyticsQueryPort;
   readonly executionLogPort?: IAIExecutionLogPort;
   readonly evaluationReportPort?: IAIEvaluationReportPort;
+  /** Short-lived identity-bound Provider onboarding state selected by the host. */
+  readonly providerOnboardingSessionRepository?: IAIProviderOnboardingSessionRepository;
+  /** Host-owned atomic Provider+onboarding persistence boundary. */
+  readonly providerOnboardingCommitPort?: IAIProviderOnboardingCommitPort;
 
   /**
    * Mastra-native vNext runtime. Hosts compose its storage/model dependencies;
@@ -192,6 +208,9 @@ export interface AIProviderServices {
   readonly testConnection: TestAIProviderConnectionUseCase;
   readonly setDefault: SetDefaultAIProviderUseCase;
   readonly refreshModels: RefreshAIProviderModelsUseCase;
+  readonly probe?: ProbeAIProviderConnectionUseCase;
+  readonly testOnboardingModel?: TestAIProviderOnboardingModelUseCase;
+  readonly commitOnboarding?: CommitAIProviderOnboardingUseCase;
 }
 
 /**
@@ -328,6 +347,54 @@ function unavailable<T>(): Promise<Result<T>> {
   return Promise.resolve(error('SERVICE_UNAVAILABLE', 'This capability is not available'));
 }
 
+function providerOnboardingFailure<T>(cause: unknown): Result<T> {
+  if (!isAIExecutionError(cause)) {
+    return error('INTERNAL_ERROR', 'AI provider onboarding failed');
+  }
+  switch (cause.category) {
+    case 'unauthorized':
+      return error('PROVIDER_AUTH_FAILED', 'AI provider authentication failed');
+    case 'rate_limited':
+      return error('RATE_LIMITED', 'AI provider rate limit exceeded');
+    case 'timeout':
+      return error('TIMEOUT', 'AI provider request timed out');
+    case 'validation':
+    case 'structured_output':
+      return error('VALIDATION_ERROR', cause.message);
+    case 'model_not_available':
+      return error('MODEL_NOT_AVAILABLE', 'AI model is not available');
+    case 'not_found':
+      return error('NOT_FOUND', cause.message);
+    case 'conflict':
+      return error('CONFLICT', cause.message);
+    case 'aborted':
+      return error('CANCELED', 'AI provider request was canceled');
+    case 'provider_unavailable':
+    case 'upstream_provider_error':
+    case 'transport':
+      return error('SERVICE_UNAVAILABLE', 'AI provider is unavailable');
+    case 'internal':
+      return error('INTERNAL_ERROR', 'AI provider onboarding failed');
+  }
+}
+
+function providerCatalogDto(): ListAIProviderCatalogRes {
+  return AI_PROVIDER_CATALOG.map((entry) => ({
+    id: entry.id,
+    name: entry.name,
+    description: entry.description,
+    icon: entry.icon,
+    protocol: entry.protocol,
+    defaultBaseUrl: entry.defaultBaseUrl,
+    baseUrlEditable: entry.baseUrlEditable,
+    authKind: entry.authKind,
+    ...(entry.docsUrl ? { docsUrl: entry.docsUrl } : {}),
+    ...(entry.apiKeyUrl ? { apiKeyUrl: entry.apiKeyUrl } : {}),
+    recommendedModelIds: [...entry.recommendedModelIds],
+    capabilities: { ...entry.capabilities },
+  }));
+}
+
 // ---------------------------------------------------------------------------
 // Composition Root — 规范化的 AI 模块主组合根
 // ---------------------------------------------------------------------------
@@ -356,6 +423,9 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
 
   const chatExecutionAdapter = new OpenAICompatibleChatExecutionAdapter();
   const modelCatalogGateway = new OpenAICompatibleModelCatalogGateway();
+  const onboardingSessionRepository = dependencies.providerOnboardingSessionRepository;
+  const onboardingCommitPort = dependencies.providerOnboardingCommitPort;
+  const onboardingAvailable = Boolean(onboardingSessionRepository && onboardingCommitPort);
 
   const providerServices: AIProviderServices = {
     create: new CreateAIProviderUseCase(providerConfigRepository),
@@ -366,6 +436,24 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     testConnection: new TestAIProviderConnectionUseCase(providerConfigRepository, chatExecutionAdapter),
     setDefault: new SetDefaultAIProviderUseCase(providerConfigRepository),
     refreshModels: new RefreshAIProviderModelsUseCase(providerConfigRepository, modelCatalogGateway),
+    ...(onboardingAvailable && onboardingSessionRepository && onboardingCommitPort
+      ? {
+          probe: new ProbeAIProviderConnectionUseCase({
+            sessionRepository: onboardingSessionRepository,
+            modelCatalog: modelCatalogGateway,
+            credentialProbe: new OpenAICompatibleCredentialProbeGateway(),
+            endpointPolicy: new ProviderEndpointPolicy(),
+          }),
+          testOnboardingModel: new TestAIProviderOnboardingModelUseCase(
+            onboardingSessionRepository,
+            chatExecutionAdapter,
+          ),
+          commitOnboarding: new CommitAIProviderOnboardingUseCase(
+            onboardingSessionRepository,
+            onboardingCommitPort,
+          ),
+        }
+      : {}),
   };
 
   const conversationServices: AIConversationServices = {
@@ -532,7 +620,36 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
         ),
       }),
 
-    // -- Provider Config --
+    // -- Provider Onboarding V2 --
+    getProviderCatalog: async () => ok(providerCatalogDto()),
+    probeProviderConnection: async (req, cx) => {
+      if (!services.providerServices.probe) return unavailable<ProbeAIProviderConnectionRes>();
+      try {
+        return ok(await services.providerServices.probe.execute(req, cx));
+      } catch (cause) {
+        return providerOnboardingFailure<ProbeAIProviderConnectionRes>(cause);
+      }
+    },
+    testProviderOnboardingModel: async (req, cx) => {
+      if (!services.providerServices.testOnboardingModel) {
+        return unavailable<TestAIProviderOnboardingModelRes>();
+      }
+      try {
+        return await services.providerServices.testOnboardingModel.execute(req, cx);
+      } catch (cause) {
+        return providerOnboardingFailure<TestAIProviderOnboardingModelRes>(cause);
+      }
+    },
+    commitProviderOnboarding: async (req, cx) => {
+      if (!services.providerServices.commitOnboarding) return unavailable();
+      try {
+        return await services.providerServices.commitOnboarding.execute(req, cx);
+      } catch (cause) {
+        return providerOnboardingFailure(cause);
+      }
+    },
+
+    // -- Saved Provider Config / legacy compatibility --
     createProvider: (req, cx) => services.providerServices.create.execute(req, cx),
     updateProvider: (id, req, cx) =>
       services.providerServices.update.execute(cx.identityId, id, req),

@@ -18,6 +18,10 @@ import { createAIElectronModule } from './index';
 
 const CURRENT_CHANNELS = [
   AIChannels.CAPABILITIES_GET,
+  AIChannels.PROVIDER_CATALOG_GET,
+  AIChannels.PROVIDER_ONBOARDING_PROBE,
+  AIChannels.PROVIDER_ONBOARDING_TEST_MODEL,
+  AIChannels.PROVIDER_ONBOARDING_COMMIT,
   AIChannels.PROVIDER_CREATE,
   AIChannels.PROVIDER_LIST,
   AIChannels.PROVIDER_GET,
@@ -51,6 +55,10 @@ const CURRENT_CHANNELS = [
 function createFakeInstance() {
   const api = {
     getCapabilities: vi.fn(async () => ok(null as never)),
+    getProviderCatalog: vi.fn(async () => ok([] as never)),
+    probeProviderConnection: vi.fn(async () => ok(null as never)),
+    testProviderOnboardingModel: vi.fn(async () => ok(null as never)),
+    commitProviderOnboarding: vi.fn(async () => ok(null as never)),
     createProvider: vi.fn(async () => ok(null as never)),
     listProviders: vi.fn(async () => ok([] as never)),
     getProvider: vi.fn(async () => ok(null as never)),
@@ -129,6 +137,18 @@ describe('createAIElectronModule lifecycle', () => {
     const result = await handler(undefined, undefined);
     expect(result).toMatchObject({ ok: true });
     expect(fake.api.listProviders).toHaveBeenCalledTimes(1);
+  });
+
+  it('routes Provider onboarding IPC through authenticated identity-bound application methods', async () => {
+    await moduleDef.register(createFakeContext());
+    const request = { catalogId: 'openai', apiKey: 'sk-test' };
+    const handler = mocks.handlers.get(AIChannels.PROVIDER_ONBOARDING_PROBE)!;
+    const result = await handler(undefined, request);
+    expect(result).toMatchObject({ ok: true });
+    expect(fake.api.probeProviderConnection).toHaveBeenCalledWith(
+      request,
+      expect.objectContaining({ identityId: 'identity-1' }),
+    );
   });
 
   it('queries runtime usage through authenticated IPC identity and rejects identity injection', async () => {

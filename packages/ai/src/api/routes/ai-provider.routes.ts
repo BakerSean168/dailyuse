@@ -8,6 +8,7 @@ import {
 } from '@memoflow/utils/result';
 import {
   CreateAIProviderConfigSchema,
+  CommitAIProviderOnboardingSchema,
   UpdateAIProviderConfigSchema,
   TestAIProviderSchema,
   AIProviderConfigClientDTOSchema,
@@ -44,7 +45,7 @@ export function registerAIProviderRoutes(
       path: '/',
       summary: '创建 AI 提供商配置',
       request: {
-        body: { content: { 'application/json': { schema: CreateAIProviderConfigSchema } } },
+        body: { content: { 'application/json': { schema: z.union([CommitAIProviderOnboardingSchema, CreateAIProviderConfigSchema]) } } },
       },
       responses: {
         201: successResponse(AIProviderConfigClientDTOSchema, '创建成功'),

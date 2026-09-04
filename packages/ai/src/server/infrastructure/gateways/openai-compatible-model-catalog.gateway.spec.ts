@@ -41,4 +41,24 @@ describe('OpenAICompatibleModelCatalogGateway', () => {
       }),
     ]);
   });
+
+  it('converts provider per-token pricing into USD per 1M tokens', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        data: [{
+          id: 'openai/gpt-test',
+          pricing: { prompt: '0.0000025', completion: '0.00001' },
+        }],
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    ));
+
+    const [model] = await new OpenAICompatibleModelCatalogGateway().listModels({
+      baseUrl: 'https://openrouter.ai/api/v1',
+      apiKey: 'test-key',
+    });
+
+    expect(model?.inputCostPer1M).toBe(2.5);
+    expect(model?.outputCostPer1M).toBe(10);
+  });
+
 });

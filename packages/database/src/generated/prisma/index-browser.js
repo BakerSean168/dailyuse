@@ -236,6 +236,22 @@ exports.Prisma.AiProviderConfigScalarFieldEnum = {
   deletedAt: 'deletedAt'
 };
 
+exports.Prisma.AiProviderOnboardingSessionScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  catalogId: 'catalogId',
+  baseUrl: 'baseUrl',
+  credentialEncrypted: 'credentialEncrypted',
+  credentialStatus: 'credentialStatus',
+  discoveryStatus: 'discoveryStatus',
+  modelsJson: 'modelsJson',
+  verifiedModelIds: 'verifiedModelIds',
+  expiresAt: 'expiresAt',
+  consumedAt: 'consumedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.KnowledgeGenerationTaskScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -1651,6 +1667,7 @@ exports.Prisma.ModelName = {
   AiGenerationTask: 'AiGenerationTask',
   AiUsageQuota: 'AiUsageQuota',
   AiProviderConfig: 'AiProviderConfig',
+  AiProviderOnboardingSession: 'AiProviderOnboardingSession',
   KnowledgeGenerationTask: 'KnowledgeGenerationTask',
   AiKnowledgeIndexEntry: 'AiKnowledgeIndexEntry',
   DashboardConfig: 'DashboardConfig',

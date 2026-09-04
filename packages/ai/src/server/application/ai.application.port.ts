@@ -23,6 +23,12 @@ import type {
   QueryKnowledgeRes,
   ReindexKnowledgeReq,
   ReindexKnowledgeRes,
+  ListAIProviderCatalogRes,
+  ProbeAIProviderConnectionReq,
+  ProbeAIProviderConnectionRes,
+  TestAIProviderOnboardingModelReq,
+  TestAIProviderOnboardingModelRes,
+  CommitAIProviderOnboardingReq,
 } from '@memoflow/contracts/ai';
 
 /**
@@ -36,7 +42,22 @@ import type {
 export interface AIApplicationPort {
   getCapabilities(): Promise<Result<AICapabilities>>;
 
-  // Provider config
+  // Provider onboarding V2
+  getProviderCatalog(): Promise<Result<ListAIProviderCatalogRes>>;
+  probeProviderConnection(
+    req: ProbeAIProviderConnectionReq,
+    cx: ExecutionContext,
+  ): Promise<Result<ProbeAIProviderConnectionRes>>;
+  testProviderOnboardingModel(
+    req: TestAIProviderOnboardingModelReq,
+    cx: ExecutionContext,
+  ): Promise<Result<TestAIProviderOnboardingModelRes>>;
+  commitProviderOnboarding(
+    req: CommitAIProviderOnboardingReq,
+    cx: ExecutionContext,
+  ): Promise<Result<AIProviderConfigClientDTO>>;
+
+  // Saved provider config / legacy compatibility
   createProvider(
     req: CreateAIProviderConfigReq,
     cx: ExecutionContext,

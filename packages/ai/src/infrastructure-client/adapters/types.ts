@@ -24,6 +24,12 @@ import type {
   TestAIProviderRes,
   UpdateAIProviderConfigReq,
   UpdateConversationReq,
+  ListAIProviderCatalogRes,
+  ProbeAIProviderConnectionReq,
+  ProbeAIProviderConnectionRes,
+  TestAIProviderOnboardingModelReq,
+  TestAIProviderOnboardingModelRes,
+  CommitAIProviderOnboardingReq,
 } from '@memoflow/contracts/ai';
 
 export type { IResultHttpClient };
@@ -54,6 +60,10 @@ export interface IAIConversationApiClient {
 }
 
 export interface IAIProviderConfigApiClient {
+  getProviderCatalog(): Promise<Result<ListAIProviderCatalogRes>>;
+  probeProviderConnection(request: ProbeAIProviderConnectionReq): Promise<Result<ProbeAIProviderConnectionRes>>;
+  testProviderOnboardingModel(request: TestAIProviderOnboardingModelReq): Promise<Result<TestAIProviderOnboardingModelRes>>;
+  commitProviderOnboarding(request: CommitAIProviderOnboardingReq): Promise<Result<AIProviderConfigClientDTO>>;
   createProvider(request: CreateAIProviderConfigReq): Promise<Result<AIProviderConfigClientDTO>>;
   getProviders(): Promise<Result<AIProviderConfigClientDTO[]>>;
   getProviderById(id: string): Promise<Result<AIProviderConfigClientDTO>>;

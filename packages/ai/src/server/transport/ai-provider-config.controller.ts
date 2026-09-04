@@ -2,6 +2,9 @@ import { fail, ok, type Result } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   CreateAIProviderConfigSchema,
+  CommitAIProviderOnboardingSchema,
+  ProbeAIProviderConnectionSchema,
+  TestAIProviderOnboardingModelSchema,
   type CreateAIProviderConfigRes,
   type CreateAIProviderConfigReq,
   TestAIProviderSchema,
@@ -12,10 +15,29 @@ import {
   type UpdateAIProviderConfigRes,
   type AIProviderConfigClientDTO,
   type ListAIProviderConfigsRes,
+  type ListAIProviderCatalogRes,
+  type CommitAIProviderOnboardingReq,
+  type ProbeAIProviderConnectionReq,
+  type ProbeAIProviderConnectionRes,
+  type TestAIProviderOnboardingModelReq,
+  type TestAIProviderOnboardingModelRes,
 } from '@memoflow/contracts/ai';
 import { formatZodErrors } from '@memoflow/utils/result';
 
 interface AIProviderConfigControllerService {
+  getProviderCatalog(): Promise<Result<ListAIProviderCatalogRes>>;
+  probeProviderConnection(
+    request: ProbeAIProviderConnectionReq,
+    cx: ExecutionContext,
+  ): Promise<Result<ProbeAIProviderConnectionRes>>;
+  testProviderOnboardingModel(
+    request: TestAIProviderOnboardingModelReq,
+    cx: ExecutionContext,
+  ): Promise<Result<TestAIProviderOnboardingModelRes>>;
+  commitProviderOnboarding(
+    request: CommitAIProviderOnboardingReq,
+    cx: ExecutionContext,
+  ): Promise<Result<AIProviderConfigClientDTO>>;
   createProvider(
     request: CreateAIProviderConfigReq,
     cx: ExecutionContext,
@@ -37,7 +59,30 @@ export class AIProviderConfigController {
   constructor(private readonly service: AIProviderConfigControllerService) {}
 
   async create(input: unknown, cx: ExecutionContext): Promise<Result<CreateAIProviderConfigRes>> {
-    const parsed = CreateAIProviderConfigSchema.safeParse(input);
+    const onboarding = CommitAIProviderOnboardingSchema.safeParse(input);
+    if (onboarding.success) {
+      return this.service.commitProviderOnboarding(onboarding.data, cx);
+    }
+
+    // Temporary compatibility lane for clients that have not migrated to V2 yet.
+    const legacy = CreateAIProviderConfigSchema.safeParse(input);
+    if (!legacy.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors([...onboarding.error.issues, ...legacy.error.issues]),
+      });
+    }
+
+    return this.service.createProvider(legacy.data, cx);
+  }
+
+  async catalog(): Promise<Result<ListAIProviderCatalogRes>> {
+    return this.service.getProviderCatalog();
+  }
+
+  async probe(input: unknown, cx: ExecutionContext): Promise<Result<ProbeAIProviderConnectionRes>> {
+    const parsed = ProbeAIProviderConnectionSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',
@@ -45,8 +90,22 @@ export class AIProviderConfigController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
+    return this.service.probeProviderConnection(parsed.data, cx);
+  }
 
-    return this.service.createProvider(parsed.data, cx);
+  async testOnboardingModel(
+    input: unknown,
+    cx: ExecutionContext,
+  ): Promise<Result<TestAIProviderOnboardingModelRes>> {
+    const parsed = TestAIProviderOnboardingModelSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.service.testProviderOnboardingModel(parsed.data, cx);
   }
 
   async update(

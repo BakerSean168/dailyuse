@@ -7,6 +7,10 @@ import type {
   TestAIProviderReq,
   TestAIProviderRes,
   UpdateAIProviderConfigReq,
+  AIProviderCatalogEntryDTO,
+  ProbeAIProviderConnectionReq,
+  TestAIProviderOnboardingModelReq,
+  CommitAIProviderOnboardingReq,
 } from '@memoflow/contracts/ai';
 import { unwrap } from '@memoflow/contracts/result';
 import { AI_CLIENT_KEY } from '../../../di/keys';
@@ -21,6 +25,7 @@ export function useAI() {
   const client = useStrictInject(AI_CLIENT_KEY, 'AIClient');
   const providers = ref<AIProviderConfigClientDTO[]>([]);
   const capabilities = ref<AICapabilities | null>(null);
+  const providerCatalog = ref<AIProviderCatalogEntryDTO[]>([]);
   const isLoadingProviders = ref(false);
   const isLoadingCapabilities = ref(false);
 
@@ -49,6 +54,25 @@ export function useAI() {
     } finally {
       isLoadingCapabilities.value = false;
     }
+  }
+
+  async function loadProviderCatalog() {
+    providerCatalog.value = unwrap(await client.getProviderCatalog());
+    return providerCatalog.value;
+  }
+
+  async function probeProviderConnection(request: ProbeAIProviderConnectionReq) {
+    return unwrap(await client.probeProviderConnection(request));
+  }
+
+  async function testProviderOnboardingModel(request: TestAIProviderOnboardingModelReq) {
+    return unwrap(await client.testProviderOnboardingModel(request));
+  }
+
+  async function commitProviderOnboarding(request: CommitAIProviderOnboardingReq) {
+    const provider = unwrap(await client.commitProviderOnboarding(request));
+    await loadProviders();
+    return provider;
   }
 
   async function createProvider(request: CreateAIProviderConfigReq) {
@@ -91,11 +115,16 @@ export function useAI() {
     service: client,
     providers,
     capabilities,
+    providerCatalog,
     hasProviders,
     isLoadingProviders,
     isLoadingCapabilities,
     loadCapabilities,
     loadProviders,
+    loadProviderCatalog,
+    probeProviderConnection,
+    testProviderOnboardingModel,
+    commitProviderOnboarding,
     createProvider,
     updateProvider,
     deleteProvider,

@@ -105,6 +105,8 @@ export function composeAI(dependencies: ComposeAIDependencies): AIApiModuleDef {
   const instance = createAIModule({
     conversationRepository: repositorySet.conversationRepository,
     providerConfigRepository: repositorySet.providerConfigRepository,
+    providerOnboardingSessionRepository: repositorySet.providerOnboardingSessionRepository,
+    providerOnboardingCommitPort: repositorySet.providerOnboardingCommitPort,
     mastraRuntime,
     workflowRuntime: mastraRuntime,
     knowledgeIndexRepository: repositorySet.knowledgeIndexRepository,

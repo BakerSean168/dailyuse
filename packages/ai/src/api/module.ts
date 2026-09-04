@@ -41,6 +41,7 @@ import {
   registerAIAnalyticsQueryRoutes,
   registerAIEvaluationReportRoutes,
   registerAIProviderRoutes,
+  registerAIProviderOnboardingRoutes,
   registerAIChatRoutes,
   registerAIKnowledgeQueryRoutes,
   registerAIRuntimeRoutes,
@@ -129,6 +130,10 @@ export function createAIApiModule(options: AIApiModuleOptions): AIApiModuleDef {
           getCapabilities: handlers.getCapabilities,
         });
         const providerController = new AIProviderConfigController({
+          getProviderCatalog: handlers.getProviderCatalog,
+          probeProviderConnection: handlers.probeProviderConnection,
+          testProviderOnboardingModel: handlers.testProviderOnboardingModel,
+          commitProviderOnboarding: handlers.commitProviderOnboarding,
           createProvider: handlers.createProvider,
           updateProvider: handlers.updateProvider,
           listProviders: handlers.listProviders,
@@ -173,6 +178,11 @@ export function createAIApiModule(options: AIApiModuleOptions): AIApiModuleDef {
           middleware,
           openApiRegistry,
         );
+        const providerOnboardingRoutes = registerAIProviderOnboardingRoutes(
+          providerController,
+          middleware,
+          openApiRegistry,
+        );
         const chatRoutes = registerAIChatRoutes(chatController, middleware, openApiRegistry);
         const runtimeRoutes = registerAIRuntimeRoutes(
           options.instance.mastraRuntime,
@@ -204,6 +214,7 @@ export function createAIApiModule(options: AIApiModuleOptions): AIApiModuleDef {
         const stackLen = router.stack.length;
         try {
           router.use('/ai/providers', providerRoutes);
+          router.use('/ai', providerOnboardingRoutes);
           router.use('/ai', capabilityRoutes);
           router.use('/ai/chat', chatRoutes);
           router.use('/ai/runtime', runtimeRoutes);

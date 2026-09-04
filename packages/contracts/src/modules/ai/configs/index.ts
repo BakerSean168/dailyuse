@@ -3,3 +3,5 @@
  */
 
 export * from './ai-provider-template';
+
+export * from './ai-provider-catalog';

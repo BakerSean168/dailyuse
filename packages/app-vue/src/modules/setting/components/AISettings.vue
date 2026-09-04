@@ -1,45 +1,211 @@
 <template>
   <Card data-testid="ai-settings-panel">
-    <CardHeader>
-      <CardTitle>{{ t('setting.ai.title') }}</CardTitle>
-      <CardDescription>{{ t('setting.ai.description') }}</CardDescription>
-    </CardHeader>
-    <CardContent class="space-y-6">
-      <div class="space-y-4">
-        <div class="flex items-start justify-between gap-3">
-          <div>
-            <h3 class="text-base font-semibold">{{ t('setting.ai.quickProviderSectionTitle') }}</h3>
-            <p class="text-sm text-muted-foreground">
-              {{ t('setting.ai.quickProviderSectionDescription') }}
-            </p>
-          </div>
+    <CardHeader class="gap-3">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <CardTitle>{{ t('setting.ai.title') }}</CardTitle>
+          <CardDescription>{{ t('setting.ai.description') }}</CardDescription>
+        </div>
+        <div class="flex gap-2">
           <Button variant="outline" size="sm" :disabled="isLoadingProviders" @click="loadProviders">
             {{ t('setting.ai.refreshProviders') }}
           </Button>
+          <Button size="sm" data-testid="ai-provider-add" @click="openOnboarding">
+            {{ t('setting.ai.addProvider') }}
+          </Button>
+        </div>
+      </div>
+
+      <div
+        v-if="defaultProvider"
+        class="rounded-xl border border-border/60 bg-muted/30 px-4 py-3"
+        data-testid="ai-provider-default-summary"
+      >
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {{ t('setting.ai.currentDefault') }}
+            </p>
+            <p class="mt-1 truncate text-sm font-semibold">
+              {{ defaultProvider.name }}
+              <span class="font-normal text-muted-foreground">· {{ defaultProvider.defaultModel || '—' }}</span>
+            </p>
+          </div>
+          <Badge variant="secondary">{{ t('setting.ai.defaultProvider') }}</Badge>
+        </div>
+      </div>
+    </CardHeader>
+
+    <CardContent class="space-y-4">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h3 class="text-base font-semibold">{{ t('setting.ai.connectedProviders') }}</h3>
+          <p class="text-sm text-muted-foreground">{{ t('setting.ai.connectedProvidersDescription') }}</p>
+        </div>
+      </div>
+
+      <div v-if="providerItems.length" class="space-y-3" data-testid="ai-provider-list">
+        <div
+          v-for="provider in providerItems"
+          :key="provider.id"
+          class="rounded-xl border border-border/60 bg-background/70 p-4"
+        >
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div class="min-w-0 space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <p class="font-medium">{{ provider.name }}</p>
+                <Badge v-if="provider.isDefault" variant="secondary">{{ t('setting.ai.defaultProvider') }}</Badge>
+                <Badge v-if="!provider.isActive" variant="outline">{{ t('setting.ai.inactiveProvider') }}</Badge>
+              </div>
+              <p class="break-all text-xs text-muted-foreground">{{ provider.baseUrl }}</p>
+              <p class="text-sm">
+                <span class="text-muted-foreground">{{ t('setting.ai.defaultModelLabel') }}:</span>
+                {{ provider.defaultModel || '—' }}
+              </p>
+              <p v-if="provider.apiKeyMasked" class="text-xs text-muted-foreground">
+                API Key: {{ provider.apiKeyMasked }}
+              </p>
+              <p
+                v-if="providerStatusMap[String(provider.id)]"
+                class="text-xs"
+                :class="providerStatusMap[String(provider.id)]?.tone === 'error' ? 'text-destructive' : 'text-muted-foreground'"
+              >
+                {{ providerStatusMap[String(provider.id)]?.message }}
+              </p>
+            </div>
+
+            <div class="flex flex-wrap justify-end gap-2">
+              <Button
+                v-if="!provider.isDefault"
+                variant="outline"
+                size="sm"
+                @click="handleSetDefault(String(provider.id))"
+              >
+                {{ t('setting.ai.setDefaultProvider') }}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                :disabled="providerRefreshLoading[String(provider.id)] === true"
+                @click="handleRefreshModels(String(provider.id))"
+              >
+                {{
+                  providerRefreshLoading[String(provider.id)]
+                    ? t('setting.ai.refreshingModels')
+                    : t('setting.ai.refreshModels')
+                }}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                class="text-destructive"
+                @click="handleDeleteProvider(String(provider.id))"
+              >
+                {{ t('setting.ai.deleteProvider') }}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        v-else
+        class="flex min-h-36 flex-col items-center justify-center rounded-xl border border-dashed border-border/70 px-6 py-8 text-center"
+        data-testid="ai-provider-empty"
+      >
+        <p class="font-medium">{{ t('setting.ai.emptyTitle') }}</p>
+        <p class="mt-1 max-w-md text-sm text-muted-foreground">{{ t('setting.ai.emptyDescription') }}</p>
+        <Button class="mt-4" @click="openOnboarding">{{ t('setting.ai.addProvider') }}</Button>
+      </div>
+    </CardContent>
+  </Card>
+
+  <Dialog :open="onboardingOpen" @update:open="handleDialogOpenChange">
+    <DialogContent class="flex max-h-[88vh] min-h-0 max-w-3xl flex-col overflow-hidden p-0" data-testid="ai-provider-onboarding">
+      <DialogHeader class="shrink-0 border-b px-6 py-5 text-left">
+        <div class="flex items-center gap-2 text-xs text-muted-foreground">
+          <span :class="stepClass('picker')">1</span>
+          <span>—</span>
+          <span :class="stepClass('connection')">2</span>
+          <span>—</span>
+          <span :class="stepClass('model')">3</span>
+          <span>—</span>
+          <span :class="stepClass('review')">4</span>
+        </div>
+        <DialogTitle class="mt-2">{{ onboardingTitle }}</DialogTitle>
+        <DialogDescription>{{ onboardingDescription }}</DialogDescription>
+      </DialogHeader>
+
+      <div class="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+        <div v-if="onboardingStep === 'picker'" class="space-y-4">
+          <Input v-model="catalogSearch" :placeholder="t('setting.ai.searchProviders')" autofocus />
+          <div v-if="isLoadingCatalog" class="py-10 text-center text-sm text-muted-foreground">
+            {{ t('setting.ai.loadingProviderCatalog') }}
+          </div>
+          <div v-else class="grid gap-3 sm:grid-cols-2">
+            <button
+              v-for="entry in filteredCatalog"
+              :key="entry.id"
+              type="button"
+              class="group rounded-xl border border-border/70 p-4 text-left transition-colors hover:border-primary/40 hover:bg-muted/40"
+              :data-testid="`ai-provider-catalog-${entry.id}`"
+              @click="selectCatalogEntry(entry)"
+            >
+              <div class="flex items-start gap-3">
+                <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-semibold">
+                  {{ providerGlyph(entry.id) }}
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <p class="font-medium">{{ entry.name }}</p>
+                    <Badge v-if="entry.id === 'custom'" variant="outline">{{ t('setting.ai.customBadge') }}</Badge>
+                  </div>
+                  <p class="mt-1 text-sm text-muted-foreground">{{ entry.description }}</p>
+                </div>
+              </div>
+            </button>
+          </div>
+          <p v-if="!isLoadingCatalog && !filteredCatalog.length" class="py-8 text-center text-sm text-muted-foreground">
+            {{ t('setting.ai.noProviderMatches') }}
+          </p>
         </div>
 
-        <div class="space-y-3">
-          <div
-            v-for="template in quickProviderTemplates"
-            :key="template.id"
-            class="rounded-xl border border-border/60 bg-background/70 p-4"
-          >
-            <div class="flex items-start justify-between gap-3">
-              <div class="space-y-1">
-                <div class="flex items-center gap-2">
-                  <p class="font-medium">{{ template.name }}</p>
-                  <Badge v-if="getPresetProvider(template.id)" variant="secondary">
-                    {{ t('setting.ai.quickProviderConfigured') }}
-                  </Badge>
-                </div>
-                <p class="text-sm text-muted-foreground">{{ template.description }}</p>
-                <p class="text-xs text-muted-foreground">
-                  {{ getPresetModelSummary(template) }}
-                </p>
+        <div v-else-if="onboardingStep === 'connection' && selectedCatalog" class="space-y-5">
+          <div class="rounded-xl border border-border/60 bg-muted/25 p-4">
+            <div class="flex items-center gap-3">
+              <div class="flex size-10 items-center justify-center rounded-lg bg-muted text-sm font-semibold">
+                {{ providerGlyph(selectedCatalog.id) }}
               </div>
+              <div>
+                <p class="font-medium">{{ selectedCatalog.name }}</p>
+                <p class="text-sm text-muted-foreground">{{ selectedCatalog.description }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="selectedCatalog.id === 'custom'" class="space-y-2">
+            <Label for="ai-provider-name">{{ t('setting.ai.providerName') }}</Label>
+            <Input id="ai-provider-name" v-model="connectionName" :placeholder="t('setting.ai.providerNamePlaceholder')" />
+          </div>
+
+          <div v-if="selectedCatalog.baseUrlEditable" class="space-y-2">
+            <Label for="ai-provider-base-url">{{ t('setting.ai.baseUrl') }}</Label>
+            <Input id="ai-provider-base-url" v-model="connectionBaseUrl" :placeholder="t('setting.ai.providerBaseUrlPlaceholder')" />
+            <p class="text-xs text-muted-foreground">{{ t('setting.ai.customEndpointSecurityHint') }}</p>
+          </div>
+          <div v-else class="space-y-1">
+            <Label>{{ t('setting.ai.endpoint') }}</Label>
+            <p class="break-all rounded-lg border bg-muted/25 px-3 py-2 text-sm text-muted-foreground">
+              {{ selectedCatalog.defaultBaseUrl }}
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between gap-3">
+              <Label for="ai-provider-api-key">API Key</Label>
               <a
-                v-if="template.apiKeyUrl"
-                :href="template.apiKeyUrl"
+                v-if="selectedCatalog.apiKeyUrl"
+                :href="selectedCatalog.apiKeyUrl"
                 target="_blank"
                 rel="noreferrer"
                 class="text-xs text-primary underline underline-offset-2"
@@ -47,271 +213,167 @@
                 {{ t('setting.ai.getApiKey') }}
               </a>
             </div>
-
-            <div class="mt-3 flex flex-col gap-2 @2xl/panel:flex-row">
-              <Input
-                v-model="presetApiKeys[template.id]"
-                type="password"
-                class="flex-1"
-                :placeholder="
-                  t('setting.ai.quickProviderApiKeyPlaceholder', { provider: template.name })
-                "
-              />
-              <Button
-                :disabled="isQuickProviderSubmitting(template.id) || !canSubmitPreset(template)"
-                @click="submitQuickProvider(template)"
-              >
-                {{ getPresetActionLabel(template) }}
-              </Button>
-              <Button
-                v-if="getPresetProvider(template.id)"
-                variant="outline"
-                :disabled="
-                  isQuickProviderSubmitting(template.id) ||
-                  isProviderRefreshing(getProviderId(getPresetProvider(template.id)))
-                "
-                @click="handleRefreshModels(getProviderId(getPresetProvider(template.id)))"
-              >
-                {{
-                  isProviderRefreshing(getProviderId(getPresetProvider(template.id)))
-                    ? t('setting.ai.refreshingModels')
-                    : t('setting.ai.refreshModels')
-                }}
-              </Button>
-              <Button
-                v-if="getPresetProvider(template.id)"
-                variant="ghost"
-                :disabled="isQuickProviderSubmitting(template.id)"
-                @click="populateForm(getPresetProvider(template.id))"
-              >
-                {{ t('setting.ai.manageAdvancedConfig') }}
-              </Button>
-            </div>
-
-            <div
-              v-if="getPresetProvider(template.id)"
-              class="mt-3 flex items-center justify-between rounded-lg border border-border/60 px-3 py-2"
-            >
-              <div>
-                <p class="text-sm font-medium">{{ t('setting.ai.markAsDefault') }}</p>
-                <p class="text-xs text-muted-foreground">
-                  {{
-                    isPresetDefaultLocked(template.id)
-                      ? t('setting.ai.quickProviderCurrentDefault')
-                      : t('setting.ai.quickProviderDefaultHint')
-                  }}
-                </p>
-              </div>
-              <Switch
-                :model-value="shouldUsePresetAsDefault(template.id)"
-                :aria-label="`${template.name}: ${t('setting.ai.markAsDefault')}`"
-                :disabled="
-                  isPresetDefaultLocked(template.id) || isQuickProviderSubmitting(template.id)
-                "
-                @update:model-value="updatePresetDefaultSelection(template.id, $event)"
-              />
-            </div>
-
-            <p
-              v-if="
-                getPresetProvider(template.id) &&
-                getProviderStatus(getProviderId(getPresetProvider(template.id)))
-              "
-              class="mt-3 text-xs"
-              :class="
-                getProviderStatusTone(getProviderId(getPresetProvider(template.id))) === 'error'
-                  ? 'text-destructive'
-                  : 'text-muted-foreground'
-              "
-            >
-              {{ getProviderStatus(getProviderId(getPresetProvider(template.id))) }}
-            </p>
-          </div>
-        </div>
-
-        <Separator />
-
-        <div>
-          <h3 class="text-base font-semibold">{{ t('setting.ai.providerSectionTitle') }}</h3>
-          <p class="text-sm text-muted-foreground">
-            {{ t('setting.ai.providerSectionDescription') }}
-          </p>
-        </div>
-
-        <div class="space-y-3">
-          <div
-            v-for="provider in providerItems"
-            :key="getProviderId(provider)"
-            class="rounded-xl border border-border/60 bg-background/70 p-3"
-          >
-            <div class="flex items-start justify-between gap-3">
-              <div class="space-y-1">
-                <div class="flex items-center gap-2">
-                  <p class="font-medium">{{ getProviderName(provider) }}</p>
-                  <Badge v-if="isDefaultProvider(provider)" variant="secondary">{{
-                    t('setting.ai.defaultProvider')
-                  }}</Badge>
-                  <Badge v-if="!isProviderActive(provider)" variant="outline">{{
-                    t('setting.ai.inactiveProvider')
-                  }}</Badge>
-                </div>
-                <p class="text-xs text-muted-foreground">{{ getProviderBaseUrl(provider) }}</p>
-                <p class="text-xs text-muted-foreground">{{ getProviderModel(provider) }}</p>
-                <p v-if="getProviderApiKeyMasked(provider)" class="text-xs text-muted-foreground">
-                  {{ getProviderApiKeyMasked(provider) }}
-                </p>
-                <p class="text-xs text-muted-foreground">
-                  {{
-                    t('setting.ai.providerModelsSummary', {
-                      count: getAvailableModelCount(provider),
-                    })
-                  }}
-                </p>
-                <p
-                  v-if="getProviderStatus(getProviderId(provider))"
-                  class="text-xs"
-                  :class="
-                    getProviderStatusTone(getProviderId(provider)) === 'error'
-                      ? 'text-destructive'
-                      : 'text-muted-foreground'
-                  "
-                >
-                  {{ getProviderStatus(getProviderId(provider)) }}
-                </p>
-              </div>
-              <div class="flex flex-wrap justify-end gap-2">
-                <Button
-                  v-if="!isDefaultProvider(provider)"
-                  variant="outline"
-                  size="sm"
-                  @click="handleSetDefault(getProviderId(provider))"
-                >
-                  {{ t('setting.ai.setDefaultProvider') }}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  :disabled="isProviderRefreshing(getProviderId(provider))"
-                  @click="handleRefreshModels(getProviderId(provider))"
-                >
-                  {{
-                    isProviderRefreshing(getProviderId(provider))
-                      ? t('setting.ai.refreshingModels')
-                      : t('setting.ai.refreshModels')
-                  }}
-                </Button>
-                <Button variant="outline" size="sm" @click="populateForm(provider)">
-                  {{ t('setting.ai.loadIntoForm') }}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  class="text-destructive"
-                  @click="handleDeleteProvider(getProviderId(provider))"
-                >
-                  {{ t('setting.ai.deleteProvider') }}
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <div
-            v-if="!providerItems.length"
-            class="rounded-xl border border-dashed border-border/70 p-4 text-sm text-muted-foreground"
-          >
-            {{ t('setting.ai.noProviders') }}
-          </div>
-        </div>
-
-        <Separator />
-
-        <div class="space-y-4">
-          <div>
-            <h4 class="font-medium">{{ t('setting.ai.advancedProviderSectionTitle') }}</h4>
-            <p class="text-sm text-muted-foreground">
-              {{ t('setting.ai.advancedProviderSectionDescription') }}
-            </p>
-          </div>
-
-          <div class="grid gap-3">
             <Input
-              v-model="providerForm.name"
-              :placeholder="t('setting.ai.providerNamePlaceholder')"
-            />
-            <Input
-              v-model="providerForm.baseUrl"
-              :placeholder="t('setting.ai.providerBaseUrlPlaceholder')"
-            />
-            <Input
-              v-model="providerForm.model"
-              :placeholder="t('setting.ai.providerModelPlaceholder')"
-            />
-            <Input
-              v-model="providerForm.apiKey"
+              id="ai-provider-api-key"
+              v-model="connectionApiKey"
               type="password"
+              autocomplete="off"
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck="false"
               :placeholder="t('setting.ai.providerApiKeyPlaceholder')"
             />
-            <p v-if="editingProviderApiKeyMasked" class="text-xs text-muted-foreground">
-              {{ editingProviderApiKeyMasked }}
-            </p>
-            <div
-              class="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2"
-            >
-              <div>
-                <p class="text-sm font-medium">{{ t('setting.ai.markAsDefault') }}</p>
-                <p class="text-xs text-muted-foreground">
-                  {{ t('setting.ai.markAsDefaultDescription') }}
-                </p>
-              </div>
-              <Switch
-                :model-value="providerForm.isDefault"
-                :aria-label="t('setting.ai.markAsDefault')"
-                @update:model-value="providerForm.isDefault = $event"
-              />
-            </div>
+            <p class="text-xs text-muted-foreground">{{ t('setting.ai.apiKeyOneTimeHint') }}</p>
           </div>
+        </div>
 
-          <div class="flex flex-wrap gap-2">
-            <Button :disabled="isSubmittingProvider || !canSubmitProvider" @click="submitProvider">
-              {{
-                isEditingProvider ? t('setting.ai.updateProvider') : t('setting.ai.createProvider')
-              }}
-            </Button>
-            <Button
-              variant="outline"
-              :disabled="isTestingProvider || !canTestProvider"
-              @click="testProviderConnection"
-            >
-              {{
-                isTestingProvider ? t('setting.ai.testingProvider') : t('setting.ai.testProvider')
-              }}
-            </Button>
-            <Button variant="ghost" :disabled="isSubmittingProvider" @click="resetProviderForm">
-              {{ t('setting.ai.resetProviderForm') }}
-            </Button>
+        <div v-else-if="onboardingStep === 'model' && probeResult && selectedCatalog" class="space-y-4">
+          <div class="rounded-xl border border-border/60 bg-muted/25 px-4 py-3 text-sm">
+            <p class="font-medium">{{ t('setting.ai.connectionVerified') }}</p>
+            <p class="mt-1 break-all text-xs text-muted-foreground">{{ probeResult.baseUrl }}</p>
           </div>
 
           <div
-            v-if="providerTestResult"
-            class="rounded-xl border border-border/60 bg-background/70 p-3 text-sm"
+            v-for="warning in probeResult.warnings"
+            :key="warning"
+            class="rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-sm"
           >
-            <p class="font-medium">
-              {{
-                providerTestResult.ok
-                  ? t('setting.ai.providerTestPassed')
-                  : t('setting.ai.providerTestFailed')
-              }}
+            {{ warning }}
+          </div>
+
+          <template v-if="probeResult.models.length">
+            <Input v-model="modelSearch" :placeholder="t('setting.ai.searchModels')" />
+            <div class="max-h-[360px] space-y-2 overflow-y-auto pr-1" data-testid="ai-provider-model-list">
+              <button
+                v-for="model in filteredModels"
+                :key="model.id"
+                type="button"
+                class="w-full rounded-xl border p-3 text-left transition-colors"
+                :class="selectedModelId === model.id ? 'border-primary bg-primary/5' : 'border-border/60 hover:bg-muted/40'"
+                @click="selectModel(model.id)"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <p class="truncate text-sm font-medium">{{ model.name || model.id }}</p>
+                      <Badge v-if="isRecommendedModel(model.id)" variant="secondary">
+                        {{ t('setting.ai.recommended') }}
+                      </Badge>
+                    </div>
+                    <p class="mt-1 break-all text-xs text-muted-foreground">{{ model.id }}</p>
+                  </div>
+                  <span
+                    class="mt-0.5 size-4 shrink-0 rounded-full border"
+                    :class="selectedModelId === model.id ? 'border-[5px] border-primary' : 'border-border'"
+                  />
+                </div>
+                <div v-if="model.contextWindow || model.inputCostPer1M != null || model.outputCostPer1M != null" class="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  <span v-if="model.contextWindow">{{ formatContext(model.contextWindow) }} context</span>
+                  <span v-if="model.inputCostPer1M != null">${{ formatPrice(model.inputCostPer1M) }}/1M in</span>
+                  <span v-if="model.outputCostPer1M != null">${{ formatPrice(model.outputCostPer1M) }}/1M out</span>
+                </div>
+              </button>
+            </div>
+          </template>
+
+          <div v-if="needsManualModel" class="space-y-2 rounded-xl border border-dashed border-border/70 p-4">
+            <p class="font-medium">{{ t('setting.ai.manualModelTitle') }}</p>
+            <p class="text-sm text-muted-foreground">{{ t('setting.ai.manualModelDescription') }}</p>
+            <Input v-model="manualModelId" :placeholder="t('setting.ai.manualModelPlaceholder')" @input="handleManualModelInput" />
+          </div>
+
+          <div v-if="effectiveModelId" class="rounded-xl border border-border/60 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p class="text-xs text-muted-foreground">{{ t('setting.ai.selectedModel') }}</p>
+                <p class="mt-1 break-all text-sm font-medium">{{ effectiveModelId }}</p>
+              </div>
+              <Button variant="outline" size="sm" :disabled="isTestingModel" @click="testSelectedModel">
+                {{ isTestingModel ? t('setting.ai.testingModel') : t('setting.ai.testSelectedModel') }}
+              </Button>
+            </div>
+            <p class="mt-2 text-xs text-muted-foreground">{{ t('setting.ai.modelTestCostHint') }}</p>
+            <p v-if="verifiedModelId === effectiveModelId" class="mt-2 text-xs font-medium text-emerald-600">
+              {{ t('setting.ai.modelTestPassed') }}
             </p>
-            <p class="mt-1 text-muted-foreground">{{ providerTestDetails }}</p>
           </div>
         </div>
+
+        <div v-else-if="onboardingStep === 'review' && probeResult && selectedCatalog" class="space-y-4">
+          <div class="rounded-xl border border-border/60 divide-y divide-border/60">
+            <div class="grid gap-1 px-4 py-3 sm:grid-cols-[140px_1fr]">
+              <span class="text-sm text-muted-foreground">{{ t('setting.ai.providerName') }}</span>
+              <span class="text-sm font-medium">{{ connectionName }}</span>
+            </div>
+            <div class="grid gap-1 px-4 py-3 sm:grid-cols-[140px_1fr]">
+              <span class="text-sm text-muted-foreground">{{ t('setting.ai.endpoint') }}</span>
+              <span class="break-all text-sm">{{ probeResult.baseUrl }}</span>
+            </div>
+            <div class="grid gap-1 px-4 py-3 sm:grid-cols-[140px_1fr]">
+              <span class="text-sm text-muted-foreground">{{ t('setting.ai.defaultModelLabel') }}</span>
+              <span class="break-all text-sm font-medium">{{ effectiveModelId }}</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between gap-4 rounded-xl border border-border/60 px-4 py-3">
+            <div>
+              <p class="text-sm font-medium">{{ t('setting.ai.markAsDefault') }}</p>
+              <p class="text-xs text-muted-foreground">{{ t('setting.ai.markAsDefaultDescription') }}</p>
+            </div>
+            <Switch
+              :model-value="isDefaultSelection"
+              :aria-label="t('setting.ai.markAsDefault')"
+              @update:model-value="isDefaultSelection = $event"
+            />
+          </div>
+
+          <p class="text-xs text-muted-foreground">{{ t('setting.ai.reviewSecretHint') }}</p>
+        </div>
       </div>
-    </CardContent>
-  </Card>
+
+      <DialogFooter class="shrink-0 border-t px-6 py-4">
+        <div class="flex w-full items-center justify-between gap-3">
+          <Button v-if="onboardingStep !== 'picker'" variant="ghost" :disabled="isBusy" @click="goBack">
+            {{ t('setting.ai.back') }}
+          </Button>
+          <span v-else />
+
+          <div class="flex gap-2">
+            <Button variant="ghost" :disabled="isBusy" @click="closeOnboarding">
+              {{ t('setting.ai.cancel') }}
+            </Button>
+            <Button
+              v-if="onboardingStep === 'connection'"
+              :disabled="!canProbe || isProbing"
+              data-testid="ai-provider-probe"
+              @click="probeConnection"
+            >
+              {{ isProbing ? t('setting.ai.probing') : t('setting.ai.probeAndLoadModels') }}
+            </Button>
+            <Button
+              v-else-if="onboardingStep === 'model'"
+              :disabled="!canContinueFromModel"
+              @click="onboardingStep = 'review'"
+            >
+              {{ t('setting.ai.continue') }}
+            </Button>
+            <Button
+              v-else-if="onboardingStep === 'review'"
+              :disabled="!effectiveModelId || isSaving"
+              data-testid="ai-provider-commit"
+              @click="saveProvider"
+            >
+              {{ isSaving ? t('setting.ai.savingProvider') : t('setting.ai.saveAndFinish') }}
+            </Button>
+          </div>
+        </div>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import {
@@ -322,442 +384,277 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   Input,
   Label,
-  Separator,
   Switch,
 } from '@memoflow/ui-vue-shadcn';
-import {
-  AI_PROVIDER_TEMPLATES,
-  type AIProviderConfigClientDTO,
-  type AIProviderTemplate,
+import type {
+  AIProviderCatalogEntryDTO,
+  AIProviderConfigClientDTO,
+  ProbeAIProviderConnectionRes,
 } from '@memoflow/contracts/ai';
 import { useAI } from '../../ai/composables/useAI';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
-import { shouldUsePresetAsDefault as resolvePresetDefault } from './ai-provider-default-policy';
 
-interface ProviderFormState {
-  name: string;
-  baseUrl: string;
-  apiKey: string;
-  model: string;
-  isDefault: boolean;
-}
-
-type ProviderListItem = {
-  id: string;
-  name: string;
-  baseUrl?: string;
-  apiKeyMasked?: string;
-  defaultModel?: string | null;
-  availableModels?: Array<{ id: string; name?: string }>;
-  isDefault?: boolean;
-  isActive?: boolean;
-};
-
-type ProviderStatusTone = 'success' | 'error';
-
-interface ProviderStatusState {
-  tone: ProviderStatusTone;
-  message: string;
-}
+type OnboardingStep = 'picker' | 'connection' | 'model' | 'review';
+type ProviderStatusState = { tone: 'success' | 'error'; message: string };
 
 const { t } = useI18n();
 const {
   providers,
+  providerCatalog,
   isLoadingProviders,
   loadProviders,
-  createProvider,
-  updateProvider,
+  loadProviderCatalog,
+  probeProviderConnection,
+  testProviderOnboardingModel,
+  commitProviderOnboarding,
   deleteProvider,
   setDefaultProvider,
   refreshProviderModels,
-  testProvider,
 } = useAI();
 
-const QUICK_PROVIDER_TEMPLATE_IDS = ['gemini', 'openai', 'openrouter'] as const;
+const onboardingOpen = ref(false);
+const onboardingStep = ref<OnboardingStep>('picker');
+const catalogSearch = ref('');
+const selectedCatalog = ref<AIProviderCatalogEntryDTO | null>(null);
+const connectionName = ref('');
+const connectionBaseUrl = ref('');
+const connectionApiKey = ref('');
+const probeResult = ref<ProbeAIProviderConnectionRes | null>(null);
+const modelSearch = ref('');
+const selectedModelId = ref('');
+const manualModelId = ref('');
+const verifiedModelId = ref('');
+const isDefaultSelection = ref(false);
+const isLoadingCatalog = ref(false);
+const isProbing = ref(false);
+const isTestingModel = ref(false);
+const isSaving = ref(false);
+const providerRefreshLoading = ref<Record<string, boolean>>({});
+const providerStatusMap = ref<Record<string, ProviderStatusState | null>>({});
 
-const providerForm = reactive<ProviderFormState>({
-  name: '',
-  baseUrl: '',
-  apiKey: '',
-  model: '',
-  isDefault: false,
+const providerItems = computed(() => providers.value);
+const defaultProvider = computed(() => providerItems.value.find((provider) => provider.isDefault) ?? null);
+const isBusy = computed(() => isProbing.value || isTestingModel.value || isSaving.value);
+const filteredCatalog = computed(() => {
+  const query = catalogSearch.value.trim().toLowerCase();
+  if (!query) return providerCatalog.value;
+  return providerCatalog.value.filter((entry) =>
+    `${entry.name} ${entry.description} ${entry.id}`.toLowerCase().includes(query),
+  );
 });
-const editingProviderId = ref<string | null>(null);
-const isSubmittingProvider = ref(false);
-const isTestingProvider = ref(false);
-const providerTestResult = ref<{
-  ok: boolean;
-  response?: string;
-  error?: string;
-  latencyMs: number;
-  model?: string;
-} | null>(null);
-const quickProviderSubmittingId = ref<string | null>(null);
-const presetDefaultSelections = reactive<Record<string, boolean>>({
-  gemini: false,
-  openai: false,
-  openrouter: false,
+const filteredModels = computed(() => {
+  if (!probeResult.value || !selectedCatalog.value) return [];
+  const query = modelSearch.value.trim().toLowerCase();
+  const recommended = new Set(selectedCatalog.value.recommendedModelIds);
+  return probeResult.value.models
+    .filter((model) => !query || `${model.name} ${model.id}`.toLowerCase().includes(query))
+    .slice()
+    .sort((left, right) => {
+      const leftRank = recommended.has(left.id) ? 0 : 1;
+      const rightRank = recommended.has(right.id) ? 0 : 1;
+      return leftRank - rightRank || left.name.localeCompare(right.name);
+    });
 });
-const providerRefreshLoading = reactive<Record<string, boolean>>({});
-const providerStatusMap = reactive<Record<string, ProviderStatusState | null>>({});
-const presetApiKeys = reactive<Record<string, string>>({
-  gemini: '',
-  openai: '',
-  openrouter: '',
+const needsManualModel = computed(
+  () => !probeResult.value?.models.length || probeResult.value.discovery.status !== 'available',
+);
+const effectiveModelId = computed(() =>
+  needsManualModel.value ? manualModelId.value.trim() : selectedModelId.value.trim(),
+);
+const canProbe = computed(() => {
+  if (!selectedCatalog.value || !connectionApiKey.value.trim()) return false;
+  if (selectedCatalog.value.id !== 'custom') return true;
+  return Boolean(connectionName.value.trim() && connectionBaseUrl.value.trim());
+});
+const canContinueFromModel = computed(() => {
+  const modelId = effectiveModelId.value;
+  if (!modelId) return false;
+  // Manual/fallback models are not part of the discovered inventory, so the
+  // explicit model probe is required before the server will commit them.
+  if (needsManualModel.value) return verifiedModelId.value === modelId;
+  return true;
+});
+const onboardingTitle = computed(() => {
+  switch (onboardingStep.value) {
+    case 'picker': return t('setting.ai.pickerTitle');
+    case 'connection': return t('setting.ai.connectionTitle');
+    case 'model': return t('setting.ai.modelTitle');
+    case 'review': return t('setting.ai.reviewTitle');
+  }
+});
+const onboardingDescription = computed(() => {
+  switch (onboardingStep.value) {
+    case 'picker': return t('setting.ai.pickerDescription');
+    case 'connection': return t('setting.ai.connectionDescription');
+    case 'model': return t('setting.ai.modelDescription');
+    case 'review': return t('setting.ai.reviewDescription');
+  }
+});
+
+onMounted(() => {
+  void loadProviders();
 });
 
 function getAISettingErrorMessage(error: unknown, fallbackKey: string) {
   return translateResultError(error, t, { fallbackKey });
 }
 
-onMounted(() => {
-  void loadProviders();
-});
-
-const providerItems = computed<ProviderListItem[]>(() => providers.value);
-const editingProvider = computed(() =>
-  editingProviderId.value
-    ? (providerItems.value.find((provider) => provider.id === editingProviderId.value) ?? null)
-    : null,
-);
-const editingProviderApiKeyMasked = computed(() => editingProvider.value?.apiKeyMasked ?? '');
-const quickProviderTemplates = computed(() =>
-  AI_PROVIDER_TEMPLATES.filter((template) =>
-    QUICK_PROVIDER_TEMPLATE_IDS.includes(
-      template.id as (typeof QUICK_PROVIDER_TEMPLATE_IDS)[number],
-    ),
-  ),
-);
-const presetProviderMap = computed(
-  () =>
-    Object.fromEntries(
-      quickProviderTemplates.value.map((template) => [
-        template.id,
-        providerItems.value.find(
-          (provider) =>
-            normalizeProviderBaseUrl(provider.baseUrl) ===
-            normalizeProviderBaseUrl(template.baseUrl),
-        ) ?? null,
-      ]),
-    ) as Record<string, ProviderListItem | null>,
-);
-
-const isEditingProvider = computed(() => editingProviderId.value !== null);
-const canSubmitProvider = computed(() => {
-  return Boolean(
-    providerForm.name.trim() &&
-    providerForm.baseUrl.trim() &&
-    providerForm.model.trim() &&
-    (isEditingProvider.value || providerForm.apiKey.trim()),
-  );
-});
-const canTestProvider = computed(() => {
-  return Boolean(
-    providerForm.baseUrl.trim() && providerForm.model.trim() && providerForm.apiKey.trim(),
-  );
-});
-const providerTestDetails = computed(() => {
-  if (!providerTestResult.value) return '';
-  const latency = `${providerTestResult.value.latencyMs}ms`;
-  if (providerTestResult.value.ok) {
-    return [providerTestResult.value.model, providerTestResult.value.response, latency]
-      .filter(Boolean)
-      .join(' · ');
-  }
-  return [
-    getAISettingErrorMessage(
-      providerTestResult.value.error ? { message: providerTestResult.value.error } : null,
-      'setting.ai.providerTestFailed',
-    ),
-    latency,
-  ]
-    .filter(Boolean)
-    .join(' · ');
-});
-
-function resetProviderForm() {
-  editingProviderId.value = null;
-  providerTestResult.value = null;
-  providerForm.name = '';
-  providerForm.baseUrl = '';
-  providerForm.apiKey = '';
-  providerForm.model = '';
-  providerForm.isDefault = false;
-}
-
-function normalizeProviderBaseUrl(value?: string | null): string {
-  return (value ?? '').trim().replace(/\/+$/, '');
-}
-
-function getPresetProvider(templateId: string): ProviderListItem | null {
-  return presetProviderMap.value[templateId] ?? null;
-}
-
-function getAvailableModelCount(provider: ProviderListItem | null | undefined): number {
-  return provider?.availableModels?.length ?? 0;
-}
-
-function getPresetModelSummary(template: AIProviderTemplate): string {
-  const provider = getPresetProvider(template.id);
-  if (!provider) {
-    return t('setting.ai.quickProviderNotConfigured');
-  }
-
-  const modelCount = getAvailableModelCount(provider);
-  return t('setting.ai.quickProviderConfiguredSummary', {
-    model: provider.defaultModel || template.defaultModel,
-    count: modelCount,
-  });
-}
-
-function getPresetActionLabel(template: AIProviderTemplate): string {
-  if (quickProviderSubmittingId.value === template.id) {
-    return getPresetProvider(template.id)
-      ? t('setting.ai.quickProviderUpdating')
-      : t('setting.ai.quickProviderConnecting');
-  }
-
-  return getPresetProvider(template.id)
-    ? t('setting.ai.quickProviderUpdate')
-    : t('setting.ai.quickProviderConnect');
-}
-
-function shouldUsePresetAsDefault(templateId: string): boolean {
-  const provider = getPresetProvider(templateId);
-  return resolvePresetDefault({
-    configuredProvider: provider,
-    selectedForInitialDefault: presetDefaultSelections[templateId],
-  });
-}
-
-function updatePresetDefaultSelection(templateId: string, value: boolean) {
-  const provider = getPresetProvider(templateId);
-  if (provider?.isDefault && !value) {
-    return;
-  }
-
-  presetDefaultSelections[templateId] = value;
-}
-
-function isPresetDefaultLocked(templateId: string): boolean {
-  return Boolean(getPresetProvider(templateId)?.isDefault);
-}
-
-function canSubmitPreset(template: AIProviderTemplate): boolean {
-  return presetApiKeys[template.id]?.trim().length > 0;
-}
-
-function isQuickProviderSubmitting(templateId: string): boolean {
-  return quickProviderSubmittingId.value === templateId;
-}
-
-function getProviderId(provider: ProviderListItem | null | undefined): string {
-  return provider ? String(provider.id) : '';
-}
-
-function getProviderName(provider: ProviderListItem | null | undefined): string {
-  return provider?.name ?? '';
-}
-
-function getProviderBaseUrl(provider: ProviderListItem | null | undefined): string {
-  return provider?.baseUrl ?? '';
-}
-
-function getProviderModel(provider: ProviderListItem | null | undefined): string {
-  return provider?.defaultModel ?? '';
-}
-
-function getProviderApiKeyMasked(provider: ProviderListItem | null | undefined): string {
-  const masked = provider?.apiKeyMasked?.trim();
-  return masked ? `API Key: ${masked}` : '';
-}
-
-function isDefaultProvider(provider: ProviderListItem | null | undefined): boolean {
-  return Boolean(provider?.isDefault);
-}
-
-function isProviderActive(provider: ProviderListItem | null | undefined): boolean {
-  return provider?.isActive !== false;
-}
-
-function populateForm(provider: ProviderListItem | null | undefined) {
-  if (!provider) {
-    return;
-  }
-
-  editingProviderId.value = provider.id;
-  providerTestResult.value = null;
-  providerForm.name = provider.name;
-  providerForm.baseUrl = provider.baseUrl ?? '';
-  providerForm.apiKey = '';
-  providerForm.model = provider.defaultModel ?? '';
-  providerForm.isDefault = Boolean(provider.isDefault);
-}
-
-function isProviderRefreshing(providerId: string): boolean {
-  return providerRefreshLoading[providerId] === true;
-}
-
-function getProviderStatus(providerId: string): string {
-  return providerStatusMap[providerId]?.message ?? '';
-}
-
-function getProviderStatusTone(providerId: string): ProviderStatusTone {
-  return providerStatusMap[providerId]?.tone ?? 'success';
-}
-
-async function handleRefreshModels(providerId: string) {
-  providerRefreshLoading[providerId] = true;
-  providerStatusMap[providerId] = null;
-  console.debug('[AISettings] refreshProviderModels:start', { providerId });
-  try {
-    const provider = await refreshProviderModels(providerId);
-    providerStatusMap[providerId] = {
-      tone: 'success',
-      message: t('setting.ai.providerModelsRefreshed', {
-        count: getAvailableModelCount(provider),
-      }),
-    };
-    console.debug('[AISettings] refreshProviderModels:done', {
-      providerId,
-      modelCount: getAvailableModelCount(provider),
-      defaultModel: provider.defaultModel ?? null,
-    });
-    toast.success(t('setting.ai.providerModelsRefreshed'));
-  } catch (error) {
-    const message = getAISettingErrorMessage(error, 'setting.ai.providerModelsRefreshFailed');
-    console.debug('[AISettings] refreshProviderModels:error', {
-      providerId,
-      message,
-    });
-    providerStatusMap[providerId] = {
-      tone: 'error',
-      message,
-    };
-    toast.error(message);
-  } finally {
-    providerRefreshLoading[providerId] = false;
-  }
-}
-
-async function submitQuickProvider(template: AIProviderTemplate) {
-  const apiKey = presetApiKeys[template.id]?.trim();
-  if (!apiKey) return;
-
-  const existing = getPresetProvider(template.id);
-  quickProviderSubmittingId.value = template.id;
-
-  try {
-    let provider: AIProviderConfigClientDTO;
-    if (existing) {
-      provider = await updateProvider(existing.id, {
-        name: template.name,
-        baseUrl: template.baseUrl,
-        model: existing.defaultModel || template.defaultModel,
-        apiKey,
-      });
-      if (shouldUsePresetAsDefault(template.id) && !existing.isDefault) {
-        await setDefaultProvider(existing.id);
-      }
-      toast.success(t('setting.ai.providerUpdated'));
-    } else {
-      provider = await createProvider({
-        name: template.name,
-        baseUrl: template.baseUrl,
-        apiKey,
-        model: template.defaultModel,
-        isDefault: shouldUsePresetAsDefault(template.id),
-      });
-      toast.success(t('setting.ai.providerCreated'));
-    }
-
-    presetApiKeys[template.id] = '';
-    await handleRefreshModels(String(provider.id));
-  } catch (error) {
-    toast.error(getAISettingErrorMessage(error, 'setting.ai.providerActionFailed'));
-  } finally {
-    quickProviderSubmittingId.value = null;
-  }
-}
-
-async function submitProvider() {
-  if (!canSubmitProvider.value) return;
-
-  isSubmittingProvider.value = true;
-  try {
-    let savedProvider: AIProviderConfigClientDTO;
-    if (editingProviderId.value) {
-      savedProvider = await updateProvider(editingProviderId.value, {
-        name: providerForm.name.trim(),
-        baseUrl: providerForm.baseUrl.trim(),
-        model: providerForm.model.trim(),
-        ...(providerForm.apiKey.trim() ? { apiKey: providerForm.apiKey.trim() } : {}),
-        isDefault: providerForm.isDefault,
-      });
-      toast.success(t('setting.ai.providerUpdated'));
-    } else {
-      savedProvider = await createProvider({
-        name: providerForm.name.trim(),
-        baseUrl: providerForm.baseUrl.trim(),
-        apiKey: providerForm.apiKey.trim(),
-        model: providerForm.model.trim(),
-        isDefault: providerForm.isDefault,
-      });
-      toast.success(t('setting.ai.providerCreated'));
-    }
-
-    console.debug('[AISettings] submitProvider:saved', {
-      providerId: savedProvider.id,
-      baseUrl: savedProvider.baseUrl,
-      defaultModel: savedProvider.defaultModel,
-      isDefault: savedProvider.isDefault,
-    });
-
-    let hydratedProvider: ProviderListItem = savedProvider;
+async function openOnboarding() {
+  resetOnboarding();
+  onboardingOpen.value = true;
+  if (!providerCatalog.value.length) {
+    isLoadingCatalog.value = true;
     try {
-      hydratedProvider = await refreshProviderModels(String(savedProvider.id));
+      await loadProviderCatalog();
     } catch (error) {
-      console.debug('[AISettings] submitProvider:autoRefreshFailed', {
-        providerId: savedProvider.id,
-        message: error instanceof Error ? error.message : 'unknown error',
-      });
+      toast.error(getAISettingErrorMessage(error, 'setting.ai.providerCatalogFailed'));
+    } finally {
+      isLoadingCatalog.value = false;
     }
-
-    populateForm(hydratedProvider);
-  } catch (error) {
-    toast.error(getAISettingErrorMessage(error, 'setting.ai.providerActionFailed'));
-  } finally {
-    isSubmittingProvider.value = false;
   }
 }
 
-async function testProviderConnection() {
-  if (!canTestProvider.value) return;
+function closeOnboarding() {
+  onboardingOpen.value = false;
+  resetOnboarding();
+}
 
-  isTestingProvider.value = true;
+function handleDialogOpenChange(open: boolean) {
+  if (open) {
+    onboardingOpen.value = true;
+    return;
+  }
+  closeOnboarding();
+}
+
+function resetOnboarding() {
+  onboardingStep.value = 'picker';
+  catalogSearch.value = '';
+  selectedCatalog.value = null;
+  connectionName.value = '';
+  connectionBaseUrl.value = '';
+  // Raw secret is deliberately cleared on cancel/unmount/reset.
+  connectionApiKey.value = '';
+  probeResult.value = null;
+  modelSearch.value = '';
+  selectedModelId.value = '';
+  manualModelId.value = '';
+  verifiedModelId.value = '';
+  isDefaultSelection.value = providerItems.value.length === 0;
+  isProbing.value = false;
+  isTestingModel.value = false;
+  isSaving.value = false;
+}
+
+function selectCatalogEntry(entry: AIProviderCatalogEntryDTO) {
+  selectedCatalog.value = entry;
+  connectionName.value = entry.name;
+  connectionBaseUrl.value = entry.defaultBaseUrl;
+  connectionApiKey.value = '';
+  onboardingStep.value = 'connection';
+}
+
+async function probeConnection() {
+  if (!canProbe.value || !selectedCatalog.value) return;
+  isProbing.value = true;
   try {
-    providerTestResult.value = await testProvider({
-      baseUrl: providerForm.baseUrl.trim(),
-      apiKey: providerForm.apiKey.trim(),
-      model: providerForm.model.trim(),
+    const result = await probeProviderConnection({
+      catalogId: selectedCatalog.value.id,
+      ...(selectedCatalog.value.baseUrlEditable ? { baseUrl: connectionBaseUrl.value.trim() } : {}),
+      apiKey: connectionApiKey.value.trim(),
     });
-
-    if (providerTestResult.value.ok) {
-      toast.success(t('setting.ai.providerTestPassed'));
-    } else {
-      toast.error(
-        getAISettingErrorMessage(
-          providerTestResult.value.error ? { message: providerTestResult.value.error } : null,
-          'setting.ai.providerTestFailed',
-        ),
-      );
-    }
+    probeResult.value = result;
+    // Security contract: after a successful probe the browser keeps only the
+    // opaque onboarding handle, never the raw credential.
+    connectionApiKey.value = '';
+    connectionBaseUrl.value = result.baseUrl;
+    selectedModelId.value = '';
+    manualModelId.value = '';
+    verifiedModelId.value = '';
+    onboardingStep.value = 'model';
+    toast.success(t('setting.ai.connectionVerified'));
   } catch (error) {
-    toast.error(getAISettingErrorMessage(error, 'setting.ai.providerTestFailed'));
+    toast.error(getAISettingErrorMessage(error, 'setting.ai.providerProbeFailed'));
   } finally {
-    isTestingProvider.value = false;
+    isProbing.value = false;
+  }
+}
+
+function selectModel(modelId: string) {
+  selectedModelId.value = modelId;
+  verifiedModelId.value = '';
+}
+
+function handleManualModelInput() {
+  verifiedModelId.value = '';
+}
+
+async function testSelectedModel() {
+  if (!probeResult.value || !effectiveModelId.value) return;
+  isTestingModel.value = true;
+  try {
+    const result = await testProviderOnboardingModel({
+      onboardingId: probeResult.value.onboardingId,
+      modelId: effectiveModelId.value,
+    });
+    verifiedModelId.value = result.modelId;
+    toast.success(t('setting.ai.modelTestPassed'));
+  } catch (error) {
+    verifiedModelId.value = '';
+    toast.error(getAISettingErrorMessage(error, 'setting.ai.modelTestFailed'));
+  } finally {
+    isTestingModel.value = false;
+  }
+}
+
+async function saveProvider() {
+  if (!probeResult.value || !effectiveModelId.value) return;
+  isSaving.value = true;
+  try {
+    await commitProviderOnboarding({
+      onboardingId: probeResult.value.onboardingId,
+      name: connectionName.value.trim(),
+      defaultModelId: effectiveModelId.value,
+      isDefault: isDefaultSelection.value,
+    });
+    toast.success(t('setting.ai.providerCreated'));
+    closeOnboarding();
+  } catch (error) {
+    toast.error(getAISettingErrorMessage(error, 'setting.ai.providerActionFailed'));
+  } finally {
+    isSaving.value = false;
+  }
+}
+
+function goBack() {
+  switch (onboardingStep.value) {
+    case 'connection':
+      connectionApiKey.value = '';
+      onboardingStep.value = 'picker';
+      break;
+    case 'model':
+      // A successful probe has already exchanged the raw key for an opaque
+      // handle. Going back must start a fresh credential probe instead of
+      // pretending the secret is still available in browser memory.
+      probeResult.value = null;
+      selectedModelId.value = '';
+      manualModelId.value = '';
+      verifiedModelId.value = '';
+      onboardingStep.value = 'connection';
+      break;
+    case 'review':
+      onboardingStep.value = 'model';
+      break;
+    case 'picker':
+      break;
   }
 }
 
@@ -770,15 +667,67 @@ async function handleSetDefault(providerId: string) {
   }
 }
 
+async function handleRefreshModels(providerId: string) {
+  providerRefreshLoading.value[providerId] = true;
+  providerStatusMap.value[providerId] = null;
+  try {
+    const provider = await refreshProviderModels(providerId);
+    providerStatusMap.value[providerId] = {
+      tone: 'success',
+      message: t('setting.ai.providerModelsRefreshed', {
+        count: provider.availableModels.length,
+      }),
+    };
+    toast.success(t('setting.ai.providerModelsRefreshed', { count: provider.availableModels.length }));
+  } catch (error) {
+    const message = getAISettingErrorMessage(error, 'setting.ai.providerModelsRefreshFailed');
+    providerStatusMap.value[providerId] = { tone: 'error', message };
+    toast.error(message);
+  } finally {
+    providerRefreshLoading.value[providerId] = false;
+  }
+}
+
 async function handleDeleteProvider(providerId: string) {
   try {
     await deleteProvider(providerId);
     toast.success(t('setting.ai.providerDeleted'));
-    if (editingProviderId.value === providerId) {
-      resetProviderForm();
-    }
   } catch (error) {
     toast.error(getAISettingErrorMessage(error, 'setting.ai.providerActionFailed'));
   }
+}
+
+function isRecommendedModel(modelId: string): boolean {
+  return selectedCatalog.value?.recommendedModelIds.includes(modelId) ?? false;
+}
+
+function providerGlyph(id: string): string {
+  const glyphs: Record<string, string> = {
+    openrouter: 'OR',
+    openai: 'OA',
+    gemini: 'G',
+    deepseek: 'DS',
+    custom: '{}',
+  };
+  return glyphs[id] ?? id.slice(0, 2).toUpperCase();
+}
+
+function stepClass(step: OnboardingStep): string {
+  const order: OnboardingStep[] = ['picker', 'connection', 'model', 'review'];
+  return order.indexOf(onboardingStep.value) >= order.indexOf(step)
+    ? 'flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground'
+    : 'flex size-5 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-muted-foreground';
+}
+
+function formatContext(value: number): string {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(value % 1_000_000 === 0 ? 0 : 1)}M`;
+  if (value >= 1_000) return `${Math.round(value / 1_000)}K`;
+  return String(value);
+}
+
+function formatPrice(value: number): string {
+  if (value === 0) return '0';
+  if (value < 0.01) return value.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+  return value.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
 }
 </script>

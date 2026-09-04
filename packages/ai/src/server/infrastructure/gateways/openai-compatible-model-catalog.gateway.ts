@@ -49,13 +49,23 @@ export class OpenAICompatibleModelCatalogGateway implements IAIProviderModelCata
       modelsUrl,
     });
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15_000);
     const response = await fetch(modelsUrl, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${input.apiKey}`,
         'Content-Type': 'application/json',
       },
-    });
+      redirect: 'manual',
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeoutId));
+
+    if (response.status >= 300 && response.status < 400) {
+      throw new AIExecutionError('transport', 'Provider model discovery redirected unexpectedly', {
+        statusCode: response.status,
+      });
+    }
 
     if (!response.ok) {
       await response.text();
@@ -124,12 +134,12 @@ function normalizeNumber(value: unknown): number | undefined {
 
 function normalizePrice(value: unknown): number | undefined {
   if (typeof value === 'number' && Number.isFinite(value)) {
-    return value;
+    return value * 1_000_000;
   }
 
   if (typeof value === 'string') {
     const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : undefined;
+    return Number.isFinite(parsed) ? parsed * 1_000_000 : undefined;
   }
 
   return undefined;

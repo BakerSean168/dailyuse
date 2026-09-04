@@ -8,6 +8,12 @@ import type {
   TestAIProviderReq,
   TestAIProviderRes,
   UpdateAIProviderConfigReq,
+  ListAIProviderCatalogRes,
+  ProbeAIProviderConnectionReq,
+  ProbeAIProviderConnectionRes,
+  TestAIProviderOnboardingModelReq,
+  TestAIProviderOnboardingModelRes,
+  CommitAIProviderOnboardingReq,
 } from '@memoflow/contracts/ai';
 import { map, type Result } from '@memoflow/contracts/result';
 
@@ -17,6 +23,37 @@ import { map, type Result } from '@memoflow/contracts/result';
  */
 export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
+
+  async getProviderCatalog(): Promise<Result<ListAIProviderCatalogRes>> {
+    return this.ipcClient.invoke<ListAIProviderCatalogRes>(AIChannels.PROVIDER_CATALOG_GET);
+  }
+
+  async probeProviderConnection(
+    request: ProbeAIProviderConnectionReq,
+  ): Promise<Result<ProbeAIProviderConnectionRes>> {
+    return this.ipcClient.invoke<ProbeAIProviderConnectionRes>(
+      AIChannels.PROVIDER_ONBOARDING_PROBE,
+      request,
+    );
+  }
+
+  async testProviderOnboardingModel(
+    request: TestAIProviderOnboardingModelReq,
+  ): Promise<Result<TestAIProviderOnboardingModelRes>> {
+    return this.ipcClient.invoke<TestAIProviderOnboardingModelRes>(
+      AIChannels.PROVIDER_ONBOARDING_TEST_MODEL,
+      request,
+    );
+  }
+
+  async commitProviderOnboarding(
+    request: CommitAIProviderOnboardingReq,
+  ): Promise<Result<AIProviderConfigClientDTO>> {
+    return this.ipcClient.invoke<AIProviderConfigClientDTO>(
+      AIChannels.PROVIDER_ONBOARDING_COMMIT,
+      request,
+    );
+  }
 
   async createProvider(
     request: CreateAIProviderConfigReq,

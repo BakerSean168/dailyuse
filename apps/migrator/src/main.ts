@@ -129,6 +129,12 @@ export function createMigrationCommands(workspaceRoot: string): Command[] {
   commands.push(
     {
       executable: process.execPath,
+      args: [resolve(runtimeScripts, 'prepare-ai-provider-onboarding-sessions.js')],
+      cwd: databaseRoot,
+      label: 'prepare AI provider onboarding sessions',
+    },
+    {
+      executable: process.execPath,
       args: [resolve(runtimeScripts, 'prepare-ai-provider-default-invariant.js')],
       cwd: databaseRoot,
       label: 'prepare AI provider default invariant',
