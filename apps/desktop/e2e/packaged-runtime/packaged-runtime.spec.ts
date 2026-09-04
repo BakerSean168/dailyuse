@@ -35,6 +35,7 @@ test('packaged MemoFlow boots through renderer readiness', async ({}, testInfo) 
   const userDataPath = path.join(runtimeRoot, 'user-data');
   const userFilesPath = path.join(runtimeRoot, 'user-files');
   const logs: string[] = [];
+  const rendererPageErrors: string[] = [];
   let electronApp: ElectronApplication | null = null;
   let testFailure: unknown = null;
   let closeFailure: unknown = null;
@@ -61,7 +62,10 @@ test('packaged MemoFlow boots through renderer readiness', async ({}, testInfo) 
 
     const mainWindow = await electronApp.firstWindow({ timeout: 45_000 });
     mainWindow.on('console', (message) => appendLog(logs, `renderer:${message.type()}`, message.text()));
-    mainWindow.on('pageerror', (error) => appendLog(logs, 'renderer:pageerror', error.stack ?? error.message));
+    mainWindow.on('pageerror', (error) => {
+      rendererPageErrors.push(error.message);
+      appendLog(logs, 'renderer:pageerror', error.stack ?? error.message);
+    });
 
     await expect(mainWindow.getByTestId('app-shell')).toBeVisible({ timeout: 45_000 });
 
@@ -80,6 +84,21 @@ test('packaged MemoFlow boots through renderer readiness', async ({}, testInfo) 
     expect(controlAppRegion, 'interactive titlebar controls must opt out of native dragging').toBe(
       'no-drag',
     );
+
+    // Shared account settings must only mount password management when the host
+    // provides the full CloudAuthClientPort (AUTH_SERVICE_KEY). Desktop exposes
+    // a narrower session/device-auth port and must degrade without crashing.
+    await mainWindow.getByTestId('shell-account-menu').click();
+    const openAccount = mainWindow.getByTestId('shell-open-account');
+    await expect(openAccount).toBeVisible();
+    await openAccount.click();
+    await expect(mainWindow.getByTestId('standalone-settings-layout')).toBeVisible({ timeout: 15_000 });
+    await expect(mainWindow.getByTestId('settings-tab-account')).toBeVisible();
+    await expect(mainWindow.getByTestId('account-center-view')).toBeVisible();
+    expect(
+      rendererPageErrors.filter((message) => message.includes('Missing injection: AuthService')),
+      'Desktop account/privacy settings must not mount Web-only password auth without the capability',
+    ).toEqual([]);
   } catch (error) {
     testFailure = error;
     appendLog(logs, 'smoke-error', error instanceof Error ? (error.stack ?? error.message) : error);
