@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.3](https://github.com/BakerSean168/memoflow/compare/v0.12.2...v0.12.3) (2026-09-04)
+
+
+### Bug Fixes
+
+* **desktop:** gate password settings by auth capability ([f86562e](https://github.com/BakerSean168/memoflow/commit/f86562e709646bb6ce16afa62c70903f83b37ff3))
+* **desktop:** gate password settings by auth capability ([b24561c](https://github.com/BakerSean168/memoflow/commit/b24561cf57b9119c38dd2605e49676fa49e21a91))
+
 ## [0.12.2](https://github.com/BakerSean168/memoflow/compare/v0.12.1...v0.12.2) (2026-09-04)
 
 
