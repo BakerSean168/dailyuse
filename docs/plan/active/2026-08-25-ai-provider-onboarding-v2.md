@@ -432,7 +432,7 @@ Mastra 仍是唯一 Agent/Workflow/Memory runtime。
 - `contracts:test`：66 files / 481 tests PASS；CI/CD workflow governance 65/65 PASS；Web shard/oracle contract 8/8 PASS；全局 governance PASS。
 - `validate-local-deploy` 最终 verdict=`pass`、`readyForPr=yes`；fresh `docker compose ... build --no-cache` 后 API/Web/PowerSync/Postgres/Redis 全部 healthy，Web/API revision 与预期 dirty revision 匹配。
 - OpenRouter real-key acceptance 已作为显式 opt-in 子用例接入 `web:e2e:ai-provider`，只读取 `E2E_OPENROUTER_API_KEY`；当前环境未配置专用测试 Key，因此该子用例保持 SKIP，不复用普通用户 Key，也不产生推理调用费用。
-- PR required `Web Flow` 已接入无外部凭据的 HTTPS Custom Provider acceptance；nightly trusted `Web Flow Audit` 可在配置 `E2E_OPENROUTER_API_KEY` 后执行真实 OpenRouter `/key` + `/models` + atomic save acceptance。
+- PR #303 required CI run `33866087666` 已 `completed/success`；Governance / Typecheck / Build / Static Analysis / Unit Tests / Verification Oracles / Web Flow 1–4 / Web Flow Oracle / Delivery Observation 全绿，其中 Shard 1 的 `Secure AI Provider product acceptance` 明确 `success`。nightly trusted `Web Flow Audit` 可在配置 `E2E_OPENROUTER_API_KEY` 后执行真实 OpenRouter `/key` + `/models` + atomic save acceptance。
 
 ## Acceptance criteria
 
@@ -456,7 +456,7 @@ Mastra 仍是唯一 Agent/Workflow/Memory runtime。
 - [x] real HTTPS Custom provider product E2E 通过
 - [ ] real OpenRouter product E2E 通过（opt-in gate 已实现；等待专用 `E2E_OPENROUTER_API_KEY`）
 - [x] local governance + MagicDNS/local-Docker prod-like acceptance 全绿
-- [ ] GitHub required CI 全绿（required Web Flow 已接入 Provider acceptance；等待 push 后远端执行）
+- [x] GitHub required CI 全绿（PR #303 / CI run `33866087666`；Secure AI Provider product acceptance PASS）
 
 ## Non-goals
 
