@@ -14,7 +14,7 @@ tags:
   - parallel
 description: MemoFlow Goal/Task/Routine/Planner/Scheduler/Notification/EventBus 的总重构编排计划，按依赖、共享热点和可并行 lane 组织，并为每个标准能力指定 Build/Borrow/Imitate 来源
 created: 2026-08-25T19:18:00+08:00
-updated: 2026-08-29T20:00:00+08:00
+updated: 2026-09-04T23:25:00+08:00
 status: active
 ---
 
@@ -63,23 +63,46 @@ Explicitly **deferred post-v0.11** and therefore not merge blockers for this mil
 
 The final merge-readiness review found **no unresolved P0/P1 inside the v0.11 milestone scope**. Evidence and the deferred ledger are recorded in `docs/analysis/2026-08-29-core-vnext-v011-merge-readiness.md`. The remaining Desktop GitHub installation live test is a **release acceptance gate on the newly built Windows package**, not an integration-branch merge gate.
 
-## 0.2 Historical implementation checkpoint — Wave 0 / Wave 1
+## 0.2 Active-plan truth audit — 2026-09-04
+
+This umbrella remains active **only for post-v0.11 residuals**. Wave 0–5 must not be restarted by future agents. The previous §19 checklist was stale because it left already-verified milestone work unchecked.
+
+Verified complete in current `main`:
+
+- Goal Direction/Measurement + KR Measurement V2; Task Action/Execution + occurrence/plan + Goal contribution separation;
+- Routine Profile/Trigger/Protocol domain semantics and separated WallClock / ActiveUsage runtime;
+- Emittery EventBus, standard recurrence adapter, stable `schedulingKey`, atomic reconcile, durable NotificationRequested and production DND/rate-limit policy;
+- FullCalendar Planner, owner-aware edits, Web/Desktop Goal/Task/Routine/Notification product surfaces, InterventionWindow and FocusWindow;
+- v0.11 milestone fixture/parity/governance evidence and current-main required CI.
+
+Still real residuals (code search verified):
+
+- `ROUTINE-5302`: no Routine method-library/catalog implementation exists;
+- `AI-6101~6103`: Goal/Task draft workflows exist, but `TaskPlanTaskSchema` still exposes retired `folderId`; Routine draft/command tooling and Planner/Notification AI read tooling are absent;
+- `MOBILE-6201/6202`: React/mobile already has current-contract Goal/Task/Notification screens and no Folder/Dependency/ValueType UI was found. Treat these as **parity-audit tickets first**, not a mandate to rebuild mobile; only implement gaps proven by the audit;
+- `CLEAN-6301~6304`: legacy scheduling seams remain — `packages/reminder/.../schedule-projection-source.ts` still constructs `ScheduleTask`, and `schedule-orchestration/src/execution/router.ts` still contains a `SourceModule` fallback; raw ScheduleTask API/client surfaces also remain;
+- `POC-6401`: pg-boss remains a documented candidate only and is not installed/evaluated against current constraints;
+- `HARD-7101~7105`: final failure matrix, residual cleanup proof and umbrella closure review remain incomplete.
+
+Execution priority is redefined in §20 below; historical Wave 0/1 text remains evidence only.
+
+## 0.3 Historical implementation checkpoint — Wave 0 / Wave 1
 
 Wave 0 evidence is frozen in [`Core vNext Wave 0 — Baseline / Acceptance / Shared-Train Evidence`](../../analysis/2026-08-25-core-vnext-wave-0-baseline-and-acceptance.md).
 
-| Ticket group | Status | Canonical evidence / implementation |
-| --- | --- | --- |
-| `CORE-0001~0005` | **DONE** | frozen map + A–J fixtures + train map + OSS gate; child plans rebased below |
-| `EVT-1001` | **DONE** | ADR-064, Emittery-backed runtime EventBus |
-| `TIME-1101~1103` | **DONE** | `RecurrenceEnginePort`, `rrule@2.8.1`, Task recurrence adapter, timezone/DST fixtures |
-| `UI-1101` | **DONE** | shared Date/Time/DateTime/Duration/ReminderOffset fields using existing shadcn/Reka primitives |
-| `LABEL-1101` | **DONE** | canonical Label contracts + `@memoflow/label` + Prisma/PowerSync Goal/Task assignment persistence |
+| Ticket group      | Status   | Canonical evidence / implementation                                                                                                      |
+| ----------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `CORE-0001~0005`  | **DONE** | frozen map + A–J fixtures + train map + OSS gate; child plans rebased below                                                              |
+| `EVT-1001`        | **DONE** | ADR-064, Emittery-backed runtime EventBus                                                                                                |
+| `TIME-1101~1103`  | **DONE** | `RecurrenceEnginePort`, `rrule@2.8.1`, Task recurrence adapter, timezone/DST fixtures                                                    |
+| `UI-1101`         | **DONE** | shared Date/Time/DateTime/Duration/ReminderOffset fields using existing shadcn/Reka primitives                                           |
+| `LABEL-1101`      | **DONE** | canonical Label contracts + `@memoflow/label` + Prisma/PowerSync Goal/Task assignment persistence                                        |
 | `SCHED-1101~1105` | **DONE** | canonical neutral contracts, first-class scheduling identity, atomic owner reconcile + durable receipt, HandlerRegistry composition hook |
-| `NOTIF-1101/1102` | **DONE** | per-channel policy correctness + production DND/rate-limit path |
+| `NOTIF-1101/1102` | **DONE** | per-channel policy correctness + production DND/rate-limit path                                                                          |
 
 **Wave 2 execution point (closed 2026-08-26):** `GOAL-2101~2103`, `TASK-2201~2205`, `ROUTINE-2301~2303`, and `NOTIF-2401/2402` are integrated and gate-verified.
 
-**Current execution point (2026-08-27):** Wave 3 vertical integration and both Wave 4 lanes are closed. Wave 5 shared `UI-5101` and Goal list/editor `GOAL-5101` are closed. Goal now uses the vNext progress-row + Label AND filter + aggregate editor surface; the current primary continuation is `TASK-5201` (Today/Upcoming execution home), while Goal detail, Routine, Planner, and Notification UI lanes remain independently parallelizable.
+**Historical execution point (2026-08-27):** Wave 3 vertical integration and both Wave 4 lanes had closed and Wave 5 was in progress. This is no longer the current queue. By the 2026-08-29 v0.11 closure, the primary Web/Desktop Goal, Task, Routine, Planner and Notification surfaces were complete; current work is residual-only as listed in §0.2 and §20.
 
 **Wave 1 gate evidence (2026-08-25):**
 
@@ -1107,18 +1130,18 @@ Protocol remains separate.
 - [x] schema boot and Prisma/PowerSync parity green;
 - [x] recurrence acceptance matrix green.
 
-| Ticket group | Status | Closure evidence |
-| --- | --- | --- |
-| `GOAL-2101~2103` | **DONE** | Goal = Direction + Measurement; `Active/Completed/Abandoned` + separate archive; KR Measurement V2; Review V2; Goal full suite `79 files / 425 tests`; Prisma integration `21 tests` |
-| `TASK-2201~2205` | **DONE** | occurrence `Pending/InProgress/Completed/Missed/Skipped`; plan lifecycle/outcome; Folder/DAG/critical-path retirement; recurrence adapter; Goal link/contribution V2; Task suite `70 files / 690 tests` |
-| `ROUTINE-2301~2303` | **DONE** | RoutineDefinition/Profile/Membership, trigger ownership, Protocol session state machine; reminder package `60 files / 455 tests`; vNext domain+persistence parity `39 tests`; integration `29 tests` |
-| `NOTIF-2401/2402` | **DONE** | Notification Fact/DeliveryPlan separation and deterministic workflow/global preference hierarchy; notification suite `42 files / 232 tests` |
-| Contract / Schema Train | **DONE** | contracts `63 files / 469 tests`; Prisma generate/schema boot green; database `13 tests`; PowerSync schema `4 tests`; Data Portability `139 tests` |
-| Time / recurrence | **DONE** | time `32 tests`; recurrence conformance matrix `11/11`; Task recurrence consumes `RecurrenceEnginePort` |
-| Performance budget | **DONE** | Task vNext owns a real perf suite: 20k-occurrence plan outcome evaluation plus 1000-date recurrence expansion; `task:test:perf` `2/2` green; retired priority-sort benchmark paths removed |
-| Presentation / secondary consumers | **DONE** | App Vue `183 files / 713 tests`; React/mobile/web destructive contract cutover; Goal Compare, Goal Folder/Focus, Task Dependency/DAG/check-expired guards removed or inverted; Web `17 files / 71 tests` |
-| Reliability | **DONE** | Task transaction/outbox integration `27 tests`; Goal integration `21 tests`; Routine integration `29 tests`; API Task→Goal host-restart replay `1/1`; Goal Prisma/PowerSync rollback gates green |
-| Repository gate | **DONE** | affected test `35 projects + 6 dependent tasks`; typecheck `36 projects + 29 tasks`; lint `40 projects`; build `34 projects + 1 task`; governance green; test inventory `1066` files; test oracle `success` |
+| Ticket group                       | Status   | Closure evidence                                                                                                                                                                                            |
+| ---------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GOAL-2101~2103`                   | **DONE** | Goal = Direction + Measurement; `Active/Completed/Abandoned` + separate archive; KR Measurement V2; Review V2; Goal full suite `79 files / 425 tests`; Prisma integration `21 tests`                        |
+| `TASK-2201~2205`                   | **DONE** | occurrence `Pending/InProgress/Completed/Missed/Skipped`; plan lifecycle/outcome; Folder/DAG/critical-path retirement; recurrence adapter; Goal link/contribution V2; Task suite `70 files / 690 tests`     |
+| `ROUTINE-2301~2303`                | **DONE** | RoutineDefinition/Profile/Membership, trigger ownership, Protocol session state machine; reminder package `60 files / 455 tests`; vNext domain+persistence parity `39 tests`; integration `29 tests`        |
+| `NOTIF-2401/2402`                  | **DONE** | Notification Fact/DeliveryPlan separation and deterministic workflow/global preference hierarchy; notification suite `42 files / 232 tests`                                                                 |
+| Contract / Schema Train            | **DONE** | contracts `63 files / 469 tests`; Prisma generate/schema boot green; database `13 tests`; PowerSync schema `4 tests`; Data Portability `139 tests`                                                          |
+| Time / recurrence                  | **DONE** | time `32 tests`; recurrence conformance matrix `11/11`; Task recurrence consumes `RecurrenceEnginePort`                                                                                                     |
+| Performance budget                 | **DONE** | Task vNext owns a real perf suite: 20k-occurrence plan outcome evaluation plus 1000-date recurrence expansion; `task:test:perf` `2/2` green; retired priority-sort benchmark paths removed                  |
+| Presentation / secondary consumers | **DONE** | App Vue `183 files / 713 tests`; React/mobile/web destructive contract cutover; Goal Compare, Goal Folder/Focus, Task Dependency/DAG/check-expired guards removed or inverted; Web `17 files / 71 tests`    |
+| Reliability                        | **DONE** | Task transaction/outbox integration `27 tests`; Goal integration `21 tests`; Routine integration `29 tests`; API Task→Goal host-restart replay `1/1`; Goal Prisma/PowerSync rollback gates green            |
+| Repository gate                    | **DONE** | affected test `35 projects + 6 dependent tasks`; typecheck `36 projects + 29 tasks`; lint `40 projects`; build `34 projects + 1 task`; governance green; test inventory `1066` files; test oracle `success` |
 
 **W2 closure rule:** no compatibility surface may reintroduce Goal Folder/Focus/comparison, Task DAG/dependency/Expired occurrence status, old Goal Review fields, or message-string branching for typed business failures. Physical legacy columns may remain only behind already-approved persistence adapters until their dedicated schema deletion train.
 
@@ -1558,7 +1581,6 @@ Due -> Gentle -> Grace -> Guided -> optional Strict
 
 **Acceptance:** fixture H completes 50/10 and does not immediately show stand/eye reminder.
 
-
 **Implementation evidence (2026-08-27):**
 
 - introduced a first-class `ProtocolBreakCompletionFact` rather than impersonating protocol rest as OS Idle; facts carry stable `factId`, session/protocol/phase/cycle correlation, Product Time Instants, measured break duration, and explicit break capabilities;
@@ -1655,7 +1677,6 @@ Routine wall-clock occurrence
 ```
 
 **Acceptance:** no ScheduledInvocation row is rendered in normal Planner.
-
 
 **Implementation evidence (2026-08-27):**
 
@@ -2361,73 +2382,75 @@ Core vNext can close only when all of the following hold:
 
 ## Business
 
-- [ ] Goal = Direction + Measurement, retired project-management concepts gone;
-- [ ] KR Measurement V2 is canonical;
-- [ ] Task = Action + Execution, occurrence/plan semantics correct;
-- [ ] Task Goal link and contribution are separated;
-- [ ] Routine Profile/Trigger/Protocol semantics implemented;
-- [ ] WallClock and ActiveUsage runtimes are correctly separated.
+- [x] Goal = Direction + Measurement, retired project-management concepts gone;
+- [x] KR Measurement V2 is canonical;
+- [x] Task = Action + Execution, occurrence/plan semantics correct;
+- [x] Task Goal link and contribution are separated;
+- [x] Routine Profile/Trigger/Protocol semantics implemented;
+- [x] WallClock and ActiveUsage runtimes are correctly separated.
 
 ## Infrastructure
 
-- [ ] EventBus = Emittery fast path; no bus-global drain;
-- [ ] standard recurrence engine selected and adapterized;
-- [ ] Goal/Task/Routine no longer construct ScheduleTask;
-- [ ] stable schedulingKey + atomic reconcile;
-- [ ] HandlerRegistry replaces SourceModule execution switch;
-- [ ] wall-clock Routine has one scheduler authority;
-- [ ] durable NotificationRequested pipeline exists;
-- [ ] Notification Fact and Delivery outcome separated;
-- [ ] per-channel preference/DND/rate-limit works.
+- [x] EventBus = Emittery fast path; no bus-global drain;
+- [x] standard recurrence engine selected and adapterized;
+- [ ] Goal/Task/Routine no longer construct/own legacy ScheduleTask projection paths — Reminder/Routine projection still calls `ScheduleTask.create(...)`;
+- [x] stable schedulingKey + atomic reconcile;
+- [ ] HandlerRegistry fully replaces SourceModule execution switch — a domain-neutral legacy fallback remains in `schedule-orchestration/src/execution/router.ts`;
+- [x] wall-clock Routine has one scheduler authority;
+- [x] durable NotificationRequested pipeline exists;
+- [x] Notification Fact and Delivery outcome separated;
+- [x] per-channel preference/DND/rate-limit works.
 
 ## Product surfaces
 
-- [ ] Planner uses a maintained calendar engine or documented evidence justifies fallback;
-- [ ] Planner edits route to owner domains;
-- [ ] Goal/Task/Routine/Notification vNext UI implemented;
-- [ ] Routine InterventionWindow and FocusWindow validated;
-- [ ] Mobile/AI contracts have no retired fields.
+- [x] Planner uses a maintained calendar engine (FullCalendar Standard);
+- [x] Planner edits route to owner domains;
+- [x] Goal/Task/Routine/Notification primary Web/Desktop vNext UI implemented;
+- [x] Routine InterventionWindow and FocusWindow validated;
+- [ ] Mobile/AI contracts have no retired fields and parity gaps — AI Task draft still exposes retired `folderId`; Mobile appears largely migrated but still requires explicit parity acceptance.
 
 ## Reuse discipline
 
-- [ ] no custom calendar grid/date picker recurrence engine was unnecessarily rebuilt;
-- [ ] dependency/license ledger updated with final decisions;
-- [ ] GPL/AGPL references were not copied into incompatible product code;
-- [ ] third-party DTOs/types stay behind adapters.
+- [x] no custom calendar grid/date picker recurrence engine was unnecessarily rebuilt;
+- [ ] dependency/license ledger has final decisions for every residual candidate — pg-boss remains `Keep now; later PoC`;
+- [x] GPL/AGPL references were not copied into incompatible product code;
+- [x] third-party DTOs/types stay behind adapters for completed v0.11 scope.
 
 ## Quality
 
-- [ ] fixtures A-J pass where applicable;
-- [ ] failure matrix passes;
-- [ ] API/Desktop/PowerSync/Prisma parity passes;
-- [ ] full governance/docs checks green;
-- [ ] residual grep proves legacy dual paths removed;
-- [ ] final batch review has no P0/P1 unresolved finding.
+- [x] fixtures A-J pass where applicable to the v0.11 milestone;
+- [ ] final cross-domain failure matrix passes (`HARD-7101` pending);
+- [x] API/Desktop/PowerSync/Prisma parity passes for the completed primary product scope;
+- [x] full governance/docs checks green for the completed milestone and current main;
+- [ ] residual grep proves legacy dual paths removed — ScheduleTask/SourceModule/raw schedule surfaces still exist;
+- [ ] final residual batch review has no P0/P1 unresolved finding.
 
 ---
 
 # 20. Immediate next implementation batch
 
-Do **not** start by rewriting Goal or Task pages.
-
-The next executable batch is:
+Do **not** restart Wave 0–5 or rewrite completed Goal/Task pages. The current executable residual queue is:
 
 ```text
-CORE-0001~0005       orchestration baseline
+A. Product parity (independent lanes)
+   ROUTINE-5302       Routine method library/catalog (product enhancement; implement if Routine presets remain desired)
+   AI-6101            remove retired Task draft fields and finish Goal/Task vNext draft alignment
+   AI-6102/6103       add Routine command/draft tools + Planner/Notification read tools if AI assistant scope remains desired
+   MOBILE-6201/6202   parity audit first; current screens already use modern Goal/Task/Notification contracts, implement only proven gaps
+
+B. Scheduling physical convergence (ordered)
+   CLEAN-6301~6303    delete remaining legacy Goal/Task/Reminder naming/control/raw ScheduleTask product paths
         ↓
-TIME-1101/1102       time + recurrence selection       ┐
-UI-1101              shared date/time primitives        │ parallel
-LABEL-1101           shared labels                      │
-SCHED-1101~1105      neutral scheduling foundation      │
-NOTIF-1101/1102      notification P0 correctness        ┘
+   CLEAN-6304         decide/perform scheduler physical package split only after semantic ownership is clean
+        ↓
+   POC-6401           run pg-boss Build-vs-Adopt PoC against the now-clean SchedulingPort boundary; adopt only on evidence
+
+C. Final closure
+   HARD-7101          cross-domain failure matrix
+   HARD-7102          architecture governance locks for residual deletions
+   HARD-7103          full product acceptance journeys
+   HARD-7104          ADR/docs truth closure
+   HARD-7105          final review / focused repair / archive
 ```
 
-After that foundation gate, open three parallel domain worktrees:
-
-```text
-Goal domain
-Task domain
-Routine domain
-```
-
-This ordering deliberately avoids migrating the old Task model into new scheduling infrastructure and then rewriting the projector again.
+Recommended ordering: finish **A** only for product surfaces that still matter to MemoFlow's roadmap; execute **B** before deciding pg-boss; then run **C** once no deferred product ticket remains. `POC-6401` is a decision ticket, not a mandate to replace the current scheduler.
