@@ -9,7 +9,6 @@ import type {
   TransferDate,
 } from '../../../primitives';
 import type { AIProviderType } from '../value-objects/ai-provider-type';
-import type { AIModelInfo } from './ai-provider-config-client';
 
 /**
  * AI Provider 配置 - 服务端 DTO
@@ -30,8 +29,6 @@ export interface AIProviderConfigServerDTO {
   apiKey: string;
   /** 默认使用的模型 ID */
   defaultModel: string | null;
-  /** 可用模型列表（缓存） */
-  availableModels: AIModelInfo[];
   /** 是否启用 */
   isActive: boolean;
   /** 是否为默认 Provider */

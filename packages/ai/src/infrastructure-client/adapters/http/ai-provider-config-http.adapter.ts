@@ -13,6 +13,7 @@ import type {
   TestAIProviderOnboardingModelReq,
   TestAIProviderOnboardingModelRes,
   CommitAIProviderOnboardingReq,
+  RefreshAIProviderModelsRes,
 } from '@memoflow/contracts/ai';
 import { map, type Result } from '@memoflow/contracts/result';
 
@@ -88,8 +89,8 @@ export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
     return this.httpClient.post<void>(`${this.baseUrl}/${request.providerId}/set-default`);
   }
 
-  async refreshProviderModels(id: string): Promise<Result<AIProviderConfigClientDTO>> {
-    return this.httpClient.post<AIProviderConfigClientDTO>(
+  async refreshProviderModels(id: string): Promise<Result<RefreshAIProviderModelsRes>> {
+    return this.httpClient.post<RefreshAIProviderModelsRes>(
       `${this.baseUrl}/${id}/refresh-models`,
     );
   }

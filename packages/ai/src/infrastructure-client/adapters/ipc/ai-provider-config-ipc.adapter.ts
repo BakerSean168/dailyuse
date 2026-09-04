@@ -14,6 +14,7 @@ import type {
   TestAIProviderOnboardingModelReq,
   TestAIProviderOnboardingModelRes,
   CommitAIProviderOnboardingReq,
+  RefreshAIProviderModelsRes,
 } from '@memoflow/contracts/ai';
 import { map, type Result } from '@memoflow/contracts/result';
 
@@ -92,8 +93,8 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
     return this.ipcClient.invoke<void>(AIChannels.PROVIDER_SET_DEFAULT, request);
   }
 
-  async refreshProviderModels(id: string): Promise<Result<AIProviderConfigClientDTO>> {
-    return this.ipcClient.invoke<AIProviderConfigClientDTO>(
+  async refreshProviderModels(id: string): Promise<Result<RefreshAIProviderModelsRes>> {
+    return this.ipcClient.invoke<RefreshAIProviderModelsRes>(
       AIChannels.PROVIDER_REFRESH_MODELS,
       id,
     );

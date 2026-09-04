@@ -21,6 +21,7 @@ import {
   type ProbeAIProviderConnectionRes,
   type TestAIProviderOnboardingModelReq,
   type TestAIProviderOnboardingModelRes,
+  type RefreshAIProviderModelsRes,
 } from '@memoflow/contracts/ai';
 import { formatZodErrors } from '@memoflow/utils/result';
 
@@ -52,7 +53,7 @@ interface AIProviderConfigControllerService {
   deleteProvider(id: string, cx: ExecutionContext): Promise<Result<void>>;
   testConnection(request: TestAIProviderReq, cx: ExecutionContext): Promise<Result<TestAIProviderRes>>;
   setDefaultProvider(id: string, cx: ExecutionContext): Promise<Result<void>>;
-  refreshProviderModels(providerId: string, cx: ExecutionContext): Promise<Result<AIProviderConfigClientDTO>>;
+  refreshProviderModels(providerId: string, cx: ExecutionContext): Promise<Result<RefreshAIProviderModelsRes>>;
 }
 
 export class AIProviderConfigController {
@@ -162,7 +163,7 @@ export class AIProviderConfigController {
     return ok(null);
   }
 
-  async refreshModels(id: string, cx: ExecutionContext): Promise<Result<AIProviderConfigClientDTO>> {
+  async refreshModels(id: string, cx: ExecutionContext): Promise<Result<RefreshAIProviderModelsRes>> {
     return this.service.refreshProviderModels(id, cx);
   }
 }

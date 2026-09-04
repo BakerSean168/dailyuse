@@ -11,7 +11,7 @@ import type {
   AiProviderConfig as PrismaAiProviderConfig,
 } from '@memoflow/database';
 import type { IAIProviderConfigRepository } from '../../../domain';
-import type { AIModelInfo, AIProviderConfigServerDTO } from '@memoflow/contracts/ai';
+import type { AIProviderConfigServerDTO } from '@memoflow/contracts/ai';
 import type { AIProviderType } from '@memoflow/contracts/ai';
 import type { IAIProviderSecretVault } from '../../../application/ports/provider-secret-vault.port';
 import { AISecretCipher } from '../../security/ai-secret-cipher';
@@ -78,7 +78,6 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
           baseUrl: config.baseUrl,
           apiKeyEncrypted: this.secretCipher.encrypt(this.secretCipher.decrypt(config.apiKey)),
           defaultModel: config.defaultModel,
-          availableModels: JSON.stringify(config.availableModels ?? []),
           isActive: config.isActive,
           isDefault: config.isDefault,
           priority: config.priority,
@@ -93,7 +92,6 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
           baseUrl: config.baseUrl,
           apiKeyEncrypted: this.secretCipher.encrypt(this.secretCipher.decrypt(config.apiKey)),
           defaultModel: config.defaultModel,
-          availableModels: JSON.stringify(config.availableModels ?? []),
           isActive: config.isActive,
           isDefault: config.isDefault,
           priority: config.priority,
@@ -180,7 +178,6 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
       baseUrl: row.baseUrl,
       apiKey: this.secretCipher.decrypt(row.apiKeyEncrypted),
       defaultModel: row.defaultModel,
-      availableModels: this.parseModels(row.availableModels),
       isActive: row.isActive,
       isDefault: row.isDefault,
       priority: row.priority,
@@ -191,16 +188,4 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
     };
   }
 
-  private parseModels(value: string | null): AIModelInfo[] {
-    if (!value) {
-      return [];
-    }
-
-    try {
-      const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? (parsed as AIModelInfo[]) : [];
-    } catch {
-      return [];
-    }
-  }
 }

@@ -36,7 +36,6 @@ export const AIProviderConfigClientDTOSchema = z.object({
   baseUrl: z.string(),
   apiKeyMasked: z.string(),
   defaultModel: z.string().nullable(),
-  availableModels: z.array(AIModelInfoSchema),
   isActive: z.boolean(),
   isDefault: z.boolean(),
   priority: z.number(),

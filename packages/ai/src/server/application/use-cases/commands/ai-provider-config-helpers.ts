@@ -19,7 +19,6 @@ export function toClientDTO(provider: AIProviderConfigServerDTO): AIProviderConf
     apiKeyMasked:
       plainApiKey.length > 8 ? `${plainApiKey.slice(0, 3)}****${plainApiKey.slice(-4)}` : '****',
     defaultModel: provider.defaultModel,
-    availableModels: provider.availableModels,
     isActive: provider.isActive,
     isDefault: provider.isDefault,
     priority: provider.priority,

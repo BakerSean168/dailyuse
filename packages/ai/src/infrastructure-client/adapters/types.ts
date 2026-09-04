@@ -30,6 +30,7 @@ import type {
   TestAIProviderOnboardingModelReq,
   TestAIProviderOnboardingModelRes,
   CommitAIProviderOnboardingReq,
+  RefreshAIProviderModelsRes,
 } from '@memoflow/contracts/ai';
 
 export type { IResultHttpClient };
@@ -74,7 +75,7 @@ export interface IAIProviderConfigApiClient {
   deleteProvider(id: string): Promise<Result<void>>;
   testConnection(request: TestAIProviderReq): Promise<Result<TestAIProviderRes>>;
   setDefaultProvider(request: SetDefaultAIProviderReq): Promise<Result<void>>;
-  refreshProviderModels(id: string): Promise<Result<AIProviderConfigClientDTO>>;
+  refreshProviderModels(id: string): Promise<Result<RefreshAIProviderModelsRes>>;
 }
 
 export interface AIKnowledgeQueryApiClient {

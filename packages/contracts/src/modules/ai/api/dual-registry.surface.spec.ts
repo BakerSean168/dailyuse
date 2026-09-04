@@ -135,8 +135,8 @@ import { describe, expect, it } from 'vitest';
         'export { AIModelInfoSchema, AIProviderConfigClientDTOSchema }',
       );
       expect(responseSchemas).not.toMatch(/const AIModelInfoSchema = z\.object\(\{/);
-      // Residual 811: availableModels lives on aggregate-owned ClientDTOSchema, not response-schemas body.
-      expect(aggregate).toContain('availableModels: z.array(AIModelInfoSchema)');
+      // Provider V2: dynamic model inventory is a transient catalog snapshot, never Provider aggregate truth.
+      expect(aggregate).not.toContain('availableModels: z.array(AIModelInfoSchema)');
     });
   });
 }

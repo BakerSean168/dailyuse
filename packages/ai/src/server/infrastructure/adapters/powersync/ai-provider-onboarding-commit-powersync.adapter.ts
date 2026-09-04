@@ -79,9 +79,9 @@ export class PowerSyncAIProviderOnboardingCommitAdapter implements IAIProviderOn
         await tx.execute(
           `INSERT INTO ai_provider_configs (
             id, identity_id, name, provider_type, base_url, api_key_encrypted,
-            default_model, available_models, is_active, is_default, priority,
+            default_model, is_active, is_default, priority,
             version, created_at, updated_at, deleted_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             row.id,
             row.identity_id,
@@ -90,7 +90,6 @@ export class PowerSyncAIProviderOnboardingCommitAdapter implements IAIProviderOn
             row.base_url,
             row.api_key_encrypted,
             row.default_model,
-            row.available_models,
             row.is_active,
             row.is_default,
             row.priority,

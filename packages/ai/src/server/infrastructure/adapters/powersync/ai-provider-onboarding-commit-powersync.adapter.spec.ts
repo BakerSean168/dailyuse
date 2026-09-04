@@ -18,7 +18,6 @@ const provider = {
   baseUrl: 'https://api.openai.com/v1',
   apiKey: 'sk-test',
   defaultModel: 'gpt-5-mini',
-  availableModels: [],
   isActive: true,
   isDefault: true,
   priority: 100,

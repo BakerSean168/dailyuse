@@ -29,6 +29,7 @@ import type {
   TestAIProviderOnboardingModelReq,
   TestAIProviderOnboardingModelRes,
   CommitAIProviderOnboardingReq,
+  RefreshAIProviderModelsRes,
 } from '@memoflow/contracts/ai';
 
 /**
@@ -75,7 +76,7 @@ export interface AIApplicationPort {
   refreshProviderModels(
     providerId: string,
     cx: ExecutionContext,
-  ): Promise<Result<AIProviderConfigClientDTO>>;
+  ): Promise<Result<RefreshAIProviderModelsRes>>;
 
   // Conversation product shell. Message history/execution is Mastra-owned.
   createConversation(cx: ExecutionContext, name?: string): Promise<Result<AIConversationClientDTO>>;

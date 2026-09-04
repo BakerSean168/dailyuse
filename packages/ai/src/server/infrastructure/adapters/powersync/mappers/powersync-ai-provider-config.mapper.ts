@@ -1,5 +1,4 @@
 import type {
-  AIModelInfo,
   AIProviderConfigServerDTO,
   AIProviderType,
 } from '@memoflow/contracts/ai';
@@ -31,7 +30,6 @@ export interface PowerSyncAIProviderConfigWriteRow {
   base_url: string;
   api_key_encrypted: string;
   default_model: string | null;
-  available_models: string;
   is_active: number;
   is_default: number;
   priority: number;
@@ -41,15 +39,6 @@ export interface PowerSyncAIProviderConfigWriteRow {
   deleted_at: string | null;
 }
 
-function parseModels(value: string | null): AIModelInfo[] {
-  if (!value) return [];
-  try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? (parsed as AIModelInfo[]) : [];
-  } catch {
-    return [];
-  }
-}
 
 export class PowerSyncAIProviderConfigMapper {
   static toDTO(
@@ -68,7 +57,6 @@ export class PowerSyncAIProviderConfigMapper {
       baseUrl: row.base_url,
       apiKey: secretCipher.decrypt(row.api_key_encrypted),
       defaultModel: row.default_model,
-      availableModels: parseModels(row.available_models),
       isActive: row.is_active === 1,
       isDefault: row.is_default === 1,
       priority: row.priority ?? 100,
@@ -91,7 +79,6 @@ export class PowerSyncAIProviderConfigMapper {
       base_url: config.baseUrl,
       api_key_encrypted: secretCipher.encrypt(secretCipher.decrypt(config.apiKey)),
       default_model: config.defaultModel,
-      available_models: JSON.stringify(config.availableModels ?? []),
       is_active: config.isActive ? 1 : 0,
       is_default: config.isDefault ? 1 : 0,
       priority: config.priority,

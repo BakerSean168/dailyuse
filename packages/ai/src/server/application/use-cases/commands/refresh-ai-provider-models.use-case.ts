@@ -1,15 +1,19 @@
 import type { Result } from '@memoflow/contracts/result';
 import { ok, error } from '@memoflow/contracts/result';
 import type { ExecutionContext } from '@memoflow/contracts/shared';
-import type { AIProviderConfigClientDTO, AIProviderConfigServerDTO } from '@memoflow/contracts/ai';
+import type { RefreshAIProviderModelsRes } from '@memoflow/contracts/ai';
 import { createLogger } from '@memoflow/utils/logger';
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import type { IAIProviderModelCatalogPort } from '../../ports';
-import { toClientDTO } from './ai-provider-config-helpers';
-import { normalizeOpenAICompatibleModelId } from '../../../shared/openai-compatible-normalize';
 
 const logger = createLogger('RefreshAIProviderModelsUseCase');
 
+/**
+ * Reads the provider's live model inventory using its stored credential.
+ *
+ * Crucially this does not mutate the Provider aggregate, persist a model list,
+ * bump Provider version, or silently replace the user's explicit default model.
+ */
 export class RefreshAIProviderModelsUseCase {
   constructor(
     private readonly providerConfigRepository: IAIProviderConfigRepository,
@@ -19,7 +23,7 @@ export class RefreshAIProviderModelsUseCase {
   async execute(
     providerId: string,
     cx: ExecutionContext,
-  ): Promise<Result<AIProviderConfigClientDTO>> {
+  ): Promise<Result<RefreshAIProviderModelsRes>> {
     const provider = await this.providerConfigRepository.findByIdForIdentity(
       cx.identityId,
       providerId,
@@ -28,7 +32,7 @@ export class RefreshAIProviderModelsUseCase {
       return error('NOT_FOUND', 'Provider not found');
     }
 
-    logger.info('Refreshing AI provider models', {
+    logger.info('Reading AI provider model catalog', {
       identityId: cx.identityId,
       providerId,
       baseUrl: provider.baseUrl,
@@ -39,33 +43,18 @@ export class RefreshAIProviderModelsUseCase {
       baseUrl: provider.baseUrl,
       apiKey: provider.apiKey,
     });
+    const fetchedAt = Date.now();
 
-    const updated: AIProviderConfigServerDTO = {
-      ...provider,
-      availableModels: models,
-      defaultModel: (() => {
-        const currentDefault = provider.defaultModel
-          ? normalizeOpenAICompatibleModelId(provider.defaultModel)
-          : null;
-        if (currentDefault && models.some((item) => item.id === currentDefault)) {
-          return currentDefault;
-        }
-        return models[0]?.id ?? currentDefault;
-      })(),
-      updatedAt: Date.now(),
-      version: provider.version + 1,
-    };
-
-    await this.providerConfigRepository.save(updated);
-    logger.info('AI provider models refreshed', {
+    logger.info('AI provider model catalog loaded', {
       identityId: cx.identityId,
       providerId,
       modelCount: models.length,
-      nextDefaultModel: updated.defaultModel,
     });
-    return ok(toClientDTO(updated));
+
+    return ok({
+      providerId: provider.id,
+      models,
+      fetchedAt,
+    });
   }
 }
-
-
-

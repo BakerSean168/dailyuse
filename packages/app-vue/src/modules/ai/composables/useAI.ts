@@ -98,9 +98,7 @@ export function useAI() {
   }
 
   async function refreshProviderModels(providerId: string) {
-    const provider = unwrap(await client.refreshProviderModels(providerId));
-    await loadProviders();
-    return provider;
+    return unwrap(await client.refreshProviderModels(providerId));
   }
 
   async function testProvider(request: TestAIProviderReq): Promise<TestAIProviderRes> {

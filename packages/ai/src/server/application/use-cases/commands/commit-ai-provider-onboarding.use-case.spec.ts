@@ -51,8 +51,7 @@ describe('CommitAIProviderOnboardingUseCase', () => {
           name: 'My Provider',
           apiKey: 'secret',
           defaultModel: 'model-a',
-          availableModels: [],
-        }),
+              }),
       }),
     );
   });

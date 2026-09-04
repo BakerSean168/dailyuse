@@ -20,7 +20,6 @@ class StubProviderConfigRepository {
       baseUrl: string;
       apiKey: string;
       defaultModel: string | null;
-      availableModels: [];
       isActive: boolean;
       isDefault: boolean;
       priority: number;
@@ -81,7 +80,6 @@ describe('TestAIProviderConnectionUseCase', () => {
         baseUrl: 'https://api.openai.com/v1',
         apiKey: 'plain-secret',
         defaultModel: 'gpt-4o-mini',
-        availableModels: [],
         isActive: true,
         isDefault: true,
         priority: 100,
@@ -131,7 +129,6 @@ describe('TestAIProviderConnectionUseCase', () => {
         baseUrl: 'https://api.openai.com/v1',
         apiKey: 'plain-secret',
         defaultModel: 'gpt-4o-mini',
-        availableModels: [],
         isActive: true,
         isDefault: true,
         priority: 100,

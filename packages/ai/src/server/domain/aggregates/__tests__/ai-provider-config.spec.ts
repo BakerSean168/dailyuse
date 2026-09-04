@@ -169,7 +169,7 @@ describe('AIProviderConfig Aggregate', () => {
     });
   });
 
-  describe('模型管理', () => {
+  describe('默认模型管理', () => {
     let config: AIProviderConfig;
 
     beforeEach(() => {
@@ -182,53 +182,21 @@ describe('AIProviderConfig Aggregate', () => {
       });
     });
 
-    it('初始时无可用模型', () => {
-      expect(config.availableModels).toEqual([]);
-    });
-
-    it('更新可用模型', () => {
-      const models = [
-        { id: 'gpt-4', name: 'GPT-4', inputPrice: 0.03, outputPrice: 0.06 },
-        { id: 'gpt-3.5', name: 'GPT-3.5', inputPrice: 0.0015, outputPrice: 0.002 },
-      ];
-      config.updateAvailableModels(models);
-
-      expect(config.availableModels).toHaveLength(2);
-      expect(config.availableModels[0].id).toBe('gpt-4');
-    });
-
-    it('发出模型更新事件', () => {
-      config.clearDomainEvents();
-
-      const models = [{ id: 'test-model', name: 'Test', inputPrice: 0.01, outputPrice: 0.02 }];
-      config.updateAvailableModels(models);
-
-      expect(config.domainEvents.length).toBeGreaterThan(0);
-    });
-
-    it('设置默认模型', () => {
-      const models = [
-        { id: 'gpt-4', name: 'GPT-4', inputPrice: 0.03, outputPrice: 0.06 },
-      ];
-      config.updateAvailableModels(models);
+    it('由用户显式设置默认模型，不依赖持久化模型目录', () => {
       config.setDefaultModel('gpt-4');
-
       expect(config.defaultModel).toBe('gpt-4');
     });
 
-    it('清除默认模型', () => {
+    it('允许清除默认模型', () => {
       config.setDefaultModel('gpt-4');
       config.setDefaultModel(null);
-
       expect(config.defaultModel).toBeNull();
     });
 
-    it('设置不在列表中的模型时仍能设置', () => {
-      const models = [{ id: 'available-model', name: 'Available', inputPrice: 0.01, outputPrice: 0.02 }];
-      config.updateAvailableModels(models);
-
-      config.setDefaultModel('non-existent-model');
-      expect(config.defaultModel).toBe('non-existent-model');
+    it('Provider aggregate 不暴露 availableModels 长期真值', () => {
+      expect('availableModels' in config).toBe(false);
+      expect(config.toServerDTO()).not.toHaveProperty('availableModels');
+      expect(config.toClientDTO()).not.toHaveProperty('availableModels');
     });
   });
 
@@ -406,7 +374,6 @@ describe('AIProviderConfig Aggregate', () => {
         baseUrl: 'https://api.openai.com/v1',
         apiKey: 'key-123',
         defaultModel: 'gpt-4',
-        availableModels: [],
         isActive: true,
         isDefault: false,
         priority: 50,

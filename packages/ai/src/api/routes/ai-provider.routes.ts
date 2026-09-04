@@ -12,6 +12,7 @@ import {
   UpdateAIProviderConfigSchema,
   TestAIProviderSchema,
   AIProviderConfigClientDTOSchema,
+  AIProviderModelCatalogSnapshotSchema,
   ListAIProviderConfigsResSchema,
   TestAIProviderResultDTOSchema,
 } from '@memoflow/contracts/ai';
@@ -171,7 +172,7 @@ export function registerAIProviderRoutes(
         params: z.object({ id: brandedId<AiProviderConfigId>() }),
       },
       responses: {
-        200: successResponse(AIProviderConfigClientDTOSchema, '刷新成功'),
+        200: successResponse(AIProviderModelCatalogSnapshotSchema, '刷新成功'),
         404: errorResponse('未找到'),
       },
     },

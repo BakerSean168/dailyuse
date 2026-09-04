@@ -1,9 +1,7 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
-import type {
-  AIProviderConfigClientDTO,
-} from '../aggregates/ai-provider-config-client';
+import { AIModelInfoSchema, type AIProviderConfigClientDTO } from '../aggregates/ai-provider-config-client';
 import type { TestAIProviderResultDTO } from '../dtos/provider-test-result.dto';
 import { ListAIProviderConfigsResSchema } from './response-schemas';
 
@@ -41,6 +39,17 @@ export type GetAIProviderConfigRes = AIProviderConfigClientDTO;
 export type DeleteAIProviderConfigReq = void;
 export type DeleteAIProviderConfigRes = void;
 export type RefreshAIProviderModelsReq = void;
+
+/**
+ * Ephemeral model inventory read model. It is deliberately separate from the
+ * Provider aggregate so a large/stale model list is never persisted as Provider truth.
+ */
+export const AIProviderModelCatalogSnapshotSchema = z.object({
+  providerId: brandedId<AiProviderConfigId>(),
+  models: z.array(AIModelInfoSchema),
+  fetchedAt: z.number().int().nonnegative(),
+});
+export type RefreshAIProviderModelsRes = z.infer<typeof AIProviderModelCatalogSnapshotSchema>;
 
 export const TestAIProviderSchema = z
   .object({

@@ -671,14 +671,14 @@ async function handleRefreshModels(providerId: string) {
   providerRefreshLoading.value[providerId] = true;
   providerStatusMap.value[providerId] = null;
   try {
-    const provider = await refreshProviderModels(providerId);
+    const snapshot = await refreshProviderModels(providerId);
     providerStatusMap.value[providerId] = {
       tone: 'success',
       message: t('setting.ai.providerModelsRefreshed', {
-        count: provider.availableModels.length,
+        count: snapshot.models.length,
       }),
     };
-    toast.success(t('setting.ai.providerModelsRefreshed', { count: provider.availableModels.length }));
+    toast.success(t('setting.ai.providerModelsRefreshed', { count: snapshot.models.length }));
   } catch (error) {
     const message = getAISettingErrorMessage(error, 'setting.ai.providerModelsRefreshFailed');
     providerStatusMap.value[providerId] = { tone: 'error', message };

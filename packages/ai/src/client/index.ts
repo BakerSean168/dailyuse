@@ -38,6 +38,7 @@ import type {
   TestAIProviderOnboardingModelReq,
   TestAIProviderOnboardingModelRes,
   CommitAIProviderOnboardingReq,
+  RefreshAIProviderModelsRes,
 } from '@memoflow/contracts/ai';
 import {
   createAIHttpAdapters,
@@ -69,7 +70,7 @@ export interface AIClientPort {
   deleteProvider(id: string): Promise<Result<void>>;
   testProvider(request: TestAIProviderReq): Promise<Result<TestAIProviderRes>>;
   setDefaultProvider(providerId: string): Promise<Result<void>>;
-  refreshProviderModels(id: string): Promise<Result<AIProviderConfigClientDTO>>;
+  refreshProviderModels(id: string): Promise<Result<RefreshAIProviderModelsRes>>;
 
   createConversation(request: CreateConversationReq): Promise<Result<AIConversationClientDTO>>;
   updateConversation(

@@ -52,7 +52,6 @@ export class AIProviderOnboardingCommitPrismaAdapter implements IAIProviderOnboa
             apiKeyEncrypted: this.secretVault.encrypt(input.provider.apiKey),
             defaultModel: input.provider.defaultModel,
             // V2 no longer treats the full provider inventory as aggregate truth.
-            availableModels: '[]',
             isActive: input.provider.isActive,
             isDefault: input.provider.isDefault,
             priority: input.provider.priority,
