@@ -17,7 +17,7 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 
 | Plan                               | Current truth                                           | What is actually left                                                                                                 |
 | ---------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Delivery Platform V3               | **Phase 1 closed; Phase 2 next**                        | exact-SHA server candidate, candidate-set, `staging-latest`, GCP watcher, then production selector / Alibaba watcher  |
+| Delivery Platform V3               | **Phase 2 closed; Phase 3 next**                        | build-once release promotion, canonical release binding, production selector and Alibaba watcher                      |
 | Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only** | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
 | GitHub Durable Installation Intent | **implementation complete**                             | one Published Windows Desktop live external-browser + polling/finalize acceptance                                     |
 
@@ -31,17 +31,20 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 - packaged runtime receipts/manifests and fail-closed Draft-first release flow;
 - `v0.12.1` Published with all four Desktop platform identities plus canonical release evidence.
 
-### Not implemented (source search confirms architecture/docs only)
+### Phase 2 completed — 2026-09-05
 
-1. `DLV3-2201` — `memoflow.candidate-set/v1` implementation + self-digest fixtures;
-2. `DLV3-2202` — successful main CI publishes exact-SHA Web/API/Migrator candidates to ACR + GHCR once;
-3. `DLV3-2203` — coherent `staging-latest` promotion only for current main;
-4. `DLV3-2204` — GCP staging watcher with migrator-first deploy, health, revision/digest proof and rollback;
-5. `DLV3-2205` — canonical staging cutover and emergency-only source-build documentation;
-6. `DLV3-3301` — Release Publish promotes existing server candidate instead of rebuilding;
-7. `DLV3-3302` — release manifest binds candidate-set + Desktop manifest;
-8. `DLV3-3303` — explicit Published-Release production selector;
-9. `DLV3-3304` — Alibaba production deploy watcher.
+- `DLV3-2201`: `memoflow.candidate-set/v1` deterministic self-digest and negative fixtures;
+- `DLV3-2202`: successful main CI publishes Web/API/Migrator exact-SHA candidates once to ACR + GHCR;
+- `DLV3-2203`: coherent `staging-latest` promotion is current-main/freshness gated;
+- `DLV3-2204`: GCP watcher owns migrator-first exact-digest rollout, rollback/BLOCKED semantics and idempotent timer execution;
+- `DLV3-2205`: canonical staging cut over to candidate `60859e470651ad775c936d9224654c1c85602d6b`; source-build staging is emergency-only.
+
+### Not implemented
+
+1. `DLV3-3301` — Release Publish promotes existing server candidate instead of rebuilding;
+2. `DLV3-3302` — release manifest binds candidate-set + Desktop manifest;
+3. `DLV3-3303` — explicit Published-Release production selector;
+4. `DLV3-3304` — Alibaba production deploy watcher.
 
 ### Later / conditional
 
@@ -102,7 +105,7 @@ Desktop
 
 ### Should implement for architecture completion
 
-3. **Delivery Platform V3 Phase 2** — highest-value genuinely unimplemented adopted architecture: candidate-set → exact-SHA images → coherent staging channel → GCP watcher.
+3. **Delivery Platform V3 Phase 2 — COMPLETE (2026-09-05).** Candidate-set → exact-SHA images → coherent staging channel → GCP watcher is live.
 4. **Core `CLEAN-6302/6303`** — remove Reminder legacy semantics and raw ScheduleTask/SourceModule product/execution paths. This reduces dual-authority/maintenance risk and is a prerequisite for a meaningful scheduler-engine comparison.
 5. **Delivery Platform V3 Phase 3** — only after Phase 2 staging proves coherent: promote candidates into releases, explicit production selector, Alibaba watcher.
 
