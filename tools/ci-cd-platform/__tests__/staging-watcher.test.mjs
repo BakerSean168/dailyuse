@@ -69,6 +69,7 @@ function runWatcher({ apiRevision = revision, apiDigest = digest('2'), missingAp
     [
       'STAGING_REGISTRY=registry.example',
       'STAGING_NAMESPACE=memoflow',
+      'STAGING_DISTRIBUTION=china',
       'STAGING_CHANNEL_TAG=staging-latest',
       `STAGING_SECRET_ENV=${secret}`,
       'STAGING_POSTGRES_IMAGE=registry.example/memoflow/memoflow-postgres:test',
@@ -135,6 +136,17 @@ test('staging watcher fails closed when mutable channel digest does not match ca
   const result = runWatcher({ apiDigest: digest('8') });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /api staging digest mismatch/u);
+});
+
+test('staging watcher selects the configured candidate distribution instead of hard-coding China', () => {
+  const watcher = fs.readFileSync(watcherPath, 'utf8');
+  const installer = fs.readFileSync(path.join(repoRoot, 'deployment/staging/install-staging-deploy-watch.sh'), 'utf8');
+  assert.match(watcher, /DISTRIBUTION=\$\{STAGING_DISTRIBUTION:-global\}/u);
+  assert.match(watcher, /distributions\.\$DISTRIBUTION\.repository/u);
+  assert.match(watcher, /repository mismatch/u);
+  assert.match(installer, /distribution=\$\{STAGING_DISTRIBUTION:-global\}/u);
+  assert.match(installer, /registry=\$\{STAGING_REGISTRY:-ghcr\.io\}/u);
+  assert.match(installer, /tr '\[:upper:\]' '\[:lower:\]'/u);
 });
 
 test('staging runtime locks exact digest deployment and migration failure boundaries', () => {
@@ -205,7 +217,7 @@ function runDeploymentTransaction({ failPhase = '', rerun = false, retryAfterFai
   ].join('\n'));
   fs.writeFileSync(config, [
     'STAGING_REGISTRY=registry.example', 'STAGING_NAMESPACE=memoflow',
-    'STAGING_CHANNEL_TAG=staging-latest', `STAGING_SECRET_ENV=${secret}`,
+    'STAGING_DISTRIBUTION=china', 'STAGING_CHANNEL_TAG=staging-latest', `STAGING_SECRET_ENV=${secret}`,
     'STAGING_COMPOSE_PROJECT=memoflow-staging-test',
     'STAGING_POSTGRES_IMAGE=registry.example/memoflow/memoflow-postgres:test',
     'STAGING_REDIS_IMAGE=registry.example/memoflow/memoflow-redis:test',

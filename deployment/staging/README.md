@@ -24,13 +24,14 @@ Secrets are never embedded in the runtime OCI artifact.
 - active runtime: `~/.local/share/memoflow/staging-runtime`
 - previous runtime during a transaction: `~/.local/share/memoflow/staging-runtime.prev`
 
-The Docker client must already be authenticated to the configured ACR registry.
+The Docker client must already be authenticated to the configured registry. GCP staging defaults to the candidate-set `global` distribution (`ghcr.io/<repo-owner>`); Alibaba production uses the `china` distribution separately in Phase 3. Set `STAGING_DISTRIBUTION=china` plus explicit registry/namespace only when a host is intentionally consuming ACR.
 
 ## Installation
 
-From a reviewed repository checkout:
+From a reviewed repository checkout on GCP, authenticate GHCR with a host-owned GitHub credential, then install:
 
 ```bash
+gh auth token | docker login ghcr.io -u "$(gh api user --jq .login)" --password-stdin
 deployment/staging/install-staging-deploy-watch.sh
 ~/.local/bin/memoflow-staging-deploy-watch --check-only
 deployment/staging/install-staging-deploy-watch.sh --enable

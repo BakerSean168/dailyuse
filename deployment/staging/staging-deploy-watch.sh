@@ -30,10 +30,12 @@ set +a
 
 REGISTRY=${STAGING_REGISTRY:?set STAGING_REGISTRY in $CONFIG_FILE}
 NAMESPACE=${STAGING_NAMESPACE:?set STAGING_NAMESPACE in $CONFIG_FILE}
+DISTRIBUTION=${STAGING_DISTRIBUTION:-global}
 CHANNEL_TAG=${STAGING_CHANNEL_TAG:-staging-latest}
 SECRET_ENV=${STAGING_SECRET_ENV:-$HOME/.config/memoflow/staging.env}
 COMPOSE_PROJECT=${STAGING_COMPOSE_PROJECT:-memoflow-staging}
 [[ "$CHANNEL_TAG" == staging-latest ]] || fail 'canonical watcher only accepts STAGING_CHANNEL_TAG=staging-latest'
+[[ "$DISTRIBUTION" == global || "$DISTRIBUTION" == china ]] || fail 'STAGING_DISTRIBUTION must be global or china'
 [[ -s "$SECRET_ENV" ]] || fail "missing staging secret env: $SECRET_ENV"
 mkdir -p "$STATE_DIR" "$RUNTIME_ROOT" "$BIN_DIR" "$SYSTEMD_DIR"
 exec 9>"$LOCK_FILE"
@@ -106,9 +108,12 @@ channel_digest_for() {
     *) return 2 ;;
   esac
 }
-repo_for() { node -p "require('$stage/candidate-set-v1.json').images.$1.distributions.china.repository"; }
+repo_for() { node -p "require('$stage/candidate-set-v1.json').images.$1.distributions.$DISTRIBUTION.repository"; }
 expected_digest_for() { node -p "require('$stage/candidate-set-v1.json').images.$1.digest"; }
 for component in web api migrator; do
+  selected_repo=$(repo_for "$component")
+  expected_repo="$REGISTRY/$NAMESPACE/memoflow-$component"
+  [[ "$selected_repo" == "$expected_repo" ]] || fail "$component $DISTRIBUTION repository mismatch: $selected_repo != $expected_repo"
   expected=$(expected_digest_for "$component")
   actual=$(channel_digest_for "$component")
   [[ "$actual" == "$expected" ]] || fail "$component staging digest mismatch: $actual != $expected"
