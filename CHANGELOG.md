@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.13.0](https://github.com/BakerSean168/memoflow/compare/v0.12.3...v0.13.0) (2026-09-05)
+
+
+### Features
+
+* **ai:** add verified provider connection replacement ([9b73d71](https://github.com/BakerSean168/memoflow/commit/9b73d7182081e777abc8631fe7f7b261ec384e98))
+* **ai:** implement provider onboarding v2 core ([2f3531a](https://github.com/BakerSean168/memoflow/commit/2f3531a9408a22c7ae0c490133b5842998849a04))
+* **ai:** ship provider onboarding v2 ([ed9c7b4](https://github.com/BakerSean168/memoflow/commit/ed9c7b44c36f7660bb9865f616be308522dea2dc))
+* **delivery:** add canonical production selection ([13f547c](https://github.com/BakerSean168/memoflow/commit/13f547c32e7bd398a5b56491e8ffb3e62d5da3b7))
+* **delivery:** add canonical production selection ([4199701](https://github.com/BakerSean168/memoflow/commit/41997015cebb7947ea117c0da97093b524a80dec))
+* **delivery:** implement canonical main candidate staging ([59a9319](https://github.com/BakerSean168/memoflow/commit/59a9319cc9601b9d1637751540cb924fb5531abc))
+* **delivery:** implement Delivery V3 canonical staging ([e5abd9c](https://github.com/BakerSean168/memoflow/commit/e5abd9c3e93611c5fb67239195fdf317c0c829c9))
+* **delivery:** promote release candidates without rebuild ([e139599](https://github.com/BakerSean168/memoflow/commit/e139599e321f177c0907c26d1b42f56698d2513f))
+* **delivery:** promote release candidates without rebuild ([bf49cbf](https://github.com/BakerSean168/memoflow/commit/bf49cbf8b38dd7eeb48369d2f846de14f9558c9c))
+
+
+### Bug Fixes
+
+* **ai:** close task draft vnext contract gap ([6e91295](https://github.com/BakerSean168/memoflow/commit/6e9129582dda465a55c4656acfa0ce76a0045e38))
+* **ai:** close task draft vnext contract gap ([f63cced](https://github.com/BakerSean168/memoflow/commit/f63cced34172cf8b3a1701a61c85647d849265ed))
+* **ci:** run provider audit independently ([4eae294](https://github.com/BakerSean168/memoflow/commit/4eae29488c3cda067a0d5d2faaac71d1ec2dd016))
+* **ci:** support manual web flow audits ([c871cf6](https://github.com/BakerSean168/memoflow/commit/c871cf6656ad3d764623744d774149e8678d2223))
+* **delivery:** make production control bootstrap immutable ([d018142](https://github.com/BakerSean168/memoflow/commit/d018142248915a4413953c678f77e66a8db9a2a7))
+* **delivery:** pin canonical PowerSync runtime ([60859e4](https://github.com/BakerSean168/memoflow/commit/60859e470651ad775c936d9224654c1c85602d6b))
+* **delivery:** pin canonical PowerSync runtime ([84f4eaf](https://github.com/BakerSean168/memoflow/commit/84f4eaf081a1f9c1c877f234f62bc3b0488b686c))
+* **delivery:** select staging registry distribution explicitly ([15dc379](https://github.com/BakerSean168/memoflow/commit/15dc379bcf9d042260a85b9a240b5deedb1fb167))
+* **delivery:** select staging registry distribution explicitly ([a7b0bf8](https://github.com/BakerSean168/memoflow/commit/a7b0bf828acbf608078ef5b2af1426ae349099ed))
+* **release:** stabilize packaged account route smoke ([8d9c030](https://github.com/BakerSean168/memoflow/commit/8d9c03010afdbf43901e5e422dc37fe72f0e84be))
+* **release:** stabilize packaged account route smoke ([d2a57ad](https://github.com/BakerSean168/memoflow/commit/d2a57add1f95058ff190edd2188f59d7f1731526))
+
 ## [0.12.3](https://github.com/BakerSean168/memoflow/compare/v0.12.2...v0.12.3) (2026-09-04)
 
 
