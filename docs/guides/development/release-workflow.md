@@ -81,6 +81,8 @@ chore(main): release X.Y.Z (#PR)
 3. 创建 `vX.Y.Z` tag，并拒绝任何 tag→SHA 冲突；
 4. 直接调用两个 reusable release lane，而不是依赖 tag push 的递归 Actions 触发。
 
+一旦 immutable tag 与 Draft Release identity 创建或验证成功，Release Publish 就把对应 merged Release PR 从 `autorelease: pending` 纠正为 `autorelease: tagged`。这里的 `tagged` 只表示 immutable tag 已建立，不表示 GitHub Release 已 Published；这样即使 Desktop/Docker gate 后续 fail closed，release-please 仍可为修复提交生成下一个 corrective Release PR，而不会被失败 Draft 永久阻塞。
+
 如果 release 已经 Published，手工 retry 会识别为已完成并不创建第二个版本。
 
 ### 6. Desktop Release Lane

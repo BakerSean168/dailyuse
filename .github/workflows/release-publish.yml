@@ -295,12 +295,10 @@ jobs:
     needs:
       - resolve
       - prepare
-      - finalize
     if: >-
       always() &&
       needs.resolve.outputs.eligible == 'true' &&
-      needs.prepare.result == 'success' &&
-      (needs.prepare.outputs.already_published == 'true' || needs.finalize.result == 'success')
+      needs.prepare.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Reconcile release-please labels
