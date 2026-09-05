@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import { expect, test } from '@playwright/test';
 import { _electron as electron, type ElectronApplication } from 'playwright';
 
@@ -27,9 +28,45 @@ function readRuntimeLogs(userDataPath: string): string[] {
 
 const executablePath = process.env.MEMOFLOW_PACKAGED_EXECUTABLE;
 
+const ROUTE_READY_TIMEOUT_MS = 45_000;
+const SETTINGS_READY_TIMEOUT_MS = 45_000;
+const CLOSE_GRACE_MS = 10_000;
+
+async function closeElectronApp(app: ElectronApplication, logs: string[]): Promise<unknown | null> {
+  const child = app.process();
+  let closeFailure: unknown = null;
+  const closeResult = await Promise.race([
+    app
+      .close()
+      .then(() => 'closed' as const)
+      .catch((error: unknown) => {
+        closeFailure = error;
+        return 'failed' as const;
+      }),
+    delay(CLOSE_GRACE_MS).then(() => 'timeout' as const),
+  ]);
+
+  if (closeResult === 'closed') return null;
+  if (closeResult === 'failed') return closeFailure;
+
+  appendLog(
+    logs,
+    'close-timeout',
+    `Electron did not close within ${CLOSE_GRACE_MS}ms; forcing process termination`,
+  );
+  child.kill('SIGKILL');
+  return new Error(`packaged Electron close exceeded ${CLOSE_GRACE_MS}ms`);
+}
+
 test('packaged MemoFlow boots through renderer readiness', async ({}, testInfo) => {
-  expect(executablePath, 'MEMOFLOW_PACKAGED_EXECUTABLE must point to a packaged executable').toBeTruthy();
-  expect(fs.existsSync(executablePath!), `packaged executable does not exist: ${executablePath}`).toBe(true);
+  expect(
+    executablePath,
+    'MEMOFLOW_PACKAGED_EXECUTABLE must point to a packaged executable',
+  ).toBeTruthy();
+  expect(
+    fs.existsSync(executablePath!),
+    `packaged executable does not exist: ${executablePath}`,
+  ).toBe(true);
 
   const runtimeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'memoflow-packaged-smoke-'));
   const userDataPath = path.join(runtimeRoot, 'user-data');
@@ -56,12 +93,20 @@ test('packaged MemoFlow boots through renderer readiness', async ({}, testInfo) 
         ELECTRON_DISABLE_SECURITY_WARNINGS: 'true',
       },
     });
-    electronApp.on('console', (message) => appendLog(logs, `main:${message.type()}`, message.text()));
-    electronApp.process().stdout?.on('data', (chunk) => appendLog(logs, 'stdout', chunk.toString()));
-    electronApp.process().stderr?.on('data', (chunk) => appendLog(logs, 'stderr', chunk.toString()));
+    electronApp.on('console', (message) =>
+      appendLog(logs, `main:${message.type()}`, message.text()),
+    );
+    electronApp
+      .process()
+      .stdout?.on('data', (chunk) => appendLog(logs, 'stdout', chunk.toString()));
+    electronApp
+      .process()
+      .stderr?.on('data', (chunk) => appendLog(logs, 'stderr', chunk.toString()));
 
     const mainWindow = await electronApp.firstWindow({ timeout: 45_000 });
-    mainWindow.on('console', (message) => appendLog(logs, `renderer:${message.type()}`, message.text()));
+    mainWindow.on('console', (message) =>
+      appendLog(logs, `renderer:${message.type()}`, message.text()),
+    );
     mainWindow.on('pageerror', (error) => {
       rendererPageErrors.push(error.message);
       appendLog(logs, 'renderer:pageerror', error.stack ?? error.message);
@@ -74,7 +119,9 @@ test('packaged MemoFlow boots through renderer readiness', async ({}, testInfo) 
     const headerAppRegion = await windowHeader.evaluate((element) =>
       getComputedStyle(element).getPropertyValue('-webkit-app-region').trim(),
     );
-    expect(headerAppRegion, 'packaged Desktop titlebar must remain a native drag region').toBe('drag');
+    expect(headerAppRegion, 'packaged Desktop titlebar must remain a native drag region').toBe(
+      'drag',
+    );
 
     const rightPanelToggle = mainWindow.getByTestId('shell-right-panel-toggle');
     await expect(rightPanelToggle).toBeVisible();
@@ -95,9 +142,29 @@ test('packaged MemoFlow boots through renderer readiness', async ({}, testInfo) 
       window.location.hash = '#/settings?tab=account';
     });
     await expect(mainWindow).toHaveURL(/#\/settings\?tab=account$/);
-    await expect(mainWindow.getByTestId('standalone-settings-layout')).toBeVisible({ timeout: 15_000 });
-    await expect(mainWindow.getByTestId('settings-tab-account')).toBeVisible();
-    await expect(mainWindow.getByTestId('account-center-view')).toBeVisible();
+    // The raw hash mutates before Vue Router has resolved the lazy settings route.
+    // Gate on AppShell's router-derived scene contract rather than treating the URL
+    // mutation itself as navigation completion. Cold packaged runners can spend
+    // materially longer loading the first settings chunk than dev/browser builds.
+    await expect(mainWindow.getByTestId('app-shell')).toHaveAttribute(
+      'data-shell-scene',
+      'settings',
+      { timeout: ROUTE_READY_TIMEOUT_MS },
+    );
+    await expect(mainWindow.getByTestId('standalone-settings-layout')).toBeVisible({
+      timeout: 10_000,
+    });
+    // The named lazy view and its first settings-service hydration are separate
+    // readiness boundaries. Wait for both explicitly so the gate distinguishes
+    // router completion from settings hydration instead of racing a transient DOM.
+    await expect(mainWindow.getByTestId('user-settings-view')).toBeVisible({
+      timeout: ROUTE_READY_TIMEOUT_MS,
+    });
+    await expect(mainWindow.getByTestId('settings-panel-layout')).toBeVisible({
+      timeout: SETTINGS_READY_TIMEOUT_MS,
+    });
+    await expect(mainWindow.getByTestId('settings-tab-account')).toBeVisible({ timeout: 10_000 });
+    await expect(mainWindow.getByTestId('account-center-view')).toBeVisible({ timeout: 10_000 });
     expect(
       rendererPageErrors.filter((message) => message.includes('Missing injection: AuthService')),
       'Desktop account/privacy settings must not mount Web-only password auth without the capability',
@@ -109,11 +176,15 @@ test('packaged MemoFlow boots through renderer readiness', async ({}, testInfo) 
   } finally {
     logs.push(...readRuntimeLogs(userDataPath));
     if (electronApp) {
-      try {
-        await electronApp.close();
-      } catch (error) {
-        closeFailure = error;
-        appendLog(logs, 'close-error', error instanceof Error ? (error.stack ?? error.message) : error);
+      closeFailure = await closeElectronApp(electronApp, logs);
+      if (closeFailure) {
+        appendLog(
+          logs,
+          'close-error',
+          closeFailure instanceof Error
+            ? (closeFailure.stack ?? closeFailure.message)
+            : closeFailure,
+        );
       }
     }
     await testInfo.attach('packaged-runtime.log', {

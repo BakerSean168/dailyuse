@@ -372,26 +372,30 @@ test('Desktop upload and release publication are manifest-owned and verify the r
 });
 
 test('Desktop release runtime gates execute before receipts and cannot be bypassed', async () => {
-  const [workflow, receipt, manifest, helper] = await Promise.all([
+  const [workflow, receipt, manifest, helper, packagedSpec] = await Promise.all([
     readRepoFile('.github/workflows/release-assets.yml'),
     readRepoFile('tools/ci-cd-platform/release-tools/write-desktop-platform-receipt.mjs'),
     readRepoFile('tools/ci-cd-platform/release-tools/create-desktop-manifest.mjs'),
     readRepoFile('apps/desktop/scripts/run-linux-packaged-smoke-with-keyring.sh'),
+    readRepoFile('apps/desktop/e2e/packaged-runtime/packaged-runtime.spec.ts'),
   ]);
 
   const packageIndex = workflow.indexOf('- name: Package desktop application');
   const packagedSmokeIndex = workflow.indexOf('- name: Run packaged Desktop runtime smoke');
+  const diagnosticsIndex = workflow.indexOf('- name: Upload Desktop runtime diagnostics');
   const installDebIndex = workflow.indexOf('- name: Install Linux Debian package');
   const installedSmokeIndex = workflow.indexOf('- name: Run installed Linux Debian runtime smoke');
   const receiptIndex = workflow.indexOf('- name: Write Desktop platform receipt');
   const uploadIndex = workflow.indexOf('- name: Upload build artifacts');
   assert.ok(packageIndex < packagedSmokeIndex);
-  assert.ok(packagedSmokeIndex < installDebIndex);
+  assert.ok(packagedSmokeIndex < diagnosticsIndex);
+  assert.ok(diagnosticsIndex < installDebIndex);
   assert.ok(installDebIndex < installedSmokeIndex);
   assert.ok(installedSmokeIndex < receiptIndex);
   assert.ok(receiptIndex < uploadIndex);
 
   const packagedSmoke = workflowStep(workflow, 'Run packaged Desktop runtime smoke');
+  const diagnostics = workflowStep(workflow, 'Upload Desktop runtime diagnostics');
   const installedSmoke = workflowStep(workflow, 'Run installed Linux Debian runtime smoke');
   const installDeb = workflowStep(workflow, 'Install Linux Debian package');
   assert.match(installDeb, /deb_path="\$\(realpath/u);
@@ -402,8 +406,19 @@ test('Desktop release runtime gates execute before receipts and cannot be bypass
     assert.doesNotMatch(step, /\|\|\s*true/u);
   }
   assert.match(packagedSmoke, /run-linux-packaged-smoke-with-keyring|test:packaged-smoke/u);
+  assert.match(diagnostics, /if: failure\(\)/u);
+  assert.match(diagnostics, /desktop-runtime-diagnostics-\$\{\{ matrix\.platform \}\}/u);
+  assert.match(diagnostics, /release-source\/apps\/desktop\/test-results/u);
   assert.match(installedSmoke, /run-linux-packaged-smoke-with-keyring/u);
   assert.match(helper, /test:packaged-smoke/u);
+  assert.match(helper, /timeout --signal=TERM --kill-after=15s 150s/u);
+  assert.match(packagedSpec, /ROUTE_READY_TIMEOUT_MS = 45_000/u);
+  assert.match(packagedSpec, /SETTINGS_READY_TIMEOUT_MS = 45_000/u);
+  assert.match(packagedSpec, /toHaveAttribute\(\s*'data-shell-scene',\s*'settings'/u);
+  assert.match(packagedSpec, /getByTestId\('user-settings-view'\)/u);
+  assert.match(packagedSpec, /getByTestId\('settings-panel-layout'\)/u);
+  assert.match(packagedSpec, /close-timeout/u);
+  assert.match(packagedSpec, /kill\('SIGKILL'\)/u);
   assert.match(workflow, /runtime_executable_kind: installed-deb/u);
   assert.match(workflow, /gnome-keyring/u);
   assert.match(

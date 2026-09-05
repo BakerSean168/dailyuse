@@ -389,7 +389,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="settingsContentRef" class="min-h-full min-w-0 overflow-hidden bg-background">
+  <div
+    ref="settingsContentRef"
+    class="min-h-full min-w-0 overflow-hidden bg-background"
+    data-testid="user-settings-view"
+  >
     <!-- Hidden file input for importing settings -->
     <input
       ref="fileInput"

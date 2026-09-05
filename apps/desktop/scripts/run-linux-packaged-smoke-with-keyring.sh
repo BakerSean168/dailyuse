@@ -6,7 +6,7 @@ if [[ "$(uname -s)" != "Linux" ]]; then
   exit 2
 fi
 : "${MEMOFLOW_PACKAGED_EXECUTABLE:?MEMOFLOW_PACKAGED_EXECUTABLE must point to the packaged MemoFlow executable}"
-for command in dbus-run-session gnome-keyring-daemon gdbus secret-tool xvfb-run pnpm; do
+for command in dbus-run-session gnome-keyring-daemon gdbus secret-tool timeout xvfb-run pnpm; do
   command -v "$command" >/dev/null 2>&1 || { echo "Missing required Linux packaged-smoke dependency: $command" >&2; exit 2; }
 done
 
@@ -50,5 +50,5 @@ xvfb-run -a dbus-run-session -- bash -lc '
   unset sentinel_key sentinel_value resolved_value
 
   cd "$MEMOFLOW_WORKSPACE_ROOT"
-  pnpm nx run desktop:test:packaged-smoke --outputStyle=static
+  timeout --signal=TERM --kill-after=15s 150s pnpm nx run desktop:test:packaged-smoke --outputStyle=static
 '
