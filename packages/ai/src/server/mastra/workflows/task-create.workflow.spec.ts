@@ -199,6 +199,55 @@ describe('task.create durable Mastra Workflow (AI-VNEXT-06)', () => {
     expect(mutations.createTaskTemplate).not.toHaveBeenCalled();
   });
 
+  it('maps an explicit contribution and does not invent one when omitted', async () => {
+    const mutations = mutationPort();
+    const service = new ApplyTaskPlanService(mutations);
+    const context = executionContext('request-contribution');
+
+    const linkedDraft = TaskPlanDraftContentSchema.parse({
+      task: {
+        title: 'Contribute to KR',
+        cadence: 'once',
+        goalId: 'goal-1',
+        keyResultId: 'kr-1',
+        contributionValue: 3,
+        tags: ['planning'],
+      },
+    });
+    await service.apply({
+      workflowRunId: 'task-workflow-contribution',
+      draft: { ...linkedDraft, revision: 1 },
+      context,
+    });
+    expect(mutations.createTaskTemplate.mock.calls[0]?.[0]).toMatchObject({
+      tags: ['planning'],
+      goalBinding: {
+        goalId: 'goal-1',
+        keyResultId: 'kr-1',
+        contribution: { value: 3, trigger: 'EachCompletion' },
+      },
+    });
+
+    const noContributionMutations = mutationPort();
+    const noContributionService = new ApplyTaskPlanService(noContributionMutations);
+    const noContributionDraft = TaskPlanDraftContentSchema.parse({
+      task: {
+        title: 'Linked context only',
+        cadence: 'once',
+        goalId: 'goal-1',
+        keyResultId: 'kr-1',
+      },
+    });
+    await noContributionService.apply({
+      workflowRunId: 'task-workflow-no-contribution',
+      draft: { ...noContributionDraft, revision: 1 },
+      context,
+    });
+    expect(noContributionMutations.createTaskTemplate.mock.calls[0]?.[0]).toMatchObject({
+      goalBinding: { goalId: 'goal-1', keyResultId: 'kr-1', contribution: null },
+    });
+  });
+
   it('is idempotent: re-applying a successful receipt does not duplicate the template', async () => {
     const mutations = mutationPort();
     const service = new ApplyTaskPlanService(mutations);

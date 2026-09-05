@@ -8,7 +8,7 @@ import type { UseAITaskWorkflowOptions } from './types';
 const i18n = createI18n({ legacy: false, locale: 'en-US', messages: { 'en-US': { aiAssistant: { errors: { workflowExecutionFailed: 'Failed' } } } } });
 const model = { value: { providerId: 'p', modelId: 'm' } } as UseAITaskWorkflowOptions['selectedModel'];
 const run = (overrides: Record<string, unknown> = {}) => ({ runId: 'run-1', conversationId: 'conv-1', kind: 'task.create' as const, status: 'running' as const, createdAt: 1, updatedAt: 1, ...overrides });
-const draft = { revision: 1, task: { title: 'Write it', description: '', importance: 'Moderate', cadence: 'once', startDate: null, timeOfDay: '09:00', daysOfWeek: [], occurrences: null, goalId: null, keyResultId: null, folderId: null, tags: [] }, rationale: 'Because', warnings: [] };
+const draft = { revision: 1, task: { title: 'Write it', description: '', importance: 'Moderate', cadence: 'once', startDate: null, timeOfDay: '09:00', daysOfWeek: [], occurrences: null, goalId: null, keyResultId: null, contributionValue: null, tags: [] }, rationale: 'Because', warnings: [] };
 function setup(start = run()) {
   const runtime = { start: vi.fn().mockResolvedValue(start), resume: vi.fn(), get: vi.fn(), list: vi.fn(), cancel: vi.fn() };
   const options = { workflowRuntime: runtime, selectedModel: model, chatConversationId: { value: 'conv-1' }, chatLoading: { value: false }, hasWorkflowUserMessages: { value: true }, buildConversationTranscript: () => 'make task', scrollMessagesToBottom: vi.fn(), maybeRenameCurrentConversation: vi.fn(), openCreatedTask: vi.fn() } as unknown as UseAITaskWorkflowOptions;

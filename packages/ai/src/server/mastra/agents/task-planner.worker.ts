@@ -62,7 +62,9 @@ export class TaskPlannerWorker implements TaskPlannerPort {
           'Prefer a concrete draft over cosmetic clarification. The workflow enforces a maximum of 3 clarification rounds.',
           'Use epoch milliseconds for dates. Never infer a server-local timezone; preserve the provided timezone or use explicit UTC when the user supplied no local timezone.',
           'Weekly tasks must provide daysOfWeek using 0=Sunday through 6=Saturday.',
-          'Only set keyResultId when the user references a specific key result; otherwise leave it null.',
+          'Use only current Task semantics: never propose folders, dependency graphs, critical paths or other retired project-management fields.',
+          'A Goal link requires both goalId and keyResultId. Leave both null when the task is not linked to a specific Key Result.',
+          'contributionValue is optional. Leave it null unless the user wants Task completion to automatically contribute a positive amount to the linked Key Result.',
           `Write user-visible titles, explanations and questions in ${language}.`,
         ].join('\n');
       },

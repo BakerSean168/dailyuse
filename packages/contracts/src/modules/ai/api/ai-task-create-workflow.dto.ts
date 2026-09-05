@@ -51,7 +51,7 @@ export const TaskPlanTaskSchema = z
     occurrences: z.number().int().positive().nullable().default(null),
     goalId: z.string().trim().min(1).nullable().default(null),
     keyResultId: z.string().trim().min(1).nullable().default(null),
-    folderId: z.string().trim().min(1).nullable().default(null),
+    contributionValue: z.number().positive().nullable().default(null),
     tags: z.array(z.string().trim().min(1).max(50)).max(50).default([]),
   })
   .strict()
@@ -61,6 +61,20 @@ export const TaskPlanTaskSchema = z
         code: z.ZodIssueCode.custom,
         path: ['daysOfWeek'],
         message: 'Weekly task plans require at least one dayOfWeek',
+      });
+    }
+    if ((value.goalId === null) !== (value.keyResultId === null)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: value.goalId === null ? ['goalId'] : ['keyResultId'],
+        message: 'Task goal links require both goalId and keyResultId',
+      });
+    }
+    if (value.contributionValue !== null && (value.goalId === null || value.keyResultId === null)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['contributionValue'],
+        message: 'Task contribution requires a Goal and Key Result link',
       });
     }
   });

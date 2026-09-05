@@ -308,7 +308,9 @@ test.describe('AI Goal Workflow', () => {
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
     await expect(page.getByTestId('goal-workflow-recovery')).toContainText(/KEY_RESULT_FAILED/i);
-    await expect(page.getByTestId('goal-workflow-recovery')).toContainText(/Workflow execution failed/i);
+    await expect(page.getByTestId('goal-workflow-recovery')).toContainText(
+      /Workflow execution failed/i,
+    );
     expect(telemetry.goalAgentStartCount).toBe(1);
     expect(telemetry.lastGoalAgentStart?.idea ?? '').toMatch(/Agent runtime/i);
     expect(telemetry.lastGoalAgentStart?.providerId).toBe('provider-e2e-openai');
@@ -642,7 +644,7 @@ function createTaskWorkflowDraft(
       occurrences: null,
       goalId: null,
       keyResultId: null,
-      folderId: null,
+      contributionValue: null,
       tags: ['ai', 'mastra'],
     },
     rationale: 'Keep task creation behind the canonical task mutation port.',
