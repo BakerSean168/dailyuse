@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+SOURCE_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 CONFIG_DIR=${MEMOFLOW_PRODUCTION_CONFIG_DIR:-/etc/memoflow}
 CONFIG_FILE=${MEMOFLOW_PRODUCTION_CHANNEL_CONFIG:-$CONFIG_DIR/production-channel.env}
 SECRET_ENV=${MEMOFLOW_PRODUCTION_SECRET_ENV:-/opt/memoflow/.env.production.local}
@@ -8,6 +8,9 @@ BIN_PATH=${MEMOFLOW_PRODUCTION_BIN_PATH:-/usr/local/bin/memoflow-production-depl
 SYSTEMD_DIR=${MEMOFLOW_PRODUCTION_SYSTEMD_DIR:-/etc/systemd/system}
 
 [[ $(id -u) -eq 0 ]] || { echo 'production watcher installer must run as root' >&2; exit 2; }
+for required in production-deploy-watch.sh systemd/memoflow-production-deploy-watch.service systemd/memoflow-production-deploy-watch.timer; do
+  [[ -s "$SOURCE_DIR/$required" ]] || { echo "production control bundle missing: $required" >&2; exit 2; }
+done
 for command in docker jq sha256sum gzip curl flock systemctl; do
   command -v "$command" >/dev/null 2>&1 || { echo "missing required command: $command" >&2; exit 2; }
 done
@@ -43,9 +46,9 @@ else
   echo "preserving existing production channel config: $CONFIG_FILE"
 fi
 
-install -m 0755 "$ROOT/deployment/production/production-deploy-watch.sh" "$BIN_PATH"
-install -m 0644 "$ROOT/deployment/production/systemd/memoflow-production-deploy-watch.service" "$SYSTEMD_DIR/memoflow-production-deploy-watch.service"
-install -m 0644 "$ROOT/deployment/production/systemd/memoflow-production-deploy-watch.timer" "$SYSTEMD_DIR/memoflow-production-deploy-watch.timer"
+install -m 0755 "$SOURCE_DIR/production-deploy-watch.sh" "$BIN_PATH"
+install -m 0644 "$SOURCE_DIR/systemd/memoflow-production-deploy-watch.service" "$SYSTEMD_DIR/memoflow-production-deploy-watch.service"
+install -m 0644 "$SOURCE_DIR/systemd/memoflow-production-deploy-watch.timer" "$SYSTEMD_DIR/memoflow-production-deploy-watch.timer"
 systemctl daemon-reload
 
 case "${1:-}" in

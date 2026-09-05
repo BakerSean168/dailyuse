@@ -39,19 +39,32 @@ The historical `/opt/memoflow/docker-compose.prod.yml` is retained only as first
 
 ## Install and acceptance
 
-Run the installer as root on Alibaba ECS after the code has been merged and the production selector has selected a Published release:
+After `Deploy Production` has selected a Published release, bootstrap from the selected ACR control artifact itself; a repository checkout is not required on Alibaba:
 
 ```bash
-./deployment/production/install-production-deploy-watch.sh
+set -a
+source /opt/memoflow/.env.production.local
+set +a
+control_ref="$REGISTRY/$IMAGE_NAMESPACE/memoflow-production-runtime:production-selected"
+docker pull "$control_ref"
+cid="$(docker create "$control_ref" /bin/true)"
+bootstrap_dir=/tmp/memoflow-production-bootstrap
+rm -rf "$bootstrap_dir"
+mkdir -p "$bootstrap_dir"
+docker cp "$cid:/runtime/production/." "$bootstrap_dir/"
+docker rm "$cid"
+"$bootstrap_dir/install-production-deploy-watch.sh"
 /usr/local/bin/memoflow-production-deploy-watch --check-only
 systemctl start memoflow-production-deploy-watch.service
 cat /var/lib/memoflow-delivery/production-deploy-state
 ```
 
+The bootstrap reads only the existing host deployment coordinates/secrets locally; it does not print or copy them into the control artifact.
+
 The installer deliberately does **not** enable the timer by default. Enable periodic reconciliation only after the first controlled rollout and replay have passed:
 
 ```bash
-./deployment/production/install-production-deploy-watch.sh --enable
+"$bootstrap_dir/install-production-deploy-watch.sh" --enable
 ```
 
 ## Transaction boundary

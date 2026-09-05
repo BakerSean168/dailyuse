@@ -118,6 +118,10 @@ function writeRuntimeSource(root, productionSet) {
   for (const [source, target] of [
     ['deployment/production/docker-compose.production.yml', 'docker-compose.production.yml'],
     ['deployment/production/production-deploy-watch.sh', 'production-deploy-watch.sh'],
+    [
+      'deployment/production/install-production-deploy-watch.sh',
+      'install-production-deploy-watch.sh',
+    ],
     ['Caddyfile', 'Caddyfile'],
     ['docker/powersync/powersync.yaml', 'docker/powersync/powersync.yaml'],
     ['docker/powersync/sync-config.yaml', 'docker/powersync/sync-config.yaml'],

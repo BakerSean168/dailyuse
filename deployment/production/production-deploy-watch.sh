@@ -88,7 +88,7 @@ runtime_container=$(docker create "$runtime_channel" /bin/true)
 docker cp "$runtime_container:/runtime/production/." "$stage/"
 docker rm "$runtime_container" >/dev/null
 runtime_container=''
-for required in production-set-v1.json production-set-v1.sha256 docker-compose.production.yml production-deploy-watch.sh Caddyfile docker/powersync/powersync.yaml docker/powersync/sync-config.yaml systemd/memoflow-production-deploy-watch.service systemd/memoflow-production-deploy-watch.timer; do
+for required in production-set-v1.json production-set-v1.sha256 docker-compose.production.yml production-deploy-watch.sh install-production-deploy-watch.sh Caddyfile docker/powersync/powersync.yaml docker/powersync/sync-config.yaml systemd/memoflow-production-deploy-watch.service systemd/memoflow-production-deploy-watch.timer; do
   [[ -s "$stage/$required" ]] || fail "production runtime missing artifact: $required"
 done
 (

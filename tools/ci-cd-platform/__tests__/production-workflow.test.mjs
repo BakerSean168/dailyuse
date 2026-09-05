@@ -59,7 +59,15 @@ test('production selector binds runtime dependencies to exact release source, no
     runtimeDockerfile,
     /COPY reports\/production\/release-runtime\/docker\/powersync \/runtime\/production\/docker\/powersync/u,
   );
+  assert.match(
+    runtimeDockerfile,
+    /COPY deployment\/production\/install-production-deploy-watch\.sh \/runtime\/production\/install-production-deploy-watch\.sh/u,
+  );
   assert.doesNotMatch(runtimeDockerfile, /^COPY docker\/powersync/mu);
+  const installer = await readRepoFile('deployment/production/install-production-deploy-watch.sh');
+  assert.match(installer, /SOURCE_DIR=\$\(cd .*dirname/u);
+  assert.match(installer, /\$SOURCE_DIR\/production-deploy-watch\.sh/u);
+  assert.doesNotMatch(installer, /deployment\/production\/production-deploy-watch\.sh/u);
 });
 
 test('production selector moves only one coherent control pointer and never rebuilds application images', async () => {
