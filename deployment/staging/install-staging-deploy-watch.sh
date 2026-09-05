@@ -6,9 +6,24 @@ CONFIG_FILE=${MEMOFLOW_STAGING_CHANNEL_CONFIG:-$CONFIG_DIR/staging-channel.env}
 BIN_DIR=${MEMOFLOW_STAGING_BIN_DIR:-$HOME/.local/bin}
 SYSTEMD_DIR=${MEMOFLOW_STAGING_SYSTEMD_DIR:-$HOME/.config/systemd/user}
 DEFAULT_SECRET_ENV=${MEMOFLOW_STAGING_SECRET_ENV:-$CONFIG_DIR/staging.env}
-registry=${STAGING_REGISTRY:-$(sed -n 's/^REGISTRY=//p' "$ROOT/.env.production" | tail -1)}
-namespace=${STAGING_NAMESPACE:-$(sed -n 's/^IMAGE_NAMESPACE=//p' "$ROOT/.env.production" | tail -1)}
-[[ -n "$registry" && -n "$namespace" ]] || { echo 'set STAGING_REGISTRY/STAGING_NAMESPACE or configure .env.production' >&2; exit 2; }
+distribution=${STAGING_DISTRIBUTION:-global}
+case "$distribution" in
+  global)
+    registry=${STAGING_REGISTRY:-ghcr.io}
+    if [[ -n "${STAGING_NAMESPACE:-}" ]]; then
+      namespace=$STAGING_NAMESPACE
+    else
+      origin=$(git -C "$ROOT" remote get-url origin 2>/dev/null || true)
+      namespace=$(printf '%s\n' "$origin" | sed -E 's#^git@github.com:([^/]+)/.*#\1#; s#^https://github.com/([^/]+)/.*#\1#' | tr '[:upper:]' '[:lower:]')
+    fi
+    ;;
+  china)
+    registry=${STAGING_REGISTRY:-}
+    namespace=${STAGING_NAMESPACE:-}
+    ;;
+  *) echo 'STAGING_DISTRIBUTION must be global or china' >&2; exit 2 ;;
+esac
+[[ -n "$registry" && -n "$namespace" ]] || { echo 'unable to resolve staging registry/namespace; set STAGING_REGISTRY and STAGING_NAMESPACE' >&2; exit 2; }
 mirror_tag() { node -e "const c=require('$ROOT/tools/ci-cd-platform/runtime-image-mirrors.json');const x=c.images.find((i)=>i.name===process.argv[1]);if(!x)process.exit(2);process.stdout.write(x.tag)" "$1"; }
 mkdir -p "$CONFIG_DIR" "$BIN_DIR" "$SYSTEMD_DIR"
 if [[ ! -e "$CONFIG_FILE" ]]; then
@@ -17,6 +32,7 @@ if [[ ! -e "$CONFIG_FILE" ]]; then
 # Non-secret coordinates for MemoFlow canonical staging.
 STAGING_REGISTRY=$registry
 STAGING_NAMESPACE=$namespace
+STAGING_DISTRIBUTION=$distribution
 STAGING_CHANNEL_TAG=staging-latest
 STAGING_SECRET_ENV=$DEFAULT_SECRET_ENV
 STAGING_COMPOSE_PROJECT=memoflow-staging
