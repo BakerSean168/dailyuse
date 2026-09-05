@@ -346,6 +346,32 @@ require_ref() {
   actual=$(container_ref "$RUNTIME_ROOT" "$service")
   [[ "$actual" == "$expected" ]] || fail "$service runtime image mismatch: $actual != $expected"
 }
+probe_host_caddy_url() {
+  local url="$1" authority host port
+  case "$url" in
+    https://*)
+      authority=${url#https://}
+      port=443
+      ;;
+    http://*)
+      authority=${url#http://}
+      port=80
+      ;;
+    *) fail "unsupported production host probe URL: $url" ;;
+  esac
+  authority=${authority%%/*}
+  [[ -n "$authority" ]] || fail "production host probe URL has no authority: $url"
+  if [[ "$authority" == *:* ]]; then
+    host=${authority%%:*}
+    port=${authority##*:}
+  else
+    host=$authority
+  fi
+  [[ "$host" =~ ^[A-Za-z0-9.-]+$ ]] || fail "production host probe has invalid hostname: $url"
+  [[ "$port" =~ ^[0-9]+$ ]] || fail "production host probe has invalid port: $url"
+  curl -fsS --retry 6 --retry-delay 2 --connect-timeout 5 --max-time 20 \
+    --resolve "$host:$port:127.0.0.1" "$url" >/dev/null
+}
 
 log "deploying production release $release_tag set=$production_set_digest"
 compose_root "$RUNTIME_ROOT" up -d --no-build postgres redis
@@ -368,9 +394,13 @@ compose_root "$RUNTIME_ROOT" up -d --no-build --no-deps caddy
 wait_healthy caddy 120
 require_ref caddy "$(runtime_ref caddy)"
 
+# Validate the canonical HTTPS Host/SNI routes through the local Caddy listener.
+# Public Internet reachability is an out-of-band acceptance check; the host
+# transaction must not depend on Alibaba DNS/hairpin behavior.
 for url in "${PRODUCTION_EXTERNAL_API_URL:-}" "${PRODUCTION_EXTERNAL_WEB_URL:-}" "${PRODUCTION_EXTERNAL_POWERSYNC_URL:-}"; do
-  [[ -z "$url" ]] || curl -fsS --retry 6 --retry-delay 5 --max-time 20 "$url" >/dev/null
+  [[ -z "$url" ]] || probe_host_caddy_url "$url"
 done
+log 'host-local Caddy route probes passed'
 
 install -m 0755 "$RUNTIME_ROOT/production-deploy-watch.sh" "$BIN_PATH"
 install -m 0644 "$RUNTIME_ROOT/systemd/memoflow-production-deploy-watch.service" "$SYSTEMD_DIR/memoflow-production-deploy-watch.service"
