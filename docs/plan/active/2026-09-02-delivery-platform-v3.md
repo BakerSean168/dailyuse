@@ -214,8 +214,6 @@ The first cutover attempt exposed a real compatibility defect: the old staging s
 
 **Status:** COMPLETE — GCP staging is watcher-owned at `60859e470651ad775c936d9224654c1c85602d6b`; a second watcher execution returned `already deployed` without changing deployment state.
 
-**Status: COMPLETE.**
-
 **Acceptance:** staging state equals a successful main SHA and candidate digests; current manual source-build path is documented as emergency-only.
 
 ## Phase 3 — Build-once release and production delivery
