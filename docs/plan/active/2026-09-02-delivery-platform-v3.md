@@ -9,12 +9,12 @@ tags:
   - desktop
 description: MemoFlow Delivery Platform V3 分阶段实施计划与可验证票据
 created: 2026-09-02T16:15:00+08:00
-updated: 2026-09-04T23:25:00+08:00
+updated: 2026-09-05T12:40:00+08:00
 ---
 
 # MemoFlow Delivery Platform V3 Implementation Plan
 
-> Status: ACTIVE — Phase 1 closed; Phase 2 is the next implementation boundary
+> Status: ACTIVE — Phase 1 + Phase 2 closed; Phase 3 is the next implementation boundary
 > Governing ADR: [ADR-066](../../architecture/adr/ADR-066-adopt-delivery-platform-v3.md)  
 > Architecture: [Delivery Platform V3](../../architecture/delivery-platform-v3.md)  
 > Release contract: [Release Lifecycle V3](../../architecture/release-lifecycle-v3.md)
@@ -35,19 +35,19 @@ runtime watchers deploy coherently with migration/health/rollback evidence
 
 The first externally visible milestone is a Published MemoFlow release containing Windows x64, Linux x64, macOS x64 and macOS arm64 assets.
 
-## Current implementation checkpoint — truth audit 2026-09-04
+## Current implementation checkpoint — truth audit 2026-09-05
 
-| Ticket / phase | Current truth                  | Evidence / remaining boundary                                                                                                                                                                                                              |
-| -------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| DLV3-0001      | **COMPLETE**                   | ADR-066, Delivery Platform V3 architecture, Release Lifecycle V3 and runbooks are published.                                                                                                                                               |
-| DLV3-1101      | **COMPLETE**                   | Desktop-aware scope/risk selection is merged; `main` still forces full verification.                                                                                                                                                       |
-| DLV3-1102      | **COMPLETE**                   | successful-main-CI release-please maintenance and manual recovery paths are live and have been exercised repeatedly by v0.12.x release PRs.                                                                                                |
-| DLV3-1103      | **COMPLETE**                   | native matrix builds Windows x64, Linux x64, macOS x64 and macOS arm64 with packaged-runtime receipts and fail-closed manifest checks.                                                                                                     |
-| DLV3-1104      | **COMPLETE for Phase 1 scope** | touched release workflows use pinned reviewed Actions; repository-wide convergence remains DLV3-4402.                                                                                                                                      |
-| DLV3-1105      | **COMPLETE**                   | `v0.12.1` was Published on 2026-09-03 with Windows x64, Linux x64, macOS x64 and macOS arm64 assets, `desktop-release-manifest.json`, `release-manifest.json` and `SHA256SUMS.txt`; tag target `257c74eccbe87bba5f63a72217301ab8a17048e6`. |
-| Phase 2        | **NOT IMPLEMENTED**            | `memoflow.candidate-set/v1`, exact-SHA server candidate publication, coherent `staging-latest`, GCP staging watcher and canonical staging cutover remain architecture/docs only.                                                           |
-| Phase 3        | **PARTIAL FOUNDATION ONLY**    | canonical release manifests exist, but they do not yet bind/promote a Phase-2 candidate-set; production selector and Alibaba watcher do not exist.                                                                                         |
-| Phase 4        | **PARTIAL / DEFERRED**         | some Action pinning and delivery observations exist; consolidated-runner evidence, repository-wide Action pinning, macOS signing/notarization and final observation closure remain.                                                        |
+| Ticket / phase | Current truth                  | Evidence / remaining boundary                                                                                                                                                                                                                                                                                    |
+| -------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DLV3-0001      | **COMPLETE**                   | ADR-066, Delivery Platform V3 architecture, Release Lifecycle V3 and runbooks are published.                                                                                                                                                                                                                     |
+| DLV3-1101      | **COMPLETE**                   | Desktop-aware scope/risk selection is merged; `main` still forces full verification.                                                                                                                                                                                                                             |
+| DLV3-1102      | **COMPLETE**                   | successful-main-CI release-please maintenance and manual recovery paths are live and have been exercised repeatedly by v0.12.x release PRs.                                                                                                                                                                      |
+| DLV3-1103      | **COMPLETE**                   | native matrix builds Windows x64, Linux x64, macOS x64 and macOS arm64 with packaged-runtime receipts and fail-closed manifest checks.                                                                                                                                                                           |
+| DLV3-1104      | **COMPLETE for Phase 1 scope** | touched release workflows use pinned reviewed Actions; repository-wide convergence remains DLV3-4402.                                                                                                                                                                                                            |
+| DLV3-1105      | **COMPLETE**                   | `v0.12.1` was Published on 2026-09-03 with Windows x64, Linux x64, macOS x64 and macOS arm64 assets, `desktop-release-manifest.json`, `release-manifest.json` and `SHA256SUMS.txt`; tag target `257c74eccbe87bba5f63a72217301ab8a17048e6`.                                                                       |
+| Phase 2        | **COMPLETE**                   | PRs #306/#307/#308 established candidate-set, exact-SHA dual-registry candidates, coherent `staging-latest`, candidate-bound runtime mirrors and the GCP watcher. Main `60859e47065` and Candidate Publish run `33944690658` are green; GCP state is `DEPLOYED` at the same SHA and the watcher timer is active. |
+| Phase 3        | **PARTIAL FOUNDATION ONLY**    | canonical release manifests exist, but they do not yet bind/promote a Phase-2 candidate-set; production selector and Alibaba watcher do not exist.                                                                                                                                                               |
+| Phase 4        | **PARTIAL / DEFERRED**         | some Action pinning and delivery observations exist; consolidated-runner evidence, repository-wide Action pinning, macOS signing/notarization and final observation closure remain.                                                                                                                              |
 
 Phase 1 release evidence:
 
@@ -60,7 +60,7 @@ macOS arm64 dmg + zip
 desktop-release-manifest.json + release-manifest.json + SHA256SUMS.txt
 ```
 
-The next implementation boundary is **Phase 2**, not more Desktop release plumbing.
+The next implementation boundary is **Phase 3**: Release Publish must promote the already-built server candidate instead of rebuilding it, then production selection/watch ownership can be added.
 
 ## 2. Baseline and measurable targets
 
@@ -157,7 +157,30 @@ An independent Desktop Oracle is intentionally deferred until it has its own non
 
 ## Phase 2 — Main server candidates and canonical staging
 
+**Status: COMPLETE — 2026-09-05.**
+
+Canonical proof:
+
+```text
+main SHA:                 60859e470651ad775c936d9224654c1c85602d6b
+main CI run:              33943787031 (completed/success after same-SHA failed-job retry)
+runtime mirror run:       33943787048
+candidate publish run:    33944690658
+candidate digest:         sha256:24e4e282e9ab17e7dd7299e4ddd772b434346ed295bee5085307221285201cf7
+runtime digest:           sha256:cebe765ab84c7a0ccd7a0ff277c13a74b052c8de0e176d18ac6183a2301bd70a
+Web digest:               sha256:9e72de2075ff5a7e40b3004ea64a155abc15354e8ece009f69368d3acf32884c
+API digest:               sha256:3c33536cd6c6601f240b21d46fec153ae09410a697d538ec60f50365df1b2050
+Migrator digest:          sha256:6654b01552fe4538e4747a8f5adde9012e0955e50b16141ec265676ee0ebc135
+PowerSync runtime digest: sha256:58003bcf4897a36bec948a10d2f37753a1188270330d43757caa2aa8dfe2d0b8 (1.25.0)
+GCP deploy state:         DEPLOYED
+watcher timer:            enabled / active
+```
+
+The first cutover attempt exposed a real compatibility defect: the old staging stack had already run PowerSync 1.25.0 while the initial runtime mirror contract pinned 1.20.4. The older service correctly refused the newer migration history (`1784900000000-source-metadata`). Migration history was never deleted or rewritten. PR #308 moved PostgreSQL/Redis/PowerSync mirror authority into the exact-SHA runtime artifact and pinned PowerSync 1.25.0 by linux/amd64 manifest digest. The final deployment, manual replay and first systemd-timer replay all passed.
+
 ### DLV3-2201 — Define `memoflow.candidate-set/v1`
+
+**Status:** COMPLETE — PR #306; deterministic self-digest and negative fixtures are covered by CI/CD platform governance.
 
 **Goal:** bind exact main CI, delivery manifest and Web/API/Migrator digests.
 
@@ -165,11 +188,15 @@ An independent Desktop Oracle is intentionally deferred until it has its own non
 
 ### DLV3-2202 — Publish exact-SHA candidates once
 
+**Status:** COMPLETE — run `33944690658` built Web/API/Migrator for the successful exact main SHA and distributed immutable digests to ACR/GHCR.
+
 **Goal:** successful main CI builds and distributes Web/API/Migrator once to ACR and GHCR.
 
 **Acceptance:** revision label and top-level digest parity; immutable candidate tag; no publication from PR.
 
 ### DLV3-2203 — Promote coherent `staging-latest`
+
+**Status:** COMPLETE — the current-main candidate promoted only after the complete candidate set was available.
 
 **Goal:** move all three components only for current main after full candidate completion.
 
@@ -177,11 +204,15 @@ An independent Desktop Oracle is intentionally deferred until it has its own non
 
 ### DLV3-2204 — Install GCP staging watcher
 
+**Status:** COMPLETE — systemd watcher performs migrator-first rollout, exact-digest runtime resolution, health checks and atomic deployment state.
+
 **Goal:** canonical staging consumes only coherent candidate artifacts.
 
 **Acceptance:** migrator-first rollout, API/Web/PowerSync health, exact revision/digests state, replay/idempotency, previous-runtime rollback fixture.
 
 ### DLV3-2205 — Prove staging cutover
+
+**Status:** COMPLETE — GCP staging is watcher-owned at `60859e470651ad775c936d9224654c1c85602d6b`; a second watcher execution returned `already deployed` without changing deployment state.
 
 **Acceptance:** staging state equals a successful main SHA and candidate digests; current manual source-build path is documented as emergency-only.
 

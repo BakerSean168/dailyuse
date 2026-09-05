@@ -108,11 +108,13 @@ Install GCP user service/timer from `deployment/staging/` with:
 - host-owned non-secret `~/.config/memoflow/staging-channel.env`;
 - external `~/.config/memoflow/staging.env` secret file;
 - dedicated state/runtime directories;
-- host-owned ACR Docker credentials;
+- host-owned Docker credentials for the configured distribution (`global`/GHCR on GCP staging);
 - lock and bounded health timeouts;
 - `~/.local/bin/memoflow-staging-deploy-watch --check-only` before timer enablement.
 
-The runtime OCI artifact embeds the exact candidate manifest and versioned Compose/PowerSync/watcher files. The watcher deploys `repository@sha256:...` refs rather than mutable channel tags.
+The runtime OCI artifact embeds the exact candidate manifest, reviewed `runtime-image-mirrors.json`, and versioned Compose/PowerSync/watcher files. The watcher deploys `repository@sha256:...` refs rather than mutable channel tags. PostgreSQL, Redis and PowerSync runtime dependencies are resolved from that candidate-bound mirror contract, not from host image pins.
+
+**PowerSync migration compatibility:** never downgrade a staging/production database to a PowerSync image older than the migration history already recorded in its storage. The 2026-09-05 GCP cutover proved this fail-closed behavior when a stale 1.20.4 mirror encountered migration `1784900000000-source-metadata` written by 1.25.0. Do not delete migration history to bypass this guard; advance the reviewed runtime mirror instead.
 
 ### Staging acceptance
 
