@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.13.3](https://github.com/BakerSean168/memoflow/compare/v0.13.2...v0.13.3) (2026-09-05)
+
+
+### Bug Fixes
+
+* **delivery:** bundle Prisma engine in migrator ([940e39b](https://github.com/BakerSean168/memoflow/commit/940e39b5cd313106810d4f85d59671208be6517d))
+* **delivery:** bundle Prisma engine in migrator ([df18a17](https://github.com/BakerSean168/memoflow/commit/df18a17cf73a94a40207f1fa8246033554ee059c))
+* **release:** bound Linux headless keyring smoke ([085c2f5](https://github.com/BakerSean168/memoflow/commit/085c2f56e13ff7c41760c193f4281e0d6de2b955))
+* **release:** bound Linux headless keyring smoke ([bd72d51](https://github.com/BakerSean168/memoflow/commit/bd72d511cd0670fb42a43efe8859d199c5e4c05a))
+* **release:** use control-plane Linux keyring harness ([75aa2b7](https://github.com/BakerSean168/memoflow/commit/75aa2b7cded8a1ab8ce616a8656999ba6be1c502))
+* **release:** use control-plane Linux keyring harness ([937bfa2](https://github.com/BakerSean168/memoflow/commit/937bfa2d3217534915eaebac041df6d75ed349f9))
+
 ## [0.13.2](https://github.com/BakerSean168/memoflow/compare/v0.13.1...v0.13.2) (2026-09-05)
 
 
