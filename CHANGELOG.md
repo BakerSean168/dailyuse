@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.13.1](https://github.com/BakerSean168/memoflow/compare/v0.13.0...v0.13.1) (2026-09-05)
+
+
+### Bug Fixes
+
+* **release:** harden packaged desktop runtime gate ([#312](https://github.com/BakerSean168/memoflow/issues/312)) ([0f277c4](https://github.com/BakerSean168/memoflow/commit/0f277c430ef962ce239b49a77215e2a854f97609))
+* **release:** reconcile failed draft tag state ([#314](https://github.com/BakerSean168/memoflow/issues/314)) ([780ccbf](https://github.com/BakerSean168/memoflow/commit/780ccbfb208ba0332b4e77c98044bdb19c37cc85))
+
 ## [0.13.0](https://github.com/BakerSean168/memoflow/compare/v0.12.3...v0.13.0) (2026-09-05)
 
 
