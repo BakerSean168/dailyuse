@@ -213,6 +213,7 @@ jobs:
           echo "path=$executable" >> "$GITHUB_OUTPUT"
 
       - name: Run packaged Desktop runtime smoke
+        timeout-minutes: 5
         working-directory: release-source
         shell: bash
         env:
@@ -249,6 +250,7 @@ jobs:
           test -f /usr/share/applications/memoflow.desktop
 
       - name: Run installed Linux Debian runtime smoke
+        timeout-minutes: 5
         if: runner.os == 'Linux'
         working-directory: release-source
         shell: bash
