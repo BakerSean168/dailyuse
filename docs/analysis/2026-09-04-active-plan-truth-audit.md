@@ -15,11 +15,11 @@ updated: 2026-09-05T16:15:00+08:00
 
 AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三份真实 Active Plan。没有第二份“完整设计后完全忘记实施”的计划，但两份存在显著 residual，一份只差实机验收。
 
-| Plan                               | Current truth                                                | What is actually left                                                                                                 |
-| ---------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| Delivery Platform V3               | **Phase 3 implementation present; release gate fail-closed** | corrective v0.13.1 packaged-runtime acceptance, explicit production selection, Alibaba controlled rollout + replay    |
-| Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only**      | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
-| GitHub Durable Installation Intent | **implementation complete**                                  | one Published Windows Desktop live external-browser + polling/finalize acceptance                                     |
+| Plan                               | Current truth                                                | What is actually left                                                                                                    |
+| ---------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| Delivery Platform V3               | **Phase 3 implementation present; release gate fail-closed** | corrective v0.13.2 ResizeObserver/runtime acceptance, explicit production selection, Alibaba controlled rollout + replay |
+| Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only**      | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening    |
+| GitHub Durable Installation Intent | **implementation complete**                                  | one Published Windows Desktop live external-browser + polling/finalize acceptance                                        |
 
 ## 2. Delivery Platform V3 — still required
 
@@ -44,7 +44,7 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 1. `DLV3-3301/3302`: merged in PR #310. Release Publish promotes the existing exact candidate digests without rebuilding Server images, and schema-v2 release evidence binds candidate-set/main-CI/delivery identity.
 2. `DLV3-3303`: `Deploy Production(vX.Y.Z)` plus `memoflow.production-set/v1` is implemented. The selector is manual, Published-release-only, main-control-plane-bound, verifies ACR/GHCR parity and moves one `production-selected` control artifact; GitHub Environment `production` exists with a `main` branch policy.
 3. `DLV3-3304`: `deployment/production/` is implemented with exact-digest Watchtower-free compose, mandatory database backup, migrator-first rollout, pre-migration restore, post-migration `BLOCKED`, PowerSync downgrade guard and idempotent state/replay fixtures.
-4. `v0.13.0` real Release Publish proved Server promotion-without-rebuild, but Windows/macOS arm64 packaged-runtime readiness failures reproduced across two attempts and Linux exposed an unbounded smoke cleanup path. The Release remained Draft and the retry was stopped. Corrective `v0.13.1` must pass all four packaged-runtime gates before any production selector mutation; then prove check-only -> Alibaba controlled rollout -> exact state -> replay -> timer enable.
+4. `v0.13.0` real Release Publish proved Server promotion-without-rebuild and failed closed on Desktop readiness. #312 added staged readiness, bounded cleanup and diagnostics; #314 repaired failed-Draft release-please continuity. `v0.13.1` then again proved exact candidate + Server promotion, and its macOS arm64 diagnostics finally exposed the real blocker: the browser ResizeObserver loop notification was routed through the global `window.error` fatal fallback. `v0.13.1` remains Draft. Corrective `v0.13.2` must prove the classification fix across all packaged Desktop gates before any production selector mutation; then prove check-only -> Alibaba controlled rollout -> exact state -> replay -> timer enable.
 
 ### Later / conditional
 
@@ -53,7 +53,7 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 - DLV3-4403 macOS signing/notarization (only necessary before trusted public macOS distribution);
 - DLV3-4404 observation closeout/archive.
 
-**Recommendation:** do not start another delivery redesign and do not rewrite/publish `v0.13.0`. Merge the focused packaged-runtime hardening, publish corrective `v0.13.1`, then continue the existing Phase 3 selector/Alibaba transaction. Preserve the failed `v0.13.0` Draft/tag as release evidence.
+**Recommendation:** do not start another delivery redesign and do not rewrite/publish `v0.13.0` or `v0.13.1`. Merge the focused ResizeObserver renderer-error classification fix, publish corrective `v0.13.2`, then continue the existing Phase 3 selector/Alibaba transaction. Preserve both failed Draft/tag identities as release evidence.
 
 ## 3. Core vNext — classify before implementing
 
@@ -107,7 +107,7 @@ Desktop
 
 3. **Delivery Platform V3 Phase 2 — COMPLETE (2026-09-05).** Candidate-set → exact-SHA images → coherent staging channel → GCP watcher is live.
 4. **Core `CLEAN-6302/6303`** — remove Reminder legacy semantics and raw ScheduleTask/SourceModule product/execution paths. This reduces dual-authority/maintenance risk and is a prerequisite for a meaningful scheduler-engine comparison.
-5. **Delivery Platform V3 Phase 3 corrective acceptance** — implementation exists; `v0.13.0` failed closed. Close `v0.13.1` Release -> selector -> Alibaba watcher transaction before claiming Phase 3 complete.
+5. **Delivery Platform V3 Phase 3 corrective acceptance** — implementation exists; `v0.13.0` and `v0.13.1` failed closed. Close `v0.13.2` Release -> selector -> Alibaba watcher transaction before claiming Phase 3 complete.
 
 ### Audit/product decision before coding
 

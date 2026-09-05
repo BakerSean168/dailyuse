@@ -11,6 +11,7 @@ import { escapeHtml } from '@memoflow/utils/shared';
 import './styles/index.css';
 // Residual 941: host bridge via ensureElectronBridgeAvailable sole helper.
 import { ensureElectronBridgeAvailable } from './platform/electron-bridge';
+import { isNonFatalResizeObserverNotification } from './startup-error-classification';
 
 function formatError(error: unknown): string {
   if (error instanceof Error) {
@@ -66,6 +67,12 @@ async function startRenderer() {
   });
 
   window.addEventListener('error', (event) => {
+    if (isNonFatalResizeObserverNotification(event)) {
+      event.preventDefault();
+      console.warn('[DesktopRenderer] Non-fatal ResizeObserver notification', event.message);
+      return;
+    }
+
     renderStartupError(event.error ?? event.message);
   });
 
