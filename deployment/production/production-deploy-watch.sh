@@ -164,6 +164,26 @@ service_is_healthy() {
   status=$(docker inspect "$id" --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' 2>/dev/null || true)
   [[ "$status" == healthy || "$status" == running ]]
 }
+live_container_ref() {
+  local service="$1" id
+  id=$(docker ps -q --filter "label=com.docker.compose.project=$COMPOSE_PROJECT" --filter "label=com.docker.compose.service=$service" | head -n1)
+  [[ -n "$id" ]] || return 1
+  docker inspect "$id" --format '{{.Config.Image}}' 2>/dev/null || true
+}
+root_expected_ref() {
+  local root="$1" service="$2" key
+  key=$(printf '%s' "$service" | tr '[:lower:]' '[:upper:]')
+  sed -n "s/^${key}_IMAGE=//p" "$root/runtime-images.env" 2>/dev/null | tail -1
+}
+runtime_root_matches_live() {
+  local root="$1" service expected actual
+  [[ -s "$root/runtime-images.env" ]] || return 1
+  for service in api web powersync postgres redis caddy; do
+    expected=$(root_expected_ref "$root" "$service")
+    actual=$(live_container_ref "$service")
+    [[ -n "$expected" && -n "$actual" && "$expected" == "$actual" ]] || return 1
+  done
+}
 state_matches() {
   [[ "$managed_status" == DEPLOYED && "$managed_set" == "$production_set_digest" ]] || return 1
   local service expected
@@ -235,13 +255,22 @@ bootstrap_previous_runtime() {
   chmod 0600 "$previous/runtime-images.env"
 }
 
-rm -rf "$RUNTIME_ROOT.next" "$RUNTIME_ROOT.prev"
+rm -rf "$RUNTIME_ROOT.next"
 mkdir -p "$RUNTIME_ROOT.next"
 cp -a "$stage/." "$RUNTIME_ROOT.next/"
-if [[ -d "$RUNTIME_ROOT" ]]; then
-  mv "$RUNTIME_ROOT" "$RUNTIME_ROOT.prev"
+if [[ "$managed_status" == BLOCKED && $FORCE == true ]]; then
+  [[ -d "$RUNTIME_ROOT.prev" ]] || fail 'forced BLOCKED recovery requires a preserved previous runtime baseline'
+  runtime_root_matches_live "$RUNTIME_ROOT.prev" || fail 'forced BLOCKED recovery baseline does not match the current live production runtime'
+  log 'forced BLOCKED recovery verified the preserved live rollback baseline'
+  rm -rf "$RUNTIME_ROOT.failed"
+  [[ ! -d "$RUNTIME_ROOT" ]] || mv "$RUNTIME_ROOT" "$RUNTIME_ROOT.failed"
 else
-  bootstrap_previous_runtime "$RUNTIME_ROOT.prev"
+  rm -rf "$RUNTIME_ROOT.prev"
+  if [[ -d "$RUNTIME_ROOT" ]]; then
+    mv "$RUNTIME_ROOT" "$RUNTIME_ROOT.prev"
+  else
+    bootstrap_previous_runtime "$RUNTIME_ROOT.prev"
+  fi
 fi
 mv "$RUNTIME_ROOT.next" "$RUNTIME_ROOT"
 

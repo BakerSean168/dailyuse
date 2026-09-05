@@ -197,6 +197,10 @@ if [[ "$1" == ps ]]; then
   joined="$*"
   if [[ "$joined" == *'label=com.docker.compose.service=postgres'* ]]; then echo current-postgres; exit 0; fi
   if [[ "$joined" == *'label=com.docker.compose.service=powersync'* ]]; then echo current-powersync; exit 0; fi
+  if [[ "$joined" == *'label=com.docker.compose.service=api'* ]]; then echo current-api; exit 0; fi
+  if [[ "$joined" == *'label=com.docker.compose.service=web'* ]]; then echo current-web; exit 0; fi
+  if [[ "$joined" == *'label=com.docker.compose.service=redis'* ]]; then echo current-redis; exit 0; fi
+  if [[ "$joined" == *'label=com.docker.compose.service=caddy'* ]]; then echo current-caddy; exit 0; fi
   if [[ "$joined" == *' -q '* || "$joined" == 'ps -q'* ]]; then
     printf '%s\\n' current-postgres current-api current-web current-powersync current-redis current-caddy
   else
@@ -246,6 +250,8 @@ function setupFixture({
   apiDigestOverride = '',
   rawShaOverride = '',
   powersyncDowngrade = false,
+  blockedRecovery = false,
+  baselineApiOverride = '',
 } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'memoflow-production-watch-'));
   const state = path.join(root, 'state');
@@ -268,8 +274,32 @@ function setupFixture({
   fs.writeFileSync(path.join(runtimeRoot, 'previous-marker'), 'previous\n');
   fs.writeFileSync(
     path.join(state, 'production-deploy-state'),
-    `status=DEPLOYED\nproduction_set_digest=${digest('0')}\n`,
+    blockedRecovery
+      ? `status=BLOCKED\nproduction_set_digest=${digest('0')}\nblocked_reason=fixture\n`
+      : `status=DEPLOYED\nproduction_set_digest=${digest('0')}\n`,
   );
+  if (blockedRecovery) {
+    const previousRoot = `${runtimeRoot}.prev`;
+    fs.mkdirSync(previousRoot, { recursive: true });
+    fs.copyFileSync(
+      path.join(repoRoot, 'deployment/production/docker-compose.production.yml'),
+      path.join(previousRoot, 'docker-compose.production.yml'),
+    );
+    const imageLines = ['api', 'web', 'migrator', 'postgres', 'redis', 'powersync', 'caddy'].map(
+      (service) => {
+        const key = `${service.toUpperCase()}_IMAGE`;
+        const value =
+          service === 'api' && baselineApiOverride
+            ? `${registry}/${namespace}/memoflow-api@${baselineApiOverride}`
+            : expectedRef(productionSet, service);
+        return `${key}=${value}`;
+      },
+    );
+    fs.writeFileSync(path.join(previousRoot, 'runtime-images.env'), `${imageLines.join('\n')}\n`);
+    fs.writeFileSync(path.join(previousRoot, 'live-baseline-marker'), 'live\n');
+    fs.rmSync(path.join(runtimeRoot, 'previous-marker'), { force: true });
+    fs.writeFileSync(path.join(runtimeRoot, 'failed-control-root-marker'), 'failed\n');
+  }
   fs.writeFileSync(
     secret,
     'DB_NAME=test\nDB_USER=test\nDB_PASSWORD=test\nREDIS_PASSWORD=test\nPOWERSYNC_PUBLIC_KEY_N=test\nPOWERSYNC_KEY_ID=test\n',
@@ -369,6 +399,51 @@ test('production watcher restores the previous runtime on a pre-migration failur
     assert.equal(fs.existsSync(path.join(fixture.runtimeRoot, 'previous-marker')), true);
     const state = fs.readFileSync(path.join(fixture.state, 'production-deploy-state'), 'utf8');
     assert.doesNotMatch(state, /^status=BLOCKED$/mu);
+  } finally {
+    fs.rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test('forced BLOCKED recovery restores the preserved live baseline on a pre-migration failure', () => {
+  const fixture = setupFixture({ failPhase: 'pre-migration', blockedRecovery: true });
+  try {
+    const result = run(fixture, ['--force']);
+    assert.notEqual(result.status, 0);
+    assert.match(
+      result.stdout + result.stderr,
+      /forced BLOCKED recovery verified the preserved live rollback baseline/u,
+    );
+    assert.match(
+      result.stdout + result.stderr,
+      /restoring previous production runtime before migration boundary/u,
+    );
+    assert.equal(fs.existsSync(path.join(fixture.runtimeRoot, 'live-baseline-marker')), true);
+    assert.equal(
+      fs.existsSync(path.join(fixture.runtimeRoot, 'failed-control-root-marker')),
+      false,
+    );
+    const state = fs.readFileSync(path.join(fixture.state, 'production-deploy-state'), 'utf8');
+    assert.match(state, /^status=BLOCKED$/mu);
+    const log = fs.readFileSync(fixture.log, 'utf8');
+    assert.doesNotMatch(log, /run --rm --no-deps migrator/u);
+  } finally {
+    fs.rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test('forced BLOCKED recovery rejects a preserved baseline that differs from live production', () => {
+  const fixture = setupFixture({ blockedRecovery: true, baselineApiOverride: digest('e') });
+  try {
+    const result = run(fixture, ['--force']);
+    assert.notEqual(result.status, 0);
+    assert.match(
+      result.stderr,
+      /forced BLOCKED recovery baseline does not match the current live production runtime/u,
+    );
+    const state = fs.readFileSync(path.join(fixture.state, 'production-deploy-state'), 'utf8');
+    assert.match(state, /^status=BLOCKED$/mu);
+    const log = fs.readFileSync(fixture.log, 'utf8');
+    assert.doesNotMatch(log, /run --rm --no-deps migrator/u);
   } finally {
     fs.rmSync(fixture.root, { recursive: true, force: true });
   }
