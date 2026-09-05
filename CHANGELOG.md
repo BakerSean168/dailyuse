@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.13.2](https://github.com/BakerSean168/memoflow/compare/v0.13.1...v0.13.2) (2026-09-05)
+
+
+### Bug Fixes
+
+* **desktop:** ignore non-fatal ResizeObserver notifications ([f860d47](https://github.com/BakerSean168/memoflow/commit/f860d470262766a539cdc801a9095a6e7edf6397))
+* **desktop:** ignore non-fatal ResizeObserver notifications ([1a95dab](https://github.com/BakerSean168/memoflow/commit/1a95dab362be04c694655a042c18d57766bb2127))
+
 ## [0.13.1](https://github.com/BakerSean168/memoflow/compare/v0.13.0...v0.13.1) (2026-09-05)
 
 
