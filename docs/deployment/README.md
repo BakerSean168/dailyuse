@@ -96,7 +96,7 @@ release / promotion
 | `redis`      | `${REDIS_IMAGE:-redis:8-alpine}`                           | 缓存 / 队列                | ACR digest mirror     |
 | `migrator`   | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-migrator`         | 一次性数据库初始化         | ACR immutable image   |
 | `api`        | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-api`              | 后端 API                   | ACR immutable image   |
-| `powersync`  | `${POWERSYNC_IMAGE:-journeyapps/powersync-service:1.20.4}` | Desktop / Web 实时同步服务 | ACR digest mirror     |
+| `powersync`  | `${POWERSYNC_IMAGE:-journeyapps/powersync-service:1.25.0}` | Desktop / Web 实时同步服务 | ACR digest mirror     |
 | `web`        | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-web`              | 前端站点                   | ACR immutable image   |
 | `caddy`      | `${CADDY_IMAGE:-caddy:2-alpine}`                           | HTTPS 入口                 | ACR digest mirror     |
 | `watchtower` | `${WATCHTOWER_IMAGE:-containrrr/watchtower}`               | 可选辅助更新               | ACR digest mirror     |
@@ -422,7 +422,7 @@ Production promotion 负责选择已验证的 ACR artifact、migrator-first roll
 - Compose project：`memoflow`
 - PostgreSQL 18 + pgvector 0.8.5
 - Redis 8
-- PowerSync 1.20.4
+- PowerSync 1.25.0
 - API/Web：exact-SHA application artifact
 - PostgreSQL / Redis / Caddy / PowerSync：China ACR digest refs
 - GitHub Production App：独立 credentials，`GITHUB_INSTALLATION_ROUTE_KEY=prod`，route targets 为空

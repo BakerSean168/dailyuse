@@ -24,7 +24,6 @@ case "$distribution" in
   *) echo 'STAGING_DISTRIBUTION must be global or china' >&2; exit 2 ;;
 esac
 [[ -n "$registry" && -n "$namespace" ]] || { echo 'unable to resolve staging registry/namespace; set STAGING_REGISTRY and STAGING_NAMESPACE' >&2; exit 2; }
-mirror_tag() { node -e "const c=require('$ROOT/tools/ci-cd-platform/runtime-image-mirrors.json');const x=c.images.find((i)=>i.name===process.argv[1]);if(!x)process.exit(2);process.stdout.write(x.tag)" "$1"; }
 mkdir -p "$CONFIG_DIR" "$BIN_DIR" "$SYSTEMD_DIR"
 if [[ ! -e "$CONFIG_FILE" ]]; then
   umask 077
@@ -36,9 +35,6 @@ STAGING_DISTRIBUTION=$distribution
 STAGING_CHANNEL_TAG=staging-latest
 STAGING_SECRET_ENV=$DEFAULT_SECRET_ENV
 STAGING_COMPOSE_PROJECT=memoflow-staging
-STAGING_POSTGRES_IMAGE=$registry/$namespace/memoflow-postgres:$(mirror_tag memoflow-postgres)
-STAGING_REDIS_IMAGE=$registry/$namespace/memoflow-redis:$(mirror_tag memoflow-redis)
-STAGING_POWERSYNC_IMAGE=$registry/$namespace/memoflow-powersync:$(mirror_tag memoflow-powersync)
 STAGING_EXTERNAL_WEB_URL=https://gcp-dev-01.taile92a8e.ts.net:20250/
 STAGING_EXTERNAL_API_URL=https://gcp-dev-01.taile92a8e.ts.net:20251/healthz
 STAGING_EXTERNAL_POWERSYNC_URL=https://gcp-dev-01.taile92a8e.ts.net:20252/probes/liveness
@@ -48,6 +44,13 @@ ENV
 else
   echo "preserving existing staging channel config: $CONFIG_FILE"
 fi
+# Runtime dependency identities are owned by the exact-SHA runtime artifact,
+# not by host configuration. Remove legacy keys left by the Phase 1 bootstrap
+# so an operator cannot mistake stale values for deployment authority.
+config_tmp=$(mktemp "$CONFIG_DIR/.staging-channel.XXXXXX")
+awk '!/^STAGING_(POSTGRES|REDIS|POWERSYNC)_IMAGE=/' "$CONFIG_FILE" > "$config_tmp"
+chmod 0600 "$config_tmp"
+mv -f "$config_tmp" "$CONFIG_FILE"
 [[ -s "$DEFAULT_SECRET_ENV" || -s "$(sed -n 's/^STAGING_SECRET_ENV=//p' "$CONFIG_FILE" | tail -1)" ]] || { echo 'missing staging secret env' >&2; exit 2; }
 install -m 0755 "$ROOT/deployment/staging/staging-deploy-watch.sh" "$BIN_DIR/memoflow-staging-deploy-watch"
 install -m 0644 "$ROOT/deployment/staging/systemd/memoflow-staging-deploy-watch.service" "$SYSTEMD_DIR/memoflow-staging-deploy-watch.service"

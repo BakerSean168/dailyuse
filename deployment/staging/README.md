@@ -10,9 +10,10 @@ Canonical staging is an artifact projection of a successful `main` candidate; it
 1. immutable `sha-<full SHA>` Web/API/Migrator images in ACR and GHCR;
 2. `memoflow.candidate-set/v1` binding the three image digests to the exact successful main CI run;
 3. `memoflow-staging-runtime:sha-<full SHA>`, containing this directory, PowerSync config and the candidate manifest;
-4. `staging-latest` pointers only when that candidate is still current `main`.
+4. `staging-latest` pointers only when that candidate is still current `main`;
+5. the reviewed `runtime-image-mirrors.json` snapshot used by that exact runtime revision.
 
-The GCP watcher reads `staging-latest`, extracts the runtime contract, validates the embedded candidate manifest, then converts all application images to exact `repository@sha256:...` refs before Compose runs.
+The GCP watcher reads `staging-latest`, extracts the runtime contract, validates the embedded candidate manifest, then converts application images and PostgreSQL/Redis/PowerSync mirror dependencies to exact `repository@sha256:...` refs before Compose runs. Runtime dependency pins therefore travel with the candidate runtime instead of remaining stale in host channel configuration.
 
 ## Host-owned files
 

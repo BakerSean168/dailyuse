@@ -23,8 +23,9 @@ log() { printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"; }
 fail() { log "ERROR: $*" >&2; exit 1; }
 
 [[ -s "$CONFIG_FILE" ]] || fail "missing staging channel config: $CONFIG_FILE"
-# Non-secret coordinates only. shellcheck disable=SC1090
+# Non-secret coordinates only.
 set -a
+# shellcheck disable=SC1090
 source "$CONFIG_FILE"
 set +a
 
@@ -72,7 +73,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-log 'checking ACR staging-latest channel'
+log "checking $DISTRIBUTION staging-latest channel"
 for ref in "$runtime_channel" "$web_channel" "$api_channel" "$migrator_channel"; do pull_channel "$ref"; done
 runtime_revision=$(image_revision "$runtime_channel")
 web_revision=$(image_revision "$web_channel")
@@ -81,7 +82,7 @@ migrator_revision=$(image_revision "$migrator_channel")
 for pair in "runtime:$runtime_revision" "web:$web_revision" "api:$api_revision" "migrator:$migrator_revision"; do
   [[ -n "${pair#*:}" ]] || fail "${pair%%:*} staging image has no org.opencontainers.image.revision"
 done
-if [[ "$runtime_revision" != "$web_revision" || "$runtime_revision" != "$api_revision" || "$runtime_revision" != "$migrator_revision" ]]; then
+if ! [[ "$runtime_revision" == "$web_revision" && "$runtime_revision" == "$api_revision" && "$runtime_revision" == "$migrator_revision" ]]; then
   log "staging channel not coherent yet: runtime=$runtime_revision web=$web_revision api=$api_revision migrator=$migrator_revision"
   exit 0
 fi
@@ -92,7 +93,7 @@ runtime_container=$(docker create "$runtime_channel" /bin/true)
 docker cp "$runtime_container:/runtime/staging/." "$stage/"
 docker rm "$runtime_container" >/dev/null
 runtime_container=''
-for required in candidate-set-v1.json docker-compose.staging.yml staging-deploy-watch.sh docker/powersync/powersync.yaml docker/powersync/sync-config.yaml tools/ci-cd-platform/candidate-manifest.mjs tools/ci-cd-platform/lib/contracts.mjs; do
+for required in candidate-set-v1.json docker-compose.staging.yml staging-deploy-watch.sh docker/powersync/powersync.yaml docker/powersync/sync-config.yaml tools/ci-cd-platform/runtime-image-mirrors.json tools/ci-cd-platform/candidate-manifest.mjs tools/ci-cd-platform/lib/contracts.mjs; do
   [[ -s "$stage/$required" ]] || fail "candidate runtime missing artifact: $required"
 done
 node "$stage/tools/ci-cd-platform/candidate-manifest.mjs" --validate "$stage/candidate-set-v1.json" >/dev/null
@@ -110,6 +111,24 @@ channel_digest_for() {
 }
 repo_for() { node -p "require('$stage/candidate-set-v1.json').images.$1.distributions.$DISTRIBUTION.repository"; }
 expected_digest_for() { node -p "require('$stage/candidate-set-v1.json').images.$1.digest"; }
+mirror_field_for() {
+  local name="$1" field="$2"
+  node -e "const c=require('$stage/tools/ci-cd-platform/runtime-image-mirrors.json');const x=c.images.find((i)=>i.name===process.argv[1]);if(!x)process.exit(2);const v=x[process.argv[2]];if(typeof v!=='string'||!v)process.exit(3);process.stdout.write(v)" "$name" "$field"
+}
+runtime_mirror_ref() {
+  local name="$1" source tag expected_digest digest_hex tag_ref actual_digest
+  source=$(mirror_field_for "$name" source) || fail "missing runtime mirror source for $name"
+  tag=$(mirror_field_for "$name" tag) || fail "missing runtime mirror tag for $name"
+  expected_digest="${source##*@}"
+  [[ "$expected_digest" =~ ^sha256:[0-9a-f]{64}$ ]] || fail "$name runtime mirror source is not digest-pinned"
+  digest_hex="${expected_digest#sha256:}"
+  [[ "$tag" == *"${digest_hex:0:12}" ]] || fail "$name runtime mirror tag does not bind digest prefix"
+  tag_ref="$REGISTRY/$NAMESPACE/$name:$tag"
+  pull_channel "$tag_ref"
+  actual_digest=$(image_digest "$tag_ref")
+  [[ "$actual_digest" == "$expected_digest" ]] || fail "$name runtime mirror digest mismatch: $actual_digest != $expected_digest"
+  printf '%s\n' "$REGISTRY/$NAMESPACE/$name@$expected_digest"
+}
 for component in web api migrator; do
   selected_repo=$(repo_for "$component")
   expected_repo="$REGISTRY/$NAMESPACE/memoflow-$component"
@@ -120,6 +139,9 @@ for component in web api migrator; do
 done
 runtime_digest=$(image_digest "$runtime_channel")
 [[ "$runtime_digest" =~ ^sha256:[0-9a-f]{64}$ ]] || fail 'runtime staging digest is missing'
+postgres_runtime_image=$(runtime_mirror_ref memoflow-postgres)
+redis_runtime_image=$(runtime_mirror_ref memoflow-redis)
+powersync_runtime_image=$(runtime_mirror_ref memoflow-powersync)
 
 managed_revision=$(sed -n 's/^revision=//p' "$STATE_FILE" 2>/dev/null | tail -1 || true)
 managed_status=$(sed -n 's/^status=//p' "$STATE_FILE" 2>/dev/null | tail -1 || true)
@@ -136,9 +158,9 @@ cat > "$stage/runtime-images.env" <<ENV
 STAGING_WEB_IMAGE=$(repo_for web)@$(expected_digest_for web)
 STAGING_API_IMAGE=$(repo_for api)@$(expected_digest_for api)
 STAGING_MIGRATOR_IMAGE=$(repo_for migrator)@$(expected_digest_for migrator)
-STAGING_POSTGRES_IMAGE=${STAGING_POSTGRES_IMAGE:?set STAGING_POSTGRES_IMAGE in $CONFIG_FILE}
-STAGING_REDIS_IMAGE=${STAGING_REDIS_IMAGE:?set STAGING_REDIS_IMAGE in $CONFIG_FILE}
-STAGING_POWERSYNC_IMAGE=${STAGING_POWERSYNC_IMAGE:?set STAGING_POWERSYNC_IMAGE in $CONFIG_FILE}
+STAGING_POSTGRES_IMAGE=$postgres_runtime_image
+STAGING_REDIS_IMAGE=$redis_runtime_image
+STAGING_POWERSYNC_IMAGE=$powersync_runtime_image
 STAGING_SECRET_ENV=$SECRET_ENV
 ENV
 
@@ -158,7 +180,7 @@ wait_healthy() {
       [[ "$status" == healthy ]] && return 0
     fi
     if (( $(date +%s) - start >= timeout )); then
-      [[ -n "${id:-}" ]] && docker logs --tail 100 "$id" 2>&1 || true
+      if [[ -n "${id:-}" ]]; then docker logs --tail 100 "$id" 2>&1 || true; fi
       return 1
     fi
     sleep 2
@@ -204,6 +226,20 @@ if [[ -d "$RUNTIME_ROOT" ]]; then mv "$RUNTIME_ROOT" "$RUNTIME_ROOT.prev"; fi
 mv "$RUNTIME_ROOT.next" "$RUNTIME_ROOT"
 
 migrated=false
+write_blocked_state() {
+  local reason="${1:-error}" tmp
+  tmp="$STATE_FILE.tmp.$$"
+  cat > "$tmp" <<STATE
+status=BLOCKED
+revision=$desired_revision
+candidate_digest=$candidate_digest
+runtime_digest=$runtime_digest
+blocked_reason=$reason
+blocked_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+STATE
+  chmod 0644 "$tmp"
+  mv -f "$tmp" "$STATE_FILE"
+}
 rollback_pre_migration() {
   if $migrated; then
     return 1
@@ -219,22 +255,26 @@ rollback_pre_migration() {
 
 on_failure() {
   local status=$?
-  trap - ERR
+  trap - ERR TERM INT HUP
   if ! rollback_pre_migration; then
-    tmp="$STATE_FILE.tmp.$$"
-    cat > "$tmp" <<STATE
-status=BLOCKED
-revision=$desired_revision
-candidate_digest=$candidate_digest
-runtime_digest=$runtime_digest
-blocked_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-STATE
-    mv -f "$tmp" "$STATE_FILE"
+    write_blocked_state error
     log 'deployment crossed migration boundary; recorded BLOCKED instead of blind rollback'
   fi
   exit "$status"
 }
+on_signal() {
+  local signal="$1" status="$2"
+  trap - ERR TERM INT HUP
+  if ! rollback_pre_migration; then
+    write_blocked_state "signal_$signal"
+    log "deployment interrupted by $signal after migration boundary; recorded BLOCKED"
+  fi
+  exit "$status"
+}
 trap on_failure ERR
+trap 'on_signal TERM 143' TERM
+trap 'on_signal INT 130' INT
+trap 'on_signal HUP 129' HUP
 
 log "deploying coherent staging revision $desired_revision"
 compose up -d --no-build postgres redis
@@ -274,10 +314,13 @@ runtime_digest=$runtime_digest
 web_digest=$(expected_digest_for web)
 api_digest=$(expected_digest_for api)
 migrator_digest=$(expected_digest_for migrator)
+postgres_digest=${postgres_runtime_image##*@}
+redis_digest=${redis_runtime_image##*@}
+powersync_digest=${powersync_runtime_image##*@}
 deployed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 STATE
 chmod 0644 "$state_tmp"
 mv -f "$state_tmp" "$STATE_FILE"
 rm -rf "$RUNTIME_ROOT.prev" "$RUNTIME_ROOT.failed"
-trap - ERR
+trap - ERR TERM INT HUP
 log "STAGING_DEPLOY=PASS revision=$desired_revision candidate=$candidate_digest"

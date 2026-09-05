@@ -107,6 +107,7 @@ GCP staging watcher:
 - keeps secrets in host-owned external env files;
 - runs migrator first;
 - updates API then Web and validates PowerSync compatibility;
+- resolves reviewed PostgreSQL / Redis / PowerSync mirrors from the candidate runtime contract to exact digests rather than host-stored mutable pins;
 - records exact source revision, component digests and deployment time atomically;
 - leaves the previous runtime available for bounded rollback.
 
