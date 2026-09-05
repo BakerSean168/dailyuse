@@ -98,17 +98,21 @@ Acceptance:
 
 ### Channel enablement
 
-Enable `artifact-publish` Environment and coherent promotion only after shadow proof. Recheck current main immediately before mutation.
+`Publish Main Candidate` is triggered only by a successful `CI` push run on `main` (manual dispatch is recovery-only and revalidates the exact successful CI run). It publishes immutable candidates first, rechecks current `main` immediately before mutation, and only then moves the coherent ACR/GHCR `staging-latest` channel. A stale but valid candidate remains available by `sha-<full SHA>` and skips channel promotion.
 
 ### Watcher installation
 
-Install GCP user service/timer with:
+Install GCP user service/timer from `deployment/staging/` with:
 
-- host-owned non-secret channel config;
-- external secret env file mode 0600;
+- `deployment/staging/install-staging-deploy-watch.sh`;
+- host-owned non-secret `~/.config/memoflow/staging-channel.env`;
+- external `~/.config/memoflow/staging.env` secret file;
 - dedicated state/runtime directories;
-- lock and bounded timeouts;
-- check-only mode before enablement.
+- host-owned ACR Docker credentials;
+- lock and bounded health timeouts;
+- `~/.local/bin/memoflow-staging-deploy-watch --check-only` before timer enablement.
+
+The runtime OCI artifact embeds the exact candidate manifest and versioned Compose/PowerSync/watcher files. The watcher deploys `repository@sha256:...` refs rather than mutable channel tags.
 
 ### Staging acceptance
 
@@ -124,7 +128,7 @@ public/private ingress result
 deploy-state content
 ```
 
-Rollback by restoring previous exact candidate set; never rebuild locally under the same identity.
+Pre-migration failure restores the previous exact runtime automatically. Once Migrator succeeds, an uncertain rollout records `BLOCKED` rather than performing a blind schema rollback. Never rebuild locally under an existing candidate identity. The historical source-build staging stack is emergency/diagnostic only and is not release evidence after cutover.
 
 ## 5. Production cutover
 

@@ -1,0 +1,8 @@
+[Unit]
+Description=MemoFlow canonical staging deploy watcher
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/memoflow-staging-deploy-watch

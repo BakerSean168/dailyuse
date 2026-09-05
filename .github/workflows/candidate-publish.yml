@@ -1,0 +1,478 @@
+name: Publish Main Candidate
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ci_run_id:
+        description: Successful main CI run ID to recover/retry
+        required: true
+        type: string
+      sha:
+        description: Exact main SHA from that CI run
+        required: true
+        type: string
+
+concurrency:
+  group: main-candidate-${{ github.event.workflow_run.head_sha || inputs.sha }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+  packages: write
+
+env:
+  NODE_VERSION: '24'
+  PRISMA_HIDE_UPDATE_MESSAGE: 'true'
+
+jobs:
+  resolve:
+    name: Resolve exact-SHA main candidate
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    outputs:
+      revision: ${{ steps.meta.outputs.revision }}
+      candidate_tag: ${{ steps.meta.outputs.candidate_tag }}
+      ci_run_id: ${{ steps.meta.outputs.ci_run_id }}
+      build_date: ${{ steps.meta.outputs.build_date }}
+      global_namespace: ${{ steps.meta.outputs.global_namespace }}
+    steps:
+      - name: Checkout exact tested revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || inputs.sha }}
+          fetch-depth: 0
+      - id: meta
+        name: Bind candidate to successful main CI
+        env:
+          TESTED_SHA: ${{ github.event.workflow_run.head_sha || inputs.sha }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id || inputs.ci_run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          revision="$(git rev-parse HEAD)"
+          test "$revision" = "$TESTED_SHA"
+          [[ "$revision" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$CI_RUN_ID" =~ ^[0-9]+$ ]]
+          {
+            echo "revision=$revision"
+            echo "candidate_tag=sha-$revision"
+            echo "ci_run_id=$CI_RUN_ID"
+            echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "global_namespace=${GITHUB_REPOSITORY_OWNER,,}"
+          } >> "$GITHUB_OUTPUT"
+      - name: Verify source CI run is a successful exact-SHA main push
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CI_RUN_ID: ${{ steps.meta.outputs.ci_run_id }}
+          REVISION: ${{ steps.meta.outputs.revision }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_json="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$CI_RUN_ID")"
+          test "$(jq -r .name <<<"$run_json")" = 'CI'
+          test "$(jq -r .status <<<"$run_json")" = 'completed'
+          test "$(jq -r .conclusion <<<"$run_json")" = 'success'
+          test "$(jq -r .event <<<"$run_json")" = 'push'
+          test "$(jq -r .head_branch <<<"$run_json")" = 'main'
+          test "$(jq -r .head_sha <<<"$run_json")" = "$REVISION"
+
+  build-candidate:
+    name: Build candidate ${{ matrix.component }}
+    needs: resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - component: api
+            image: memoflow-api
+            dockerfile: Dockerfile.api
+            target: api-runtime
+            cache_scope: candidate-api
+          - component: migrator
+            image: memoflow-migrator
+            dockerfile: Dockerfile.api
+            target: migrator-runtime
+            cache_scope: candidate-migrator
+          - component: web
+            image: memoflow-web
+            dockerfile: Dockerfile.web
+            target: runtime
+            cache_scope: candidate-web
+    steps:
+      - name: Checkout exact candidate source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.resolve.outputs.revision }}
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          package-manager-cache: false
+      - name: Download exact CI build closure
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: ci-build-artifacts
+          path: .
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ needs.resolve.outputs.ci_run_id }}
+      - name: Validate and restore exact CI artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node ./tools/ci-cd-platform/validate-manifest.mjs scope/delivery-manifest-v1.json delivery
+          test "$(node -p "require('./scope/delivery-manifest-v1.json').head")" = "${{ needs.resolve.outputs.revision }}"
+          delivery_digest="$(node -p "require('./scope/delivery-manifest-v1.json').digest")"
+          node ./tools/ci-cd-platform/restore-runtime-closure.mjs reports/ci-cd-platform/api-runtime-closure-artifact-manifest.json api-runtime-closure . "$delivery_digest"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/api-artifact-manifest.json apps/api/dist "$delivery_digest"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/web-artifact-manifest.json dist/apps/web "$delivery_digest"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/migrator-artifact-manifest.json apps/migrator/dist "$delivery_digest"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/database-artifact-manifest.json packages/database/dist "$delivery_digest"
+          node ./tools/ci-cd-platform/verify-artifact.mjs reports/ci-cd-platform/database-runtime-artifact-manifest.json packages/database/dist/runtime-scripts "$delivery_digest"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4
+      - name: Login to ACR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ${{ secrets.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+      - name: Login to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - id: existing
+        name: Reuse immutable candidate only when both registries already agree
+        env:
+          IMAGE: ${{ matrix.image }}
+          TAG: ${{ needs.resolve.outputs.candidate_tag }}
+          CHINA_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          CHINA_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          global_namespace="${{ needs.resolve.outputs.global_namespace }}"
+          china_ref="$CHINA_REGISTRY/$CHINA_NAMESPACE/$IMAGE:$TAG"
+          global_ref="ghcr.io/$global_namespace/$IMAGE:$TAG"
+          china_exists=false; global_exists=false
+          china_json="$(docker buildx imagetools inspect "$china_ref" 2>/dev/null || true)"
+          global_json="$(docker buildx imagetools inspect "$global_ref" 2>/dev/null || true)"
+          [[ -z "$china_json" ]] || china_exists=true
+          [[ -z "$global_json" ]] || global_exists=true
+          test "$china_exists" = "$global_exists" || { echo 'immutable candidate exists in only one registry' >&2; exit 1; }
+          if $china_exists; then
+            china_digest="$(docker buildx imagetools inspect "$china_ref" --format '{{.Manifest.Digest}}')"
+            global_digest="$(docker buildx imagetools inspect "$global_ref" --format '{{.Manifest.Digest}}')"
+            test "$china_digest" = "$global_digest"
+            docker pull "$china_ref" >/dev/null
+            revision="$(docker image inspect "$china_ref" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')"
+            test "$revision" = "${{ needs.resolve.outputs.revision }}"
+            echo 'reuse=true' >> "$GITHUB_OUTPUT"
+            echo "digest=$china_digest" >> "$GITHUB_OUTPUT"
+          else
+            echo 'reuse=false' >> "$GITHUB_OUTPUT"
+          fi
+      - id: build
+        if: steps.existing.outputs.reuse != 'true'
+        name: Build and push exact-SHA candidate once
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          target: ${{ matrix.target }}
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/${{ matrix.image }}:${{ needs.resolve.outputs.candidate_tag }}
+            ghcr.io/${{ needs.resolve.outputs.global_namespace }}/${{ matrix.image }}:${{ needs.resolve.outputs.candidate_tag }}
+          build-args: |
+            BUILD_DATE=${{ needs.resolve.outputs.build_date }}
+            VCS_REF=${{ needs.resolve.outputs.revision }}
+            VERSION=${{ needs.resolve.outputs.candidate_tag }}
+            USE_PREBUILT_ARTIFACT=1
+          cache-from: type=gha,scope=${{ matrix.cache_scope }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.cache_scope }}
+          provenance: false
+          sbom: false
+      - id: identity
+        name: Verify dual-registry digest and OCI revision parity
+        env:
+          IMAGE: ${{ matrix.image }}
+          TAG: ${{ needs.resolve.outputs.candidate_tag }}
+          CHINA_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          CHINA_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+          REUSED_DIGEST: ${{ steps.existing.outputs.digest }}
+          BUILD_DIGEST: ${{ steps.build.outputs.digest }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          global_namespace="${{ needs.resolve.outputs.global_namespace }}"
+          china_repo="$CHINA_REGISTRY/$CHINA_NAMESPACE/$IMAGE"
+          global_repo="ghcr.io/$global_namespace/$IMAGE"
+          expected="${REUSED_DIGEST:-$BUILD_DIGEST}"
+          [[ "$expected" =~ ^sha256:[0-9a-f]{64}$ ]]
+          china_digest="$(docker buildx imagetools inspect "$china_repo:$TAG" --format '{{.Manifest.Digest}}')"
+          global_digest="$(docker buildx imagetools inspect "$global_repo:$TAG" --format '{{.Manifest.Digest}}')"
+          test "$china_digest" = "$expected"
+          test "$global_digest" = "$expected"
+          docker pull "$china_repo:$TAG" >/dev/null
+          test "$(docker image inspect "$china_repo:$TAG" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')" = "${{ needs.resolve.outputs.revision }}"
+          echo "digest=$expected" >> "$GITHUB_OUTPUT"
+          mkdir -p reports/candidate/components
+          jq -n \
+            --arg tag "$TAG" --arg digest "$expected" --arg revision "${{ needs.resolve.outputs.revision }}" \
+            --arg chinaRepository "$china_repo" --arg globalRepository "$global_repo" \
+            '{tag:$tag,digest:$digest,revision:$revision,distributions:{china:{repository:$chinaRepository,tag:$tag,digest:$digest},global:{repository:$globalRepository,tag:$tag,digest:$digest}}}' \
+            > "reports/candidate/components/${{ matrix.component }}.json"
+      - name: Upload component identity
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: candidate-component-${{ matrix.component }}
+          path: reports/candidate/components/${{ matrix.component }}.json
+          if-no-files-found: error
+          retention-days: 90
+
+  candidate-manifest:
+    name: Build canonical candidate-set/v1
+    needs: [resolve, build-candidate]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout candidate contract
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.resolve.outputs.revision }}
+      - name: Download source delivery manifest
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: delivery-manifest-v1
+          path: reports/candidate/source-ci
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ needs.resolve.outputs.ci_run_id }}
+      - name: Download candidate component identities
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          pattern: candidate-component-*
+          path: reports/candidate/components
+          merge-multiple: true
+      - name: Create candidate-set/v1
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_manifest=reports/candidate/source-ci/delivery-manifest-v1.json
+          node ./tools/ci-cd-platform/validate-manifest.mjs "$source_manifest" delivery
+          test "$(node -p "require('./$source_manifest').head")" = "${{ needs.resolve.outputs.revision }}"
+          delivery_digest="sha256:$(node -p "require('./$source_manifest').digest")"
+          jq -n \
+            --arg gitSha "${{ needs.resolve.outputs.revision }}" \
+            --arg ciRunId "${{ needs.resolve.outputs.ci_run_id }}" \
+            --arg deliveryManifestDigest "$delivery_digest" \
+            --argjson web "$(cat reports/candidate/components/web.json)" \
+            --argjson api "$(cat reports/candidate/components/api.json)" \
+            --argjson migrator "$(cat reports/candidate/components/migrator.json)" \
+            '{gitSha:$gitSha,ciRunId:$ciRunId,deliveryManifestDigest:$deliveryManifestDigest,images:{web:$web,api:$api,migrator:$migrator}}' \
+            > reports/candidate/candidate-input.json
+          node ./tools/ci-cd-platform/candidate-manifest.mjs --input reports/candidate/candidate-input.json --output reports/candidate/candidate-set-v1.json
+          node ./tools/ci-cd-platform/candidate-manifest.mjs --validate reports/candidate/candidate-set-v1.json
+      - name: Upload canonical candidate set
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: candidate-set-${{ needs.resolve.outputs.revision }}
+          path: reports/candidate/candidate-set-v1.json
+          if-no-files-found: error
+          retention-days: 90
+
+  runtime-artifact:
+    name: Build candidate staging runtime
+    needs: [resolve, candidate-manifest]
+    runs-on: ubuntu-latest
+    outputs:
+      digest: ${{ steps.identity.outputs.digest }}
+    steps:
+      - name: Checkout exact candidate runtime source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.resolve.outputs.revision }}
+      - name: Download canonical candidate set
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: candidate-set-${{ needs.resolve.outputs.revision }}
+          path: reports/candidate
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4
+      - name: Login to ACR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ${{ secrets.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+      - name: Login to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - id: existing
+        name: Reuse immutable runtime artifact only when both registries already agree
+        env:
+          CHINA_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          CHINA_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+          TAG: ${{ needs.resolve.outputs.candidate_tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          china_ref="$CHINA_REGISTRY/$CHINA_NAMESPACE/memoflow-staging-runtime:$TAG"
+          global_ref="ghcr.io/${{ needs.resolve.outputs.global_namespace }}/memoflow-staging-runtime:$TAG"
+          china_exists=false; global_exists=false
+          docker buildx imagetools inspect "$china_ref" >/dev/null 2>&1 && china_exists=true || true
+          docker buildx imagetools inspect "$global_ref" >/dev/null 2>&1 && global_exists=true || true
+          test "$china_exists" = "$global_exists" || { echo 'runtime artifact exists in only one registry' >&2; exit 1; }
+          if $china_exists; then
+            china_digest="$(docker buildx imagetools inspect "$china_ref" --format '{{.Manifest.Digest}}')"
+            global_digest="$(docker buildx imagetools inspect "$global_ref" --format '{{.Manifest.Digest}}')"
+            test "$china_digest" = "$global_digest"
+            docker pull "$china_ref" >/dev/null
+            test "$(docker image inspect "$china_ref" --format '{{index .Config.Labels \"org.opencontainers.image.revision\"}}')" = "${{ needs.resolve.outputs.revision }}"
+            echo 'reuse=true' >> "$GITHUB_OUTPUT"
+            echo "digest=$china_digest" >> "$GITHUB_OUTPUT"
+          else
+            echo 'reuse=false' >> "$GITHUB_OUTPUT"
+          fi
+      - id: build
+        if: steps.existing.outputs.reuse != 'true'
+        name: Build exact-SHA staging runtime artifact
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          file: deployment/staging/Dockerfile.runtime
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-staging-runtime:${{ needs.resolve.outputs.candidate_tag }}
+            ghcr.io/${{ needs.resolve.outputs.global_namespace }}/memoflow-staging-runtime:${{ needs.resolve.outputs.candidate_tag }}
+          build-args: |
+            BUILD_DATE=${{ needs.resolve.outputs.build_date }}
+            VCS_REF=${{ needs.resolve.outputs.revision }}
+            VERSION=${{ needs.resolve.outputs.candidate_tag }}
+          provenance: false
+          sbom: false
+      - id: identity
+        name: Verify runtime dual-registry identity
+        env:
+          CHINA_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          CHINA_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+          TAG: ${{ needs.resolve.outputs.candidate_tag }}
+          EXPECTED: ${{ steps.existing.outputs.digest || steps.build.outputs.digest }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          global_namespace="${{ needs.resolve.outputs.global_namespace }}"
+          china_ref="$CHINA_REGISTRY/$CHINA_NAMESPACE/memoflow-staging-runtime:$TAG"
+          global_ref="ghcr.io/$global_namespace/memoflow-staging-runtime:$TAG"
+          china_digest="$(docker buildx imagetools inspect "$china_ref" --format '{{.Manifest.Digest}}')"
+          global_digest="$(docker buildx imagetools inspect "$global_ref" --format '{{.Manifest.Digest}}')"
+          test "$china_digest" = "$EXPECTED"
+          test "$global_digest" = "$EXPECTED"
+          echo "digest=$EXPECTED" >> "$GITHUB_OUTPUT"
+
+  promote-staging:
+    name: Promote coherent staging-latest channel
+    needs: [resolve, candidate-manifest, runtime-artifact]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout candidate tooling
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.resolve.outputs.revision }}
+          fetch-depth: 0
+      - name: Download canonical candidate set
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: candidate-set-${{ needs.resolve.outputs.revision }}
+          path: reports/candidate
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4
+      - name: Login to ACR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ${{ secrets.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+      - name: Login to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - id: freshness
+        name: Recheck main HEAD immediately before staging mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          current_main="$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" refs/heads/main | awk '{print $1}')"
+          [[ "$current_main" =~ ^[0-9a-f]{40}$ ]]
+          if [[ "$current_main" == "${{ needs.resolve.outputs.revision }}" ]]; then
+            echo 'eligible=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'eligible=false' >> "$GITHUB_OUTPUT"
+            echo "Candidate is valid but main advanced to $current_main; staging promotion skipped." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Promote complete candidate set to staging-latest in both registries
+        if: steps.freshness.outputs.eligible == 'true'
+        env:
+          RUNTIME_DIGEST: ${{ needs.runtime-artifact.outputs.digest }}
+          CHINA_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          CHINA_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          manifest=reports/candidate/candidate-set-v1.json
+          node ./tools/ci-cd-platform/candidate-manifest.mjs --validate "$manifest"
+          for component in web api migrator; do
+            for distribution in china global; do
+              repo="$(node -p "require('./$manifest').images.$component.distributions.$distribution.repository")"
+              digest="$(node -p "require('./$manifest').images.$component.digest")"
+              docker buildx imagetools create --prefer-index=false --tag "$repo:staging-latest" "$repo@$digest"
+            done
+          done
+          global_namespace="${{ needs.resolve.outputs.global_namespace }}"
+          china_runtime="$CHINA_REGISTRY/$CHINA_NAMESPACE/memoflow-staging-runtime"
+          global_runtime="ghcr.io/$global_namespace/memoflow-staging-runtime"
+          docker buildx imagetools create --prefer-index=false --tag "$china_runtime:staging-latest" "$china_runtime@$RUNTIME_DIGEST"
+          docker buildx imagetools create --prefer-index=false --tag "$global_runtime:staging-latest" "$global_runtime@$RUNTIME_DIGEST"
+      - name: Verify coherent staging-latest digests
+        if: steps.freshness.outputs.eligible == 'true'
+        env:
+          RUNTIME_DIGEST: ${{ needs.runtime-artifact.outputs.digest }}
+          CHINA_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          CHINA_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          manifest=reports/candidate/candidate-set-v1.json
+          for component in web api migrator; do
+            expected="$(node -p "require('./$manifest').images.$component.digest")"
+            for distribution in china global; do
+              repo="$(node -p "require('./$manifest').images.$component.distributions.$distribution.repository")"
+              actual="$(docker buildx imagetools inspect "$repo:staging-latest" --format '{{.Manifest.Digest}}')"
+              test "$actual" = "$expected"
+            done
+          done
+          global_namespace="${{ needs.resolve.outputs.global_namespace }}"
+          test "$(docker buildx imagetools inspect "$CHINA_REGISTRY/$CHINA_NAMESPACE/memoflow-staging-runtime:staging-latest" --format '{{.Manifest.Digest}}')" = "$RUNTIME_DIGEST"
+          test "$(docker buildx imagetools inspect "ghcr.io/$global_namespace/memoflow-staging-runtime:staging-latest" --format '{{.Manifest.Digest}}')" = "$RUNTIME_DIGEST"
+          echo "STAGING_CHANNEL=PASS revision=${{ needs.resolve.outputs.revision }}" >> "$GITHUB_STEP_SUMMARY"

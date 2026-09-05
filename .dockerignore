@@ -30,3 +30,10 @@ nul
 # Browser/E2E generated evidence is not part of product images.
 apps/web/playwright*-report
 apps/web/test-results*
+
+# Delivery V3 runtime bundle embeds only the canonical candidate identity.
+!reports/
+reports/*
+!reports/candidate/
+reports/candidate/*
+!reports/candidate/candidate-set-v1.json

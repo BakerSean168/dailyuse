@@ -1,0 +1,195 @@
+services:
+  postgres:
+    image: ${STAGING_POSTGRES_IMAGE:?set STAGING_POSTGRES_IMAGE}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:?set DB_NAME}
+      POSTGRES_USER: ${DB_USER:?set DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - '127.0.0.1:${POSTGRES_HOST_PORT:-20260}:5432'
+    volumes:
+      - postgres-staging-data:/var/lib/postgresql
+    command: [postgres, -c, wal_level=logical, -c, max_wal_senders=10, -c, max_replication_slots=10]
+    networks: [memoflow-staging]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:?set DB_USER} -d ${DB_NAME:?set DB_NAME}']
+      interval: 10s
+      timeout: 5s
+      retries: 8
+      start_period: 10s
+
+  redis:
+    image: ${STAGING_REDIS_IMAGE:?set STAGING_REDIS_IMAGE}
+    restart: unless-stopped
+    command:
+      [
+        redis-server,
+        --appendonly,
+        'yes',
+        --appendfsync,
+        everysec,
+        --requirepass,
+        '${REDIS_PASSWORD:?set REDIS_PASSWORD}',
+      ]
+    ports:
+      - '127.0.0.1:${REDIS_HOST_PORT:-20261}:6379'
+    volumes:
+      - redis-staging-data:/data
+    networks: [memoflow-staging]
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'redis-cli',
+          '-a',
+          '${REDIS_PASSWORD:?set REDIS_PASSWORD}',
+          '--no-auth-warning',
+          'ping',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+      start_period: 5s
+
+  migrator:
+    image: ${STAGING_MIGRATOR_IMAGE:?set STAGING_MIGRATOR_IMAGE}
+    restart: 'no'
+    init: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ${STAGING_SECRET_ENV:?set STAGING_SECRET_ENV}
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+    networks: [memoflow-staging]
+
+  api:
+    image: ${STAGING_API_IMAGE:?set STAGING_API_IMAGE}
+    restart: unless-stopped
+    init: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - ${STAGING_SECRET_ENV:?set STAGING_SECRET_ENV}
+    environment:
+      NODE_ENV: production
+      LOCAL_VALIDATION: '0'
+      API_PORT: 3000
+      API_HOST: 0.0.0.0
+      DB_HOST: postgres
+      DB_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      POWERSYNC_URL: ${POWERSYNC_URL:-http://powersync:8080}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://gcp-dev-01.taile92a8e.ts.net:20250}
+      AUTH_BASE_URL: ${AUTH_BASE_URL:-https://gcp-dev-01.taile92a8e.ts.net:20251/api/auth}
+      MEMOFLOW_WEB_URL: ${MEMOFLOW_WEB_URL:-https://gcp-dev-01.taile92a8e.ts.net:20250}
+      GITHUB_INSTALLATION_ROUTE_KEY: ${GITHUB_INSTALLATION_ROUTE_KEY:-staging}
+    ports:
+      - '127.0.0.1:${API_HOST_PORT:-20251}:3000'
+    volumes:
+      - api-staging-logs:/app/apps/api/logs
+      - api-staging-uploads:/app/uploads
+      - repository-staging-storage:/tmp/memoflow-repository-storage
+      - powersync-profile-snapshots-staging:${POWERSYNC_SNAPSHOT_DIR:-/var/lib/memoflow/powersync-snapshots}
+    networks: [memoflow-staging]
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('node:http').get('http://127.0.0.1:3000/healthz', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  powersync:
+    image: ${STAGING_POWERSYNC_IMAGE:?set STAGING_POWERSYNC_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    command: ['start', '-c', '/config/powersync.yaml']
+    env_file:
+      - ${STAGING_SECRET_ENV:?set STAGING_SECRET_ENV}
+    environment:
+      POWERSYNC_PORT: 8080
+      PS_PORT: 8080
+      PS_SOURCE_HOSTNAME: postgres
+      PS_SOURCE_PORT: 5432
+      PS_SOURCE_DATABASE: ${DB_NAME:?set DB_NAME}
+      PS_SOURCE_USERNAME: ${DB_USER:?set DB_USER}
+      PS_SOURCE_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      PS_STORAGE_HOSTNAME: postgres
+      PS_STORAGE_PORT: 5432
+      PS_STORAGE_DATABASE: ${DB_NAME:?set DB_NAME}
+      PS_STORAGE_USERNAME: ${DB_USER:?set DB_USER}
+      PS_STORAGE_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      PS_JWK_N: ${POWERSYNC_PUBLIC_KEY_N:?set POWERSYNC_PUBLIC_KEY_N}
+      PS_JWK_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
+      PS_JWK_KID: ${POWERSYNC_KEY_ID:?set POWERSYNC_KEY_ID}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ./docker/powersync/powersync.yaml:/config/powersync.yaml:ro
+      - ./docker/powersync/sync-config.yaml:/config/sync-config.yaml:ro
+    ports:
+      - '127.0.0.1:${POWERSYNC_HOST_PORT:-20252}:8080'
+    networks: [memoflow-staging]
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "const http=require('http');const req=http.get('http://127.0.0.1:8080/probes/liveness',(res)=>process.exit(res.statusCode===200?0:1));req.on('error',()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  web:
+    image: ${STAGING_WEB_IMAGE:?set STAGING_WEB_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - '127.0.0.1:${WEB_HOST_PORT:-20250}:80'
+    networks: [memoflow-staging]
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://127.0.0.1/']
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+networks:
+  memoflow-staging:
+    driver: bridge
+
+volumes:
+  postgres-staging-data:
+    name: ${STAGING_POSTGRES_VOLUME:-memoflow-staging_postgres-local-data}
+  redis-staging-data:
+    name: ${STAGING_REDIS_VOLUME:-memoflow-staging_redis-local-data}
+  api-staging-logs:
+    name: ${STAGING_API_LOGS_VOLUME:-memoflow-staging_api-local-logs}
+  api-staging-uploads:
+    name: ${STAGING_API_UPLOADS_VOLUME:-memoflow-staging_api-local-uploads}
+  repository-staging-storage:
+    name: ${STAGING_REPOSITORY_VOLUME:-memoflow-staging_repository-local-storage}
+  powersync-profile-snapshots-staging:
+    name: ${STAGING_POWERSYNC_SNAPSHOTS_VOLUME:-memoflow-staging_powersync-profile-snapshots-local}
