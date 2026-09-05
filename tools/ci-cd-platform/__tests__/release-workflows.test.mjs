@@ -58,7 +58,8 @@ test('release publish waits for exact candidate publication then resolves the bo
   assert.doesNotMatch(workflow, /getReleaseByTag/u);
   assert.match(workflow, /autorelease: pending/);
   assert.match(workflow, /autorelease: tagged/);
-  assert.match(workflow, /already_published == 'true' \|\| needs\.finalize\.result == 'success'/);
+  assert.match(workflow, /needs\.prepare\.result == 'success'/);
+  assert.doesNotMatch(workflow, /needs\.finalize\.result == 'success'/);
 });
 
 test('release validation checkouts retain merge-parent history', async () => {
