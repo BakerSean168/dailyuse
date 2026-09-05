@@ -58,8 +58,15 @@ describe('API Docker workspace closure', () => {
 
     expect(dockerfile).toContain('COPY packages/label/package.json ./packages/label/package.json');
     expect(dockerfile).toContain('COPY packages/label ./packages/label');
+    expect(dockerfile).toContain('--filter @memoflow/api deploy --prod --ignore-scripts /prod/api');
     expect(dockerfile).toContain(
-      '--filter @memoflow/api deploy --prod --ignore-scripts /prod/api',
+      '--filter @memoflow/migrator deploy --prod --ignore-scripts /prod/migrator',
+    );
+    expect(dockerfile).toContain(
+      'node /prod/migrator/node_modules/@prisma/engines/scripts/postinstall.js',
+    );
+    expect(dockerfile).toContain(
+      "find /prod/migrator/node_modules/@prisma/engines -maxdepth 1 -type f -name 'schema-engine-*'",
     );
   });
 });
@@ -104,13 +111,12 @@ describe('validation failure classification', () => {
     ['affected-test', false, 'code'],
     ['docker-local-up', false, 'docker-deploy'],
     ['affected-typecheck', true, 'host-tool'],
-  ])('classifies %s failures without conflating host tools and product code', (
-    label,
-    environmentIssue,
-    expected,
-  ) => {
-    expect(classifyValidationFailure({ label, environmentIssue })).toBe(expected);
-  });
+  ])(
+    'classifies %s failures without conflating host tools and product code',
+    (label, environmentIssue, expected) => {
+      expect(classifyValidationFailure({ label, environmentIssue })).toBe(expected);
+    },
+  );
 });
 
 describe('local Docker PM data cleanup', () => {
@@ -130,9 +136,7 @@ describe('local Docker PM data cleanup', () => {
     const sql = buildCleanupSql('pm-phase-');
     const args = buildCleanupExecArgs(sql);
 
-    expect(args).toContain(
-      'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "$1"',
-    );
+    expect(args).toContain('psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "$1"');
     expect(args.at(-1)).toBe(sql);
   });
 

@@ -238,6 +238,23 @@ describe('API runtime image boundary', () => {
         '--filter @memoflow/migrator deploy --prod --ignore-scripts /prod/migrator',
       ),
     );
+    assert.ok(
+      dockerfile.includes(
+        'node /prod/migrator/node_modules/@prisma/engines/scripts/postinstall.js',
+      ),
+    );
+    assert.ok(
+      dockerfile.includes(
+        "find /prod/migrator/node_modules/@prisma/engines -maxdepth 1 -type f -name 'schema-engine-*'",
+      ),
+    );
+    const migratorRuntime = dockerfile.slice(
+      dockerfile.indexOf('FROM node-base AS migrator-runtime'),
+      dockerfile.indexOf('FROM node-base AS api-runtime'),
+    );
+    assert.ok(migratorRuntime.includes('PRISMA_HIDE_UPDATE_MESSAGE=1'));
+    assert.ok(migratorRuntime.includes('/app/node_modules/.bin/prisma -v'));
+    assert.ok(migratorRuntime.includes("-name 'schema-engine-*'"));
     assert.ok(dockerfile.includes('COPY --from=builder /prod/api/node_modules ./node_modules'));
     assert.ok(!dockerfile.includes('COPY --from=builder /app/node_modules ./node_modules'));
     assert.ok(!dockerfile.includes('COPY --from=builder /app/packages ./packages'));
