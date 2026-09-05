@@ -9,12 +9,12 @@ tags:
   - desktop
 description: MemoFlow Delivery Platform V3 分阶段实施计划与可验证票据
 created: 2026-09-02T16:15:00+08:00
-updated: 2026-09-05T14:01:00+08:00
+updated: 2026-09-05T16:05:00+08:00
 ---
 
 # MemoFlow Delivery Platform V3 Implementation Plan
 
-> Status: ACTIVE — Phase 1 + Phase 2 closed; Phase 3 control plane implemented, real Release + Alibaba acceptance pending
+> Status: ACTIVE — Phase 1 + Phase 2 closed; Phase 3 control plane implemented; v0.13.0 failed closed at packaged Desktop runtime gate, corrective v0.13.1 + Alibaba acceptance pending
 > Governing ADR: [ADR-066](../../architecture/adr/ADR-066-adopt-delivery-platform-v3.md)  
 > Architecture: [Delivery Platform V3](../../architecture/delivery-platform-v3.md)  
 > Release contract: [Release Lifecycle V3](../../architecture/release-lifecycle-v3.md)
@@ -37,17 +37,17 @@ The first externally visible milestone is a Published MemoFlow release containin
 
 ## Current implementation checkpoint — truth audit 2026-09-05
 
-| Ticket / phase | Current truth                  | Evidence / remaining boundary                                                                                                                                                                                                                                                                                                                                          |
-| -------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DLV3-0001      | **COMPLETE**                   | ADR-066, Delivery Platform V3 architecture, Release Lifecycle V3 and runbooks are published.                                                                                                                                                                                                                                                                           |
-| DLV3-1101      | **COMPLETE**                   | Desktop-aware scope/risk selection is merged; `main` still forces full verification.                                                                                                                                                                                                                                                                                   |
-| DLV3-1102      | **COMPLETE**                   | successful-main-CI release-please maintenance and manual recovery paths are live and have been exercised repeatedly by v0.12.x release PRs.                                                                                                                                                                                                                            |
-| DLV3-1103      | **COMPLETE**                   | native matrix builds Windows x64, Linux x64, macOS x64 and macOS arm64 with packaged-runtime receipts and fail-closed manifest checks.                                                                                                                                                                                                                                 |
-| DLV3-1104      | **COMPLETE for Phase 1 scope** | touched release workflows use pinned reviewed Actions; repository-wide convergence remains DLV3-4402.                                                                                                                                                                                                                                                                  |
-| DLV3-1105      | **COMPLETE**                   | `v0.12.1` was Published on 2026-09-03 with Windows x64, Linux x64, macOS x64 and macOS arm64 assets, `desktop-release-manifest.json`, `release-manifest.json` and `SHA256SUMS.txt`; tag target `257c74eccbe87bba5f63a72217301ab8a17048e6`.                                                                                                                             |
-| Phase 2        | **COMPLETE**                   | PRs #306/#307/#308 established candidate-set, exact-SHA dual-registry candidates, coherent `staging-latest`, candidate-bound runtime mirrors and the GCP watcher. Main `60859e47065` and Candidate Publish run `33944690658` are green; GCP state is `DEPLOYED` at the same SHA and the watcher timer is active.                                                       |
-| Phase 3        | **IN PROGRESS**                | #310 merged DLV3-3301/3302 build-once release promotion. DLV3-3303/3304 production selector, `production-set/v1`, exact-digest Alibaba runtime and watcher are implemented with production-shaped fixtures; GitHub Environment `production` is main-only. Remaining truth gate is a real 0.13.0 Published Release, selector run and controlled Alibaba rollout/replay. |
-| Phase 4        | **PARTIAL / DEFERRED**         | some Action pinning and delivery observations exist; consolidated-runner evidence, repository-wide Action pinning, macOS signing/notarization and final observation closure remain.                                                                                                                                                                                    |
+| Ticket / phase | Current truth                         | Evidence / remaining boundary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| -------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DLV3-0001      | **COMPLETE**                          | ADR-066, Delivery Platform V3 architecture, Release Lifecycle V3 and runbooks are published.                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| DLV3-1101      | **COMPLETE**                          | Desktop-aware scope/risk selection is merged; `main` still forces full verification.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| DLV3-1102      | **COMPLETE**                          | successful-main-CI release-please maintenance and manual recovery paths are live and have been exercised repeatedly by v0.12.x release PRs.                                                                                                                                                                                                                                                                                                                                                                                                          |
+| DLV3-1103      | **COMPLETE**                          | native matrix builds Windows x64, Linux x64, macOS x64 and macOS arm64 with packaged-runtime receipts and fail-closed manifest checks.                                                                                                                                                                                                                                                                                                                                                                                                               |
+| DLV3-1104      | **COMPLETE for Phase 1 scope**        | touched release workflows use pinned reviewed Actions; repository-wide convergence remains DLV3-4402.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| DLV3-1105      | **COMPLETE**                          | `v0.12.1` was Published on 2026-09-03 with Windows x64, Linux x64, macOS x64 and macOS arm64 assets, `desktop-release-manifest.json`, `release-manifest.json` and `SHA256SUMS.txt`; tag target `257c74eccbe87bba5f63a72217301ab8a17048e6`.                                                                                                                                                                                                                                                                                                           |
+| Phase 2        | **COMPLETE**                          | PRs #306/#307/#308 established candidate-set, exact-SHA dual-registry candidates, coherent `staging-latest`, candidate-bound runtime mirrors and the GCP watcher. Main `60859e47065` and Candidate Publish run `33944690658` are green; GCP state is `DEPLOYED` at the same SHA and the watcher timer is active.                                                                                                                                                                                                                                     |
+| Phase 3        | **IN PROGRESS / RELEASE FAIL-CLOSED** | #310 + #311 merged DLV3-3301~3304. Release SHA `1a70830961da91f734867a582a86039e1ef0be16` proved successful main CI, exact candidate publication and Server promotion-without-rebuild, but `v0.13.0` remained Draft after two Desktop packaged-runtime attempts reproduced Windows/macOS arm64 settings-readiness failures; attempt 1 also exposed a Linux smoke cleanup hang. Retry was stopped. Corrective `v0.13.1` must harden route/settings readiness, bounded Electron/Linux cleanup and failure diagnostics before any production selection. |
+| Phase 4        | **PARTIAL / DEFERRED**                | some Action pinning and delivery observations exist; consolidated-runner evidence, repository-wide Action pinning, macOS signing/notarization and final observation closure remain.                                                                                                                                                                                                                                                                                                                                                                  |
 
 Phase 1 release evidence:
 
@@ -60,7 +60,7 @@ macOS arm64 dmg + zip
 desktop-release-manifest.json + release-manifest.json + SHA256SUMS.txt
 ```
 
-The next boundary is **Phase 3 live acceptance**: merge the production selector/watcher, publish the real 0.13.0 Release through the candidate-bound build-once path, select that Published Release, then prove the Alibaba watcher with check-only, mandatory backup, controlled rollout, exact-digest state and idempotent replay.
+The next boundary is **Phase 3 corrective release acceptance**. `v0.13.0` is an immutable failed Draft at `1a70830961da91f734867a582a86039e1ef0be16`; do not rewrite or publish it. First merge the packaged-runtime gate hardening and publish `v0.13.1` through the same candidate-bound build-once path. Only after `v0.13.1` is Published may `Deploy Production(v0.13.1)` select it and the Alibaba watcher proceed through check-only, mandatory backup, controlled rollout, exact-digest state and idempotent replay.
 
 ## 2. Baseline and measurable targets
 
@@ -220,7 +220,7 @@ The first cutover attempt exposed a real compatibility defect: the old staging s
 
 ### DLV3-3301 — Promote Server candidate in Release Publish
 
-**Implementation status:** IMPLEMENTED; first real release acceptance pending.
+**Implementation status:** COMPLETE — real `v0.13.0` attempt proved Server promotion without rebuild; overall release remained Draft because Desktop gate failed.
 
 Release Publish now consumes the exact `candidate-set/v1` and promotes its existing image digests to release tags without rebuilding Web/API/Migrator. Existing release tags must already match the candidate digest or the lane stops before changing tags.
 
@@ -237,6 +237,15 @@ The v2 Docker and canonical release evidence now carries candidate-set, main CI 
 **Goal:** bind candidate-set and Desktop platform manifest in one release identity.
 
 **Acceptance:** server/desktop/tag/SHA/CI mismatch fails closed.
+
+**First real release evidence — 2026-09-05:**
+
+- release commit: `1a70830961da91f734867a582a86039e1ef0be16`;
+- main CI `33951148798`: SUCCESS; candidate run `33951762244`: SUCCESS;
+- Release Publish `33952117681`: Server `Promote Candidate Images Without Rebuild` succeeded in both attempt 1 and the controlled retry;
+- Windows x64 and macOS arm64 reproduced packaged settings-readiness failures in attempt 2; macOS x64 passed the same smoke; attempt 1 Linux remained stuck in the packaged-smoke wrapper beyond the Playwright timeout;
+- run attempt 2 was cancelled after deterministic reproduction; `v0.13.0` remains Draft and the immutable `v0.13.0` tag remains bound to the failed release SHA;
+- corrective release target is `v0.13.1`; no production selector or Alibaba mutation is allowed before it publishes.
 
 ### DLV3-3303 — Add production Environment and selector
 
