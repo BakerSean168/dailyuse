@@ -10273,6 +10273,22 @@
       "measurementCollectors": []
     },
     {
+      "path": "tools/ci-cd-platform/__tests__/candidate-manifest.test.mjs",
+      "primarySuite": "governance",
+      "collectors": [
+        "ci-cd-platform:test"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/candidate-workflow.test.mjs",
+      "primarySuite": "governance",
+      "collectors": [
+        "ci-cd-platform:test"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "tools/ci-cd-platform/__tests__/contracts.test.mjs",
       "primarySuite": "governance",
       "collectors": [
@@ -10386,6 +10402,14 @@
     },
     {
       "path": "tools/ci-cd-platform/__tests__/runtime-closure.test.mjs",
+      "primarySuite": "governance",
+      "collectors": [
+        "ci-cd-platform:test"
+      ],
+      "measurementCollectors": []
+    },
+    {
+      "path": "tools/ci-cd-platform/__tests__/staging-watcher.test.mjs",
       "primarySuite": "governance",
       "collectors": [
         "ci-cd-platform:test"
@@ -10805,7 +10829,7 @@
       "type": "primary",
       "suite": "governance",
       "runner": "node-test",
-      "fileCount": 18
+      "fileCount": 21
     },
     {
       "id": "memoflow:test:governance",
@@ -11727,6 +11751,6 @@
     "boundary-main": 6,
     "e2e": 65,
     "perf": 1,
-    "governance": 38
+    "governance": 41
   }
 }
