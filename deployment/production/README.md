@@ -42,10 +42,10 @@ The historical `/opt/memoflow/docker-compose.prod.yml` is retained only as first
 After `Deploy Production` has selected a Published release, bootstrap from the selected ACR control artifact itself; a repository checkout is not required on Alibaba:
 
 ```bash
-set -a
-source /opt/memoflow/.env.production.local
-set +a
-control_ref="$REGISTRY/$IMAGE_NAMESPACE/memoflow-production-runtime:production-selected"
+envfile=/opt/memoflow/.env.production.local
+registry="$(sed -n 's/^REGISTRY=//p' "$envfile" | tail -1 | tr -d '\r')"
+namespace="$(sed -n 's/^IMAGE_NAMESPACE=//p' "$envfile" | tail -1 | tr -d '\r')"
+control_ref="$registry/$namespace/memoflow-production-runtime:production-selected"
 docker pull "$control_ref"
 cid="$(docker create "$control_ref" /bin/true)"
 bootstrap_dir=/tmp/memoflow-production-bootstrap

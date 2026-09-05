@@ -130,6 +130,18 @@ test('Docker build context admits only production control evidence required by t
   assert.match(dockerignore, /!reports\/production\/release-runtime\/docker\/powersync\/\*\*/u);
 });
 
+test('production bootstrap never shell-sources the Compose secret env', async () => {
+  const [readme, installer] = await Promise.all([
+    readRepoFile('deployment/production/README.md'),
+    readRepoFile('deployment/production/install-production-deploy-watch.sh'),
+  ]);
+  assert.doesNotMatch(readme, /source \/opt\/memoflow\/\.env\.production\.local/u);
+  assert.match(readme, /sed -n 's\/\^REGISTRY=\/\/p'/u);
+  assert.match(readme, /sed -n 's\/\^IMAGE_NAMESPACE=\/\/p'/u);
+  assert.doesNotMatch(installer, /source .*production/u);
+  assert.match(installer, /read_env_key/u);
+});
+
 test('canonical production compose has no mutable application fallback or Watchtower authority', async () => {
   const compose = await readRepoFile('deployment/production/docker-compose.production.yml');
   for (const name of [
