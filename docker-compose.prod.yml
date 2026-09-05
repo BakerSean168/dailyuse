@@ -199,7 +199,7 @@ services:
       start_period: 40s
 
   powersync:
-    image: ${POWERSYNC_IMAGE:-journeyapps/powersync-service:1.20.4}
+    image: ${POWERSYNC_IMAGE:-journeyapps/powersync-service:1.25.0}
     restart: unless-stopped
     depends_on:
       api:

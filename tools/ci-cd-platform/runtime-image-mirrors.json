@@ -21,8 +21,8 @@
     },
     {
       "name": "memoflow-powersync",
-      "source": "docker.io/journeyapps/powersync-service@sha256:ae81b523ddc930d237ec27073579e8274f2351608c95765aeba50dafa0c4aa21",
-      "tag": "1.20.4-ae81b523ddc9",
+      "source": "docker.io/journeyapps/powersync-service@sha256:58003bcf4897a36bec948a10d2f37753a1188270330d43757caa2aa8dfe2d0b8",
+      "tag": "1.25.0-58003bcf4897",
       "platform": "linux/amd64"
     },
     {

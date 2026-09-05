@@ -244,6 +244,7 @@ Candidate publication invariants:
 - ACR and GHCR top-level manifest digests equal build output;
 - candidate manifest is self-digested and uploaded as durable workflow evidence;
 - `staging-latest` moves only as one coherent set and only for current main.
+- The staging runtime also carries the reviewed runtime-dependency mirror contract; PostgreSQL, Redis and PowerSync are resolved to exact mirrored digests from that candidate-bound contract, never from stale host image pins.
 
 ## 7. Canonical staging
 

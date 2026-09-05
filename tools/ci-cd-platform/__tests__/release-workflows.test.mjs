@@ -122,14 +122,8 @@ test('desktop packaging has one stable product identity and one native rebuild o
   assert.match(builder, /"from": "\.\.\/\.\.\/node_modules\/dotenv-expand"/);
   assert.deepEqual(project.targets.package.dependsOn, ['build']);
   assert.deepEqual(project.targets.dist.dependsOn, ['build']);
-  assert.match(
-    project.targets.package.options.commands[0],
-    /rebuild-native-dependencies\.mjs/,
-  );
-  assert.match(
-    project.targets.dist.options.commands[0],
-    /rebuild-native-dependencies\.mjs/,
-  );
+  assert.match(project.targets.package.options.commands[0], /rebuild-native-dependencies\.mjs/);
+  assert.match(project.targets.dist.options.commands[0], /rebuild-native-dependencies\.mjs/);
   assert.match(
     project.targets['native-rebuild'].options.command,
     /rebuild-native-dependencies\.mjs/,
@@ -142,8 +136,14 @@ test('desktop packaging has one stable product identity and one native rebuild o
   assert.match(workflow, /path: release-source/);
   assert.match(workflow, /release-tooling\/apps\/desktop\/electron-builder\.json5/);
   const resolverStep = workflowStep(workflow, 'Resolve packaged Desktop executable');
-  assert.match(resolverStep, /release-tooling\/apps\/desktop\/scripts\/resolve-packaged-executable\.mjs/);
-  assert.doesNotMatch(resolverStep, /node \.\/apps\/desktop\/scripts\/resolve-packaged-executable\.mjs/u);
+  assert.match(
+    resolverStep,
+    /release-tooling\/apps\/desktop\/scripts\/resolve-packaged-executable\.mjs/,
+  );
+  assert.doesNotMatch(
+    resolverStep,
+    /node \.\/apps\/desktop\/scripts\/resolve-packaged-executable\.mjs/u,
+  );
   assert.match(workflow, /name: Download build artifacts[\s\S]*?pattern: desktop-\*/);
   assert.doesNotMatch(workflow, /desktop:dist/);
   assert.doesNotMatch(workflow, /npm_config_msvs_version/);
@@ -215,7 +215,7 @@ test('production compose allows China-mirrored runtime dependencies without chan
   assert.match(compose, /image: \$\{POSTGRES_IMAGE:-pgvector\/pgvector:0\.8\.5-pg18\}/);
   assert.match(compose, /image: \$\{REDIS_IMAGE:-redis:8-alpine\}/);
   assert.match(compose, /image: \$\{CADDY_IMAGE:-caddy:2-alpine\}/);
-  assert.match(compose, /image: \$\{POWERSYNC_IMAGE:-journeyapps\/powersync-service:1\.20\.4\}/);
+  assert.match(compose, /image: \$\{POWERSYNC_IMAGE:-journeyapps\/powersync-service:1\.25\.0\}/);
   assert.match(compose, /image: \$\{WATCHTOWER_IMAGE:-containrrr\/watchtower\}/);
   assert.match(compose, /image: \$\{MIGRATOR_IMAGE:-\$\{REGISTRY:/);
   assert.match(compose, /image: \$\{API_IMAGE:-\$\{REGISTRY:/);
@@ -242,6 +242,23 @@ test('runtime dependencies are digest-pinned and mirrored to both China and glob
     const digest = entry.source.split('@sha256:')[1];
     assert.equal(entry.tag.endsWith(digest.slice(0, 12)), true);
   }
+  const powersync = config.images.find((entry) => entry.name === 'memoflow-powersync');
+  assert.equal(
+    powersync.source,
+    'docker.io/journeyapps/powersync-service@sha256:58003bcf4897a36bec948a10d2f37753a1188270330d43757caa2aa8dfe2d0b8',
+  );
+  assert.equal(powersync.tag, '1.25.0-58003bcf4897');
+  const [powersyncBake, developmentCompose] = await Promise.all([
+    readRepoFile('docker/powersync/Dockerfile.bake'),
+    readRepoFile('docker-compose.yml'),
+  ]);
+  assert.match(powersyncBake, /FROM journeyapps\/powersync-service:1\.25\.0/u);
+  assert.doesNotMatch(powersyncBake, /powersync-service:latest/u);
+  assert.equal(
+    (developmentCompose.match(/journeyapps\/powersync-service:1\.25\.0/gmu) ?? []).length,
+    2,
+  );
+  assert.doesNotMatch(developmentCompose, /powersync-service:latest/u);
   assert.match(workflow, /push:\s*\n\s*branches:\s*\[main\]/);
   assert.match(workflow, /runtime-image-mirrors\.json/);
   assert.match(workflow, /workflow_dispatch:/);
@@ -375,7 +392,10 @@ test('Desktop release runtime gates execute before receipts and cannot be bypass
   assert.match(helper, /test:packaged-smoke/u);
   assert.match(workflow, /runtime_executable_kind: installed-deb/u);
   assert.match(workflow, /gnome-keyring/u);
-  assert.match(workflow, /write-desktop-platform-receipt\.mjs[\s\S]*?packaged-electron-playwright[\s\S]*?runtime_executable_kind/u);
+  assert.match(
+    workflow,
+    /write-desktop-platform-receipt\.mjs[\s\S]*?packaged-electron-playwright[\s\S]*?runtime_executable_kind/u,
+  );
   assert.match(receipt, /schemaVersion:\s*2/u);
   assert.match(receipt, /runtimeValidation/u);
   assert.match(receipt, /runtime validation must pass/u);
@@ -383,7 +403,10 @@ test('Desktop release runtime gates execute before receipts and cannot be bypass
   assert.match(helper, /org\.freedesktop\.secrets/u);
   assert.match(helper, /MEMOFLOW_PACKAGED_USE_GNOME_KEYRING=1/u);
   assert.match(helper, /xvfb-run -a dbus-run-session -- bash -lc/u);
-  assert.ok(helper.indexOf('xvfb-run -a dbus-run-session') < helper.indexOf('gnome-keyring-daemon --unlock'));
+  assert.ok(
+    helper.indexOf('xvfb-run -a dbus-run-session') <
+      helper.indexOf('gnome-keyring-daemon --unlock'),
+  );
   assert.match(helper, /secret-tool store/u);
   assert.match(helper, /secret-tool lookup/u);
   assert.match(workflow, /libglib2\.0-bin/u);

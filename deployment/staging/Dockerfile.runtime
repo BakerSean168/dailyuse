@@ -11,6 +11,7 @@ COPY deployment/staging/docker-compose.staging.yml /runtime/staging/docker-compo
 COPY deployment/staging/staging-deploy-watch.sh /runtime/staging/staging-deploy-watch.sh
 COPY deployment/staging/systemd /runtime/staging/systemd
 COPY docker/powersync /runtime/staging/docker/powersync
+COPY tools/ci-cd-platform/runtime-image-mirrors.json /runtime/staging/tools/ci-cd-platform/runtime-image-mirrors.json
 COPY tools/ci-cd-platform/candidate-manifest.mjs /runtime/staging/tools/ci-cd-platform/candidate-manifest.mjs
 COPY tools/ci-cd-platform/lib/contracts.mjs /runtime/staging/tools/ci-cd-platform/lib/contracts.mjs
 COPY reports/candidate/candidate-set-v1.json /runtime/staging/candidate-set-v1.json

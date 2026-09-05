@@ -64,7 +64,7 @@ services:
   # PowerSync 实时同步引擎（依赖 postgres-dev）
   powersync-dev:
     profiles: [dev]
-    image: journeyapps/powersync-service:latest
+    image: journeyapps/powersync-service:1.25.0
     container_name: MemoFlow-dev-powersync
     ports:
       - '8080:8080'
@@ -133,7 +133,7 @@ services:
   # It watches postgres-test instead of the unrelated local-docker database.
   powersync-test:
     profiles: [sync-test]
-    image: journeyapps/powersync-service:latest
+    image: journeyapps/powersync-service:1.25.0
     container_name: ${TEST_POWERSYNC_CONTAINER:-MemoFlow-test-powersync}
     ports:
       - '${TEST_POWERSYNC_PORT:-58082}:8080'
