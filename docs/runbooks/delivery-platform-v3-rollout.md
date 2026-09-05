@@ -138,15 +138,20 @@ Pre-migration failure restores the previous exact runtime automatically. Once Mi
 
 ## 5. Production cutover
 
-1. Create `production` GitHub Environment and branch policy.
-2. Deploy selector in dry/verification mode.
-3. Install Alibaba watcher but leave automatic timer disabled.
-4. Run preflight against current Published Release without channel mutation.
-5. Enable selector promotion.
-6. Run watcher check-only.
-7. Schedule controlled rollout with backup evidence.
-8. Verify migration head, containers, image digests, public health and GitHub App/PowerSync flows.
-9. Enable regular watcher only after the first successful controlled transaction.
+Repository implementation is present, but this section remains a live acceptance gate until the first Published-release rollout succeeds.
+
+1. Confirm GitHub Environment `production` still allows only `main`.
+2. Publish the real release under test; do not create a synthetic release solely for deployment acceptance.
+3. Dispatch `Deploy Production` with that Published tag. The resolve lane must prove tag/SHA, source main CI, candidate-set, ACR/GHCR application parity and release-owned runtime mirror digests.
+4. Confirm the selector created one `memoflow.production-set/v1` and moved only `memoflow-production-runtime:production-selected`; Web/API/Migrator tags are not a deployment channel.
+5. Install `deployment/production/install-production-deploy-watch.sh` on Alibaba as root. Leave the timer disabled.
+6. Run `/usr/local/bin/memoflow-production-deploy-watch --check-only`; it must report one coherent release/set without mutating containers.
+7. Preserve current runtime evidence, then run `systemctl start memoflow-production-deploy-watch.service`. The watcher must take a non-empty PostgreSQL backup before Migrator starts.
+8. Verify `production-deploy-state`, exact container image refs, migration result, API/Web/PowerSync/Caddy health, public ingress, GitHub App and PowerSync product flows.
+9. Run the service again and prove idempotent `already deployed` behavior without rerunning Migrator.
+10. Only then run the installer with `--enable` and verify the timer is enabled/active.
+
+The selector is not a runtime writer. It never SSHes into Alibaba. The historical `/opt/memoflow/docker-compose.prod.yml` is first-cutover rollback evidence/emergency tooling only; `deployment/production/` becomes canonical runtime authority after acceptance.
 
 ## 6. Rollback / block policy
 

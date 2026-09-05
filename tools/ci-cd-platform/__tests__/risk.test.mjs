@@ -19,6 +19,9 @@ test('classifies highest-risk root and release changes', () => {
   assert.equal(classifyRisk(['.github/workflows/ci.yml']).level, 'root');
   assert.equal(classifyRisk(['.github/workflows/publish-images.yml']).level, 'release');
   assert.equal(classifyRisk(['.github/workflows/release-publish.yml']).level, 'release');
+  assert.equal(classifyRisk(['.github/workflows/deploy-production.yml']).level, 'release');
+  assert.equal(classifyRisk(['deployment/production/production-deploy-watch.sh']).level, 'release');
+  assert.equal(classifyRisk(['tools/ci-cd-platform/production-manifest.mjs']).level, 'release');
   assert.equal(
     classifyRisk(['tools/ci-cd-platform/release-tools/release-contract.mjs']).level,
     'release',

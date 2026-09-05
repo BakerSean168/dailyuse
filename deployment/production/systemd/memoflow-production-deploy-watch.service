@@ -1,0 +1,10 @@
+[Unit]
+Description=MemoFlow canonical production deployment watcher
+After=docker.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/memoflow-production-deploy-watch
+TimeoutStartSec=20min

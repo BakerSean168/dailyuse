@@ -1,0 +1,398 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published MemoFlow release tag to select for production
+        required: true
+        type: string
+
+concurrency:
+  group: memoflow-production-selection
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+  packages: write
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+  resolve:
+    name: Verify Published Release
+    runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.identity.outputs.release_tag }}
+      release_sha: ${{ steps.release.outputs.release_sha }}
+      control_plane_sha: ${{ steps.identity.outputs.control_plane_sha }}
+      production_set_digest: ${{ steps.production.outputs.production_set_digest }}
+      production_set_sha256: ${{ steps.production.outputs.production_set_sha256 }}
+    steps:
+      - name: Checkout selector control plane
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Require selector source to be current main
+        id: identity
+        shell: bash
+        env:
+          REQUESTED_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          [[ "$REQUESTED_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]]
+          git fetch origin main --no-tags
+          control_plane_sha="$(git rev-parse HEAD)"
+          current_main="$(git rev-parse origin/main)"
+          test "$control_plane_sha" = "$current_main"
+          echo "release_tag=$REQUESTED_TAG" >> "$GITHUB_OUTPUT"
+          echo "control_plane_sha=$control_plane_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve immutable Published Release identity
+        id: release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          mkdir -p reports/production/release-evidence
+          gh release view "$RELEASE_TAG" --json tagName,isDraft,isPrerelease,apiUrl > reports/production/release-evidence/github-release.json
+          test "$(jq -r .tagName reports/production/release-evidence/github-release.json)" = "$RELEASE_TAG"
+          test "$(jq -r .isDraft reports/production/release-evidence/github-release.json)" = false
+          test "$(jq -r .isPrerelease reports/production/release-evidence/github-release.json)" = false
+          ref_json="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG")"
+          object_type="$(jq -r .object.type <<<"$ref_json")"
+          release_sha="$(jq -r .object.sha <<<"$ref_json")"
+          if [[ "$object_type" == tag ]]; then
+            release_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/tags/$release_sha" --jq .object.sha)"
+          fi
+          [[ "$release_sha" =~ ^[0-9a-f]{40}$ ]]
+          gh release download "$RELEASE_TAG" \
+            --pattern release-manifest.json \
+            --pattern candidate-set-v1.json \
+            --dir reports/production/release-evidence
+          test -s reports/production/release-evidence/release-manifest.json
+          test -s reports/production/release-evidence/candidate-set-v1.json
+          echo "release_sha=$release_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Validate release, candidate, and source main CI
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_SHA: ${{ steps.release.outputs.release_sha }}
+        run: |
+          set -euo pipefail
+          release=reports/production/release-evidence/release-manifest.json
+          candidate=reports/production/release-evidence/candidate-set-v1.json
+          node ./tools/ci-cd-platform/candidate-manifest.mjs --validate "$candidate"
+          test "$(jq -r .schemaVersion "$release")" = 2
+          test "$(jq -r .kind "$release")" = memoflow-release
+          test "$(jq -r .tag "$release")" = "$RELEASE_TAG"
+          test "$(jq -r .gitSha "$release")" = "$RELEASE_SHA"
+          test "$(jq -r .gitSha "$candidate")" = "$RELEASE_SHA"
+          test "$(jq -r .candidateSet.digest "$release")" = "$(jq -r .digest "$candidate")"
+          test "$(jq -r .deliveryManifestDigest "$release")" = "$(jq -r .deliveryManifestDigest "$candidate")"
+          ci_run_id="$(jq -r .ciRunId "$release")"
+          test "$ci_run_id" = "$(jq -r .ciRunId "$candidate")"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$ci_run_id" > reports/production/release-evidence/main-ci.json
+          test "$(jq -r .head_sha reports/production/release-evidence/main-ci.json)" = "$RELEASE_SHA"
+          test "$(jq -r .head_branch reports/production/release-evidence/main-ci.json)" = main
+          test "$(jq -r .event reports/production/release-evidence/main-ci.json)" = push
+          test "$(jq -r .status reports/production/release-evidence/main-ci.json)" = completed
+          test "$(jq -r .conclusion reports/production/release-evidence/main-ci.json)" = success
+
+      - name: Checkout exact release source for runtime dependency identity
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ steps.release.outputs.release_sha }}
+          path: release-source
+          fetch-depth: 1
+
+      - name: Build production-set from release-owned runtime pins
+        id: production
+        shell: bash
+        env:
+          RELEASE_SHA: ${{ steps.release.outputs.release_sha }}
+          CONTROL_PLANE_SHA: ${{ steps.identity.outputs.control_plane_sha }}
+          CHINA_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          CHINA_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+        run: |
+          set -euo pipefail
+          test "$(git -C release-source rev-parse HEAD)" = "$RELEASE_SHA"
+          node ./tools/ci-cd-platform/production-manifest.mjs \
+            --release reports/production/release-evidence/release-manifest.json \
+            --candidate reports/production/release-evidence/candidate-set-v1.json \
+            --runtime-mirrors release-source/tools/ci-cd-platform/runtime-image-mirrors.json \
+            --registry "$CHINA_REGISTRY" \
+            --namespace "$CHINA_NAMESPACE" \
+            --control-plane-sha "$CONTROL_PLANE_SHA" \
+            --output reports/production/production-set-v1.json
+          node ./tools/ci-cd-platform/production-manifest.mjs --validate reports/production/production-set-v1.json
+          production_set_digest="$(jq -r .digest reports/production/production-set-v1.json)"
+          raw_sha="sha256:$(sha256sum reports/production/production-set-v1.json | awk '{print $1}')"
+          printf '%s  %s\n' "${raw_sha#sha256:}" production-set-v1.json > reports/production/production-set-v1.sha256
+          echo "production_set_digest=$production_set_digest" >> "$GITHUB_OUTPUT"
+          echo "production_set_sha256=$raw_sha" >> "$GITHUB_OUTPUT"
+          cp release-source/tools/ci-cd-platform/runtime-image-mirrors.json reports/production/release-runtime-image-mirrors.json
+          mkdir -p reports/production/release-runtime/docker
+          cp -a release-source/docker/powersync reports/production/release-runtime/docker/powersync
+
+      - name: Upload verified production selection input
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: production-selection-${{ steps.release.outputs.release_sha }}
+          path: reports/production
+          if-no-files-found: error
+          retention-days: 90
+
+  select:
+    name: Select Production Release
+    needs: resolve
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout exact selector control plane
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.resolve.outputs.control_plane_sha }}
+          fetch-depth: 1
+
+      - name: Download verified production selection input
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: production-selection-${{ needs.resolve.outputs.release_sha }}
+          path: reports/production
+
+      - name: Revalidate production-set and release source identity
+        shell: bash
+        env:
+          CONTROL_PLANE_SHA: ${{ needs.resolve.outputs.control_plane_sha }}
+          RELEASE_SHA: ${{ needs.resolve.outputs.release_sha }}
+          RELEASE_TAG: ${{ needs.resolve.outputs.release_tag }}
+          PRODUCTION_SET_DIGEST: ${{ needs.resolve.outputs.production_set_digest }}
+          PRODUCTION_SET_SHA256: ${{ needs.resolve.outputs.production_set_sha256 }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$CONTROL_PLANE_SHA"
+          node ./tools/ci-cd-platform/production-manifest.mjs --validate reports/production/production-set-v1.json
+          test "$(jq -r .gitSha reports/production/production-set-v1.json)" = "$RELEASE_SHA"
+          test "$(jq -r .releaseTag reports/production/production-set-v1.json)" = "$RELEASE_TAG"
+          test "$(jq -r .controlPlaneSha reports/production/production-set-v1.json)" = "$CONTROL_PLANE_SHA"
+          test "$(jq -r .digest reports/production/production-set-v1.json)" = "$PRODUCTION_SET_DIGEST"
+          test "sha256:$(sha256sum reports/production/production-set-v1.json | awk '{print $1}')" = "$PRODUCTION_SET_SHA256"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4
+
+      - name: Login to ACR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ${{ secrets.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Verify immutable release and runtime digests before selection
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ needs.resolve.outputs.release_tag }}
+          CHINA_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          CHINA_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+        run: |
+          set -euo pipefail
+          release=reports/production/release-evidence/release-manifest.json
+          production=reports/production/production-set-v1.json
+          for component in web api migrator; do
+            expected="$(jq -r ".images.$component.digest" "$production")"
+            china_repo="$(jq -r ".docker.images.$component.distributions.china.repository" "$release")"
+            global_repo="$(jq -r ".docker.images.$component.distributions.global.repository" "$release")"
+            test "$china_repo" = "$CHINA_REGISTRY/$CHINA_NAMESPACE/memoflow-$component"
+            test "$(docker buildx imagetools inspect "$china_repo:$RELEASE_TAG" --format '{{.Manifest.Digest}}')" = "$expected"
+            test "$(docker buildx imagetools inspect "$global_repo:$RELEASE_TAG" --format '{{.Manifest.Digest}}')" = "$expected"
+          done
+          global_namespace="${GITHUB_REPOSITORY_OWNER,,}"
+          for component in postgres redis powersync caddy; do
+            expected="$(jq -r ".runtime.$component.digest" "$production")"
+            china_repo="$(jq -r ".runtime.$component.repository" "$production")"
+            global_repo="ghcr.io/$global_namespace/memoflow-$component"
+            test "$(docker buildx imagetools inspect "$china_repo@$expected" --format '{{.Manifest.Digest}}')" = "$expected"
+            test "$(docker buildx imagetools inspect "$global_repo@$expected" --format '{{.Manifest.Digest}}')" = "$expected"
+          done
+
+      - name: Recheck release remains Published immediately before mutation
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.resolve.outputs.release_tag }}
+        run: |
+          set -euo pipefail
+          gh release view "$RELEASE_TAG" --json tagName,isDraft,isPrerelease > reports/production/release-now.json
+          test "$(jq -r .tagName reports/production/release-now.json)" = "$RELEASE_TAG"
+          test "$(jq -r .isDraft reports/production/release-now.json)" = false
+          test "$(jq -r .isPrerelease reports/production/release-now.json)" = false
+
+      - name: Recheck selector control plane remains current main before mutation
+        shell: bash
+        env:
+          CONTROL_PLANE_SHA: ${{ needs.resolve.outputs.control_plane_sha }}
+        run: |
+          set -euo pipefail
+          current_main="$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" refs/heads/main | awk '{print $1}')"
+          [[ "$current_main" =~ ^[0-9a-f]{40}$ ]]
+          test "$current_main" = "$CONTROL_PLANE_SHA"
+
+      - name: Resolve registry namespaces
+        id: registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "global_namespace=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve immutable production control tag
+        id: tag
+        shell: bash
+        env:
+          PRODUCTION_SET_DIGEST: ${{ needs.resolve.outputs.production_set_digest }}
+        run: |
+          set -euo pipefail
+          digest_hex="${PRODUCTION_SET_DIGEST#sha256:}"
+          echo "immutable_tag=set-${digest_hex}" >> "$GITHUB_OUTPUT"
+
+      - name: Reuse immutable production control artifact only when both registries agree
+        id: existing
+        shell: bash
+        env:
+          IMMUTABLE_TAG: ${{ steps.tag.outputs.immutable_tag }}
+          CONTROL_PLANE_SHA: ${{ needs.resolve.outputs.control_plane_sha }}
+          RELEASE_SHA: ${{ needs.resolve.outputs.release_sha }}
+          PRODUCTION_SET_DIGEST: ${{ needs.resolve.outputs.production_set_digest }}
+          PRODUCTION_SET_SHA256: ${{ needs.resolve.outputs.production_set_sha256 }}
+          CHINA_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          CHINA_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+          GLOBAL_NAMESPACE: ${{ steps.registry.outputs.global_namespace }}
+        run: |
+          set -euo pipefail
+          china_ref="$CHINA_REGISTRY/$CHINA_NAMESPACE/memoflow-production-runtime:$IMMUTABLE_TAG"
+          global_ref="ghcr.io/$GLOBAL_NAMESPACE/memoflow-production-runtime:$IMMUTABLE_TAG"
+          china_digest="$(docker buildx imagetools inspect "$china_ref" --format '{{.Manifest.Digest}}' 2>/dev/null || true)"
+          global_digest="$(docker buildx imagetools inspect "$global_ref" --format '{{.Manifest.Digest}}' 2>/dev/null || true)"
+          if [[ -n "$china_digest" || -n "$global_digest" ]]; then
+            [[ -n "$china_digest" && -n "$global_digest" ]] || { echo 'immutable production control artifact exists in only one registry' >&2; exit 1; }
+            test "$china_digest" = "$global_digest"
+            docker pull "$china_ref" >/dev/null
+            test "$(docker image inspect "$china_ref" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')" = "$CONTROL_PLANE_SHA"
+            test "$(docker image inspect "$china_ref" --format '{{index .Config.Labels "io.memoflow.release.revision"}}')" = "$RELEASE_SHA"
+            test "$(docker image inspect "$china_ref" --format '{{index .Config.Labels "io.memoflow.production-set.digest"}}')" = "$PRODUCTION_SET_DIGEST"
+            test "$(docker image inspect "$china_ref" --format '{{index .Config.Labels "io.memoflow.production-set.sha256"}}')" = "$PRODUCTION_SET_SHA256"
+            echo 'reuse=true' >> "$GITHUB_OUTPUT"
+            echo "digest=$china_digest" >> "$GITHUB_OUTPUT"
+          else
+            echo 'reuse=false' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build and distribute production control artifact
+        id: runtime
+        if: steps.existing.outputs.reuse != 'true'
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          file: deployment/production/Dockerfile.runtime
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-production-runtime:${{ steps.tag.outputs.immutable_tag }}
+            ghcr.io/${{ steps.registry.outputs.global_namespace }}/memoflow-production-runtime:${{ steps.tag.outputs.immutable_tag }}
+          build-args: |
+            CONTROL_PLANE_SHA=${{ needs.resolve.outputs.control_plane_sha }}
+            RELEASE_SHA=${{ needs.resolve.outputs.release_sha }}
+            RELEASE_TAG=${{ needs.resolve.outputs.release_tag }}
+            PRODUCTION_SET_DIGEST=${{ needs.resolve.outputs.production_set_digest }}
+            PRODUCTION_SET_SHA256=${{ needs.resolve.outputs.production_set_sha256 }}
+          provenance: false
+          sbom: false
+
+      - name: Verify control artifact parity and embedded identity
+        id: identity
+        shell: bash
+        env:
+          REUSED_DIGEST: ${{ steps.existing.outputs.digest }}
+          BUILD_DIGEST: ${{ steps.runtime.outputs.digest }}
+          IMMUTABLE_TAG: ${{ steps.tag.outputs.immutable_tag }}
+          CONTROL_PLANE_SHA: ${{ needs.resolve.outputs.control_plane_sha }}
+          RELEASE_SHA: ${{ needs.resolve.outputs.release_sha }}
+          PRODUCTION_SET_DIGEST: ${{ needs.resolve.outputs.production_set_digest }}
+          PRODUCTION_SET_SHA256: ${{ needs.resolve.outputs.production_set_sha256 }}
+          CHINA_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          CHINA_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+          GLOBAL_NAMESPACE: ${{ steps.registry.outputs.global_namespace }}
+        run: |
+          set -euo pipefail
+          control_digest="${REUSED_DIGEST:-$BUILD_DIGEST}"
+          china_ref="$CHINA_REGISTRY/$CHINA_NAMESPACE/memoflow-production-runtime:$IMMUTABLE_TAG"
+          global_ref="ghcr.io/$GLOBAL_NAMESPACE/memoflow-production-runtime:$IMMUTABLE_TAG"
+          [[ "$control_digest" =~ ^sha256:[0-9a-f]{64}$ ]]
+          test "$(docker buildx imagetools inspect "$china_ref" --format '{{.Manifest.Digest}}')" = "$control_digest"
+          test "$(docker buildx imagetools inspect "$global_ref" --format '{{.Manifest.Digest}}')" = "$control_digest"
+          docker pull "$china_ref" >/dev/null
+          test "$(docker image inspect "$china_ref" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')" = "$CONTROL_PLANE_SHA"
+          test "$(docker image inspect "$china_ref" --format '{{index .Config.Labels "io.memoflow.release.revision"}}')" = "$RELEASE_SHA"
+          test "$(docker image inspect "$china_ref" --format '{{index .Config.Labels "io.memoflow.production-set.digest"}}')" = "$PRODUCTION_SET_DIGEST"
+          test "$(docker image inspect "$china_ref" --format '{{index .Config.Labels "io.memoflow.production-set.sha256"}}')" = "$PRODUCTION_SET_SHA256"
+          echo "digest=$control_digest" >> "$GITHUB_OUTPUT"
+
+      - name: Move the single coherent production-selected control pointer
+        shell: bash
+        env:
+          CONTROL_DIGEST: ${{ steps.identity.outputs.digest }}
+          CHINA_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          CHINA_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+        run: |
+          set -euo pipefail
+          global_namespace="${GITHUB_REPOSITORY_OWNER,,}"
+          for repo in \
+            "$CHINA_REGISTRY/$CHINA_NAMESPACE/memoflow-production-runtime" \
+            "ghcr.io/$global_namespace/memoflow-production-runtime"; do
+            docker buildx imagetools create --prefer-index=false --tag "$repo:production-selected" "$repo@$CONTROL_DIGEST"
+            test "$(docker buildx imagetools inspect "$repo:production-selected" --format '{{.Manifest.Digest}}')" = "$CONTROL_DIGEST"
+          done
+
+      - name: Write production selection receipt
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ needs.resolve.outputs.release_tag }}
+          RELEASE_SHA: ${{ needs.resolve.outputs.release_sha }}
+          CONTROL_PLANE_SHA: ${{ needs.resolve.outputs.control_plane_sha }}
+          PRODUCTION_SET_DIGEST: ${{ needs.resolve.outputs.production_set_digest }}
+          CONTROL_DIGEST: ${{ steps.identity.outputs.digest }}
+        run: |
+          set -euo pipefail
+          jq -n \
+            --arg releaseTag "$RELEASE_TAG" \
+            --arg releaseSha "$RELEASE_SHA" \
+            --arg controlPlaneSha "$CONTROL_PLANE_SHA" \
+            --arg productionSetDigest "$PRODUCTION_SET_DIGEST" \
+            --arg controlArtifactDigest "$CONTROL_DIGEST" \
+            --arg selectedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{schema:"memoflow.production-selection-receipt/v1",releaseTag:$releaseTag,releaseSha:$releaseSha,controlPlaneSha:$controlPlaneSha,productionSetDigest:$productionSetDigest,controlArtifactDigest:$controlArtifactDigest,selectedAt:$selectedAt}' \
+            > reports/production/production-selection-receipt.json
+          echo "PRODUCTION_SELECTION=PASS release=$RELEASE_TAG release_sha=$RELEASE_SHA set=$PRODUCTION_SET_DIGEST control=$CONTROL_DIGEST" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload production selection receipt
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: production-selection-receipt-${{ needs.resolve.outputs.release_sha }}
+          path: reports/production/production-selection-receipt.json
+          if-no-files-found: error
+          retention-days: 180

@@ -1,0 +1,293 @@
+# =============================================================================
+# MemoFlow 生产环境 Docker Compose
+# =============================================================================
+# 启动全部服务：
+#   docker compose -f docker-compose.production.yml --env-file production.env --env-file runtime-images.env up -d
+#
+# Caddy 自动管理 HTTPS 证书（Let's Encrypt）。
+# Canonical production runtime is selected and rolled out only by the MemoFlow production watcher.
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # 基础设施
+  # ---------------------------------------------------------------------------
+
+  postgres:
+    image: ${POSTGRES_IMAGE:?set POSTGRES_IMAGE}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:?set DB_NAME}
+      POSTGRES_USER: ${DB_USER:?set DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - '127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432'
+    volumes:
+      - postgres-prod-data:/var/lib/postgresql
+    command:
+      - postgres
+      - -c
+      - wal_level=logical
+      - -c
+      - max_wal_senders=10
+      - -c
+      - max_replication_slots=10
+    networks:
+      - memoflow-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:?set DB_USER} -d ${DB_NAME:?set DB_NAME}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: ${REDIS_IMAGE:?set REDIS_IMAGE}
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --appendonly
+      - yes
+      - --appendfsync
+      - everysec
+      - --requirepass
+      - ${REDIS_PASSWORD:?set REDIS_PASSWORD}
+    ports:
+      - '127.0.0.1:${REDIS_HOST_PORT:-6379}:6379'
+    volumes:
+      - redis-prod-data:/data
+    networks:
+      - memoflow-network
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'redis-cli',
+          '-a',
+          '${REDIS_PASSWORD:?set REDIS_PASSWORD}',
+          '--no-auth-warning',
+          'ping',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ---------------------------------------------------------------------------
+  # 业务服务（production watcher owns one coherent exact-digest release set）
+  # ---------------------------------------------------------------------------
+
+  migrator:
+    image: ${MIGRATOR_IMAGE:?set MIGRATOR_IMAGE}
+    restart: 'no'
+    init: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:?set DB_NAME}
+      DB_USER: ${DB_USER:?set DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+    networks:
+      - memoflow-network
+
+  api:
+    image: ${API_IMAGE:?set API_IMAGE}
+    restart: unless-stopped
+    init: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: production
+      APP_NAME: ${APP_NAME:-MemoFlow}
+      APP_VERSION: ${APP_VERSION:-0.3.0}
+      LOG_LEVEL: ${LOG_LEVEL:-warn}
+      OTEL_TRACING_ENABLED: ${OTEL_TRACING_ENABLED:-0}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-memoflow-api}
+      API_PORT: 3000
+      API_HOST: 0.0.0.0
+      AUTH_BASE_URL: ${AUTH_BASE_URL:?AUTH_BASE_URL is required}
+      MEMOFLOW_WEB_URL: ${MEMOFLOW_WEB_URL:?MEMOFLOW_WEB_URL is required}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-console}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_REPLY_TO: ${SMTP_REPLY_TO:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM: ${RESEND_FROM:-}
+      GITHUB_OAUTH_CLIENT_ID: ${GITHUB_OAUTH_CLIENT_ID:-}
+      GITHUB_OAUTH_CLIENT_SECRET: ${GITHUB_OAUTH_CLIENT_SECRET:-}
+      GITHUB_APP_ID: ${GITHUB_APP_ID:-}
+      GITHUB_APP_SLUG: ${GITHUB_APP_SLUG:-}
+      GITHUB_APP_PRIVATE_KEY: ${GITHUB_APP_PRIVATE_KEY:-}
+      GITHUB_APP_WEBHOOK_SECRET: ${GITHUB_APP_WEBHOOK_SECRET:-}
+      GITHUB_INSTALLATION_ROUTE_KEY: ${GITHUB_INSTALLATION_ROUTE_KEY:-}
+      GITHUB_INSTALLATION_ROUTE_TARGETS: ${GITHUB_INSTALLATION_ROUTE_TARGETS:-}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:?set DB_NAME}
+      DB_USER: ${DB_USER:?set DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD}
+      REDIS_DB: ${REDIS_DB:-0}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
+      UPLOAD_MAX_SIZE: ${UPLOAD_MAX_SIZE:-10485760}
+      ENABLE_DAILY_ANALYSIS: ${ENABLE_DAILY_ANALYSIS:-true}
+      USE_PRIORITY_QUEUE_SCHEDULER: ${USE_PRIORITY_QUEUE_SCHEDULER:-true}
+      AI_PROVIDER_ENCRYPTION_KEY: ${AI_PROVIDER_ENCRYPTION_KEY:?set AI_PROVIDER_ENCRYPTION_KEY}
+      AI_PROVIDER_ENCRYPTION_KEY_ID: ${AI_PROVIDER_ENCRYPTION_KEY_ID:-primary}
+      AI_PROVIDER_ENCRYPTION_PREVIOUS_KEYS: ${AI_PROVIDER_ENCRYPTION_PREVIOUS_KEYS:-}
+      AI_PROVIDER_PRIVATE_ENDPOINT_ALLOWLIST: ${AI_PROVIDER_PRIVATE_ENDPOINT_ALLOWLIST:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      QI_NIU_YUN_API_KEY: ${QI_NIU_YUN_API_KEY:-}
+      QI_NIU_YUN_BASE_URL: ${QI_NIU_YUN_BASE_URL:-}
+      QI_NIU_YUN_MODEL_ID: ${QI_NIU_YUN_MODEL_ID:-}
+      POWERSYNC_URL: ${POWERSYNC_URL:?set POWERSYNC_URL}
+      POWERSYNC_PRIVATE_KEY: ${POWERSYNC_PRIVATE_KEY:?set POWERSYNC_PRIVATE_KEY}
+      POWERSYNC_PUBLIC_KEY_N: ${POWERSYNC_PUBLIC_KEY_N:?set POWERSYNC_PUBLIC_KEY_N}
+      POWERSYNC_PUBLIC_KEY_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
+      POWERSYNC_KEY_ID: ${POWERSYNC_KEY_ID:?set POWERSYNC_KEY_ID}
+      POWERSYNC_SNAPSHOT_DIR: ${POWERSYNC_SNAPSHOT_DIR:-/var/lib/memoflow/powersync-snapshots}
+      SNAPSHOT_REBUILD_ENABLED: ${SNAPSHOT_REBUILD_ENABLED:-false}
+      SNAPSHOT_REBUILD_SCHEDULE: '${SNAPSHOT_REBUILD_SCHEDULE:-0 */4 * * *}'
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - api-logs:/app/apps/api/logs
+      - api-uploads:/app/uploads
+      - repository-storage:/tmp/memoflow-repository-storage
+      - powersync-profile-snapshots:${POWERSYNC_SNAPSHOT_DIR:-/var/lib/memoflow/powersync-snapshots}
+    networks:
+      - memoflow-network
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('node:http').get('http://127.0.0.1:3000/healthz', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  powersync:
+    image: ${POWERSYNC_IMAGE:?set POWERSYNC_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    command: ['start', '-c', '/config/powersync.yaml']
+    environment:
+      POWERSYNC_PORT: ${POWERSYNC_PORT:-8080}
+      PS_PORT: ${POWERSYNC_PORT:-8080}
+      PS_SOURCE_HOSTNAME: postgres
+      PS_SOURCE_PORT: 5432
+      PS_SOURCE_DATABASE: ${DB_NAME:?set DB_NAME}
+      PS_SOURCE_USERNAME: ${DB_USER:?set DB_USER}
+      PS_SOURCE_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      PS_STORAGE_HOSTNAME: postgres
+      PS_STORAGE_PORT: 5432
+      PS_STORAGE_DATABASE: ${DB_NAME:?set DB_NAME}
+      PS_STORAGE_USERNAME: ${DB_USER:?set DB_USER}
+      PS_STORAGE_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      PS_JWK_N: ${POWERSYNC_PUBLIC_KEY_N:?set POWERSYNC_PUBLIC_KEY_N}
+      PS_JWK_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
+      PS_JWK_KID: ${POWERSYNC_KEY_ID:?set POWERSYNC_KEY_ID}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ./docker/powersync/powersync.yaml:/config/powersync.yaml:ro
+      - ./docker/powersync/sync-config.yaml:/config/sync-config.yaml:ro
+    networks:
+      - memoflow-network
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "const port = process.env.POWERSYNC_PORT || '8080'; const http = require('http'); const req = http.get('http://127.0.0.1:' + port + '/probes/liveness', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }); req.on('error', () => process.exit(1));",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  web:
+    image: ${WEB_IMAGE:?set WEB_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - memoflow-network
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://127.0.0.1/']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # 入口与自动化
+  # ---------------------------------------------------------------------------
+
+  caddy:
+    image: ${CADDY_IMAGE:?set CADDY_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_healthy
+      powersync:
+        condition: service_healthy
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:-memoflow.bakersean.top}
+      LEGACY_DOMAIN: ${LEGACY_DOMAIN:-memoflow.bakersean.top}
+      API_DOMAIN: ${API_DOMAIN:-memoflowapi.bakersean.top}
+      POWERSYNC_DOMAIN: ${POWERSYNC_DOMAIN:?set POWERSYNC_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:-admin@bakersean.top}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - memoflow-network
+
+networks:
+  memoflow-network:
+    driver: bridge
+
+volumes:
+  postgres-prod-data:
+  redis-prod-data:
+  api-logs:
+  api-uploads:
+  repository-storage:
+  powersync-profile-snapshots:
+  caddy-data:
+  caddy-config:

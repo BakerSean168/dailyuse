@@ -1,0 +1,21 @@
+FROM scratch
+ARG CONTROL_PLANE_SHA
+ARG RELEASE_SHA
+ARG RELEASE_TAG
+ARG PRODUCTION_SET_DIGEST
+ARG PRODUCTION_SET_SHA256
+LABEL org.opencontainers.image.title="memoflow-production-runtime"
+LABEL org.opencontainers.image.description="MemoFlow canonical Alibaba production deployment control plane"
+LABEL org.opencontainers.image.revision=$CONTROL_PLANE_SHA
+LABEL org.opencontainers.image.version=$RELEASE_TAG
+LABEL io.memoflow.release.revision=$RELEASE_SHA
+LABEL io.memoflow.production-set.digest=$PRODUCTION_SET_DIGEST
+LABEL io.memoflow.production-set.sha256=$PRODUCTION_SET_SHA256
+COPY deployment/production/docker-compose.production.yml /runtime/production/docker-compose.production.yml
+COPY deployment/production/production-deploy-watch.sh /runtime/production/production-deploy-watch.sh
+COPY deployment/production/install-production-deploy-watch.sh /runtime/production/install-production-deploy-watch.sh
+COPY deployment/production/systemd /runtime/production/systemd
+COPY Caddyfile /runtime/production/Caddyfile
+COPY reports/production/release-runtime/docker/powersync /runtime/production/docker/powersync
+COPY reports/production/production-set-v1.json /runtime/production/production-set-v1.json
+COPY reports/production/production-set-v1.sha256 /runtime/production/production-set-v1.sha256
