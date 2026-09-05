@@ -116,7 +116,11 @@ RUN --mount=type=cache,id=memoflow-api-pnpm-store,target=/pnpm/store \
   pnpm --config.inject-workspace-packages=true \
   --filter @memoflow/api deploy --prod --ignore-scripts /prod/api \
   && pnpm --config.inject-workspace-packages=true \
-  --filter @memoflow/migrator deploy --prod --ignore-scripts /prod/migrator
+  --filter @memoflow/migrator deploy --prod --ignore-scripts /prod/migrator \
+  && node /prod/migrator/node_modules/@prisma/engines/scripts/postinstall.js \
+  && schema_engine="$(find /prod/migrator/node_modules/@prisma/engines -maxdepth 1 -type f -name 'schema-engine-*' -print -quit)" \
+  && test -n "$schema_engine" \
+  && test -x "$schema_engine"
 
 FROM node-base AS migrator-runtime
 
@@ -126,6 +130,7 @@ ARG VERSION=dev
 
 ENV NODE_ENV=production
 ENV CI=true
+ENV PRISMA_HIDE_UPDATE_MESSAGE=1
 
 LABEL org.opencontainers.image.title="memoflow-migrator"
 LABEL org.opencontainers.image.description="MemoFlow one-shot database initialization module"
@@ -138,6 +143,11 @@ WORKDIR /app
 COPY --from=builder /prod/migrator/node_modules ./node_modules
 COPY --from=builder /prod/migrator/package.json ./apps/migrator/package.json
 COPY --from=builder /prod/migrator/dist ./apps/migrator/dist
+
+RUN schema_engine="$(find /app/node_modules/@prisma/engines -maxdepth 1 -type f -name 'schema-engine-*' -print -quit)" \
+  && test -n "$schema_engine" \
+  && test -x "$schema_engine" \
+  && /app/node_modules/.bin/prisma -v | grep -q 'Schema Engine'
 
 WORKDIR /app/apps/migrator
 

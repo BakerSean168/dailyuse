@@ -6,7 +6,7 @@ tags:
   - audit
 description: 2026-09-04 MemoFlow Active Plan 真值审计与剩余实施优先级
 created: 2026-09-04T23:25:00+08:00
-updated: 2026-09-05T16:15:00+08:00
+updated: undefined
 ---
 
 # MemoFlow Active Plan Truth Audit — 2026-09-04
@@ -15,11 +15,11 @@ updated: 2026-09-05T16:15:00+08:00
 
 AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三份真实 Active Plan。没有第二份“完整设计后完全忘记实施”的计划，但两份存在显著 residual，一份只差实机验收。
 
-| Plan                               | Current truth                                                | What is actually left                                                                                                                   |
-| ---------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Delivery Platform V3               | **Phase 3 implementation present; release gate fail-closed** | merge Linux control-plane tooling/keyring authority repair, retry immutable v0.13.2, then production selection + Alibaba rollout/replay |
-| Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only**      | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening                   |
-| GitHub Durable Installation Intent | **implementation complete**                                  | one Published Windows Desktop live external-browser + polling/finalize acceptance                                                       |
+| Plan                               | Current truth                                                             | What is actually left                                                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Delivery Platform V3               | **Phase 3 release/selector accepted; production transaction fail-closed** | ship Migrator Prisma engine closure as v0.13.3, then explicit Alibaba BLOCKED recovery -> replay -> timer enable      |
+| Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only**                   | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
+| GitHub Durable Installation Intent | **implementation complete**                                               | one Published Windows Desktop live external-browser + polling/finalize acceptance                                     |
 
 ## 2. Delivery Platform V3 — still required
 
@@ -44,7 +44,7 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 1. `DLV3-3301/3302`: merged in PR #310. Release Publish promotes the existing exact candidate digests without rebuilding Server images, and schema-v2 release evidence binds candidate-set/main-CI/delivery identity.
 2. `DLV3-3303`: `Deploy Production(vX.Y.Z)` plus `memoflow.production-set/v1` is implemented. The selector is manual, Published-release-only, main-control-plane-bound, verifies ACR/GHCR parity and moves one `production-selected` control artifact; GitHub Environment `production` exists with a `main` branch policy.
 3. `DLV3-3304`: `deployment/production/` is implemented with exact-digest Watchtower-free compose, mandatory database backup, migrator-first rollout, pre-migration restore, post-migration `BLOCKED`, PowerSync downgrade guard and idempotent state/replay fixtures.
-4. `v0.13.0` and `v0.13.1` failed closed and exposed the Desktop readiness/ResizeObserver defects. #315 fixed the renderer classification. `v0.13.2` is an immutable Draft at `08c2daf16e145d228d7d7a20c3282486dca58b0d`; Server promotion and Windows x64/macOS x64/macOS arm64 packaged smoke are proven. #317 bounded the Linux session, but real retry `33965867292` still activated `SystemPrompter` because the Release workflow was executing the helper from immutable `release-source`, not the repaired current `release-tooling`. The corrected authority runs the control-plane helper from `release-tooling` against the exact `release-source` workspace/test and uses the GNOME PAM lifecycle (`--login -> --start`) with an isolated control directory. Exact `08c2daf...` source + repaired tooling now passes production-shaped Linux packaging and packaged Playwright locally. Merge that repair, retry the same Draft `v0.13.2`, then proceed to selector -> Alibaba controlled rollout -> exact state -> replay -> timer enable.
+4. #319 closed the Linux helper-authority/Secret Service defect and Release Publish `33969280951` Published immutable `v0.13.2` at `08c2daf16e145d228d7d7a20c3282486dca58b0d`; Windows/Linux/macOS x64/macOS arm64 packaged runtime gates, exact candidate promotion and canonical postflight all passed. Selector `33970245766` then selected production-set `sha256:69cc7596...0529b`. Alibaba install and `--check-only` passed, and the first real transaction took the mandatory PostgreSQL backup, but Migrator `prisma db push` hit `TLSSocket ECONNRESET`. Image audit proved the deploy closure contained Prisma CLI JS but omitted the local `schema-engine-*` because `pnpm deploy --ignore-scripts` skipped `@prisma/engines` materialization. The watcher persisted `BLOCKED` after the migration boundary; the previous exact runtime was operator-restored and public API/Web/PowerSync probes are 200; timer remains disabled. A corrective image now explicitly materializes/validates the locked engine and passes both final-image `--network none prisma -v` and a complete internal-only Postgres/pgvector Migrator run. Ship that Server-image change as immutable `v0.13.3`, then perform explicit BLOCKED recovery/replay/timer enable.
 
 ### Later / conditional
 
@@ -53,7 +53,7 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 - DLV3-4403 macOS signing/notarization (only necessary before trusted public macOS distribution);
 - DLV3-4404 observation closeout/archive.
 
-**Recommendation:** do not start another delivery redesign and do not merge the already-generated #318 (`v0.13.3`) for this packaging-tooling-only defect. Merge the focused Linux control-plane helper authority + PAM Secret Service repair, retry the existing immutable Draft `v0.13.2` through `workflow_dispatch(tag=v0.13.2)`, publish only after all four packaged runtime gates pass, then continue the existing Phase 3 selector/Alibaba transaction. Preserve the failed runs/Drafts as release evidence.
+**Recommendation:** do not start another delivery redesign and do not retry Published `v0.13.2` with a changed Server image. The Desktop/tooling path and production selector are now proven. Merge the focused Migrator Prisma engine-closure repair, let main CI/Candidate Publish produce a new exact Migrator digest, then update/merge release-please PR #318 as immutable `v0.13.3`. Select only the Published corrective release, inspect the retained v0.13.2 `BLOCKED` receipt, run a deliberate `--force` recovery with a new backup, prove exact state + idempotent replay, and only then enable the production timer.
 
 ## 3. Core vNext — classify before implementing
 
