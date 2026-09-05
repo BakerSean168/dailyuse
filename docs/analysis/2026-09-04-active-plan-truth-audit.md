@@ -6,7 +6,7 @@ tags:
   - audit
 description: 2026-09-04 MemoFlow Active Plan 真值审计与剩余实施优先级
 created: 2026-09-04T23:25:00+08:00
-updated: 2026-09-04T23:25:00+08:00
+updated: 2026-09-05T14:01:00+08:00
 ---
 
 # MemoFlow Active Plan Truth Audit — 2026-09-04
@@ -17,7 +17,7 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 
 | Plan                               | Current truth                                           | What is actually left                                                                                                 |
 | ---------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Delivery Platform V3               | **Phase 2 closed; Phase 3 next**                        | build-once release promotion, canonical release binding, production selector and Alibaba watcher                      |
+| Delivery Platform V3               | **Phase 2 closed; Phase 3 implementation present**      | real 0.13.0 build-once Release acceptance, explicit production selection, Alibaba controlled rollout + replay         |
 | Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only** | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
 | GitHub Durable Installation Intent | **implementation complete**                             | one Published Windows Desktop live external-browser + polling/finalize acceptance                                     |
 
@@ -39,12 +39,12 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 - `DLV3-2204`: GCP watcher owns migrator-first exact-digest rollout, rollback/BLOCKED semantics and idempotent timer execution;
 - `DLV3-2205`: canonical staging cut over to candidate `60859e470651ad775c936d9224654c1c85602d6b`; source-build staging is emergency-only.
 
-### Not implemented
+### Phase 3 implementation present — live acceptance pending
 
-1. `DLV3-3301` — Release Publish promotes existing server candidate instead of rebuilding;
-2. `DLV3-3302` — release manifest binds candidate-set + Desktop manifest;
-3. `DLV3-3303` — explicit Published-Release production selector;
-4. `DLV3-3304` — Alibaba production deploy watcher.
+1. `DLV3-3301/3302`: merged in PR #310. Release Publish promotes the existing exact candidate digests without rebuilding Server images, and schema-v2 release evidence binds candidate-set/main-CI/delivery identity.
+2. `DLV3-3303`: `Deploy Production(vX.Y.Z)` plus `memoflow.production-set/v1` is implemented. The selector is manual, Published-release-only, main-control-plane-bound, verifies ACR/GHCR parity and moves one `production-selected` control artifact; GitHub Environment `production` exists with a `main` branch policy.
+3. `DLV3-3304`: `deployment/production/` is implemented with exact-digest Watchtower-free compose, mandatory database backup, migrator-first rollout, pre-migration restore, post-migration `BLOCKED`, PowerSync downgrade guard and idempotent state/replay fixtures.
+4. Remaining evidence is operational, not another architecture rewrite: merge the selector/watcher PR, publish the real 0.13.0 release, run the selector, then prove check-only -> Alibaba controlled rollout -> exact state -> replay -> timer enable.
 
 ### Later / conditional
 
@@ -53,7 +53,7 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 - DLV3-4403 macOS signing/notarization (only necessary before trusted public macOS distribution);
 - DLV3-4404 observation closeout/archive.
 
-**Recommendation:** this is the largest currently designed-but-not-built active engineering stream. If delivery reliability remains a current goal, Phase 2 should be the next infrastructure implementation batch.
+**Recommendation:** do not start another delivery redesign. Finish the current Phase 3 live acceptance transaction, preserve any real runtime blocker as evidence, then move to Phase 4 only after production state and release identities agree.
 
 ## 3. Core vNext — classify before implementing
 
@@ -107,7 +107,7 @@ Desktop
 
 3. **Delivery Platform V3 Phase 2 — COMPLETE (2026-09-05).** Candidate-set → exact-SHA images → coherent staging channel → GCP watcher is live.
 4. **Core `CLEAN-6302/6303`** — remove Reminder legacy semantics and raw ScheduleTask/SourceModule product/execution paths. This reduces dual-authority/maintenance risk and is a prerequisite for a meaningful scheduler-engine comparison.
-5. **Delivery Platform V3 Phase 3** — only after Phase 2 staging proves coherent: promote candidates into releases, explicit production selector, Alibaba watcher.
+5. **Delivery Platform V3 Phase 3 live acceptance** — implementation exists; close the real 0.13.0 Release -> selector -> Alibaba watcher transaction before claiming Phase 3 complete.
 
 ### Audit/product decision before coding
 

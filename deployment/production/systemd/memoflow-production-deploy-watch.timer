@@ -1,0 +1,12 @@
+[Unit]
+Description=Poll MemoFlow selected production release
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+AccuracySec=15s
+Persistent=true
+Unit=memoflow-production-deploy-watch.service
+
+[Install]
+WantedBy=timers.target

@@ -174,7 +174,11 @@ Draft becomes Published only when all required identities and assets are present
 
 ## 9. Production selection
 
-`Deploy Production` takes an immutable release tag. It validates Published Release and manifest, then moves a coherent desired production set. It does not rebuild or SSH-execute an ad-hoc deployment.
+`Deploy Production` is an explicit `workflow_dispatch` authority gated by the GitHub `production` Environment and `main` branch policy. It accepts an immutable Published Release tag only. Before mutation it revalidates tag -> SHA, source main CI, candidate-set, ACR/GHCR application digest parity and the runtime mirror digests owned by the exact release SHA.
+
+It creates `memoflow.production-set/v1`, which binds release SHA/tag, candidate and delivery-manifest identity, exact application/runtime digests, and the current `controlPlaneSha`. The selector builds only `memoflow-production-runtime`, then moves one `production-selected` control pointer. It does not rebuild Web/API/Migrator, move their tags independently, run SSH commands, or mutate Compose on the runtime host.
+
+Alibaba consumes that control artifact with `deployment/production/production-deploy-watch.sh`. The canonical production compose contains no Watchtower or mutable application fallback. Runtime mutation remains a host-owned transaction with backup, migrator-first rollout, health verification, atomic state, pre-migration restore and post-migration `BLOCKED` semantics.
 
 ## 10. Rollback
 

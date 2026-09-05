@@ -13,7 +13,7 @@ const RULES = [
     level: 'release',
     reason: 'release or deployment configuration changed',
     test: (file) =>
-      /^(\.github\/workflows\/(?:release(?:-[^/]+)?|publish-images)\.yml|(?:tools\/docker\/|tools\/ci-cd-platform\/release-tools\/)|Dockerfile)/u.test(
+      /^(\.github\/workflows\/(?:release(?:-[^/]+)?|publish-images|deploy-production)\.yml|deployment\/production\/|(?:tools\/docker\/|tools\/ci-cd-platform\/(?:release-tools\/|production-manifest\.mjs))|Dockerfile)/u.test(
         file,
       ),
   },

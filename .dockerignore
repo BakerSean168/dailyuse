@@ -37,3 +37,16 @@ reports/*
 !reports/candidate/
 reports/candidate/*
 !reports/candidate/candidate-set-v1.json
+
+# Delivery V3 production control bundle embeds only deterministic desired-state
+# evidence plus PowerSync config from the exact Published Release source.
+!reports/production/
+reports/production/*
+!reports/production/production-set-v1.json
+!reports/production/production-set-v1.sha256
+!reports/production/release-runtime/
+reports/production/release-runtime/*
+!reports/production/release-runtime/docker/
+reports/production/release-runtime/docker/*
+!reports/production/release-runtime/docker/powersync/
+!reports/production/release-runtime/docker/powersync/**

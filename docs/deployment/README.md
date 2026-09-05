@@ -6,10 +6,12 @@
 - `/opt/memoflow` 已创建
 - 服务器已安装 Docker 和 Docker Compose 插件
 - 服务器已完成阿里云 ACR 登录
-- 服务器上已经上传了部署文件：`.env` 或 `.env.production.local`、`docker-compose.prod.yml`、`Caddyfile`
+- 服务器当前仍保留 pre-cutover legacy 文件：`.env.production.local`、`docker-compose.prod.yml`、`Caddyfile`；V3 首次切换时只作为 rollback baseline
 - 服务器网络环境不稳定，部分 Docker Hub / GHCR 镜像可能无法直接拉取
 
 本文档的目标不是泛泛介绍 Docker 部署，而是给出这套仓库的实际落地方案、执行顺序、验证方法和故障处理策略。
+
+> **Delivery Platform V3 authority:** `deployment/production/` is the canonical production runtime and `Deploy Production(vX.Y.Z)` is the only normal production selection authority. The existing `/opt/memoflow/docker-compose.prod.yml` and the manual SSH commands below describe the **pre-cutover legacy baseline / emergency recovery path** only. After the first accepted V3 rollout they must not be treated as normal deployment truth.
 
 ## 1. 结论先行
 
@@ -49,7 +51,7 @@ release / promotion
 - `powersync` 通过独立子域名走 `caddy -> powersync:8080`
 - 数据库和 Redis 只绑定到 `127.0.0.1`，不暴露公网
 - 中国 production 的业务镜像从阿里云 ACR 拉取
-- PostgreSQL / Redis / Caddy / PowerSync / Watchtower 也使用 ACR digest mirror，避免临时跨境拉取
+- PostgreSQL / Redis / Caddy / PowerSync 使用 ACR exact-digest mirror；canonical production 不再由 Watchtower 管理任何服务
 
 ### 1.1 Nginx 配置约定
 
@@ -86,27 +88,28 @@ release / promotion
 
 就当前仓库和当前任务来说，继续使用 `Caddy + web(Nginx)` 是更干净的方案。
 
-## 3. 当前生产编排的真实结构
+## 3. 当前线上 legacy baseline 与 canonical V3 runtime
 
-仓库里的 [`docker-compose.prod.yml`](D:\home\projects\memoflow\docker-compose.prod.yml) 已定义以下服务：
+阿里云当前尚未完成 V3 live cutover，因此 `/opt/memoflow/docker-compose.prod.yml` 仍描述正在运行的 legacy baseline；**新的正常运行 authority** 是仓库 [`deployment/production/docker-compose.production.yml`](../../deployment/production/docker-compose.production.yml)。canonical compose 只接受 watcher 生成的 `repository@sha256` refs，并且没有 Watchtower 或 mutable tag fallback。
 
-| 服务         | 镜像来源                                                   | 作用                       | China production 建议 |
-| ------------ | ---------------------------------------------------------- | -------------------------- | --------------------- |
-| `postgres`   | `${POSTGRES_IMAGE:-pgvector/pgvector:0.8.5-pg18}`          | 主数据库                   | ACR digest mirror     |
-| `redis`      | `${REDIS_IMAGE:-redis:8-alpine}`                           | 缓存 / 队列                | ACR digest mirror     |
-| `migrator`   | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-migrator`         | 一次性数据库初始化         | ACR immutable image   |
-| `api`        | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-api`              | 后端 API                   | ACR immutable image   |
-| `powersync`  | `${POWERSYNC_IMAGE:-journeyapps/powersync-service:1.25.0}` | Desktop / Web 实时同步服务 | ACR digest mirror     |
-| `web`        | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-web`              | 前端站点                   | ACR immutable image   |
-| `caddy`      | `${CADDY_IMAGE:-caddy:2-alpine}`                           | HTTPS 入口                 | ACR digest mirror     |
-| `watchtower` | `${WATCHTOWER_IMAGE:-containrrr/watchtower}`               | 可选辅助更新               | ACR digest mirror     |
+legacy compose 曾定义以下服务：
+
+| 服务        | 镜像来源                                                   | 作用                       | China production 建议 |
+| ----------- | ---------------------------------------------------------- | -------------------------- | --------------------- |
+| `postgres`  | `${POSTGRES_IMAGE:-pgvector/pgvector:0.8.5-pg18}`          | 主数据库                   | ACR digest mirror     |
+| `redis`     | `${REDIS_IMAGE:-redis:8-alpine}`                           | 缓存 / 队列                | ACR digest mirror     |
+| `migrator`  | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-migrator`         | 一次性数据库初始化         | ACR immutable image   |
+| `api`       | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-api`              | 后端 API                   | ACR immutable image   |
+| `powersync` | `${POWERSYNC_IMAGE:-journeyapps/powersync-service:1.25.0}` | Desktop / Web 实时同步服务 | ACR digest mirror     |
+| `web`       | `${REGISTRY}/${IMAGE_NAMESPACE}/memoflow-web`              | 前端站点                   | ACR immutable image   |
+| `caddy`     | `${CADDY_IMAGE:-caddy:2-alpine}`                           | HTTPS 入口                 | ACR digest mirror     |
 
 其中：
 
 - `postgres` 和 `redis` 只绑定宿主机 `127.0.0.1`
 - `api`、`web`、`powersync` 都不直接暴露到公网
 - `caddy` 暴露 `80/443`
-- `watchtower` 如启用，只管理明确允许的 mutable channel；API/Migrator production promotion 仍由显式 release 流程拥有
+- legacy compose 仍残留 Web 的 Watchtower label，但线上没有运行 Watchtower 容器；canonical V3 compose 已完全移除该 ownership path
 
 ### 3.1 代理层职责划分
 
@@ -172,7 +175,7 @@ exact release SHA -> one build -> OCI digest
 
 ### 4.2 Runtime dependency mirror
 
-PostgreSQL、Redis、Caddy、PowerSync、Watchtower 不再依赖生产服务器临时访问 Docker Hub。其 mirror source 由：
+PostgreSQL、Redis、Caddy、PowerSync 不再依赖生产服务器临时访问 Docker Hub。其 release-owned mirror identity 来自目标 Release SHA 的：
 
 ```text
 tools/ci-cd-platform/runtime-image-mirrors.json
@@ -191,10 +194,9 @@ POSTGRES_IMAGE=<ACR>/memoflow-postgres@sha256:<digest>
 REDIS_IMAGE=<ACR>/memoflow-redis@sha256:<digest>
 CADDY_IMAGE=<ACR>/memoflow-caddy@sha256:<digest>
 POWERSYNC_IMAGE=<ACR>/memoflow-powersync@sha256:<digest>
-WATCHTOWER_IMAGE=<ACR>/memoflow-watchtower@sha256:<digest>
 ```
 
-没有这些 override 时，compose 仍保留公共 registry 默认值，方便开发/验证环境使用；中国 production 则必须显式设置 ACR mirror。
+这些 exact refs 由 production watcher 写入 canonical runtime 的 `runtime-images.env`，不是长期手工维护的 host deployment truth。`deployment/production/docker-compose.production.yml` 缺少任一 required image ref 都会 fail closed。
 
 ### 4.3 当前生产基线
 
@@ -205,11 +207,11 @@ WATCHTOWER_IMAGE=<ACR>/memoflow-watchtower@sha256:<digest>
 - API / Web / Migrator 使用 exact-SHA immutable image；
 - PowerSync 使用 ACR，并应使用 immutable tag 而不是 `latest`；
 - Caddy/基础 runtime 通过 ACR mirror 固定；
-- Watchtower 不拥有 API/Migrator production promotion；migrator-first rollout 仍由显式 release/promotion 控制。
+- canonical production 不运行 Watchtower；所有应用组件由一个 coherent `production-selected` control artifact 与 host watcher 共同拥有。
 
 更新 runtime dependency 时，应把它当作独立 dependency-upgrade 变更：先修改 digest pin、在非生产环境验证，再合并到 `main` 触发 mirror workflow；需要重试时再手工 dispatch。不要把“镜像分发优化”和“依赖升级”混成一次操作。
 
-## 5. 部署前检查
+## 5. Legacy manual preflight（仅首次切换前 / emergency）
 
 生产发布只接受已经通过 CI / review 的 exact release artifact。服务器只做 promotion，不做源码构建。
 
@@ -249,7 +251,7 @@ China production 的 runtime dependency 应为 ACR immutable tag 或 `@sha256:` 
 
 在停任何业务服务之前，对即将部署的全部 refs 先执行 `docker pull`。如果 ACR ref 不存在或认证失败，发布在此处停止；不要退回 Docker Hub/GHCR 临时跨境拉取，也不要在生产机重新构建镜像。
 
-## 6. Production promotion
+## 6. Legacy manual promotion（仅 emergency；正常路径见 Delivery V3 watcher）
 
 ### 6.1 先备份配置
 
@@ -294,9 +296,9 @@ ssh ali-memoflow \
 
 ### 6.4 Watchtower 边界
 
-当前 production **不依赖 Watchtower 完成 API/Migrator 发布**。默认保持 Watchtower 不启动；如果未来启用，也只能管理明确允许的 mutable channel，不能绕过 migrator-first / exact-artifact promotion。
+Watchtower 已从 canonical V3 runtime 中删除。legacy compose 中残留的 Web label 只属于 pre-cutover evidence，不得重新启用为 production promotion authority。
 
-## 7. Production acceptance
+## 7. Legacy acceptance commands（V3 acceptance 以 watcher state/runbook 为准）
 
 ### 7.1 容器与 revision
 
@@ -341,22 +343,9 @@ GitHub Installation Gateway 还要做 fail-closed probe：无效 `mfi1.prod.*` s
 关键公开配置示例：
 
 ```env
-REGISTRY=<China ACR registry>
-IMAGE_NAMESPACE=<China ACR namespace>
-API_TAG=<immutable release tag>
-MIGRATOR_TAG=<same release immutable tag>
-WEB_TAG=<same release immutable tag>
-
-# Production may pin the exact release manifests directly; these override REGISTRY + TAG.
-API_IMAGE=<ACR>/memoflow-api@sha256:<digest>
-MIGRATOR_IMAGE=<ACR>/memoflow-migrator@sha256:<digest>
-WEB_IMAGE=<ACR>/memoflow-web@sha256:<digest>
-
-POSTGRES_IMAGE=<ACR>/memoflow-postgres@sha256:<digest>
-REDIS_IMAGE=<ACR>/memoflow-redis@sha256:<digest>
-CADDY_IMAGE=<ACR>/memoflow-caddy@sha256:<digest>
-POWERSYNC_IMAGE=<ACR>/memoflow-powersync@sha256:<digest>
-WATCHTOWER_IMAGE=<ACR>/memoflow-watchtower@sha256:<digest>
+# Image identity is not hand-maintained here under Delivery V3.
+# Deploy Production + the host watcher generate exact application/runtime refs
+# into /opt/memoflow/runtime/runtime-images.env from memoflow.production-set/v1.
 
 AUTH_BASE_URL=https://memoflowapi.bakersean.top/api/auth
 MEMOFLOW_WEB_URL=https://memoflow.bakersean.top
@@ -369,15 +358,14 @@ GitHub App private key、webhook secret、JWT/DB/Redis/PowerSync private keys �
 
 ## 9. Rollback
 
-回滚依赖**上一版 immutable application tag/digest + 上一版配置备份**，不依赖 `prod-latest`。
+canonical V3 rollback 依赖 watcher 保存的上一版 exact runtime、`production-deploy-state` 与本次强制 PostgreSQL backup，不依赖 `prod-latest`。
 
-1. 恢复上一版 `.env.production.local` 与 compose；
-2. 对目标历史 refs 执行 `docker pull`；
-3. 如果 schema 向后兼容，按 `api -> powersync -> web` 顺序显式 recreate；
-4. 如果 migration 不可逆，则不能仅回滚应用镜像，必须按该 release 的 migration rollback/restore 方案处理；
-5. 完成后重新跑第 7 节 acceptance。
+1. **Migrator 启动前失败**：watcher 可以自动恢复上一版 runtime。
+2. **Migrator 已启动后的任何不确定失败**：写入 `BLOCKED`，保留 `backup_dir`，禁止盲目回滚应用镜像。
+3. 只有明确证明 schema/data 向后兼容后，才允许 operator 选择上一版 Published Release 或恢复 previous runtime。
+4. 首次 V3 cutover 前，legacy `/opt/memoflow/docker-compose.prod.yml` 可作为额外 rollback baseline；cutover 后不再是 normal authority。
 
-不要移动旧 tag 指向新 digest，也不要通过重新 build 同一个 tag 模拟 rollback。
+不要移动旧 tag 指向新 digest，不要删除 PowerSync/业务 migration history，也不要通过重新 build 同一个 tag 模拟 rollback。
 
 ## 10. 常见失败
 
@@ -422,10 +410,10 @@ Production promotion 负责选择已验证的 ACR artifact、migrator-first roll
 - Compose project：`memoflow`
 - PostgreSQL 18 + pgvector 0.8.5
 - Redis 8
-- PowerSync 1.25.0
-- API/Web：exact-SHA application artifact
+- PowerSync **1.20.4**（2026-09-05 live audit；V3 目标 Release 可按 reviewed release-owned mirror forward-upgrade，禁止 downgrade）
+- API/Web：exact-SHA application artifact，当前 live revision `670aaea48a0644d3bdef792a18367d79b43d02a9`
 - PostgreSQL / Redis / Caddy / PowerSync：China ACR digest refs
 - GitHub Production App：独立 credentials，`GITHUB_INSTALLATION_ROUTE_KEY=prod`，route targets 为空
-- Watchtower：不作为当前 production promotion owner
+- Watchtower：线上当前没有运行容器；legacy Web compose label 仍为 true，但 canonical V3 已删除该 authority
 
 实时 image refs / digests 以 `my-infrastructure/projects/memoflow.yaml` 为基础设施 SSOT；运行时仍应在发布前后使用 `docker compose config --images` 与 `docker inspect` 实测确认。
