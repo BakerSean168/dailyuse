@@ -33,13 +33,17 @@ test('release-please maintains the Release PR only after successful main CI and 
   assert.equal(JSON.parse(config).packages['.']['skip-github-release'], true);
 });
 
-test('release publish waits for exact CI then calls both reusable release lanes before finalize', async () => {
+test('release publish waits for exact candidate publication then resolves the bound successful main CI before release lanes', async () => {
   const workflow = await readRepoFile('.github/workflows/release-publish.yml');
 
   assert.match(workflow, /workflow_run:/);
-  assert.match(workflow, /workflows:\s*\[?['"]?CI['"]?\]?/);
+  assert.match(workflow, /workflows:\s*\[?['"]?Publish Main Candidate['"]?\]?/);
   assert.match(workflow, /types:\s*\[?completed\]?/);
   assert.match(workflow, /workflow_dispatch:/);
+  assert.match(workflow, /workflow_run\.conclusion == 'success'/);
+  assert.match(workflow, /workflow_id: 'ci\.yml'/);
+  assert.match(workflow, /candidateRun\.head_sha !== sha/u);
+  assert.match(workflow, /candidateRun\.head_branch !== 'main'/u);
   assert.match(workflow, /release-assets\.yml/);
   assert.match(workflow, /publish-images\.yml/);
   assert.match(workflow, /draft:\s*true|draft: true/);
@@ -66,7 +70,7 @@ test('release validation checkouts retain merge-parent history', async () => {
 
   const prepareCheckout = workflowStep(caller, 'Checkout exact release SHA');
   const desktopCheckout = workflowStep(assets, 'Checkout exact release source');
-  const dockerCheckout = workflowStep(images, 'Checkout exact release SHA');
+  const dockerCheckout = workflowStep(images, 'Checkout exact release tooling');
 
   assert.match(prepareCheckout, /ref: \$\{\{ needs\.resolve\.outputs\.sha \}\}/);
   assert.match(desktopCheckout, /ref: \$\{\{ needs\.prepare-release\.outputs\.release_sha \}\}/);
@@ -166,12 +170,13 @@ test('desktop packaging has one stable product identity and one native rebuild o
   assert.match(nativeRebuildHelper, /Electron rebuild did not discover required native module/u);
 });
 
-test('release image publication uses registry-compatible image manifests', async () => {
+test('release image promotion preserves the candidate top-level digest without OCI wrapper rebuilds', async () => {
   const workflow = await readRepoFile('.github/workflows/publish-images.yml');
 
-  assert.equal(workflow.match(/^\s+provenance: false$/gmu)?.length, 3);
-  assert.equal(workflow.match(/^\s+sbom: false$/gmu)?.length, 3);
-  assert.doesNotMatch(workflow, /^\s+(?:provenance|sbom): true$/mu);
+  assert.match(workflow, /docker buildx imagetools create --prefer-index=false/u);
+  assert.match(workflow, /Manifest\.Digest/u);
+  assert.doesNotMatch(workflow, /docker\/build-push-action/u);
+  assert.doesNotMatch(workflow, /provenance:\s*(?:true|false)|sbom:\s*(?:true|false)/u);
 });
 
 test('release tooling exposes fail-closed identity and evidence builders', async () => {
@@ -184,12 +189,13 @@ test('release tooling exposes fail-closed identity and evidence builders', async
   assert.match(contract, /release identity mismatch/);
   assert.match(contract, /CHANGELOG\.md has no release heading/);
   assert.match(desktop, /sha256/);
-  assert.match(docker, /API_DIGEST/);
+  assert.match(docker, /CANDIDATE_MANIFEST/);
   assert.match(aggregate, /release identity mismatch/);
   assert.match(aggregate, /docker CI run mismatch/);
+  assert.match(aggregate, /docker release candidate-set binding mismatch/);
 });
 
-test('release image publication distributes one build to China ACR and global GHCR', async () => {
+test('release image publication carbon-copies one exact candidate to China ACR and global GHCR without rebuild', async () => {
   const [workflow, caller] = await Promise.all([
     readRepoFile('.github/workflows/publish-images.yml'),
     readRepoFile('.github/workflows/release-publish.yml'),
@@ -197,16 +203,22 @@ test('release image publication distributes one build to China ACR and global GH
 
   assert.match(workflow, /packages:\s*write/);
   assert.match(caller, /packages:\s*write/);
-  assert.match(workflow, /name: Login to GHCR/);
-  assert.match(workflow, /registry:\s*ghcr\.io/);
-  assert.match(workflow, /password:\s*\$\{\{ github\.token \}\}/);
-  assert.equal(workflow.match(/uses: docker\/build-push-action@v6/g)?.length, 3);
-  for (const name of ['memoflow-api', 'memoflow-migrator', 'memoflow-web']) {
-    assert.match(workflow, new RegExp('ACR_NAMESPACE \\}\\}/' + name));
-    assert.match(workflow, new RegExp('global_namespace \\}\\}/' + name));
-  }
-  assert.match(workflow, /Verify registry digest parity/);
-  assert.match(workflow, /GLOBAL_REGISTRY:\s*ghcr\.io/);
+  assert.match(workflow, /candidate-publish\.yml/u);
+  assert.match(workflow, /candidate-set-\$\{\{ needs\.prepare-release\.outputs\.release_sha \}\}/u);
+  assert.match(workflow, /candidate-manifest\.mjs --validate/u);
+  assert.match(workflow, /name: Login to ACR/u);
+  assert.match(workflow, /name: Login to GHCR/u);
+  assert.match(workflow, /Preflight immutable candidate and release-tag collisions/u);
+  assert.match(workflow, /Carbon-copy candidate digests to release tags/u);
+  assert.match(workflow, /docker buildx imagetools create --prefer-index=false/u);
+  assert.match(workflow, /Verify release tags preserve candidate digests/u);
+  assert.doesNotMatch(workflow, /docker\/build-push-action/u);
+  assert.doesNotMatch(workflow, /ci-build-artifacts/u);
+  assert.doesNotMatch(workflow, /restore-runtime-closure/u);
+  assert.doesNotMatch(workflow, /Dockerfile\.(?:api|web)/u);
+  assert.match(workflow, /candidate-set-v1\.json docker-release-manifest\.json/u);
+  assert.match(caller, /ci_run_id:\s*\$\{\{ needs\.resolve\.outputs\.ci_run_id \}\}/u);
+  assert.match(caller, /candidate-set-v1\.json/u);
 });
 
 test('production compose allows China-mirrored runtime dependencies without changing service contracts', async () => {
@@ -301,6 +313,8 @@ test('touched V3 release workflows pin external actions by immutable commit', as
   const workflows = await Promise.all([
     readRepoFile('.github/workflows/release-please.yml'),
     readRepoFile('.github/workflows/release-assets.yml'),
+    readRepoFile('.github/workflows/release-publish.yml'),
+    readRepoFile('.github/workflows/publish-images.yml'),
   ]);
   for (const workflow of workflows) {
     const externalUses = [...workflow.matchAll(/uses:\s+([^./\s][^@\s]+)@([^\s#]+)/gu)];

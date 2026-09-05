@@ -66,21 +66,25 @@ Before publication:
 3. Confirm Prepare Release creates/updates the next Release PR.
 4. Review version and CHANGELOG; merge Release PR.
 5. Observe exact release merge SHA CI.
-6. Observe Release Publish Draft creation.
-7. Verify platform child jobs:
+6. Observe `Publish Main Candidate` complete successfully for that exact SHA and retain `candidate-set-<SHA>`.
+7. Observe Release Publish start only after candidate publication, then create/resume the Draft Release.
+8. Verify platform child jobs:
    - Windows x64;
    - Linux x64;
    - macOS x64;
    - macOS arm64.
-8. Verify `desktop-release-manifest.json` and `SHA256SUMS.txt` before publication.
-9. Confirm Published Release/tag SHA identity and asset coverage.
-10. Do not deploy production solely because the Release is Published.
+9. Verify `candidate-set-v1.json`, `docker-release-manifest.json`, `desktop-release-manifest.json` and `SHA256SUMS.txt` before publication.
+10. Confirm release Web/API/Migrator tags preserve the exact candidate digests in both ACR and GHCR.
+11. Confirm Published Release/tag SHA identity and asset coverage.
+12. Do not deploy production solely because the Release is Published.
 
 ### Failure handling
 
 - platform build failure: leave Draft; fix code/workflow in a new PR; retry the same Draft only if release SHA remains valid;
 - duplicate/missing asset: do not manually upload around validator;
 - Git tag collision: stop; immutable tag must never move;
+- Server release-tag digest collision: stop before promotion; never overwrite a tag that points to a different candidate digest;
+- missing/expired candidate-set or candidate/main-CI mismatch: do not rebuild Server images; keep/resume the Draft only after the exact candidate evidence is restored;
 - unsigned macOS policy mismatch: stop rather than dropping the platform silently.
 
 ## 4. Candidate/staging cutover

@@ -6,7 +6,7 @@ tags:
   - desktop
 description: MemoFlow Release Lifecycle V3，覆盖自动 Release PR、Server candidate promotion 与跨平台 Desktop 资产
 created: 2026-09-02T16:15:00+08:00
-updated: 2026-09-02T16:15:00+08:00
+updated: 2026-09-05T13:05:00+08:00
 ---
 
 # MemoFlow Release Lifecycle V3
@@ -51,6 +51,20 @@ The Release PR is an ordinary protected PR. Its merge SHA must pass full main CI
 
 ## 4. Release candidate resolution
 
+The automatic publication trigger is a successful `Publish Main Candidate` completion for `main`, not raw CI completion. This orders the lifecycle as:
+
+```text
+successful exact-SHA main CI
+        ↓
+Publish Main Candidate
+        ↓
+validated candidate-set/v1
+        ↓
+Release Publish
+```
+
+Manual `workflow_dispatch` remains recovery-only. In both automatic and manual paths, Release Publish independently resolves the exact successful `ci.yml` push run and requires it to match the candidate-set identity.
+
 Release Publish is eligible only when it can prove:
 
 1. exact SHA belongs to `main`;
@@ -82,7 +96,7 @@ candidate sha-<revision>@digest A
 release vX.Y.Z@digest A
 ```
 
-The release workflow must not rebuild source. A top-level digest change caused by an OCI wrapper/index is a failure unless a narrowly defined one-member wrapper recovery proves the child digest is the expected candidate digest.
+The release workflow must not rebuild source. Before any release-tag mutation, it validates every China/global candidate tag and fails if an existing release or immutable release tag points to another digest. Promotion uses exact `repository@sha256` inputs with single-manifest carbon-copy semantics, then re-verifies both release tags against the candidate digest. A top-level digest change caused by an OCI wrapper/index is a failure unless a narrowly defined one-member wrapper recovery proves the child digest is the expected candidate digest.
 
 ## 7. Cross-platform Desktop publication
 

@@ -9,7 +9,7 @@ tags:
   - desktop
 description: MemoFlow Delivery Platform V3 分阶段实施计划与可验证票据
 created: 2026-09-02T16:15:00+08:00
-updated: 2026-09-05T12:40:00+08:00
+updated: 2026-09-05T13:05:00+08:00
 ---
 
 # MemoFlow Delivery Platform V3 Implementation Plan
@@ -46,7 +46,7 @@ The first externally visible milestone is a Published MemoFlow release containin
 | DLV3-1104      | **COMPLETE for Phase 1 scope** | touched release workflows use pinned reviewed Actions; repository-wide convergence remains DLV3-4402.                                                                                                                                                                                                            |
 | DLV3-1105      | **COMPLETE**                   | `v0.12.1` was Published on 2026-09-03 with Windows x64, Linux x64, macOS x64 and macOS arm64 assets, `desktop-release-manifest.json`, `release-manifest.json` and `SHA256SUMS.txt`; tag target `257c74eccbe87bba5f63a72217301ab8a17048e6`.                                                                       |
 | Phase 2        | **COMPLETE**                   | PRs #306/#307/#308 established candidate-set, exact-SHA dual-registry candidates, coherent `staging-latest`, candidate-bound runtime mirrors and the GCP watcher. Main `60859e47065` and Candidate Publish run `33944690658` are green; GCP state is `DEPLOYED` at the same SHA and the watcher timer is active. |
-| Phase 3        | **PARTIAL FOUNDATION ONLY**    | canonical release manifests exist, but they do not yet bind/promote a Phase-2 candidate-set; production selector and Alibaba watcher do not exist.                                                                                                                                                               |
+| Phase 3        | **IN PROGRESS**                | DLV3-3301/3302 implementation promotes exact Phase-2 candidate digests without rebuild and binds candidate-set/main-CI/delivery identity into release evidence; first real release acceptance is still required. DLV3-3303/3304 remain unimplemented.                                                            |
 | Phase 4        | **PARTIAL / DEFERRED**         | some Action pinning and delivery observations exist; consolidated-runner evidence, repository-wide Action pinning, macOS signing/notarization and final observation closure remain.                                                                                                                              |
 
 Phase 1 release evidence:
@@ -220,11 +220,19 @@ The first cutover attempt exposed a real compatibility defect: the old staging s
 
 ### DLV3-3301 — Promote Server candidate in Release Publish
 
+**Implementation status:** IMPLEMENTED; first real release acceptance pending.
+
+Release Publish now consumes the exact `candidate-set/v1` and promotes its existing image digests to release tags without rebuilding Web/API/Migrator. Existing release tags must already match the candidate digest or the lane stops before changing tags.
+
 **Goal:** release publication no longer rebuilds Web/API/Migrator.
 
 **Acceptance:** release image digest equals prior main candidate digest in both registries; missing candidate keeps Draft.
 
 ### DLV3-3302 — Extend canonical release manifest
+
+**Implementation status:** IMPLEMENTED; first real release acceptance pending.
+
+The v2 Docker and canonical release evidence now carries candidate-set, main CI and delivery-manifest identity, and validates Server component identity against the candidate before final release assembly.
 
 **Goal:** bind candidate-set and Desktop platform manifest in one release identity.
 
