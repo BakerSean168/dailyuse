@@ -407,12 +407,26 @@ test('Desktop release runtime gates execute before receipts and cannot be bypass
     assert.doesNotMatch(step, /continue-on-error\s*:\s*true/u);
     assert.doesNotMatch(step, /\|\|\s*true/u);
   }
-  assert.match(packagedSmoke, /run-linux-packaged-smoke-with-keyring|test:packaged-smoke/u);
+  assert.match(
+    packagedSmoke,
+    /release-tooling\/apps\/desktop\/scripts\/run-linux-packaged-smoke-with-keyring/u,
+  );
+  assert.match(packagedSmoke, /MEMOFLOW_PACKAGED_SMOKE_WORKSPACE_ROOT:[^\n]*release-source/u);
+  assert.doesNotMatch(
+    packagedSmoke,
+    /\.\/apps\/desktop\/scripts\/run-linux-packaged-smoke-with-keyring/u,
+  );
   assert.match(diagnostics, /if: failure\(\)/u);
   assert.match(diagnostics, /desktop-runtime-diagnostics-\$\{\{ matrix\.platform \}\}/u);
   assert.match(diagnostics, /release-source\/apps\/desktop\/test-results/u);
-  assert.match(installedSmoke, /run-linux-packaged-smoke-with-keyring/u);
+  assert.match(
+    installedSmoke,
+    /release-tooling\/apps\/desktop\/scripts\/run-linux-packaged-smoke-with-keyring/u,
+  );
+  assert.match(installedSmoke, /MEMOFLOW_PACKAGED_SMOKE_WORKSPACE_ROOT:[^\n]*release-source/u);
   assert.match(helper, /test:packaged-smoke/u);
+  assert.match(helper, /MEMOFLOW_PACKAGED_SMOKE_WORKSPACE_ROOT/u);
+  assert.match(helper, /Invalid packaged-smoke workspace root/u);
   assert.match(
     helper,
     /timeout --signal=TERM --kill-after=15s 210s[\s\S]*?xvfb-run -a dbus-run-session -- bash -lc/u,
@@ -421,8 +435,11 @@ test('Desktop release runtime gates execute before receipts and cannot be bypass
     helper,
     /timeout --signal=TERM --kill-after=15s 150s pnpm nx run desktop:test:packaged-smoke/u,
   );
-  assert.match(helper, /login\.keyring/u);
+  assert.match(helper, /gnome-keyring-daemon --login --components=secrets/u);
   assert.match(helper, /gnome-keyring-daemon --start --components=secrets/u);
+  assert.match(helper, /--control-directory="\$control_dir"/u);
+  assert.match(helper, /GNOME_KEYRING_CONTROL/u);
+  assert.doesNotMatch(helper, /login\.keyring/u);
   assert.doesNotMatch(helper, /gnome-keyring-daemon --unlock/u);
   assert.match(helper, /org\.freedesktop\.DBus\.GetNameOwner/u);
   assert.match(packagedSpec, /ROUTE_READY_TIMEOUT_MS = 45_000/u);
@@ -445,9 +462,14 @@ test('Desktop release runtime gates execute before receipts and cannot be bypass
   assert.match(helper, /org\.freedesktop\.secrets/u);
   assert.match(helper, /MEMOFLOW_PACKAGED_USE_GNOME_KEYRING=1/u);
   assert.match(helper, /xvfb-run -a dbus-run-session -- bash -lc/u);
-  assert.ok(helper.indexOf('xvfb-run -a dbus-run-session') < helper.indexOf('login.keyring'));
-  assert.ok(helper.indexOf('login.keyring') < helper.indexOf('gnome-keyring-daemon --start'));
+  assert.ok(
+    helper.indexOf('xvfb-run -a dbus-run-session') < helper.indexOf('gnome-keyring-daemon --login'),
+  );
+  assert.ok(
+    helper.indexOf('gnome-keyring-daemon --login') < helper.indexOf('gnome-keyring-daemon --start'),
+  );
   assert.ok(helper.indexOf('gnome-keyring-daemon --start') < helper.indexOf('secret-tool store'));
+  assert.match(helper, /timeout --signal=TERM --kill-after=2s 10s[\s\S]*?secret-tool store/u);
   assert.match(helper, /secret-tool store/u);
   assert.match(helper, /secret-tool lookup/u);
   assert.match(workflow, /libglib2\.0-bin/u);

@@ -218,9 +218,10 @@ jobs:
         shell: bash
         env:
           MEMOFLOW_PACKAGED_EXECUTABLE: ${{ steps.packaged-executable.outputs.path }}
+          MEMOFLOW_PACKAGED_SMOKE_WORKSPACE_ROOT: ${{ github.workspace }}/release-source
         run: |
           if [ "${{ runner.os }}" = "Linux" ]; then
-            ./apps/desktop/scripts/run-linux-packaged-smoke-with-keyring.sh
+            "${{ github.workspace }}/release-tooling/apps/desktop/scripts/run-linux-packaged-smoke-with-keyring.sh"
           else
             pnpm nx run desktop:test:packaged-smoke --outputStyle=static
           fi
@@ -256,7 +257,8 @@ jobs:
         shell: bash
         env:
           MEMOFLOW_PACKAGED_EXECUTABLE: /opt/MemoFlow/memoflow
-        run: ./apps/desktop/scripts/run-linux-packaged-smoke-with-keyring.sh
+          MEMOFLOW_PACKAGED_SMOKE_WORKSPACE_ROOT: ${{ github.workspace }}/release-source
+        run: '${{ github.workspace }}/release-tooling/apps/desktop/scripts/run-linux-packaged-smoke-with-keyring.sh'
 
       - name: Write Desktop platform receipt
         working-directory: release-source/apps/desktop

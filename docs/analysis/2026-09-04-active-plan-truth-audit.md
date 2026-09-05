@@ -15,11 +15,11 @@ updated: 2026-09-05T16:15:00+08:00
 
 AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三份真实 Active Plan。没有第二份“完整设计后完全忘记实施”的计划，但两份存在显著 residual，一份只差实机验收。
 
-| Plan                               | Current truth                                                | What is actually left                                                                                                 |
-| ---------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| Delivery Platform V3               | **Phase 3 implementation present; release gate fail-closed** | v0.13.2 Linux headless release-tooling retry, explicit production selection, Alibaba controlled rollout + replay      |
-| Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only**      | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
-| GitHub Durable Installation Intent | **implementation complete**                                  | one Published Windows Desktop live external-browser + polling/finalize acceptance                                     |
+| Plan                               | Current truth                                                | What is actually left                                                                                                                   |
+| ---------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Delivery Platform V3               | **Phase 3 implementation present; release gate fail-closed** | merge Linux control-plane tooling/keyring authority repair, retry immutable v0.13.2, then production selection + Alibaba rollout/replay |
+| Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only**      | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening                   |
+| GitHub Durable Installation Intent | **implementation complete**                                  | one Published Windows Desktop live external-browser + polling/finalize acceptance                                                       |
 
 ## 2. Delivery Platform V3 — still required
 
@@ -44,7 +44,7 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 1. `DLV3-3301/3302`: merged in PR #310. Release Publish promotes the existing exact candidate digests without rebuilding Server images, and schema-v2 release evidence binds candidate-set/main-CI/delivery identity.
 2. `DLV3-3303`: `Deploy Production(vX.Y.Z)` plus `memoflow.production-set/v1` is implemented. The selector is manual, Published-release-only, main-control-plane-bound, verifies ACR/GHCR parity and moves one `production-selected` control artifact; GitHub Environment `production` exists with a `main` branch policy.
 3. `DLV3-3304`: `deployment/production/` is implemented with exact-digest Watchtower-free compose, mandatory database backup, migrator-first rollout, pre-migration restore, post-migration `BLOCKED`, PowerSync downgrade guard and idempotent state/replay fixtures.
-4. `v0.13.0` and `v0.13.1` failed closed and exposed the Desktop readiness/ResizeObserver defects. #315 fixed the renderer classification. `v0.13.2` is now an immutable Draft at `08c2daf16e145d228d7d7a20c3282486dca58b0d`; Server promotion succeeded and packaged smoke passed on Windows x64, macOS x64 and the previously failing macOS arm64. Linux did not reach Playwright because headless `gnome-keyring` activated `SystemPrompter`, revealing that only the inner Playwright command—not the outer Xvfb/D-Bus/keyring session—was bounded. Repair release tooling, retry the same Draft `v0.13.2`, then proceed to selector -> Alibaba controlled rollout -> exact state -> replay -> timer enable.
+4. `v0.13.0` and `v0.13.1` failed closed and exposed the Desktop readiness/ResizeObserver defects. #315 fixed the renderer classification. `v0.13.2` is an immutable Draft at `08c2daf16e145d228d7d7a20c3282486dca58b0d`; Server promotion and Windows x64/macOS x64/macOS arm64 packaged smoke are proven. #317 bounded the Linux session, but real retry `33965867292` still activated `SystemPrompter` because the Release workflow was executing the helper from immutable `release-source`, not the repaired current `release-tooling`. The corrected authority runs the control-plane helper from `release-tooling` against the exact `release-source` workspace/test and uses the GNOME PAM lifecycle (`--login -> --start`) with an isolated control directory. Exact `08c2daf...` source + repaired tooling now passes production-shaped Linux packaging and packaged Playwright locally. Merge that repair, retry the same Draft `v0.13.2`, then proceed to selector -> Alibaba controlled rollout -> exact state -> replay -> timer enable.
 
 ### Later / conditional
 
@@ -53,7 +53,7 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 - DLV3-4403 macOS signing/notarization (only necessary before trusted public macOS distribution);
 - DLV3-4404 observation closeout/archive.
 
-**Recommendation:** do not start another delivery redesign and do not mint `v0.13.3` for a packaging-tooling-only defect. Merge the focused Linux headless Secret Service/session-bound repair, retry the existing immutable Draft `v0.13.2` through `workflow_dispatch(tag=v0.13.2)`, publish only after all four packaged runtime gates pass, then continue the existing Phase 3 selector/Alibaba transaction. Preserve the failed runs/Drafts as release evidence.
+**Recommendation:** do not start another delivery redesign and do not merge the already-generated #318 (`v0.13.3`) for this packaging-tooling-only defect. Merge the focused Linux control-plane helper authority + PAM Secret Service repair, retry the existing immutable Draft `v0.13.2` through `workflow_dispatch(tag=v0.13.2)`, publish only after all four packaged runtime gates pass, then continue the existing Phase 3 selector/Alibaba transaction. Preserve the failed runs/Drafts as release evidence.
 
 ## 3. Core vNext — classify before implementing
 
