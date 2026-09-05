@@ -1286,6 +1286,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "apps/desktop/src/renderer/startup-error-classification.spec.ts",
+      "primarySuite": "unit",
+      "collectors": [
+        "apps/desktop/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "apps/migrator/src/main.test.ts",
       "primarySuite": "unit",
       "collectors": [
@@ -10979,7 +10987,7 @@
       "type": "primary",
       "suite": "unit",
       "runner": "vitest",
-      "fileCount": 60
+      "fileCount": 61
     },
     {
       "id": "apps/migrator/vitest.config.ts",
@@ -11768,7 +11776,7 @@
   "duplicate": [],
   "unexpected": [],
   "counts": {
-    "unit": 1014,
+    "unit": 1015,
     "integration": 31,
     "smoke": 3,
     "boundary-ipc": 9,

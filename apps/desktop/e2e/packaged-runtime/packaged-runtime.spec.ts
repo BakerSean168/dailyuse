@@ -132,6 +132,25 @@ test('packaged MemoFlow boots through renderer readiness', async ({}, testInfo) 
       'no-drag',
     );
 
+    // Chromium delivers ResizeObserver loop protection through the global error
+    // event even though it is not an uncaught application exception. Exercise the
+    // packaged listener directly so release gates prove this browser notification
+    // cannot replace the live renderer with the fatal startup fallback.
+    const resizeObserverNotificationPrevented = await mainWindow.evaluate(() =>
+      window.dispatchEvent(
+        new ErrorEvent('error', {
+          cancelable: true,
+          message: 'ResizeObserver loop completed with undelivered notifications.',
+        }),
+      ),
+    );
+    expect(
+      resizeObserverNotificationPrevented,
+      'known ResizeObserver loop notification must be handled with preventDefault',
+    ).toBe(false);
+    await expect(mainWindow.getByTestId('app-shell')).toBeVisible();
+    await expect(mainWindow.getByText('Desktop renderer failed')).toHaveCount(0);
+
     // Shared account settings must only mount password management when the host
     // provides the full CloudAuthClientPort (AUTH_SERVICE_KEY). Desktop exposes
     // a narrower session/device-auth port and must degrade without crashing.
