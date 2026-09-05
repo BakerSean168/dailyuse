@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { createCandidateSet } from '../candidate-manifest.mjs';
 import { readReleaseContract } from '../release-tools/release-contract.mjs';
 
 function git(cwd, args) {
@@ -112,12 +113,13 @@ test('release contract fails closed on version identity drift', async () => {
   }
 });
 
-test('release evidence builders require and bind all Desktop platforms', async () => {
+test('release evidence builders bind Desktop assets to the exact server candidate', async () => {
   const cwd = await mkdtemp(path.join(os.tmpdir(), 'memoflow-release-evidence-'));
   const artifacts = path.join(cwd, 'artifacts');
   await mkdir(artifacts, { recursive: true });
   const desktopPath = path.join(cwd, 'desktop-release-manifest.json');
   const dockerPath = path.join(cwd, 'docker-release-manifest.json');
+  const candidatePath = path.join(cwd, 'candidate-set-v1.json');
   const releasePath = path.join(cwd, 'release-manifest.json');
   const receiptTool = path.join(
     repoRoot,
@@ -127,6 +129,38 @@ test('release evidence builders require and bind all Desktop platforms', async (
     repoRoot,
     'tools/ci-cd-platform/release-tools/create-desktop-manifest.mjs',
   );
+  const gitSha = 'a'.repeat(40);
+  const candidateTag = `sha-${gitSha}`;
+  const digestFor = (char) => `sha256:${char.repeat(64)}`;
+  const component = (name, char) => ({
+    tag: candidateTag,
+    digest: digestFor(char),
+    revision: gitSha,
+    distributions: {
+      china: {
+        repository: `registry.example.test/memoflow/memoflow-${name}`,
+        tag: candidateTag,
+        digest: digestFor(char),
+      },
+      global: {
+        repository: `ghcr.io/bakersean168/memoflow-${name}`,
+        tag: candidateTag,
+        digest: digestFor(char),
+      },
+    },
+  });
+  const candidate = createCandidateSet({
+    gitSha,
+    ciRunId: '42',
+    deliveryManifestDigest: digestFor('d'),
+    images: {
+      web: component('web', '1'),
+      api: component('api', '2'),
+      migrator: component('migrator', '3'),
+    },
+    generatedAt: '2026-09-05T00:00:00.000Z',
+  });
+  await writeFile(candidatePath, `${JSON.stringify(candidate, null, 2)}\n`);
   const platformFixtures = [
     {
       platform: 'windows-x64',
@@ -185,7 +219,7 @@ test('release evidence builders require and bind all Desktop platforms', async (
           fixture.arch,
           fixture.signing,
           'v1.2.3',
-          'abc123',
+          gitSha,
           'passed',
           'packaged-electron-playwright',
           fixture.runtimeKind,
@@ -194,7 +228,7 @@ test('release evidence builders require and bind all Desktop platforms', async (
       );
     }
 
-    execFileSync(process.execPath, [desktopTool, artifacts, 'v1.2.3', 'abc123', desktopPath], {
+    execFileSync(process.execPath, [desktopTool, artifacts, 'v1.2.3', gitSha, desktopPath], {
       cwd: repoRoot,
     });
     execFileSync(
@@ -205,16 +239,10 @@ test('release evidence builders require and bind all Desktop platforms', async (
         env: {
           ...process.env,
           RELEASE_TAG: 'v1.2.3',
-          RELEASE_SHA: 'abc123',
+          RELEASE_SHA: gitSha,
           RELEASE_CI_RUN_ID: '42',
-          RELEASE_REGISTRY: 'registry.example.test',
-          RELEASE_NAMESPACE: 'memoflow',
-          GLOBAL_REGISTRY: 'ghcr.io',
-          GLOBAL_NAMESPACE: 'bakersean168',
-          RELEASE_IMMUTABLE_TAG: 'v1.2.3-abc123',
-          API_DIGEST: 'sha256:api',
-          MIGRATOR_DIGEST: 'sha256:migrator',
-          WEB_DIGEST: 'sha256:web',
+          RELEASE_IMMUTABLE_TAG: `v1.2.3-${gitSha.slice(0, 12)}`,
+          CANDIDATE_MANIFEST: candidatePath,
           OUTPUT_FILE: dockerPath,
         },
       },
@@ -225,8 +253,9 @@ test('release evidence builders require and bind all Desktop platforms', async (
         path.join(repoRoot, 'tools/ci-cd-platform/release-tools/build-release-manifest.mjs'),
         desktopPath,
         dockerPath,
+        candidatePath,
         'v1.2.3',
-        'abc123',
+        gitSha,
         '42',
         releasePath,
       ],
@@ -236,10 +265,18 @@ test('release evidence builders require and bind all Desktop platforms', async (
     const manifest = JSON.parse(
       await (await import('node:fs/promises')).readFile(releasePath, 'utf8'),
     );
+    assert.equal(manifest.schemaVersion, 2);
     assert.equal(manifest.version, '1.2.3');
     assert.equal(manifest.tag, 'v1.2.3');
-    assert.equal(manifest.gitSha, 'abc123');
+    assert.equal(manifest.gitSha, gitSha);
     assert.equal(manifest.ciRunId, 42);
+    assert.equal(manifest.deliveryManifestDigest, digestFor('d'));
+    assert.equal(manifest.candidateSet.digest, candidate.digest);
+    assert.equal(manifest.candidateSet.candidateTag, candidateTag);
+    assert.match(manifest.candidateSet.manifestSha256, /^sha256:[a-f0-9]{64}$/u);
+    assert.match(manifest.manifests.desktop.sha256, /^sha256:[a-f0-9]{64}$/u);
+    assert.match(manifest.manifests.docker.sha256, /^sha256:[a-f0-9]{64}$/u);
+    assert.equal(manifest.postflight.status, 'passed');
     assert.deepEqual(manifest.desktop.requiredPlatforms, [
       'windows-x64',
       'linux-x64',
@@ -250,9 +287,14 @@ test('release evidence builders require and bind all Desktop platforms', async (
     assert.equal(manifest.desktop.assets.length, 10);
     assert.equal(manifest.desktop.platforms['macos-arm64'].signingState, 'unsigned-pilot');
     assert.equal(manifest.desktop.platforms['linux-x64'].runtimeValidation.status, 'passed');
-    assert.equal(manifest.desktop.platforms['linux-x64'].runtimeValidation.executableKind, 'installed-deb');
-    assert.equal(manifest.docker.images.api.digest, 'sha256:api');
-    assert.deepEqual(manifest.docker.images.api.tags, ['v1.2.3', 'v1.2.3-abc123']);
+    assert.equal(
+      manifest.desktop.platforms['linux-x64'].runtimeValidation.executableKind,
+      'installed-deb',
+    );
+    assert.equal(manifest.docker.schemaVersion, 2);
+    assert.equal(manifest.docker.candidateSet.digest, candidate.digest);
+    assert.equal(manifest.docker.images.api.digest, digestFor('2'));
+    assert.deepEqual(manifest.docker.images.api.tags, ['v1.2.3', `v1.2.3-${gitSha.slice(0, 12)}`]);
     assert.equal(
       manifest.docker.images.api.distributions.china.repository,
       'registry.example.test/memoflow/memoflow-api',
@@ -261,8 +303,155 @@ test('release evidence builders require and bind all Desktop platforms', async (
       manifest.docker.images.api.distributions.global.repository,
       'ghcr.io/bakersean168/memoflow-api',
     );
-    assert.equal(manifest.docker.images.api.distributions.china.digest, 'sha256:api');
-    assert.equal(manifest.docker.images.api.distributions.global.digest, 'sha256:api');
+    assert.equal(manifest.docker.images.api.distributions.china.digest, digestFor('2'));
+    assert.equal(manifest.docker.images.api.distributions.global.digest, digestFor('2'));
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test('canonical release manifest fails closed when promoted Docker evidence drifts from candidate-set', async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), 'memoflow-release-candidate-drift-'));
+  const gitSha = 'b'.repeat(40);
+  const digestFor = (char) => `sha256:${char.repeat(64)}`;
+  const candidateTag = `sha-${gitSha}`;
+  const image = (name, char) => ({
+    tag: candidateTag,
+    digest: digestFor(char),
+    revision: gitSha,
+    distributions: {
+      china: {
+        repository: `registry.test/memoflow-${name}`,
+        tag: candidateTag,
+        digest: digestFor(char),
+      },
+      global: {
+        repository: `ghcr.io/test/memoflow-${name}`,
+        tag: candidateTag,
+        digest: digestFor(char),
+      },
+    },
+  });
+  const candidate = createCandidateSet({
+    gitSha,
+    ciRunId: '77',
+    deliveryManifestDigest: digestFor('d'),
+    images: { web: image('web', '1'), api: image('api', '2'), migrator: image('migrator', '3') },
+    generatedAt: '2026-09-05T00:00:00.000Z',
+  });
+  const candidatePath = path.join(cwd, 'candidate.json');
+  const desktopPath = path.join(cwd, 'desktop.json');
+  const dockerPath = path.join(cwd, 'docker.json');
+  const output = path.join(cwd, 'release.json');
+  const releaseImage = (source) => ({
+    repository: source.distributions.china.repository,
+    tags: ['v1.2.3', `v1.2.3-${gitSha.slice(0, 12)}`],
+    digest: source.digest,
+    distributions: {
+      china: { ...source.distributions.china, tags: ['v1.2.3'] },
+      global: { ...source.distributions.global, tags: ['v1.2.3'] },
+    },
+  });
+  const docker = {
+    schemaVersion: 2,
+    kind: 'docker-release',
+    version: '1.2.3',
+    tag: 'v1.2.3',
+    gitSha,
+    ciRunId: 77,
+    candidateSet: {
+      digest: candidate.digest,
+      deliveryManifestDigest: candidate.deliveryManifestDigest,
+    },
+    images: {
+      web: releaseImage(candidate.images.web),
+      api: releaseImage(candidate.images.api),
+      migrator: releaseImage(candidate.images.migrator),
+    },
+  };
+  docker.images.api.digest = digestFor('e');
+  try {
+    await writeFile(candidatePath, `${JSON.stringify(candidate)}\n`);
+    await writeFile(
+      desktopPath,
+      `${JSON.stringify({ schemaVersion: 2, kind: 'desktop-release', version: '1.2.3', tag: 'v1.2.3', gitSha })}\n`,
+    );
+    await writeFile(dockerPath, `${JSON.stringify(docker)}\n`);
+    assert.throws(
+      () =>
+        execFileSync(
+          process.execPath,
+          [
+            path.join(repoRoot, 'tools/ci-cd-platform/release-tools/build-release-manifest.mjs'),
+            desktopPath,
+            dockerPath,
+            candidatePath,
+            'v1.2.3',
+            gitSha,
+            '77',
+            output,
+          ],
+          { cwd: repoRoot, stdio: 'pipe' },
+        ),
+      /api release digest does not match candidate-set/u,
+    );
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test('Docker release evidence rejects a caller CI identity that differs from candidate-set', async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), 'memoflow-release-ci-mismatch-'));
+  const gitSha = 'c'.repeat(40);
+  const candidateTag = `sha-${gitSha}`;
+  const digestFor = (char) => `sha256:${char.repeat(64)}`;
+  const image = (name, char) => ({
+    tag: candidateTag,
+    digest: digestFor(char),
+    revision: gitSha,
+    distributions: {
+      china: {
+        repository: `registry.test/memoflow-${name}`,
+        tag: candidateTag,
+        digest: digestFor(char),
+      },
+      global: {
+        repository: `ghcr.io/test/memoflow-${name}`,
+        tag: candidateTag,
+        digest: digestFor(char),
+      },
+    },
+  });
+  const candidate = createCandidateSet({
+    gitSha,
+    ciRunId: '42',
+    deliveryManifestDigest: digestFor('d'),
+    images: { web: image('web', '1'), api: image('api', '2'), migrator: image('migrator', '3') },
+  });
+  const candidatePath = path.join(cwd, 'candidate.json');
+  await writeFile(candidatePath, `${JSON.stringify(candidate)}\n`);
+  try {
+    assert.throws(
+      () =>
+        execFileSync(
+          process.execPath,
+          [path.join(repoRoot, 'tools/ci-cd-platform/release-tools/create-docker-manifest.mjs')],
+          {
+            cwd: repoRoot,
+            stdio: 'pipe',
+            env: {
+              ...process.env,
+              RELEASE_TAG: 'v1.2.3',
+              RELEASE_SHA: gitSha,
+              RELEASE_CI_RUN_ID: '43',
+              RELEASE_IMMUTABLE_TAG: `v1.2.3-${gitSha.slice(0, 12)}`,
+              CANDIDATE_MANIFEST: candidatePath,
+              OUTPUT_FILE: path.join(cwd, 'docker.json'),
+            },
+          },
+        ),
+      /candidate CI run mismatch: expected 43, got 42/u,
+    );
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
@@ -391,7 +580,10 @@ test('Desktop platform receipt refuses failed runtime validation evidence', asyn
         execFileSync(
           process.execPath,
           [
-            path.join(repoRoot, 'tools/ci-cd-platform/release-tools/write-desktop-platform-receipt.mjs'),
+            path.join(
+              repoRoot,
+              'tools/ci-cd-platform/release-tools/write-desktop-platform-receipt.mjs',
+            ),
             cwd,
             'windows-x64',
             'windows',
@@ -411,7 +603,6 @@ test('Desktop platform receipt refuses failed runtime validation evidence', asyn
     await rm(cwd, { recursive: true, force: true });
   }
 });
-
 
 test('packaged executable resolver follows electron-builder output conventions across four Desktop targets', async () => {
   const cwd = await mkdtemp(path.join(os.tmpdir(), 'memoflow-packaged-executable-'));

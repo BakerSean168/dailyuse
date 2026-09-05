@@ -2,7 +2,7 @@ name: Release Publish
 
 on:
   workflow_run:
-    workflows: ['CI']
+    workflows: ['Publish Main Candidate']
     types: [completed]
     branches: [main]
   workflow_dispatch:
@@ -27,7 +27,7 @@ jobs:
     name: Resolve Release Candidate
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     outputs:
       eligible: ${{ steps.contract.outputs.eligible }}
@@ -71,18 +71,15 @@ jobs:
           script: |
             const sha = process.env.RELEASE_SHA;
             if (context.eventName === 'workflow_run') {
-              const run = context.payload.workflow_run;
+              const candidateRun = context.payload.workflow_run;
               if (
-                run.head_sha !== sha ||
-                run.conclusion !== 'success' ||
-                run.event !== 'push' ||
-                run.head_branch !== 'main'
+                candidateRun.head_sha !== sha ||
+                candidateRun.conclusion !== 'success' ||
+                candidateRun.head_branch !== 'main'
               ) {
-                core.setFailed(`workflow_run is not successful exact-SHA main CI for ${sha}`);
+                core.setFailed(`workflow_run is not successful exact-SHA candidate publication for ${sha}`);
                 return;
               }
-              core.setOutput('run_id', String(run.id));
-              return;
             }
             const response = await github.rest.actions.listWorkflowRuns({
               owner: context.repo.owner,
@@ -224,6 +221,7 @@ jobs:
     with:
       tag: ${{ needs.resolve.outputs.tag }}
       sha: ${{ needs.resolve.outputs.sha }}
+      ci_run_id: ${{ needs.resolve.outputs.ci_run_id }}
     secrets: inherit
 
   finalize:
@@ -254,7 +252,7 @@ jobs:
         run: |
           mkdir -p .release-evidence
           test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = "true"
-          gh release download "$RELEASE_TAG" --pattern desktop-release-manifest.json --pattern docker-release-manifest.json --dir .release-evidence
+          gh release download "$RELEASE_TAG" --pattern desktop-release-manifest.json --pattern docker-release-manifest.json --pattern candidate-set-v1.json --dir .release-evidence
 
       - name: Verify the remote Draft contains every manifest-owned Desktop asset
         env:
@@ -280,6 +278,7 @@ jobs:
           node ./tools/ci-cd-platform/release-tools/build-release-manifest.mjs \
             .release-evidence/desktop-release-manifest.json \
             .release-evidence/docker-release-manifest.json \
+            .release-evidence/candidate-set-v1.json \
             "$RELEASE_TAG" "$RELEASE_SHA" "$CI_RUN_ID" release-manifest.json
 
       - name: Upload canonical manifest and publish
