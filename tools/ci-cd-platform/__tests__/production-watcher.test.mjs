@@ -157,6 +157,7 @@ function writeFakeDocker({
 }) {
   const bin = path.join(root, 'bin');
   const log = path.join(root, 'docker.log');
+  const curlLog = path.join(root, 'curl.log');
   const failMarker = path.join(root, 'failed-once');
   const currentPowersyncRef = powersyncDowngrade
     ? `${registry}/${namespace}/memoflow-powersync@${digest('a')}`
@@ -241,8 +242,17 @@ echo "unexpected fake docker args: $*" >&2
 exit 99
 `;
   fs.writeFileSync(path.join(bin, 'docker'), script, { mode: 0o755 });
+  fs.writeFileSync(
+    path.join(bin, 'curl'),
+    `#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$*" >> "$FAKE_CURL_LOG"
+exit 0
+`,
+    { mode: 0o755 },
+  );
   fs.writeFileSync(path.join(bin, 'systemctl'), '#!/usr/bin/env bash\nexit 0\n', { mode: 0o755 });
-  return { bin, log };
+  return { bin, log, curlLog };
 }
 
 function setupFixture({
@@ -313,11 +323,14 @@ function setupFixture({
       'PRODUCTION_CHANNEL_TAG=production-selected',
       `PRODUCTION_SECRET_ENV=${secret}`,
       'PRODUCTION_COMPOSE_PROJECT=memoflow',
+      'PRODUCTION_EXTERNAL_API_URL=https://api.example.test/healthz',
+      'PRODUCTION_EXTERNAL_WEB_URL=https://web.example.test/',
+      'PRODUCTION_EXTERNAL_POWERSYNC_URL=https://sync.example.test/probes/liveness',
       '',
     ].join('\n'),
     { mode: 0o600 },
   );
-  const { bin, log } = writeFakeDocker({
+  const { bin, log, curlLog } = writeFakeDocker({
     root,
     productionSet,
     runtimeSource,
@@ -330,6 +343,7 @@ function setupFixture({
     ...process.env,
     PATH: `${bin}:${process.env.PATH}`,
     FAKE_DOCKER_LOG: log,
+    FAKE_CURL_LOG: curlLog,
     FAKE_RUNTIME_SOURCE: runtimeSource,
     CONTROL_PLANE_SHA: controlPlaneSha,
     RELEASE_SHA: releaseSha,
@@ -349,7 +363,7 @@ function setupFixture({
     MEMOFLOW_PRODUCTION_BIN_PATH: binPath,
     MEMOFLOW_PRODUCTION_SYSTEMD_DIR: systemdDir,
   };
-  return { root, state, runtimeRoot, productionSet, env, log };
+  return { root, state, runtimeRoot, productionSet, env, log, curlLog };
 }
 
 function run(fixture, args = []) {
@@ -482,6 +496,20 @@ test('production watcher commits atomic state and a replay does not rerun migrat
     const logBefore = fs.readFileSync(fixture.log, 'utf8');
     const migratorBefore = (logBefore.match(/run --rm --no-deps migrator/gu) ?? []).length;
     assert.equal(migratorBefore, 1);
+    const curlBefore = fs.readFileSync(fixture.curlLog, 'utf8');
+    assert.match(
+      curlBefore,
+      /--resolve api\.example\.test:443:127\.0\.0\.1 https:\/\/api\.example\.test\/healthz/u,
+    );
+    assert.match(
+      curlBefore,
+      /--resolve web\.example\.test:443:127\.0\.0\.1 https:\/\/web\.example\.test\//u,
+    );
+    assert.match(
+      curlBefore,
+      /--resolve sync\.example\.test:443:127\.0\.0\.1 https:\/\/sync\.example\.test\/probes\/liveness/u,
+    );
+    assert.match(first.stdout, /host-local Caddy route probes passed/u);
 
     const second = run(fixture);
     assert.equal(second.status, 0, second.stderr);

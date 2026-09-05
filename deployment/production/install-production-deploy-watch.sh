@@ -36,6 +36,8 @@ PRODUCTION_NAMESPACE=$namespace
 PRODUCTION_CHANNEL_TAG=production-selected
 PRODUCTION_SECRET_ENV=$SECRET_ENV
 PRODUCTION_COMPOSE_PROJECT=memoflow
+# Canonical HTTPS routes: the watcher probes these through local Caddy with
+# --resolve to 127.0.0.1; public reachability is verified out-of-band.
 PRODUCTION_EXTERNAL_WEB_URL=https://memoflow.bakersean.top/
 PRODUCTION_EXTERNAL_API_URL=https://memoflowapi.bakersean.top/healthz
 PRODUCTION_EXTERNAL_POWERSYNC_URL=https://memoflowsync.bakersean.top/probes/liveness

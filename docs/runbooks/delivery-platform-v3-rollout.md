@@ -147,7 +147,7 @@ Repository implementation is present, but this section remains a live acceptance
 5. Install `deployment/production/install-production-deploy-watch.sh` on Alibaba as root. Leave the timer disabled.
 6. Run `/usr/local/bin/memoflow-production-deploy-watch --check-only`; it must report one coherent release/set without mutating containers.
 7. Preserve current runtime evidence, then run `systemctl start memoflow-production-deploy-watch.service`. The watcher must take a non-empty PostgreSQL backup before Migrator starts.
-8. Verify `production-deploy-state`, exact container image refs, migration result, API/Web/PowerSync/Caddy health, public ingress, GitHub App and PowerSync product flows.
+8. Verify `production-deploy-state`, exact container image refs and migration result. The host watcher must validate API/Web/PowerSync through the canonical HTTPS Host/SNI routes forced to local Caddy (`--resolve <host>:443:127.0.0.1`) so the transaction is independent of Alibaba public DNS/hairpin behavior. Then verify true public ingress, GitHub App and PowerSync product flows from an independent external host (GCP Dev during acceptance).
 9. Run the service again and prove idempotent `already deployed` behavior without rerunning Migrator.
 10. Only then run the installer with `--enable` and verify the timer is enabled/active.
 
