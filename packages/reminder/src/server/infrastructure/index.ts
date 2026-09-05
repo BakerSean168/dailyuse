@@ -44,6 +44,10 @@ export {
   type ReminderPowerSyncRepositorySet,
 } from './powersync';
 export {
+  createReminderTemplateScheduledHandlerRegistration,
+  ReminderTemplateScheduledPayloadSchema,
+} from './reminder-template-scheduled-handler';
+export {
   createReminderScheduleExecutionSource,
   type CreateReminderScheduleExecutionSourceDeps,
 } from './schedule-execution-source';
@@ -58,7 +62,6 @@ export {
   type ReminderScheduleProjectionEventMap,
   type ReminderScheduleProjectionHandlers,
   type ReminderScheduleProjectionPlan,
-  type ReminderScheduleProjectionSelection,
   type ReminderScheduleProjectionSource,
 } from './schedule-projection-source';
 

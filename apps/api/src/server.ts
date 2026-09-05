@@ -65,18 +65,12 @@ import {
 import { composeGoal } from './runtime/compose-goal';
 import { PrismaTaskBindingReadPort } from '@memoflow/task';
 import { createGoalTaskProgressPrismaHandler } from '@memoflow/goal';
-import {
-  createGoalPrismaReminderFireHandler,
-  createGoalPrismaScheduleExecutionSource,
-} from '@memoflow/goal/schedule-execution';
+import { createGoalPrismaReminderFireHandler } from '@memoflow/goal/schedule-execution';
 import { createGoalPrismaScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
 import { resolveRepositoryStorageBaseDir } from '@memoflow/repository';
 import { createSchedulePrismaRepositories } from '@memoflow/schedule';
 import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestration';
-import {
-  createTaskPrismaScheduleExecutionSource,
-  createTaskReminderScheduledHandlerRegistration,
-} from '@memoflow/task/schedule-execution';
+import { createTaskReminderScheduledHandlerRegistration } from '@memoflow/task/schedule-execution';
 import { createTaskPrismaScheduleProjectionSource } from '@memoflow/task/schedule-projection';
 import { createRoutinePrismaScheduleExecutionDeps } from '@memoflow/reminder/schedule-execution';
 import { createRoutinePrismaScheduleProjectionSource } from '@memoflow/reminder/schedule-projection';
@@ -241,15 +235,12 @@ async function bootstrap(): Promise<void> {
     },
     reminderProjection: {
       source: reminderComposed.scheduleProjectionSource,
-      scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
     routineProjection: {
       source: createRoutinePrismaScheduleProjectionSource(prisma),
     },
     routineOverrideStore: routineExecutionDeps.temporaryOverrideStore,
     execution: {
-      taskSource: createTaskPrismaScheduleExecutionSource(prisma),
-      goalSource: createGoalPrismaScheduleExecutionSource(prisma),
       reminderSource: reminderComposed.scheduleExecutionSource,
       routineSource: routineExecutionDeps,
     },

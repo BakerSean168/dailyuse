@@ -50,6 +50,9 @@ export interface IReminderTemplateRepository {
     options?: { includeHistory?: boolean; historyLimit?: number; includeDeleted?: boolean },
   ): Promise<ReminderTemplate[]>;
 
+  /** Identity-scoped authority scan used by durable schedule projection repair. */
+  findAllTemplateRefs(): Promise<Array<{ id: string; identityId: string }>>;
+
   /**
    * 通过分组 ID 查找所有提醒模板
    *

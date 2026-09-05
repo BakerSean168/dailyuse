@@ -25,16 +25,10 @@ import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 // ── Module Electron Entry Points ─────────────────────────────────────
 import { PowerSyncTaskBindingReadPort } from '@memoflow/task';
 import { createGoalTaskProgressPowerSyncHandler } from '@memoflow/goal';
-import {
-  createTaskPowerSyncScheduleExecutionSource,
-  createTaskReminderScheduledHandlerRegistration,
-} from '@memoflow/task/schedule-execution';
+import { createTaskReminderScheduledHandlerRegistration } from '@memoflow/task/schedule-execution';
 import { createTaskPowerSyncScheduleProjectionSource } from '@memoflow/task/schedule-projection';
 import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestration';
-import {
-  createGoalPowerSyncReminderFireHandler,
-  createGoalPowerSyncScheduleExecutionSource,
-} from '@memoflow/goal/schedule-execution';
+import { createGoalPowerSyncReminderFireHandler } from '@memoflow/goal/schedule-execution';
 import { createGoalPowerSyncScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
 import {
   createLocalVaultRuntime,
@@ -155,10 +149,7 @@ async function registerBusinessModules(
         // Bounded, explicit rejection (no local path or URI leaked) that the
         // existing Local Vault IPC error boundary maps to a failure result.
         return Promise.reject(
-          new LocalVaultRuntimeError(
-            'INTERNAL_ERROR',
-            'External editor capability is unavailable',
-          ),
+          new LocalVaultRuntimeError('INTERNAL_ERROR', 'External editor capability is unavailable'),
         );
       }
       return editor.openExternal(uri);
@@ -260,11 +251,8 @@ async function registerBusinessModules(
     },
     reminderProjection: {
       source: reminderComposed.scheduleProjectionSource,
-      scheduleTaskRepository: scheduleRepositorySet.scheduleTaskRepository,
     },
     execution: {
-      taskSource: createTaskPowerSyncScheduleExecutionSource(db),
-      goalSource: createGoalPowerSyncScheduleExecutionSource(db),
       reminderSource: reminderComposed.scheduleExecutionSource,
     },
   });

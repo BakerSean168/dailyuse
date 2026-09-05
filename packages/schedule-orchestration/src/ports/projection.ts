@@ -13,7 +13,7 @@ export interface ScheduleOrchestrationProjectionDeps<TSource> {
   readonly source: TSource;
 }
 
-/** Legacy projections still diff their desired set against the ScheduleTask store. */
+/** Task still supplies the ScheduleTask persistence adapter that backs the neutral SchedulingPort. */
 export interface ScheduleOrchestrationScheduleTaskProjectionDeps<
   TSource,
 > extends ScheduleOrchestrationProjectionDeps<TSource> {
@@ -29,7 +29,7 @@ export interface ScheduleOrchestrationHandlerRegistry {
 
 export interface ScheduleOrchestrationModule {
   readonly projectionRuntime: RuntimeContribution;
-  /** Cumulative startup/manual durable repair outcomes for Task, Goal, and Routine. */
+  /** Cumulative startup/manual durable repair outcomes for Task, Goal, Reminder, and Routine. */
   readonly projectionRepairMetrics: ProjectionRepairMetricsReader;
   readonly schedulingPort: SchedulingPort;
   readonly handlerRegistry: ScheduleOrchestrationHandlerRegistry;
@@ -53,7 +53,7 @@ export interface ScheduleOrchestrationModule {
 export interface CreateScheduleOrchestrationModuleOptions {
   readonly taskProjection: ScheduleOrchestrationScheduleTaskProjectionDeps<TaskScheduleProjectionSource>;
   readonly goalProjection: ScheduleOrchestrationProjectionDeps<GoalScheduleProjectionSource>;
-  readonly reminderProjection: ScheduleOrchestrationScheduleTaskProjectionDeps<ReminderScheduleProjectionSource>;
+  readonly reminderProjection: ScheduleOrchestrationProjectionDeps<ReminderScheduleProjectionSource>;
   readonly execution: ScheduleOrchestrationExecutionDeps;
   /** ROUTINE-3401 durable wall-clock lane; joining wires the handler + routine runtime. */
   readonly routineProjection?: ScheduleOrchestrationProjectionDeps<RoutineScheduleProjectionSource>;

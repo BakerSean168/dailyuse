@@ -11,7 +11,11 @@ import {
   ScheduleConfig,
   ScheduleTaskMetadata,
 } from '../../../domain/value-objects';
-import type { ScheduledIntent, SchedulingOwner, SchedulingReconcileReceipt } from '../../../../scheduling';
+import type {
+  ScheduledIntent,
+  SchedulingOwner,
+  SchedulingReconcileReceipt,
+} from '../../../../scheduling';
 import {
   ScheduledHandlerRegistry,
   SchedulingReconcileError,
@@ -147,9 +151,9 @@ class TransactionalInMemoryScheduleTaskRepository implements IScheduleTaskReposi
     const task = this.tasks.get(id);
     return Boolean(
       task &&
-        task.enabled &&
-        task.status === ScheduleTaskStatus.Active &&
-        task.nextRunAt?.getTime() === expectedNextRunAt.getTime(),
+      task.enabled &&
+      task.status === ScheduleTaskStatus.Active &&
+      task.nextRunAt?.getTime() === expectedNextRunAt.getTime(),
     );
   }
 
@@ -168,7 +172,8 @@ class TransactionalInMemoryScheduleTaskRepository implements IScheduleTaskReposi
 
   async query(options: IScheduleTaskQueryOptions): Promise<ScheduleTask[]> {
     let tasks = this.all().filter((task) => String(task.identityId) === options.identityId);
-    if (options.sourceModule) tasks = tasks.filter((task) => task.sourceModule === options.sourceModule);
+    if (options.sourceModule)
+      tasks = tasks.filter((task) => task.sourceModule === options.sourceModule);
     if (options.sourceEntityId) {
       tasks = tasks.filter((task) => task.sourceEntityId === options.sourceEntityId);
     }
@@ -176,7 +181,10 @@ class TransactionalInMemoryScheduleTaskRepository implements IScheduleTaskReposi
     if (options.isEnabled !== undefined) {
       tasks = tasks.filter((task) => task.enabled === options.isEnabled);
     }
-    return tasks.slice(options.offset ?? 0, options.limit ? (options.offset ?? 0) + options.limit : undefined);
+    return tasks.slice(
+      options.offset ?? 0,
+      options.limit ? (options.offset ?? 0) + options.limit : undefined,
+    );
   }
 
   async count(options: IScheduleTaskQueryOptions): Promise<number> {
@@ -195,10 +203,9 @@ class TransactionalInMemoryScheduleTaskRepository implements IScheduleTaskReposi
   }
 
   async withTransaction<T>(fn: (repo: IScheduleTaskRepository) => Promise<T>): Promise<T> {
-    const working = new TransactionalInMemoryScheduleTaskRepository(
-      this.all(),
-      [...this.receipts.values()],
-    );
+    const working = new TransactionalInMemoryScheduleTaskRepository(this.all(), [
+      ...this.receipts.values(),
+    ]);
     const result = await fn(working);
     this.tasks = new Map(working.all().map((task) => [task.id, cloneTask(task)]));
     this.receipts = new Map(working.receipts);
@@ -277,11 +284,49 @@ describe('LegacyScheduleTaskSchedulingAdapter', () => {
     expect(handler).toHaveBeenCalledTimes(1);
   });
 
+  it('dead-letters a raw legacy ScheduleTask that has no neutral scheduling envelope', async () => {
+    const rawLegacyTask = ScheduleTask.create({
+      identityId: 'IdentityId_legacy-owner',
+      name: 'Legacy raw reminder worker job',
+      sourceModule: SourceModule.Reminder,
+      sourceEntityId: 'ReminderTemplateId_legacy',
+      schedule: {
+        cronExpression: null,
+        timezone: 'Asia/Shanghai',
+        startDate: new Date('2030-01-10T08:45:00.000Z').toISOString(),
+        endDate: null,
+        maxExecutions: 1,
+      },
+      metadata: {
+        payload: { reminderId: 'ReminderTemplateId_legacy' },
+        tags: ['legacy'],
+        priority: 'Normal',
+        timeout: null,
+      },
+    });
+    const executor = createHandlerRegistryScheduleTaskSourceExecutor({
+      registry: new ScheduledHandlerRegistry(),
+    });
+
+    await expect(executor.execute(rawLegacyTask)).resolves.toMatchObject({
+      nextRunAt: null,
+      disposition: 'dead_letter',
+      result: {
+        schedulingDisposition: 'dead_letter',
+        schedulingFailureCode: 'MISSING_SCHEDULING_ENVELOPE',
+      },
+    });
+  });
+
   it.each(['after-read', 'after-upsert', 'after-delete'] as const)(
     'rolls back the entire owner set when failure is injected at %s',
     async (failurePoint) => {
       const repository = new TransactionalInMemoryScheduleTaskRepository();
-      const owner = { identityId: 'identity-1', type: 'fake-module', id: `rollback-${failurePoint}` };
+      const owner = {
+        identityId: 'identity-1',
+        type: 'fake-module',
+        id: `rollback-${failurePoint}`,
+      };
       const basePort = createScheduleTaskSchedulingPort(repository);
       await basePort.reconcile(owner, [intentWithKey('before')]);
 
