@@ -19,10 +19,12 @@ export MEMOFLOW_PACKAGED_EXECUTABLE
 export MEMOFLOW_CI_KEYRING_HOME="$ephemeral_home"
 export MEMOFLOW_WORKSPACE_ROOT="$workspace_root"
 
-# Xvfb must own the whole D-Bus/keyring session. gnome-keyring may invoke a GTK
-# prompter while initializing the Secret Service collection, so starting Xvfb
-# only around Playwright is too late on a headless runner.
-xvfb-run -a dbus-run-session -- bash -lc '
+# Bound the entire headless Secret Service session, not only Playwright. A
+# gnome-keyring prompt or a stuck Xvfb/D-Bus teardown must never strand the
+# release runner after the application-level smoke has already been bounded.
+# shellcheck disable=SC2016 # Inner bash must expand HOME/RANDOM/date, not this outer shell.
+timeout --signal=TERM --kill-after=15s 210s \
+  xvfb-run -a dbus-run-session -- bash -lc '
   set -euo pipefail
   export HOME="$MEMOFLOW_CI_KEYRING_HOME"
   export XDG_RUNTIME_DIR="$HOME/.runtime"
@@ -32,15 +34,39 @@ xvfb-run -a dbus-run-session -- bash -lc '
   mkdir -p "$HOME/.local/share/keyrings" "$XDG_RUNTIME_DIR"
   chmod 700 "$HOME" "$XDG_RUNTIME_DIR"
 
-  keyring_password="memoflow-ci-ephemeral-$RANDOM-$$"
-  printf "%s" "$keyring_password" | gnome-keyring-daemon --unlock --components=secrets >/dev/null
-  unset keyring_password
+  # A pristine headless runner has no PAM-created login keyring. If Secret
+  # Service has to create one on first use, gnome-keyring activates
+  # org.gnome.keyring.SystemPrompter and waits for GUI input forever. Seed the
+  # standard passwordless login keyring explicitly so the secrets daemon can
+  # adopt it without any interactive prompt.
+  printf "%s\n" \
+    "[keyring]" \
+    "display-name=login" \
+    "ctime=$(date +%s)" \
+    "mtime=0" \
+    "lock-on-idle=false" \
+    "lock-after=false" \
+    > "$HOME/.local/share/keyrings/login.keyring"
+  chmod 600 "$HOME/.local/share/keyrings/login.keyring"
 
-  gdbus introspect --session --dest org.freedesktop.secrets --object-path /org/freedesktop/secrets >/dev/null
+  gnome-keyring-daemon --start --components=secrets >/dev/null
 
-  # Fail closed unless the collection is actually usable. A D-Bus service that
-  # merely exists is insufficient; Electron safeStorage needs an unlocked,
-  # writable Secret Service provider.
+  secret_service_ready=0
+  for _ in $(seq 1 50); do
+    if gdbus call --session \
+      --dest org.freedesktop.DBus \
+      --object-path /org/freedesktop/DBus \
+      --method org.freedesktop.DBus.GetNameOwner \
+      org.freedesktop.secrets >/dev/null 2>&1; then
+      secret_service_ready=1
+      break
+    fi
+    sleep 0.1
+  done
+  test "$secret_service_ready" = 1
+
+  # Fail closed unless the passwordless collection is actually writable and
+  # readable. This also catches daemon startup drift before Electron launches.
   sentinel_key="memoflow-ci-sentinel-$RANDOM-$$"
   sentinel_value="memoflow-ci-secret-$RANDOM-$$"
   printf "%s" "$sentinel_value" | secret-tool store --label="MemoFlow CI packaged smoke" memoflow-ci "$sentinel_key"

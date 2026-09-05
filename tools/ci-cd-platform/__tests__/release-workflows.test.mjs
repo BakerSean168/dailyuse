@@ -403,6 +403,7 @@ test('Desktop release runtime gates execute before receipts and cannot be bypass
   assert.match(installDeb, /apt-get install -y "\$deb_path"/u);
   assert.doesNotMatch(installDeb, /apt-get install -y "\$\{debs\[0\]\}"/u);
   for (const step of [packagedSmoke, installedSmoke]) {
+    assert.match(step, /timeout-minutes:\s*5/u);
     assert.doesNotMatch(step, /continue-on-error\s*:\s*true/u);
     assert.doesNotMatch(step, /\|\|\s*true/u);
   }
@@ -412,7 +413,18 @@ test('Desktop release runtime gates execute before receipts and cannot be bypass
   assert.match(diagnostics, /release-source\/apps\/desktop\/test-results/u);
   assert.match(installedSmoke, /run-linux-packaged-smoke-with-keyring/u);
   assert.match(helper, /test:packaged-smoke/u);
-  assert.match(helper, /timeout --signal=TERM --kill-after=15s 150s/u);
+  assert.match(
+    helper,
+    /timeout --signal=TERM --kill-after=15s 210s[\s\S]*?xvfb-run -a dbus-run-session -- bash -lc/u,
+  );
+  assert.match(
+    helper,
+    /timeout --signal=TERM --kill-after=15s 150s pnpm nx run desktop:test:packaged-smoke/u,
+  );
+  assert.match(helper, /login\.keyring/u);
+  assert.match(helper, /gnome-keyring-daemon --start --components=secrets/u);
+  assert.doesNotMatch(helper, /gnome-keyring-daemon --unlock/u);
+  assert.match(helper, /org\.freedesktop\.DBus\.GetNameOwner/u);
   assert.match(packagedSpec, /ROUTE_READY_TIMEOUT_MS = 45_000/u);
   assert.match(packagedSpec, /SETTINGS_READY_TIMEOUT_MS = 45_000/u);
   assert.match(packagedSpec, /toHaveAttribute\(\s*'data-shell-scene',\s*'settings'/u);
@@ -433,10 +445,9 @@ test('Desktop release runtime gates execute before receipts and cannot be bypass
   assert.match(helper, /org\.freedesktop\.secrets/u);
   assert.match(helper, /MEMOFLOW_PACKAGED_USE_GNOME_KEYRING=1/u);
   assert.match(helper, /xvfb-run -a dbus-run-session -- bash -lc/u);
-  assert.ok(
-    helper.indexOf('xvfb-run -a dbus-run-session') <
-      helper.indexOf('gnome-keyring-daemon --unlock'),
-  );
+  assert.ok(helper.indexOf('xvfb-run -a dbus-run-session') < helper.indexOf('login.keyring'));
+  assert.ok(helper.indexOf('login.keyring') < helper.indexOf('gnome-keyring-daemon --start'));
+  assert.ok(helper.indexOf('gnome-keyring-daemon --start') < helper.indexOf('secret-tool store'));
   assert.match(helper, /secret-tool store/u);
   assert.match(helper, /secret-tool lookup/u);
   assert.match(workflow, /libglib2\.0-bin/u);
