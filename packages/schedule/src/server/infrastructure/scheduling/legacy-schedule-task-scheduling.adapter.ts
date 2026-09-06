@@ -1,5 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { SourceModule, type ScheduleEventMap, type TaskPriority } from '@memoflow/contracts/schedule';
+import {
+  SourceModule,
+  type ScheduleEventMap,
+  type TaskPriority,
+} from '@memoflow/contracts/schedule';
 import { createTypedEventPublisher, eventBus } from '@memoflow/utils/domain';
 import type {
   ScheduledIntent,
@@ -30,7 +34,8 @@ import {
   type SchedulingReconcileReceiptWriter,
 } from './scheduling-persistence-metadata';
 
-const scheduleEvents = createTypedEventPublisher<Pick<ScheduleEventMap, 'schedule:task-deleted'>>(eventBus);
+const scheduleEvents =
+  createTypedEventPublisher<Pick<ScheduleEventMap, 'schedule:task-deleted'>>(eventBus);
 
 type ReconcileFailurePoint = 'after-read' | 'after-upsert' | 'after-delete';
 
@@ -88,7 +93,8 @@ function stableJson(value: unknown, seen = new Set<object>()): string {
   if (value === null) return 'null';
   if (typeof value === 'string') return JSON.stringify(value);
   if (typeof value === 'number') {
-    if (!Number.isFinite(value)) throw new TypeError('Scheduled payload contains a non-finite number.');
+    if (!Number.isFinite(value))
+      throw new TypeError('Scheduled payload contains a non-finite number.');
     return JSON.stringify(value);
   }
   if (typeof value === 'boolean') return value ? 'true' : 'false';
@@ -187,7 +193,10 @@ function ownerStorageKey(owner: SchedulingOwner): string {
   return buildSchedulingOwnerKey(owner);
 }
 
-function makePayloadEnvelope(owner: SchedulingOwner, intent: ScheduledIntent): SchedulingPayloadEnvelope {
+function makePayloadEnvelope(
+  owner: SchedulingOwner,
+  intent: ScheduledIntent,
+): SchedulingPayloadEnvelope {
   return {
     [SCHEDULING_ENVELOPE_FIELD]: {
       schemaVersion: SCHEDULING_ENVELOPE_VERSION,
@@ -249,7 +258,11 @@ function createLegacyTask(owner: SchedulingOwner, intent: ScheduledIntent): Sche
   return task;
 }
 
-function updateLegacyTask(task: ScheduleTask, owner: SchedulingOwner, intent: ScheduledIntent): void {
+function updateLegacyTask(
+  task: ScheduleTask,
+  owner: SchedulingOwner,
+  intent: ScheduledIntent,
+): void {
   const retryPolicy = normalizedRetryPolicy(intent);
   task.updateSchedule({
     cronExpression: null,
@@ -298,7 +311,8 @@ export class LegacyScheduleTaskSchedulingAdapter implements SchedulingPort {
     private readonly options: ScheduleTaskSchedulingAdapterOptions = {},
   ) {
     this.now = options.now ?? Date.now;
-    this.operationIdFactory = options.operationIdFactory ?? (() => `scheduling-reconcile:${randomUUID()}`);
+    this.operationIdFactory =
+      options.operationIdFactory ?? (() => `scheduling-reconcile:${randomUUID()}`);
   }
 
   reconcile(
@@ -319,10 +333,7 @@ export class LegacyScheduleTaskSchedulingAdapter implements SchedulingPort {
     const operationId = this.operationIdFactory();
     const startedAt = this.now();
 
-    const rejectValidation = (
-      code: SchedulingReconcileFailureCode,
-      error: unknown,
-    ): never => {
+    const rejectValidation = (code: SchedulingReconcileFailureCode, error: unknown): never => {
       const receipt: SchedulingReconcileReceipt = {
         operationId,
         owner,
@@ -380,11 +391,7 @@ export class LegacyScheduleTaskSchedulingAdapter implements SchedulingPort {
           for (const task of existingTasks) {
             const payloadEnvelope = readPayloadEnvelope(task);
             const envelope = payloadEnvelope?.[SCHEDULING_ENVELOPE_FIELD];
-            if (
-              !envelope ||
-              envelope.ownerType !== owner.type ||
-              envelope.ownerId !== owner.id
-            ) {
+            if (!envelope || envelope.ownerType !== owner.type || envelope.ownerId !== owner.id) {
               throw new SchedulingAdapterInvariantError(
                 'PERSISTED_KEY_COLLISION',
                 `Legacy ScheduleTask ${task.id} collides with owner storage key ${storageKey}.`,
@@ -432,9 +439,13 @@ export class LegacyScheduleTaskSchedulingAdapter implements SchedulingPort {
             }
 
             const expectedId = deterministicTaskId(owner, intent.schedulingKey);
-            const idCollision = await txRepository.findByIdForIdentity(owner.identityId, expectedId);
+            const idCollision = await txRepository.findByIdForIdentity(
+              owner.identityId,
+              expectedId,
+            );
             if (idCollision) {
-              const collisionEnvelope = readPayloadEnvelope(idCollision)?.[SCHEDULING_ENVELOPE_FIELD];
+              const collisionEnvelope =
+                readPayloadEnvelope(idCollision)?.[SCHEDULING_ENVELOPE_FIELD];
               if (
                 !collisionEnvelope ||
                 collisionEnvelope.schedulingKey !== intent.schedulingKey ||
@@ -545,7 +556,9 @@ export function createScheduleTaskSchedulingPort(
   return new LegacyScheduleTaskSchedulingAdapter(repository, options);
 }
 
-export function toScheduledInvocationContext(task: ScheduleTask): ScheduledInvocationContext | null {
+export function toScheduledInvocationContext(
+  task: ScheduleTask,
+): ScheduledInvocationContext | null {
   const payloadEnvelope = readPayloadEnvelope(task);
   if (!payloadEnvelope) return null;
   const envelope = payloadEnvelope[SCHEDULING_ENVELOPE_FIELD];
@@ -567,19 +580,15 @@ export function toScheduledInvocationContext(task: ScheduleTask): ScheduledInvoc
 
 export function createHandlerRegistryScheduleTaskSourceExecutor(options: {
   readonly registry: ScheduledHandlerRegistry;
-  readonly legacyFallback?: ScheduleTaskSourceExecutor;
 }): ScheduleTaskSourceExecutor {
   return {
     async execute(task) {
       const invocation = toScheduledInvocationContext(task);
       if (!invocation) {
-        if (options.legacyFallback) {
-          return options.legacyFallback.execute(task);
-        }
         return {
           nextRunAt: null,
           disposition: 'dead_letter',
-          error: 'ScheduleTask has no neutral scheduling envelope and no legacy fallback is configured.',
+          error: 'ScheduleTask has no neutral scheduling envelope.',
           result: {
             schedulingDisposition: 'dead_letter',
             schedulingFailureCode: 'MISSING_SCHEDULING_ENVELOPE',
@@ -589,9 +598,7 @@ export function createHandlerRegistryScheduleTaskSourceExecutor(options: {
 
       const handlerResult = await options.registry.execute(invocation);
       if (handlerResult.status === 'retryable') {
-        throw new Error(
-          `[${handlerResult.failure.code}] ${handlerResult.failure.message}`,
-        );
+        throw new Error(`[${handlerResult.failure.code}] ${handlerResult.failure.message}`);
       }
 
       if (handlerResult.status === 'failed' || handlerResult.status === 'dead_letter') {

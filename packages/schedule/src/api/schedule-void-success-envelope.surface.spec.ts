@@ -31,9 +31,9 @@ describe('schedule void success envelope surface', () => {
     expect(eventController).toContain('return ok(null)');
   });
 
-  it('Desktop IPC void delete handlers normalize to ok(null)', () => {
+  it('Desktop calendar delete normalizes to ok(null) while raw worker delete stays internal', () => {
     expect(electron).toContain('ScheduleChannels.DELETE');
-    expect(electron).toContain('ScheduleChannels.TASK_DELETE');
-    expect((electron.match(/return ok\(null\)/g) ?? []).length).toBeGreaterThanOrEqual(2);
+    expect(electron).not.toContain('ipcMain.handle(ScheduleChannels.TASK_DELETE');
+    expect((electron.match(/return ok\(null\)/g) ?? []).length).toBeGreaterThanOrEqual(1);
   });
 });

@@ -158,6 +158,14 @@ export class ReminderTemplatePrismaRepository
     return data.map((d: PrismaReminderTemplateWithHistory) => this.mapToEntity(d, d.history));
   }
 
+  async findAllTemplateRefs(): Promise<Array<{ id: string; identityId: string }>> {
+    return this.prisma.reminderTemplate.findMany({
+      where: { deletedAt: null },
+      select: { id: true, identityId: true },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
   async findByGroupId(
     groupId: string | null,
     identityId: string,

@@ -13,39 +13,72 @@ import type {
 } from '@memoflow/contracts/schedule';
 import type { ScheduleTask } from '../domain-client/aggregates/schedule-task';
 
-export interface ScheduleClientPort {
-  // Schedule Event CRUD
+/**
+ * Product-facing Schedule capability.
+ *
+ * Calendar entries remain normal product commands. Raw ScheduleTask worker jobs
+ * are inspectable for diagnostics but are not mutable from Web/Desktop product UI.
+ */
+export interface ScheduleProductClientPort {
   createSchedule(data: CreateScheduleRequest): Promise<Result<CalendarEntryClientDTO>>;
   getSchedule(id: string): Promise<Result<CalendarEntryClientDTO>>;
   getSchedulesByAccount(): Promise<Result<CalendarEntryClientDTO[]>>;
-  getSchedulesByTimeRange(params: GetSchedulesByTimeRangeRequest): Promise<Result<CalendarEntryClientDTO[]>>;
+  getSchedulesByTimeRange(
+    params: GetSchedulesByTimeRangeRequest,
+  ): Promise<Result<CalendarEntryClientDTO[]>>;
   updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<CalendarEntryClientDTO>>;
   deleteSchedule(id: string, expectedVersion: number): Promise<Result<void>>;
 
-  // Schedule Conflict Detection
   getScheduleConflicts(id: string): Promise<Result<ConflictDetectionResult>>;
-  detectConflicts(params: { startTime: number; endTime: number; excludeId?: string }): Promise<Result<ConflictDetectionResult>>;
-  createScheduleWithConflictDetection(request: CreateScheduleRequest): Promise<Result<{ schedule: CalendarEntryClientDTO; conflicts?: ConflictDetectionResult }>>;
-  resolveConflict(scheduleId: string, request: ResolveConflictRequest): Promise<Result<{
-    schedule: CalendarEntryClientDTO;
-    conflicts: ConflictDetectionResult;
-    applied: { strategy: string; previousStartTime?: number; previousEndTime?: number; changes: string[] };
-  }>>;
+  detectConflicts(params: {
+    startTime: number;
+    endTime: number;
+    excludeId?: string;
+  }): Promise<Result<ConflictDetectionResult>>;
+  createScheduleWithConflictDetection(
+    request: CreateScheduleRequest,
+  ): Promise<Result<{ schedule: CalendarEntryClientDTO; conflicts?: ConflictDetectionResult }>>;
+  resolveConflict(
+    scheduleId: string,
+    request: ResolveConflictRequest,
+  ): Promise<
+    Result<{
+      schedule: CalendarEntryClientDTO;
+      conflicts: ConflictDetectionResult;
+      applied: {
+        strategy: string;
+        previousStartTime?: number;
+        previousEndTime?: number;
+        changes: string[];
+      };
+    }>
+  >;
 
-  // Schedule Task CRUD
-  createTask(request: CreateScheduleTaskRequest): Promise<Result<ScheduleTask>>;
-  createTasksBatch(tasks: CreateScheduleTaskRequest[]): Promise<Result<ScheduleTask[]>>;
+  // Raw Scheduler worker diagnostics — intentionally read-only.
   getTasks(): Promise<Result<ScheduleTask[]>>;
   getTaskById(taskId: string): Promise<Result<ScheduleTask>>;
   getDueTasks(params?: { beforeTime?: string; limit?: number }): Promise<Result<ScheduleTask[]>>;
-  getTaskBySource(sourceModule: SourceModule, sourceEntityId: string): Promise<Result<ScheduleTask[]>>;
+  getTaskBySource(
+    sourceModule: SourceModule,
+    sourceEntityId: string,
+  ): Promise<Result<ScheduleTask[]>>;
+}
 
-  // Schedule Task Status Management
+/**
+ * Full transport-compatibility capability retained for the deferred Mobile HTTP lane.
+ * Do not inject this port into ordinary Web/Desktop product UI.
+ */
+export interface ScheduleClientPort extends ScheduleProductClientPort {
+  createTask(request: CreateScheduleTaskRequest): Promise<Result<ScheduleTask>>;
+  createTasksBatch(tasks: CreateScheduleTaskRequest[]): Promise<Result<ScheduleTask[]>>;
   pauseTask(taskId: string): Promise<Result<ScheduleTask>>;
   resumeTask(taskId: string): Promise<Result<ScheduleTask>>;
   completeTask(taskId: string, reason?: string): Promise<Result<ScheduleTask>>;
   cancelTask(taskId: string, reason?: string): Promise<Result<ScheduleTask>>;
   deleteTask(taskId: string): Promise<Result<void>>;
   deleteTasksBatch(taskIds: string[]): Promise<Result<ScheduleBatchOperationResponseDTO>>;
-  updateTaskMetadata(taskId: string, metadata: UpdateTaskMetadataRequest): Promise<Result<ScheduleTask>>;
+  updateTaskMetadata(
+    taskId: string,
+    metadata: UpdateTaskMetadataRequest,
+  ): Promise<Result<ScheduleTask>>;
 }

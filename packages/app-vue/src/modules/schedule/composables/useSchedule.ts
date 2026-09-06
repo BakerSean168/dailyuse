@@ -22,17 +22,11 @@ export function useSchedule() {
     calendarEntries: computed(() => ctx.store.calendarEntries),
     currentTask: computed(() => ctx.store.currentTask),
     isLoading: computed(() => ctx.store.isLoading),
-    isSaving: taskOps.isSaving,
     error: computed(() => ctx.store.error),
     pagination: computed(() => ctx.store.pagination),
     // Task operations
     fetchTasks: taskOps.fetchTasks,
     fetchTask: taskOps.fetchTask,
-    createTask: taskOps.createTask,
-    updateTask: taskOps.updateTask,
-    deleteTask: taskOps.deleteTask,
-    pauseTask: taskOps.pauseTask,
-    resumeTask: taskOps.resumeTask,
     fetchExecutions: taskOps.fetchExecutions,
     setPage: taskOps.setPage,
     // Calendar operations

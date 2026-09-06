@@ -266,26 +266,9 @@ export function createScheduleElectronModule(
         );
         installed.push(ScheduleChannels.RESOLVE_CONFLICT);
 
-        ipcMain.handle(ScheduleChannels.TASK_CREATE, async (_event, request) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            taskController.createTask(request, requestContext),
-          ),
-        );
-        installed.push(ScheduleChannels.TASK_CREATE);
-        ipcMain.handle(ScheduleChannels.TASK_CREATE_BATCH, async (_event, tasks) =>
-          withAuthenticatedValue(ctx, async (requestContext) => {
-            const createdTasks: unknown[] = [];
-            for (const task of tasks) {
-              const result = await taskController.createTask(task, requestContext);
-              if (!result.ok) {
-                return result;
-              }
-              createdTasks.push(result.data);
-            }
-            return createdTasks;
-          }),
-        );
-        installed.push(ScheduleChannels.TASK_CREATE_BATCH);
+        // Raw ScheduleTask worker jobs are internal Scheduler persistence. Desktop
+        // exposes read-only diagnostics only; business mutations flow through
+        // owner-domain commands -> SchedulingPort.
         ipcMain.handle(ScheduleChannels.TASK_LIST, async () =>
           withAuthenticatedValue(ctx, async (requestContext) =>
             taskController.listTasks({}, requestContext),
@@ -304,57 +287,14 @@ export function createScheduleElectronModule(
           ),
         );
         installed.push(ScheduleChannels.TASK_GET_DUE);
-        ipcMain.handle(ScheduleChannels.TASK_GET_BY_SOURCE, async (_event, sourceModule, sourceEntityId) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            taskController.listTasks({ sourceModule, sourceEntityId }, requestContext),
-          ),
+        ipcMain.handle(
+          ScheduleChannels.TASK_GET_BY_SOURCE,
+          async (_event, sourceModule, sourceEntityId) =>
+            withAuthenticatedValue(ctx, async (requestContext) =>
+              taskController.listTasks({ sourceModule, sourceEntityId }, requestContext),
+            ),
         );
         installed.push(ScheduleChannels.TASK_GET_BY_SOURCE);
-        ipcMain.handle(ScheduleChannels.TASK_PAUSE, async (_event, taskId) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            taskController.pauseTask(taskId, requestContext),
-          ),
-        );
-        installed.push(ScheduleChannels.TASK_PAUSE);
-        ipcMain.handle(ScheduleChannels.TASK_RESUME, async (_event, taskId) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            taskController.resumeTask(taskId, requestContext),
-          ),
-        );
-        installed.push(ScheduleChannels.TASK_RESUME);
-        ipcMain.handle(ScheduleChannels.TASK_COMPLETE, async (_event, taskId) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            taskController.completeTask(taskId, requestContext),
-          ),
-        );
-        installed.push(ScheduleChannels.TASK_COMPLETE);
-        ipcMain.handle(ScheduleChannels.TASK_CANCEL, async (_event, taskId, reason) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            taskController.cancelTask(taskId, { reason }, requestContext),
-          ),
-        );
-        installed.push(ScheduleChannels.TASK_CANCEL);
-        ipcMain.handle(ScheduleChannels.TASK_DELETE, async (_event, taskId) =>
-          withAuthenticatedValue(ctx, async (requestContext) => {
-            const result = await taskController.deleteTask(taskId, requestContext);
-            if (!result.ok) return result;
-            return ok(null);
-          }),
-        );
-        installed.push(ScheduleChannels.TASK_DELETE);
-        ipcMain.handle(ScheduleChannels.TASK_DELETE_BATCH, async (_event, taskIds) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            taskController.batchDeleteTasks({ taskIds }, requestContext),
-          ),
-        );
-        installed.push(ScheduleChannels.TASK_DELETE_BATCH);
-        ipcMain.handle(ScheduleChannels.TASK_UPDATE_METADATA, async (_event, taskId, metadata) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            taskController.updateTaskMetadata(taskId, metadata, requestContext),
-          ),
-        );
-        installed.push(ScheduleChannels.TASK_UPDATE_METADATA);
-
         // Delayed runtime start: register() installs the IPC transport only;
         // the runtime controller starts the instance when the main window is
         // ready. No global accessor is imported or used here.

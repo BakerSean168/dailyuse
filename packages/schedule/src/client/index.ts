@@ -1,17 +1,18 @@
 /**
  * Schedule client seam.
  *
- * Public schedule contracts stay centralized in
- * `@memoflow/contracts/schedule`.
- * Callers depend on this seam instead of the old application-client /
- * infrastructure-client layered exports.
+ * Web/Desktop product surfaces use ScheduleProductClientPort: calendar commands
+ * plus read-only Scheduler worker diagnostics. The full ScheduleClientPort is
+ * retained only for temporary HTTP/Mobile compatibility.
  */
 
 import type { IResultHttpClient } from '@memoflow/http-client';
 import {
   createScheduleClientService,
+  createScheduleProductClientService,
   createScheduleServiceFromHttpClient,
   type ScheduleClientPort,
+  type ScheduleProductClientPort,
 } from '../application-client';
 import { ScheduleTask } from '../domain-client';
 import {
@@ -29,6 +30,7 @@ import {
 import type {
   IScheduleEventApiClient,
   IScheduleTaskApiClient,
+  IScheduleTaskQueryApiClient,
   IResultIpcClient,
 } from '../infrastructure-client/adapters/types';
 
@@ -37,7 +39,9 @@ export type {
   IResultIpcClient,
   IScheduleEventApiClient,
   IScheduleTaskApiClient,
+  IScheduleTaskQueryApiClient,
   ScheduleClientPort,
+  ScheduleProductClientPort,
   ScheduleHttpAdapters,
   ScheduleIpcAdapters,
 };
@@ -46,9 +50,9 @@ export function createScheduleHttpClient(httpClient: IResultHttpClient): Schedul
   return createScheduleServiceFromHttpClient(httpClient);
 }
 
-export function createScheduleIpcClient(ipcClient: IResultIpcClient): ScheduleClientPort {
+export function createScheduleIpcClient(ipcClient: IResultIpcClient): ScheduleProductClientPort {
   const adapters = createScheduleIpcAdapters(ipcClient);
-  return createScheduleClientService(adapters.event, adapters.task);
+  return createScheduleProductClientService(adapters.event, adapters.task);
 }
 
 export {
@@ -58,6 +62,7 @@ export {
   ScheduleTaskHttpAdapter,
   ScheduleTaskIpcAdapter,
   createScheduleClientService,
+  createScheduleProductClientService,
   createScheduleHttpAdapters,
   createScheduleIpcAdapters,
 };

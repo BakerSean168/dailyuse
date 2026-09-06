@@ -14,7 +14,7 @@ tags:
   - parallel
 description: MemoFlow Goal/Task/Routine/Planner/Scheduler/Notification/EventBus 的总重构编排计划，按依赖、共享热点和可并行 lane 组织，并为每个标准能力指定 Build/Borrow/Imitate 来源
 created: 2026-08-25T19:18:00+08:00
-updated: 2026-09-04T23:25:00+08:00
+updated: 2026-09-06T22:43:34+08:00
 status: active
 ---
 
@@ -80,7 +80,7 @@ Still real residuals (code search verified):
 - `ROUTINE-5302`: no Routine method-library/catalog implementation exists;
 - `AI-6101~6103`: Goal/Task draft workflows exist, but `TaskPlanTaskSchema` still exposes retired `folderId`; Routine draft/command tooling and Planner/Notification AI read tooling are absent;
 - `MOBILE-6201/6202`: React/mobile already has current-contract Goal/Task/Notification screens and no Folder/Dependency/ValueType UI was found. Treat these as **parity-audit tickets first**, not a mandate to rebuild mobile; only implement gaps proven by the audit;
-- `CLEAN-6301~6304`: legacy scheduling seams remain — `packages/reminder/.../schedule-projection-source.ts` still constructs `ScheduleTask`, and `schedule-orchestration/src/execution/router.ts` still contains a `SourceModule` fallback; raw ScheduleTask API/client surfaces also remain;
+- `CLEAN-6301~6304`: residual cleanup remains, but the execution boundary has advanced: the `SourceModule` fallback router is removed, Reminder projection no longer constructs `ScheduleTask` directly, and Web/Desktop raw worker mutation is removed from Electron/App Vue product capability. The remaining raw worker mutation surface is the intentionally deferred HTTP/App React Mobile compatibility lane; CLEAN-6301/6302 and the final Mobile compatibility decision still gate physical scheduler cleanup;
 - `POC-6401`: pg-boss remains a documented candidate only and is not installed/evaluated against current constraints;
 - `HARD-7101~7105`: final failure matrix, residual cleanup proof and umbrella closure review remain incomplete.
 
@@ -2045,6 +2045,17 @@ Physical package rename `reminder -> routine` is a separate final decision; do n
 No ordinary user API/UI should create worker jobs directly.
 
 Keep internal diagnostics/ops API only if genuinely used.
+
+**2026-09-06 execution status — Web/Desktop physical closure complete; ticket remains PARTIAL only for deferred Mobile compatibility.**
+
+- `schedule-orchestration/src/execution/router.ts` / `SourceModule` execution fallback is deleted; handler dispatch is registry-owned.
+- Reminder scheduling projection uses the neutral `SchedulingPort` path and no longer constructs `ScheduleTask` directly.
+- Desktop Electron no longer registers raw worker mutation handlers.
+- `ScheduleTaskIpcAdapter` is query-only; `createScheduleIpcClient()` returns `ScheduleProductClientPort`, whose raw worker surface is read-only. App Vue DI consumes that narrow product port.
+- The full `ScheduleClientPort` / `IScheduleTaskApiClient` mutation capability remains only behind the HTTP adapter used by the deferred App React/Mobile compatibility lane. HTTP routes, App React controls and Mobile are intentionally unchanged in this batch.
+- Pre-PR evidence on the isolated worktree: `schedule-orchestration` 42/42, `reminder` 532/532, `schedule` 399/399, `schedule:build`, App Vue/Desktop/App React/Web typechecks, lint (0 errors), inventory/target-governance and global governance all pass.
+
+Do **not** delete the HTTP/Mobile compatibility seam under CLEAN-6303 while `MOBILE-6201/6202` are explicitly deferred. The remaining ticket close condition is either Mobile migration to owner commands or an explicit long-term compatibility decision; until then CLEAN-6304 must treat that seam as an acknowledged boundary rather than silently deleting it.
 
 ## CLEAN-6304 — Scheduler physical package split decision
 

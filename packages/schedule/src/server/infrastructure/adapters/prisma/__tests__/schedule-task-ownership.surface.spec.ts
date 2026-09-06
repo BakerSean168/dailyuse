@@ -13,10 +13,7 @@ describe('schedule task ownership surface', () => {
     resolve(__dirname, '../../../../domain/repositories/i-schedule-task-repository.ts'),
     'utf8',
   );
-  const prisma = readFileSync(
-    resolve(__dirname, '../schedule-task-prisma.repository.ts'),
-    'utf8',
-  );
+  const prisma = readFileSync(resolve(__dirname, '../schedule-task-prisma.repository.ts'), 'utf8');
   const powersync = readFileSync(
     resolve(__dirname, '../../powersync/schedule-task-powersync.repository.ts'),
     'utf8',
@@ -29,10 +26,7 @@ describe('schedule task ownership surface', () => {
     'utf8',
   );
   const getUseCase = readFileSync(
-    resolve(
-      __dirname,
-      '../../../../application/use-cases/queries/get-schedule-task.use-case.ts',
-    ),
+    resolve(__dirname, '../../../../application/use-cases/queries/get-schedule-task.use-case.ts'),
     'utf8',
   );
   const deleteUseCase = readFileSync(
@@ -43,14 +37,8 @@ describe('schedule task ownership surface', () => {
     'utf8',
   );
   const routes = readFileSync(resolve(__dirname, '../../../../../api/routes.ts'), 'utf8');
-  const electron = readFileSync(
-    resolve(__dirname, '../../../../../electron/index.ts'),
-    'utf8',
-  );
-  const module = readFileSync(
-    resolve(__dirname, '../../../schedule.module.ts'),
-    'utf8',
-  );
+  const electron = readFileSync(resolve(__dirname, '../../../../../electron/index.ts'), 'utf8');
+  const module = readFileSync(resolve(__dirname, '../../../schedule.module.ts'), 'utf8');
 
   it('port findByIdForIdentity and deleteById require identityId', () => {
     expect(port).toContain(
@@ -82,25 +70,23 @@ describe('schedule task ownership surface', () => {
     expect(module).toMatch(/listScheduleTasksBySource\.execute\([\s\S]*ctx\.identityId/);
   });
 
-  it('HTTP and Electron task get/delete pass identity context', () => {
+  it('HTTP mobile-compat mutations stay identity-scoped while Electron raw worker access is read-only', () => {
     expect(routes).toContain('controller.getTask(req.params!.id, ctx)');
     expect(routes).toContain('controller.deleteTask(req.params!.id, ctx)');
     expect(routes).toContain('controller.pauseTask(req.params!.id, ctx)');
     expect(electron).toMatch(
       /TASK_GET_BY_ID[\s\S]*taskController\.getTask\(taskId, requestContext\)/,
     );
-    expect(electron).toMatch(
-      /TASK_DELETE[\s\S]*taskController\.deleteTask\(taskId, requestContext\)/,
-    );
+    expect(electron).not.toMatch(/ipcMain\.handle\(ScheduleChannels\.TASK_DELETE/);
+    expect(electron).not.toMatch(/ipcMain\.handle\(ScheduleChannels\.TASK_PAUSE/);
+    expect(electron).not.toMatch(/ipcMain\.handle\(ScheduleChannels\.TASK_CREATE/);
     expect(electron).not.toMatch(
       /TASK_GET_BY_ID[\s\S]*async \(\) => taskController\.getTask\(taskId\)/,
     );
   });
 
   it('port deleteBatch requires identityId (residual 155)', () => {
-    expect(port).toContain(
-      'deleteBatch(identityId: string, ids: string[]): Promise<void>;',
-    );
+    expect(port).toContain('deleteBatch(identityId: string, ids: string[]): Promise<void>;');
   });
 
   it('prisma/powersync deleteBatch filter by identity (residual 155)', () => {
@@ -113,11 +99,8 @@ describe('schedule task ownership surface', () => {
 
   it('shared projection deleteBatch is identity-scoped (residual 155)', () => {
     expect(sharedProjection).toContain('deleteBatch(identityId, ids)');
-    expect(sharedProjection).not.toContain(
-      'deleteBatch(existingTasks.map((task) => task.id))',
-    );
+    expect(sharedProjection).not.toContain('deleteBatch(existingTasks.map((task) => task.id))');
   });
-
 
   it('port list methods require identityId (residual 162)', () => {
     expect(port).toContain(
@@ -130,9 +113,7 @@ describe('schedule task ownership surface', () => {
       'findByStatus(status: ScheduleTaskStatus, identityId: string): Promise<ScheduleTask[]>;',
     );
     // System scheduler paths remain intentionally unscoped:
-    expect(port).toContain(
-      'findEnabled(identityId?: string): Promise<ScheduleTask[]>;',
-    );
+    expect(port).toContain('findEnabled(identityId?: string): Promise<ScheduleTask[]>;');
     expect(port).toContain('findDueTasksForExecution(beforeTime: Date, limit?: number)');
   });
 
@@ -158,7 +139,6 @@ describe('schedule task ownership surface', () => {
     expect(sharedProjection).toContain('const identityId = selection.identityId;');
   });
 
-
   it('query options require identityId (residual 165)', () => {
     expect(port).toContain('export interface IScheduleTaskQueryOptions {\n  identityId: string;');
     expect(port).not.toContain('identityId?: string;');
@@ -170,7 +150,6 @@ describe('schedule task ownership surface', () => {
     expect(powersync).toContain("const clauses: string[] = ['identity_id = ?']");
     expect(powersync).toContain('const params: unknown[] = [options.identityId]');
   });
-
 
   it('bare findById remains only for runtime bootstrap; auth paths use findByIdForIdentity (residual 180)', () => {
     // Dual method kept intentionally: system scheduler may load by id then re-own.
@@ -184,5 +163,4 @@ describe('schedule task ownership surface', () => {
     expect(deleteUseCase).toContain('findByIdForIdentity(identityId, id)');
     expect(deleteUseCase).not.toContain('.findById(id)');
   });
-
 });

@@ -4,7 +4,7 @@ tags:
   - active
 description: 进行中的计划目录与当前状态
 created: 2026-04-26T00:00:00
-updated: 2026-09-06T21:38:22+08:00
+updated: 2026-09-06T22:43:34+08:00
 ---
 
 # Active Plans
@@ -13,9 +13,9 @@ updated: 2026-09-06T21:38:22+08:00
 
 ## 当前计划
 
-| 计划                                                                                             | 当前状态                                                                                                                                                                                                                    |
-| ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [MemoFlow Core vNext — Unified Refactor Orchestration](./2026-08-25-core-vnext-orchestration.md) | **v0.11 milestone closed / residual-only active**：Wave 0–5 主产品面已完成；真实 residual 收敛为 Routine method library、AI parity、Mobile parity、ScheduleTask/SourceModule legacy cleanup、pg-boss 决策与最终 hardening。 |
+| 计划                                                                                             | 当前状态                                                                                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [MemoFlow Core vNext — Unified Refactor Orchestration](./2026-08-25-core-vnext-orchestration.md) | **v0.11 milestone closed / residual-only active**：Wave 0–5 主产品面已完成；SourceModule fallback 与 Web/Desktop raw ScheduleTask mutation 已收口。当前 residual 主要是 Reminder legacy cleanup、AI/可选 Routine、deferred Mobile compatibility、scheduler/pg-boss 决策与最终 hardening。 |
 
 ## 本轮已归档（2026-09-06）
 

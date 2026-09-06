@@ -1,10 +1,9 @@
 /**
- * Schedule Task API Client Port
+ * Schedule Task API Client Ports
  *
- * Transport-agnostic interface for Schedule Task API operations.
- * Implementations: HTTP adapters (web), IPC adapters (desktop)
- *
- * Types imported from @memoflow/contracts/schedule.
+ * Raw ScheduleTask worker jobs are an internal scheduling primitive. Product
+ * surfaces may inspect them for diagnostics, but only the temporary HTTP/Mobile
+ * compatibility seam is allowed to mutate them directly.
  */
 
 import type { Result } from '@memoflow/contracts/result';
@@ -16,15 +15,8 @@ import type {
   ScheduleBatchOperationResponseDTO,
 } from '@memoflow/contracts/schedule';
 
-/**
- * IScheduleTaskApiClient
- *
- * 调度任务 API 客户端接口
- */
-export interface IScheduleTaskApiClient {
-  // ===== Schedule Task CRUD =====
-  createTask(request: CreateScheduleTaskRequest): Promise<Result<ScheduleTaskClientDTO>>;
-  createTasksBatch(tasks: CreateScheduleTaskRequest[]): Promise<Result<ScheduleTaskClientDTO[]>>;
+/** Read-only raw worker-job diagnostics shared by Web/Desktop product surfaces. */
+export interface IScheduleTaskQueryApiClient {
   getTasks(): Promise<Result<ScheduleTaskClientDTO[]>>;
   getTaskById(taskId: string): Promise<Result<ScheduleTaskClientDTO>>;
   getDueTasks(params?: {
@@ -35,13 +27,23 @@ export interface IScheduleTaskApiClient {
     sourceModule: SourceModule,
     sourceEntityId: string,
   ): Promise<Result<ScheduleTaskClientDTO[]>>;
+}
 
-  // ===== Schedule Task Status Management =====
+/**
+ * Full raw worker-job API retained only for transport compatibility (Mobile HTTP).
+ * Ordinary Web/Desktop product code must depend on IScheduleTaskQueryApiClient.
+ */
+export interface IScheduleTaskApiClient extends IScheduleTaskQueryApiClient {
+  createTask(request: CreateScheduleTaskRequest): Promise<Result<ScheduleTaskClientDTO>>;
+  createTasksBatch(tasks: CreateScheduleTaskRequest[]): Promise<Result<ScheduleTaskClientDTO[]>>;
   pauseTask(taskId: string): Promise<Result<ScheduleTaskClientDTO>>;
   resumeTask(taskId: string): Promise<Result<ScheduleTaskClientDTO>>;
   completeTask(taskId: string, reason?: string): Promise<Result<ScheduleTaskClientDTO>>;
   cancelTask(taskId: string, reason?: string): Promise<Result<ScheduleTaskClientDTO>>;
   deleteTask(taskId: string): Promise<Result<void>>;
   deleteTasksBatch(taskIds: string[]): Promise<Result<ScheduleBatchOperationResponseDTO>>;
-  updateTaskMetadata(taskId: string, metadata: UpdateTaskMetadataRequest): Promise<Result<ScheduleTaskClientDTO>>;
+  updateTaskMetadata(
+    taskId: string,
+    metadata: UpdateTaskMetadataRequest,
+  ): Promise<Result<ScheduleTaskClientDTO>>;
 }

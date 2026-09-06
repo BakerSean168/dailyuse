@@ -270,6 +270,13 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
     );
   }
 
+  async findAllTemplateRefs(): Promise<Array<{ id: string; identityId: string }>> {
+    const rows = await this.db.getAll<{ id: string; identity_id: string }>(
+      'SELECT id, identity_id FROM reminder_templates WHERE deleted_at IS NULL ORDER BY created_at ASC',
+    );
+    return rows.map((row) => ({ id: row.id, identityId: row.identity_id }));
+  }
+
   async findByGroupId(
     groupId: string | null,
     identityId: string,

@@ -18,7 +18,10 @@ describe('ScheduleElectronModule channel surface', () => {
     expect(source).not.toMatch(/const TaskCh = \{/);
     expect(source).toContain('Object.values(ScheduleChannels)');
     expect(source).toContain('ScheduleChannels.LIST');
-    expect(source).toContain('ScheduleChannels.TASK_CREATE');
+    expect(source).toContain('ScheduleChannels.TASK_LIST');
+    expect(source).not.toContain('ipcMain.handle(ScheduleChannels.TASK_CREATE');
+    expect(source).not.toContain('ipcMain.handle(ScheduleChannels.TASK_PAUSE');
+    expect(source).not.toContain('ipcMain.handle(ScheduleChannels.TASK_DELETE');
   });
 
   it('does not expose retired unsupported event complete/cancel/reschedule channels', () => {
@@ -31,13 +34,12 @@ describe('ScheduleElectronModule channel surface', () => {
   });
 
   it('DELETE IPC handler forwards expectedVersion payload to the controller', () => {
-    const source = readFileSync(
-      resolve(__dirname, 'index.ts'),
-      'utf8',
-    );
+    const source = readFileSync(resolve(__dirname, 'index.ts'), 'utf8');
     // The Electron handler must parse the numeric expectedVersion into a payload
     // and pass it to controller.delete(id, payload, requestContext) — no fabrication.
-    expect(source).toMatch(/ScheduleChannels\.DELETE[\s\S]*eventController\.delete\(id, payload, requestContext\)/);
+    expect(source).toMatch(
+      /ScheduleChannels\.DELETE[\s\S]*eventController\.delete\(id, payload, requestContext\)/,
+    );
     expect(source).toMatch(/typeof input === 'number' \? \{ expectedVersion: input \} : input/);
   });
 });

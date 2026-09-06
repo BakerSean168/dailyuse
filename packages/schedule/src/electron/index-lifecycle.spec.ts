@@ -49,6 +49,22 @@ vi.mock('electron', () => ({
 
 import { createScheduleElectronModule } from './index';
 
+const rawTaskMutationChannels = new Set<string>([
+  ScheduleChannels.TASK_CREATE,
+  ScheduleChannels.TASK_CREATE_BATCH,
+  ScheduleChannels.TASK_PAUSE,
+  ScheduleChannels.TASK_RESUME,
+  ScheduleChannels.TASK_COMPLETE,
+  ScheduleChannels.TASK_CANCEL,
+  ScheduleChannels.TASK_DELETE,
+  ScheduleChannels.TASK_DELETE_BATCH,
+  ScheduleChannels.TASK_UPDATE_METADATA,
+]);
+
+const desktopScheduleChannels = Object.values(ScheduleChannels).filter(
+  (channel) => !rawTaskMutationChannels.has(channel),
+);
+
 function createFakeInstance() {
   const api = {
     createTask: vi.fn(() => ok(null as never)),
@@ -128,10 +144,13 @@ describe('createScheduleElectronModule lifecycle', () => {
   it('register installs all channels WITHOUT starting the runtime (delayed start)', () => {
     moduleDef.register(context);
 
-    for (const channel of Object.values(ScheduleChannels)) {
+    for (const channel of desktopScheduleChannels) {
       expect(mocks.handlers.has(channel), `Expected ${channel} to be registered`).toBe(true);
     }
-    expect(mocks.handlers.size).toBe(Object.values(ScheduleChannels).length);
+    for (const channel of rawTaskMutationChannels) {
+      expect(mocks.handlers.has(channel), `Expected ${channel} to stay internal`).toBe(false);
+    }
+    expect(mocks.handlers.size).toBe(desktopScheduleChannels.length);
     expect(fake.start).not.toHaveBeenCalled();
   });
 
