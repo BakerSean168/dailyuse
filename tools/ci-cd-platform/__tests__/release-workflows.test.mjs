@@ -308,6 +308,10 @@ test('Desktop release matrix covers Windows, Linux, macOS Intel and Apple Silico
   assert.match(workflow, /os: macos-15-intel[\s\S]*?builder_args: --mac dmg zip --x64/);
   assert.match(workflow, /os: macos-15[\s\S]*?builder_args: --mac dmg zip --arm64/);
   assert.match(workflow, /macos_signing_mode:[\s\S]*?default: unsigned-pilot/);
+  assert.match(
+    workflow,
+    /Desktop signing policy did not emit explicit signing_state and signed_mode outputs/u,
+  );
   assert.match(workflow, /- signed-notarized/);
   assert.match(workflow, /signing_state: macos-policy/);
   assert.match(workflow, /Resolve Desktop signing policy/);

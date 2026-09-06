@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from 'node:url';
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { digest, validateArtifactManifest, validatePromotionManifest } from './lib/contracts.mjs';
@@ -76,7 +77,7 @@ export async function buildPromotionManifest({
   return promotion;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [manifestDirectory, commit, environment, outputArg] = process.argv.slice(2);
   if (!manifestDirectory || !commit || !environment || !outputArg)
     throw new Error(

@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+
+import { pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
@@ -83,7 +85,7 @@ async function main() {
   console.log(`[notarize-macos-dmg] PASS ${path.basename(dmg)} submission=${evidence.id}`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
     console.error(`[notarize-macos-dmg] ${error instanceof Error ? error.message : String(error)}`);
     process.exitCode = 1;

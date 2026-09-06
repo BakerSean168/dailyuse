@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from 'node:url';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -37,7 +38,7 @@ export async function verifyArtifact({ manifestFile, target, sourceManifestDiges
   return actual;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [manifestFile, target, sourceManifestDigest] = process.argv.slice(2);
   if (!manifestFile || !target) {
     throw new Error(

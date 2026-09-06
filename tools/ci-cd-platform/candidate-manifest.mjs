@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from 'node:url';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { digest as contentDigest } from './lib/contracts.mjs';
@@ -34,7 +35,9 @@ function validateImage(component, image, candidate, errors) {
   }
   const distributions = Object.keys(image.distributions ?? {}).sort();
   if (JSON.stringify(distributions) !== JSON.stringify([...CANDIDATE_DISTRIBUTIONS].sort())) {
-    errors.push(`${component}.distributions must contain exactly: ${CANDIDATE_DISTRIBUTIONS.join(', ')}`);
+    errors.push(
+      `${component}.distributions must contain exactly: ${CANDIDATE_DISTRIBUTIONS.join(', ')}`,
+    );
     return;
   }
   for (const name of CANDIDATE_DISTRIBUTIONS) {
@@ -133,9 +136,11 @@ async function main() {
   console.log(`CANDIDATE_SET=PASS digest=${candidate.digest}`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
-    console.error(`candidate set failed: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(
+      `candidate set failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
     process.exitCode = 1;
   });
 }

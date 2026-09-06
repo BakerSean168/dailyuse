@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from 'node:url';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { validateCandidateSet } from './candidate-manifest.mjs';
@@ -267,7 +268,7 @@ async function main() {
   console.log(`PRODUCTION_SET=PASS digest=${productionSet.digest}`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
     console.error(
       `production set failed: ${error instanceof Error ? error.message : String(error)}`,

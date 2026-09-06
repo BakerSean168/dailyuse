@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from 'node:url';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
@@ -37,7 +38,7 @@ export async function createLaneInput({ lane, manifest, output, runId = null }) 
   return input;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const args = new Map();
   for (let index = 2; index < process.argv.length; index += 2) {
     args.set(process.argv[index].replace(/^--/u, ''), process.argv[index + 1]);
