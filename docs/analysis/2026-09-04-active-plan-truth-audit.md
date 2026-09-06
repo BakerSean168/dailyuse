@@ -6,7 +6,7 @@ tags:
   - audit
 description: 2026-09-04 MemoFlow Active Plan 真值审计与剩余实施优先级
 created: 2026-09-04T23:25:00+08:00
-updated: 2026-09-06T16:44:18+08:00
+updated: 2026-09-06T17:20:00+08:00
 ---
 
 # MemoFlow Active Plan Truth Audit — 2026-09-04
@@ -18,7 +18,7 @@ Delivery Platform V3 于 2026-09-06 完成 Phase 4 并归档后，`docs/plan/act
 | Plan                               | Current truth                                           | What is actually left                                                                                                 |
 | ---------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only** | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
-| GitHub Durable Installation Intent | **implementation complete; v0.14.0 Published**          | install Published v0.14.0 on Windows and complete polling/finalize → Thought Forest inventory/connect                 |
+| GitHub Durable Installation Intent | **v0.14.0 live found existing-installation no-op gap**  | ship bounded verified-callback retry, then complete Thought Forest polling/finalize/connect                           |
 
 ## 2. Delivery Platform V3 — archived 2026-09-06
 
@@ -97,7 +97,7 @@ Published v0.14.0 Windows Desktop
 → connect selected repository
 ```
 
-Do not write more installation-orchestration feature code before this live journey. Do not close the checkbox from CI/server-side inventory alone; the Published v0.14.0 Windows package must complete the flow.
+The v0.14.0 live journey proved STATUS polling/expiry works, but also proved GitHub does not emit a Setup callback when an existing installation's selected repositories are unchanged (`Save` is disabled). This is now one concrete correctness repair, not open-ended feature work: authenticated Desktop start may renew a same-identity/same-route `CallbackReceived|Finalized` proof from the last 24 hours only after fresh GitHub App inventory/account/Contents-write validation; `Pending`/`Consumed` are never recovered. After that corrective release is deployed, the Published Windows package must complete finalize → Thought Forest inventory/connect before the checkbox closes.
 
 ## 5. Recommended priority
 

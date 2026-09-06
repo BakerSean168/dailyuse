@@ -47,6 +47,20 @@ export interface IKnowledgeRepositoryInstallationIntentRepository {
     identityId: string,
     intentId: string,
   ): Promise<KnowledgeRepositoryInstallationIntentRecord | null>;
+  findLatestRecoverableVerified(
+    identityId: string,
+    routeKey: string,
+    notBefore: number,
+  ): Promise<KnowledgeRepositoryInstallationIntentRecord | null>;
+  renewVerifiedForRetry(input: {
+    identityId: string;
+    intentId: string;
+    installationId: string;
+    providerAccountId: string;
+    notBefore: number;
+    expiresAt: number;
+    now: number;
+  }): Promise<KnowledgeRepositoryInstallationIntentRecord | null>;
   recordCallback(input: {
     stateHash: string;
     installationId: string;

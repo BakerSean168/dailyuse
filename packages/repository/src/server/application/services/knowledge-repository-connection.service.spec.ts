@@ -14,6 +14,8 @@ import {
 import { InMemoryKnowledgeRepositoryInstallationIntentRepository } from '../../infrastructure/services/in-memory-knowledge-repository-installation-intent.repository';
 import { KnowledgeRepositoryConnectionService } from './knowledge-repository-connection.service';
 
+const SERVICE_NOW = 1_750_000_000_000;
+
 class MemoryConnectionRepository implements IKnowledgeRepositoryConnectionRepository {
   readonly rows = new Map<string, KnowledgeRepositoryConnectionServerDTO>();
 
@@ -114,6 +116,7 @@ function installationInventory(
 function createService(
   github = createGithubClient(),
   cloudDataPurger?: IKnowledgeRepositoryCloudDataPurger,
+  now: () => number = () => SERVICE_NOW,
 ) {
   const repository = new MemoryConnectionRepository();
   const installationIntentRepository =
@@ -140,7 +143,7 @@ function createService(
         routeTargets: { staging: 'https://staging-api.example.test' },
       },
       cloudDataPurger,
-      now: () => 1_750_000_000_000,
+      now,
     }),
   };
 }
@@ -230,6 +233,150 @@ describe('KnowledgeRepositoryConnectionService', () => {
         githubRepositoryId: 'repository-1',
       }),
     ).resolves.toMatchObject({ ok: true });
+  });
+
+  it('resumes a recent verified Desktop callback after TTL without requiring another GitHub update', async () => {
+    let now = SERVICE_NOW;
+    const github = createGithubClient();
+    const { service } = createService(github, undefined, () => now);
+    const started = await service.startInstallation('identity-1', { clientKind: 'desktop' });
+    if (!started.ok) throw new Error('expected ok');
+    const state = new URL(started.data.installationUrl).searchParams.get('state')!;
+
+    now += 1_000;
+    await expect(
+      service.receiveInstallationSetup({
+        state,
+        installationId: 'installation-1',
+        setupAction: 'update',
+      }),
+    ).resolves.toMatchObject({
+      ok: true,
+      data: { kind: 'desktop', intentId: started.data.intentId },
+    });
+
+    now = SERVICE_NOW + 2 * 60 * 60 * 1_000;
+    await expect(
+      service.getInstallationIntentStatus('identity-1', started.data.intentId),
+    ).resolves.toMatchObject({ ok: true, data: { status: 'Expired' } });
+
+    const retried = await service.startInstallation('identity-1', { clientKind: 'desktop' });
+    expect(retried).toMatchObject({
+      ok: true,
+      data: {
+        intentId: started.data.intentId,
+        requiresExternalBrowser: false,
+        expiresAt: now + 10 * 60 * 1_000,
+      },
+    });
+    if (!retried.ok) throw new Error('expected retry');
+    expect(new URL(retried.data.installationUrl).searchParams.has('state')).toBe(false);
+    expect(github.getInstallationInventory).toHaveBeenCalledWith('installation-1');
+
+    await expect(
+      service.getInstallationIntentStatus('identity-1', started.data.intentId),
+    ).resolves.toMatchObject({ ok: true, data: { status: 'CallbackReceived' } });
+    await expect(
+      service.finalizeInstallationIntent('identity-1', started.data.intentId),
+    ).resolves.toMatchObject({
+      ok: true,
+      data: { installationId: 'installation-1', githubAccountId: 'github-account-1' },
+    });
+  });
+
+  it('does not recover a verified callback outside the bounded retry window', async () => {
+    let now = SERVICE_NOW;
+    const { service } = createService(createGithubClient(), undefined, () => now);
+    const started = await service.startInstallation('identity-1', { clientKind: 'desktop' });
+    if (!started.ok) throw new Error('expected ok');
+    const state = new URL(started.data.installationUrl).searchParams.get('state')!;
+    now += 1_000;
+    await service.receiveInstallationSetup({
+      state,
+      installationId: 'installation-1',
+      setupAction: 'install',
+    });
+
+    now = SERVICE_NOW + 24 * 60 * 60 * 1_000 + 2_000;
+    const retried = await service.startInstallation('identity-1', { clientKind: 'desktop' });
+    expect(retried).toMatchObject({
+      ok: true,
+      data: { requiresExternalBrowser: true },
+    });
+    if (!retried.ok) throw new Error('expected retry');
+    expect(retried.data.intentId).not.toBe(started.data.intentId);
+    expect(new URL(retried.data.installationUrl).searchParams.has('state')).toBe(true);
+  });
+
+  it('refuses verified retry when the GitHub installation account has drifted', async () => {
+    let now = SERVICE_NOW;
+    const github = createGithubClient();
+    const { service } = createService(github, undefined, () => now);
+    const started = await service.startInstallation('identity-1', { clientKind: 'desktop' });
+    if (!started.ok) throw new Error('expected ok');
+    const state = new URL(started.data.installationUrl).searchParams.get('state')!;
+    now += 1_000;
+    await service.receiveInstallationSetup({
+      state,
+      installationId: 'installation-1',
+      setupAction: 'install',
+    });
+
+    vi.mocked(github.getInstallationInventory).mockResolvedValue(
+      installationInventory({}, { accountId: 'github-account-other' }),
+    );
+    now = SERVICE_NOW + 2 * 60 * 60 * 1_000;
+    const retried = await service.startInstallation('identity-1', { clientKind: 'desktop' });
+    expect(retried).toMatchObject({ ok: true, data: { requiresExternalBrowser: true } });
+    if (!retried.ok) throw new Error('expected retry');
+    expect(retried.data.intentId).not.toBe(started.data.intentId);
+  });
+
+  it('falls back to a fresh browser flow when the previously verified installation was removed', async () => {
+    let now = SERVICE_NOW;
+    const github = createGithubClient();
+    const { service } = createService(github, undefined, () => now);
+    const started = await service.startInstallation('identity-1', { clientKind: 'desktop' });
+    if (!started.ok) throw new Error('expected ok');
+    const state = new URL(started.data.installationUrl).searchParams.get('state')!;
+    now += 1_000;
+    await service.receiveInstallationSetup({
+      state,
+      installationId: 'installation-1',
+      setupAction: 'install',
+    });
+
+    vi.mocked(github.getInstallationInventory).mockRejectedValue(
+      new GitHubAppClientFailureError({ kind: 'not_found' }, 'installation removed'),
+    );
+    now = SERVICE_NOW + 2 * 60 * 60 * 1_000;
+    const retried = await service.startInstallation('identity-1', { clientKind: 'desktop' });
+    expect(retried).toMatchObject({ ok: true, data: { requiresExternalBrowser: true } });
+    if (!retried.ok) throw new Error('expected fresh flow');
+    expect(retried.data.intentId).not.toBe(started.data.intentId);
+  });
+
+  it('fails closed when verified-installation revalidation is temporarily unavailable', async () => {
+    let now = SERVICE_NOW;
+    const github = createGithubClient();
+    const { service } = createService(github, undefined, () => now);
+    const started = await service.startInstallation('identity-1', { clientKind: 'desktop' });
+    if (!started.ok) throw new Error('expected ok');
+    const state = new URL(started.data.installationUrl).searchParams.get('state')!;
+    now += 1_000;
+    await service.receiveInstallationSetup({
+      state,
+      installationId: 'installation-1',
+      setupAction: 'install',
+    });
+
+    vi.mocked(github.getInstallationInventory).mockRejectedValue(
+      new GitHubAppClientFailureError({ kind: 'unavailable' }, 'GitHub unavailable'),
+    );
+    now = SERVICE_NOW + 2 * 60 * 60 * 1_000;
+    await expect(
+      service.startInstallation('identity-1', { clientKind: 'desktop' }),
+    ).resolves.toMatchObject({ ok: false, error: { code: 'SERVICE_UNAVAILABLE' } });
   });
 
   it('routes a foreign environment setup only through the configured API allowlist', async () => {

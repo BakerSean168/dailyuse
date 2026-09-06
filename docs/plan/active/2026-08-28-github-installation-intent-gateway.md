@@ -9,7 +9,7 @@ tags:
   - staging
 description: MemoFlow GitHub App durable installation intent、环境路由与 Web/Desktop 安装完成闭环实施方案
 created: 2026-08-28T12:00:00+08:00
-updated: 2026-09-06T16:44:18+08:00
+updated: 2026-09-06T17:20:00+08:00
 status: active # implementation complete; one Windows Desktop live acceptance remains
 ---
 
@@ -646,3 +646,18 @@ Published v0.14.0 Windows Desktop
 ```
 
 Do **not** mark the Desktop DoD complete from CI or server-side inventory alone. It closes only after the Published v0.14.0 Windows package completes this live journey.
+
+### 16.4 Existing-installation no-op boundary found on v0.14.0
+
+The Published v0.14.0 Windows package proved the preload repair: `STATUS` polling ran correctly and an unconfirmed intent expired with the expected UI error instead of `IPC 调用异常`. A second real start opened the existing `MemoFlow Production` installation page. Windows UI Automation confirmed the two selected repositories were already `BakerSean168/thought-forest` and `BakerSean168/memoflow-github-app-e2e-fixture`, while GitHub's `Save` button was disabled because there was no configuration change. The new durable intent therefore remained `Pending`; GitHub did not issue a new Setup callback for the no-op configuration.
+
+This is a provider-protocol gap rather than a user mistake. The corrective design keeps ADR-065's OAuth/install separation and does **not** ask the user to remove/re-add a repository merely to manufacture an update callback:
+
+- Desktop authenticated `start` may inspect only the same identity/route's latest `CallbackReceived` or `Finalized` proof from the last 24 hours;
+- `Pending` and `Consumed` are never recoverable;
+- the server revalidates the installation through the GitHub App API and requires the same provider account, non-suspended installation, and Contents write;
+- a successful recovery renews only the verified intent's live TTL to a new 10-minute window;
+- new Desktop clients receive `requiresExternalBrowser=false`, skip `shell.openExternal()`, and continue directly through `STATUS -> FINALIZE`;
+- Web and first-install flows remain unchanged; raw state/tokens remain unpersisted.
+
+The existing production proof `knowledge-install-intent-12264374-...` belongs to the same MemoFlow identity as the v0.14.0 retries and is `CallbackReceived` for installation `157417810`; it is suitable for the post-deploy live recovery acceptance while inside the bounded retry window. The DoD stays unchecked until the corrected Published Windows package actually finalizes and connects Thought Forest.

@@ -55,6 +55,57 @@ export class KnowledgeRepositoryInstallationIntentPrismaRepository implements IK
     );
   }
 
+  async findLatestRecoverableVerified(
+    identityId: string,
+    routeKey: string,
+    notBefore: number,
+  ): Promise<KnowledgeRepositoryInstallationIntentRecord | null> {
+    return this.toRecord(
+      await this.db.knowledgeRepositoryInstallationIntent.findFirst({
+        where: {
+          identityId,
+          routeKey,
+          status: { in: ['CallbackReceived', 'Finalized'] },
+          installationId: { not: null },
+          providerAccountId: { not: null },
+          callbackReceivedAt: { gte: new Date(notBefore) },
+        },
+        orderBy: { callbackReceivedAt: 'desc' },
+      }),
+    );
+  }
+
+  async renewVerifiedForRetry(input: {
+    identityId: string;
+    intentId: string;
+    installationId: string;
+    providerAccountId: string;
+    notBefore: number;
+    expiresAt: number;
+    now: number;
+  }): Promise<KnowledgeRepositoryInstallationIntentRecord | null> {
+    const renewed = await this.db.knowledgeRepositoryInstallationIntent.updateMany({
+      where: {
+        id: input.intentId,
+        identityId: input.identityId,
+        status: { in: ['CallbackReceived', 'Finalized'] },
+        installationId: input.installationId,
+        providerAccountId: input.providerAccountId,
+        callbackReceivedAt: { gte: new Date(input.notBefore) },
+      },
+      data: {
+        expiresAt: new Date(input.expiresAt),
+        updatedAt: new Date(input.now),
+      },
+    });
+    if (renewed.count !== 1) return null;
+    return this.toRecord(
+      await this.db.knowledgeRepositoryInstallationIntent.findUnique({
+        where: { id: input.intentId },
+      }),
+    );
+  }
+
   async recordCallback(input: {
     stateHash: string;
     installationId: string;

@@ -43,6 +43,56 @@ export class InMemoryKnowledgeRepositoryInstallationIntentRepository implements 
     return row?.identityId === identityId ? this.clone(row) : null;
   }
 
+  async findLatestRecoverableVerified(
+    identityId: string,
+    routeKey: string,
+    notBefore: number,
+  ): Promise<KnowledgeRepositoryInstallationIntentRecord | null> {
+    const candidates = [...this.rows.values()]
+      .filter(
+        (row) =>
+          row.identityId === identityId &&
+          row.routeKey === routeKey &&
+          (row.status === 'CallbackReceived' || row.status === 'Finalized') &&
+          row.installationId !== null &&
+          row.providerAccountId !== null &&
+          row.callbackReceivedAt !== null &&
+          row.callbackReceivedAt >= notBefore,
+      )
+      .sort((a, b) => (b.callbackReceivedAt ?? 0) - (a.callbackReceivedAt ?? 0));
+    return this.clone(candidates[0] ?? null);
+  }
+
+  async renewVerifiedForRetry(input: {
+    identityId: string;
+    intentId: string;
+    installationId: string;
+    providerAccountId: string;
+    notBefore: number;
+    expiresAt: number;
+    now: number;
+  }): Promise<KnowledgeRepositoryInstallationIntentRecord | null> {
+    const row = this.rows.get(input.intentId);
+    if (
+      !row ||
+      row.identityId !== input.identityId ||
+      (row.status !== 'CallbackReceived' && row.status !== 'Finalized') ||
+      row.installationId !== input.installationId ||
+      row.providerAccountId !== input.providerAccountId ||
+      row.callbackReceivedAt === null ||
+      row.callbackReceivedAt < input.notBefore
+    ) {
+      return null;
+    }
+    const updated: KnowledgeRepositoryInstallationIntentRecord = {
+      ...row,
+      expiresAt: input.expiresAt,
+      updatedAt: input.now,
+    };
+    this.rows.set(row.id, updated);
+    return this.clone(updated);
+  }
+
   async recordCallback(input: {
     stateHash: string;
     installationId: string;

@@ -27,7 +27,10 @@ import { GitHubAppClientFailureError } from '../ports/github-app-client.port';
 import type { IKnowledgeRepositoryConnectionRepository } from '../ports/knowledge-repository-connection.repository';
 import type { IKnowledgeRepositoryConnectionWriteTransactionRunner } from '../ports/knowledge-repository-connection-write-transaction.runner';
 import type { IKnowledgeRepositoryCloudDataPurger } from '../ports/knowledge-repository-cloud-data-purger.port';
-import type { IKnowledgeRepositoryInstallationIntentRepository } from '../ports/knowledge-repository-installation-intent.repository';
+import type {
+  IKnowledgeRepositoryInstallationIntentRepository,
+  KnowledgeRepositoryInstallationIntentRecord,
+} from '../ports/knowledge-repository-installation-intent.repository';
 import type {
   KnowledgeRepositoryInstallationSetupRequest,
   KnowledgeRepositoryInstallationSetupResolution,
@@ -56,6 +59,7 @@ function firstReconciliationAction(
 
 const DEFAULT_INSTALLATION_RETURN_PATH = '/settings?tab=repository';
 const INSTALLATION_INTENT_TTL_MS = 10 * 60 * 1000;
+const VERIFIED_INSTALLATION_RETRY_WINDOW_MS = 24 * 60 * 60 * 1000;
 const INSTALLATION_SETUP_PATH = '/api/v1/repositories/knowledge-connections/installations/setup';
 
 export interface KnowledgeRepositoryInstallationRoutingConfig {
@@ -142,11 +146,25 @@ export class KnowledgeRepositoryConnectionService {
     try {
       const now = this.now();
       const expiresAt = now + INSTALLATION_INTENT_TTL_MS;
+      const clientKind: KnowledgeRepositoryInstallationClientKind = request.clientKind ?? 'web';
+
+      if (clientKind === 'desktop') {
+        const recovered = await this.tryRecoverVerifiedDesktopIntent(identityId, now, expiresAt);
+        if (!recovered.ok) return recovered;
+        if (recovered.data) {
+          return ok({
+            intentId: recovered.data.id,
+            installationUrl: `https://github.com/apps/${encodeURIComponent(this.options.appSlug)}/installations/new`,
+            expiresAt: recovered.data.expiresAt,
+            requiresExternalBrowser: false,
+          });
+        }
+      }
+
       const intentId = `knowledge-install-intent-${randomUUID()}`;
       const state = createKnowledgeRepositoryInstallationState(
         this.options.installationRouting.routeKey,
       );
-      const clientKind: KnowledgeRepositoryInstallationClientKind = request.clientKind ?? 'web';
       await this.options.installationIntentRepository.create({
         id: intentId,
         identityId,
@@ -162,6 +180,7 @@ export class KnowledgeRepositoryConnectionService {
         intentId,
         installationUrl: `https://github.com/apps/${encodeURIComponent(this.options.appSlug)}/installations/new?${search.toString()}`,
         expiresAt,
+        requiresExternalBrowser: true,
       });
     } catch (error) {
       return fail({
@@ -718,6 +737,54 @@ export class KnowledgeRepositoryConnectionService {
           error instanceof Error ? error.message : 'GitHub repository HEAD confirmation failed',
       });
     }
+  }
+
+  private async tryRecoverVerifiedDesktopIntent(
+    identityId: string,
+    now: number,
+    expiresAt: number,
+  ): Promise<Result<KnowledgeRepositoryInstallationIntentRecord | null>> {
+    const notBefore = now - VERIFIED_INSTALLATION_RETRY_WINDOW_MS;
+    const candidate = await this.options.installationIntentRepository.findLatestRecoverableVerified(
+      identityId,
+      this.options.installationRouting.routeKey,
+      notBefore,
+    );
+    if (!candidate?.installationId || !candidate.providerAccountId) return ok(null);
+
+    let inventory: GitHubAppInstallationInventory;
+    try {
+      inventory = await this.options.githubAppClient.getInstallationInventory(
+        candidate.installationId,
+      );
+    } catch (error) {
+      if (error instanceof GitHubAppClientFailureError && error.failure.kind === 'not_found') {
+        return ok(null);
+      }
+      return fail({
+        code: 'SERVICE_UNAVAILABLE',
+        message: error instanceof Error ? error.message : 'GitHub installation lookup failed',
+      });
+    }
+    if (
+      inventory.suspended ||
+      inventory.contentsPermission !== 'write' ||
+      inventory.accountId !== candidate.providerAccountId
+    ) {
+      return ok(null);
+    }
+
+    return ok(
+      await this.options.installationIntentRepository.renewVerifiedForRetry({
+        identityId,
+        intentId: candidate.id,
+        installationId: candidate.installationId,
+        providerAccountId: candidate.providerAccountId,
+        notBefore,
+        expiresAt,
+        now,
+      }),
+    );
   }
 
   private async getValidInstallationInventory(

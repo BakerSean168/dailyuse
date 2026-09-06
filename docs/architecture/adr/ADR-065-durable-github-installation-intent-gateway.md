@@ -8,7 +8,7 @@ tags:
   - desktop
 description: ADR-065 - durable GitHub App installation intent、公开 Setup Gateway 与 authenticated finalize 边界
 created: 2026-08-28T12:00:00+08:00
-updated: 2026-08-28T12:00:00+08:00
+updated: 2026-09-06T17:20:00+08:00
 ---
 
 # ADR-065: Durable GitHub App Installation Intent + Setup Gateway
@@ -41,7 +41,9 @@ ADR-034 已确定知识资产事实边界：Desktop Local Vault 是本地可写�
 Pending -> CallbackReceived -> Finalized -> Consumed
 ```
 
-TTL 到期后任何非终态均视为 `Expired`。
+普通 provider-state lease 到期后任何非终态均视为 `Expired`，且原始 state 不再可用。
+
+2026-09-06 的 Windows live acceptance 补充一个严格受限的 **authenticated retry lease**：若同一 MemoFlow identity 在最近 24 小时内已经通过真实 Setup Gateway callback 得到 `CallbackReceived` / `Finalized`（且尚未 `Consumed`），Desktop 可在 authenticated `start` 时请求恢复。Server 必须重新调用 GitHub App inventory，确认 installation 未 suspended、Contents write 仍成立且 provider account 未漂移，然后只把该 verified intent 的 live `expiresAt` 续签为新的 10 分钟窗口。`Pending` / `Consumed` 永不恢复，Web flow 不使用此路径；恢复过程不持久化 raw state、OAuth token 或 installation token。
 
 记录包含 identity owner、client kind、environment route key、relative return path、installation/account metadata 与时间戳，但**不得**持久化 GitHub App private key、installation token、OAuth token 或原始 state。
 
@@ -136,6 +138,25 @@ GitHub callback 到达 gateway 后只记录 `CallbackReceived` 并显示“可�
 - Electron custom protocol/deep link；
 - GitHub callback 能直接回到 renderer。
 
+### 2.7a Existing-installation / failed-client retry
+
+GitHub 对已经安装且 repository selection **没有发生变化**的 App 配置页不会产生新的 Setup callback；`Redirect on update` 只在 installation 实际更新时触发。Desktop 因本地崩溃、IPC defect 或升级中断而错过 finalize 时，强迫用户先增删仓库再 Save 既不可靠，也扩大误操作风险。
+
+因此 Desktop retry 采用已有 verified callback 的短期恢复，而不是新增 OAuth 权限或伪造 callback：
+
+```text
+authenticated Desktop start
+-> find same-identity/same-route CallbackReceived|Finalized proof (callback <= 24h)
+-> revalidate installation through GitHub App API
+-> require same provider account + not suspended + Contents write
+-> CAS-renew the same unconsumed intent for 10m
+-> STATUS -> authenticated FINALIZE -> repository inventory
+```
+
+新客户端在该路径收到 `requiresExternalBrowser=false`，不得再打开无效的 GitHub configuration page；旧客户端忽略该字段仍保持安全，只会多打开一个不具授权效果的页面。首次安装、过旧 proof、identity/account drift、无 verified callback、以及 `Consumed` intent 仍必须走新的 provider-state + Setup callback。GitHub 服务不可用时恢复请求 fail closed，不通过创建额外 Pending intent 隐藏错误。
+
+该恢复路径不改变 §2.3/§2.4 的授权边界：公开 callback 本身仍不能 connect，恢复后仍必须由原 MemoFlow identity authenticated finalize，并由 connect transaction 原子 consume。
+
 ### 2.8 Environment routing and credential boundary
 
 Non-production：
@@ -167,6 +188,7 @@ Production：
 8. Connection write 与 intent consume 必须原子提交。
 9. Desktop/browser 不获得 App private key；Desktop repository token 仍是短期、repository-scoped。
 10. guest/offline-only profile 不得通过 installation flow 扩大 cloud authorization。
+11. Desktop retry 只能续签同 identity、同 environment、24h 内已 verified 且未 Consumed 的 callback proof，并在续签前重新验证 GitHub installation/account/Contents write。
 
 ## 4. Consequences
 
