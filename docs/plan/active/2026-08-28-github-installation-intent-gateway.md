@@ -9,13 +9,13 @@ tags:
   - staging
 description: MemoFlow GitHub App durable installation intent、环境路由与 Web/Desktop 安装完成闭环实施方案
 created: 2026-08-28T12:00:00+08:00
-updated: 2026-09-04T23:25:00+08:00
+updated: 2026-09-06T16:44:18+08:00
 status: active # implementation complete; one Windows Desktop live acceptance remains
 ---
 
 # GitHub App Durable Installation Intent + Setup Gateway
 
-> **Truth audit 2026-09-04:** implementation and automated contract coverage are complete. Production Web install/connect/webhook acceptance is complete. The plan remains Active only for one release-level acceptance: run a Published Windows Desktop package through external browser → GitHub installation → authenticated polling/finalize → repository inventory/connect, then archive if it passes. `v0.12.1` provides a Published Windows x64 Setup/zip suitable for this acceptance.
+> **Truth audit 2026-09-06:** implementation and automated contract coverage are complete. Production Web install/connect/webhook acceptance is complete. A real Published Windows Desktop attempt reached GitHub installation + Setup Gateway callback and exposed a packaged preload allowlist defect; #331 fixed `STATUS`/`FINALIZE`, and #332 fixed the cross-platform ESM CLI entrypoint bug found while recovering the same immutable v0.14.0 Draft. `v0.14.0` is now Published with all four Desktop lanes green. The plan remains Active for exactly one release-level acceptance: install Published v0.14.0 on Windows and complete authenticated polling/finalize → repository inventory/connect, then archive if it passes.
 
 ## 0. Executive decision
 
@@ -612,3 +612,37 @@ Old in-memory store remains available only as a test/dev adapter while migration
 - Resolved 2026-08-29: production email/password auth keeps `requireEmailVerification=true` and now uses the restored Brevo SMTP configuration. The deployment contract passes the transactional-email env into API, production SMTP verification succeeds, and a real Better Auth `sign-up/email` request returned `200`; the temporary E2E identity was removed afterward. No SMTP credential is recorded in Git.
 - The Production GitHub App installation is intentionally left installed only on the private fixture repository so later production E2E does not require another broad repository authorization.
 - The temporary production MemoFlow E2E identity was deleted after acceptance; cascading cleanup returned users/sessions/accounts/intents/connections/projections/webhook-deliveries to zero while leaving the GitHub App installation scoped only to the fixture repository.
+
+## 16. Windows live acceptance continuation — 2026-09-06
+
+### 16.1 Real v0.13.3 Desktop attempt
+
+- The Published Windows v0.13.3 package was installed on a real Windows machine and connected to the production MemoFlow account path.
+- Desktop `START` created a real `clientKind=desktop` durable installation intent in production and opened the external GitHub App installation flow.
+- The user expanded the existing `MemoFlow Production` installation to include `BakerSean168/thought-forest` while retaining `BakerSean168/memoflow-github-app-e2e-fixture`; GitHub App inventory confirmed both selected repositories and the expected `metadata:read` / `contents:write` permissions.
+- Setup Gateway received the real callback and advanced the durable intent from `Pending` to `CallbackReceived`.
+- The Desktop renderer then failed with `IPC 调用异常`. Direct packaged-runtime inspection proved `START` and `system:openExternalUrl` were allowed, but preload omitted `RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_STATUS` and `...FINALIZE`. The v0.13.3 package therefore could not finish the Desktop DoD even though GitHub authorization and callback were successful.
+
+### 16.2 Corrective Desktop release
+
+- PR #331 added `STATUS` + `FINALIZE` to the preload allowlist and added a regression lock that derives every Repository IPC channel used by `RepositoryIpcAdapter` and requires preload support. PR CI passed; merged main `5a9342363385...` passed full main CI and Coverage.
+- Release PR #322 produced immutable release commit `460649320dc8d5fcf003204700a690363c860d2a` for v0.14.0. Its first Draft release attempt proved the Windows packaged Electron runtime itself passed, but the Windows release receipt failed because `macos-signing-policy.mjs` silently did not execute its CLI body on Windows.
+- The root cause was the platform-unsafe ESM main guard `import.meta.url === `file://${process.argv[1]}``. It affected 22 CI/CD CLI entrypoints, including `release-contract.mjs`; on Windows, backslash argv paths made those scripts silently skip their CLI body while exiting 0.
+- PR #332 replaced all 22 executable guards with self-contained `pathToFileURL(process.argv[1]).href` checks, added a repository-wide regression audit, added a real Windows signing-policy CLI output test, and made release signing-policy output fail fast in the workflow. CI/CD governance passed 126/126 and global governance passed.
+- Control-plane main `1739d230179e60c47d9b937bb0648b27e785c58d` passed full main CI + Coverage. The same immutable `v0.14.0 -> 460649320dc8d5fcf003204700a690363c860d2a` Draft was resumed rather than rewritten. Windows then proved `release-contract` executed, packaged smoke passed, and the platform receipt received explicit `signing-state=unsigned`. Linux x64, Windows x64, macOS x64 and macOS arm64 all passed; Release Postflight published v0.14.0 at `2026-09-06T08:39:29Z` with 23 canonical assets.
+
+### 16.3 Remaining acceptance gate
+
+The only unchecked DoD remains unchanged in meaning but is now narrower:
+
+```text
+Published v0.14.0 Windows Desktop
+→ reuse the already-authorized MemoFlow Production installation
+→ START / external browser if needed
+→ STATUS observes CallbackReceived
+→ authenticated FINALIZE
+→ repository inventory includes thought-forest
+→ connect selected repository
+```
+
+Do **not** mark the Desktop DoD complete from CI or server-side inventory alone. It closes only after the Published v0.14.0 Windows package completes this live journey.

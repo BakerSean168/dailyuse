@@ -4,7 +4,7 @@ tags:
   - active
 description: 进行中的计划目录与当前状态
 created: 2026-04-26T00:00:00
-updated: 2026-09-06T13:08:00+08:00
+updated: 2026-09-06T16:44:18+08:00
 ---
 
 # Active Plans
@@ -13,10 +13,10 @@ updated: 2026-09-06T13:08:00+08:00
 
 ## 当前计划
 
-| 计划                                                                                                     | 当前状态                                                                                                                                                                                                                    |
-| -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [MemoFlow Core vNext — Unified Refactor Orchestration](./2026-08-25-core-vnext-orchestration.md)         | **v0.11 milestone closed / residual-only active**：Wave 0–5 主产品面已完成；真实 residual 收敛为 Routine method library、AI parity、Mobile parity、ScheduleTask/SourceModule legacy cleanup、pg-boss 决策与最终 hardening。 |
-| [GitHub Durable Installation Intent + Setup Gateway](./2026-08-28-github-installation-intent-gateway.md) | **Implementation complete / one live acceptance pending**：Production Web install/connect/webhook E2E 已通过；仅剩正式 Windows Desktop 包的 external-browser → polling/finalize 实机验收，完成后即可归档。                  |
+| 计划                                                                                                     | 当前状态                                                                                                                                                                                                                                                                                                                                               |
+| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [MemoFlow Core vNext — Unified Refactor Orchestration](./2026-08-25-core-vnext-orchestration.md)         | **v0.11 milestone closed / residual-only active**：Wave 0–5 主产品面已完成；真实 residual 收敛为 Routine method library、AI parity、Mobile parity、ScheduleTask/SourceModule legacy cleanup、pg-boss 决策与最终 hardening。                                                                                                                            |
+| [GitHub Durable Installation Intent + Setup Gateway](./2026-08-28-github-installation-intent-gateway.md) | **Implementation complete / Published v0.14.0 live acceptance pending**：真实 v0.13.3 Desktop 已完成 GitHub 授权与 callback，并暴露 preload STATUS/FINALIZE 缺口；#331/#332 已修复并恢复同一 immutable v0.14.0 Draft，v0.14.0 现已 Published。仅剩在 Windows 安装 v0.14.0 后完成 polling/finalize → Thought Forest inventory/connect，完成后即可归档。 |
 
 ## 本轮已归档（2026-09-06）
 
