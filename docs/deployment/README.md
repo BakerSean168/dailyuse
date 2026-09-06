@@ -209,6 +209,8 @@ POWERSYNC_IMAGE=<ACR>/memoflow-powersync@sha256:<digest>
 - Caddy/基础 runtime 通过 ACR mirror 固定；
 - canonical production 不运行 Watchtower；所有应用组件由一个 coherent `production-selected` control artifact 与 host watcher 共同拥有。
 
+2026-09-06 的首个 canonical production acceptance 已完成：`v0.13.3 -> 4e24cffd...` 在 `controlPlaneSha=64521cf...` 下被 selector `34005198389` 选择为 production-set `sha256:2ea3a112...ae0ae` / control artifact `sha256:4d9b493f...175fa`。Alibaba `production-deploy-state` 已原子提交 `status=DEPLOYED`，API/Web/PowerSync/PostgreSQL/Redis/Caddy 均运行 exact digest；replay 返回 `already deployed` 且不重复 Migrator/backup。独立 GCP 公网验收在一次保留的瞬态 Web timeout 后连续 3 轮 API/Web/PowerSync 共 9/9 HTTP 200；production watcher timer 已 enabled/active。
+
 更新 runtime dependency 时，应把它当作独立 dependency-upgrade 变更：先修改 digest pin、在非生产环境验证，再合并到 `main` 触发 mirror workflow；需要重试时再手工 dispatch。不要把“镜像分发优化”和“依赖升级”混成一次操作。
 
 ## 5. Legacy manual preflight（仅首次切换前 / emergency）
