@@ -6,22 +6,21 @@ tags:
   - audit
 description: 2026-09-04 MemoFlow Active Plan 真值审计与剩余实施优先级
 created: 2026-09-04T23:25:00+08:00
-updated: 2026-09-06T11:27:00+08:00
+updated: 2026-09-06T13:08:00+08:00
 ---
 
 # MemoFlow Active Plan Truth Audit — 2026-09-04
 
 ## 1. Executive result
 
-AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三份真实 Active Plan。没有第二份“完整设计后完全忘记实施”的计划，但两份存在显著 residual，一份只差实机验收。
+Delivery Platform V3 于 2026-09-06 完成 Phase 4 并归档后，`docs/plan/active/` 只剩两份真实 Active Plan：Core vNext residual umbrella 与 GitHub Durable Installation Intent。前者仍有产品/清理 residual，后者只差正式 Windows Desktop 实机验收。
 
-| Plan                               | Current truth                                                        | What is actually left                                                                                                 |
-| ---------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Delivery Platform V3               | **Phase 3 COMPLETE; Phase 4 4401/4402 complete, 4403 code-complete** | final observation/archive; trusted-public macOS activation remains a conditional Apple-credential gate                |
-| Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only**              | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
-| GitHub Durable Installation Intent | **implementation complete**                                          | one Published Windows Desktop live external-browser + polling/finalize acceptance                                     |
+| Plan                               | Current truth                                           | What is actually left                                                                                                 |
+| ---------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only** | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
+| GitHub Durable Installation Intent | **implementation complete**                             | one Published Windows Desktop live external-browser + polling/finalize acceptance                                     |
 
-## 2. Delivery Platform V3 — still required
+## 2. Delivery Platform V3 — archived 2026-09-06
 
 ### Completed
 
@@ -53,10 +52,10 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 
 - DLV3-4401 runner-consolidation experiment — **COMPLETE / RETAIN SPLIT**: five paired `desktop-pr286` runs on main `55f282...` all passed child parity; consolidated P50/P95 runner-minutes improved to 7.644/7.890 from 11.108/11.207, but wall P50/P95 regressed to 458.639s/473.372s from 247.706s/266.173s. The deterministic gate therefore retained the current split Static/Unit/Typecheck/Build topology. Durable samples/report live under `reports/ci-cd-platform/quality-shadow/2026-09-06/`;
 - DLV3-4402 repository-wide Action SHA pinning — **COMPLETE**: all workflow/composite-action third-party refs are immutable 40-hex SHAs with version comments and a global fail-closed governance audit;
-- DLV3-4403 macOS signing/notarization — **CODE COMPLETE / ACTIVATION CONDITIONAL**: release policy has explicit `unsigned-pilot` vs `signed-notarized` modes; signed mode fail-closes on Developer ID/App Store Connect credentials and requires independent app+DMG codesign, hardened-runtime, notarization/staple, Gatekeeper and architecture evidence. GitHub currently has no Apple credentials or `MACOS_RELEASE_MODE`, so no signed release acceptance is claimed and `unsigned-pilot` remains intentional;
-- DLV3-4404 observation closeout/archive.
+- DLV3-4403 macOS signing/notarization — **CODE COMPLETE / ACTIVATION CONDITIONAL**: release policy has explicit `unsigned-pilot` vs `signed-notarized` modes; signed mode fail-closes on Developer ID/App Store Connect credentials and requires independent app+DMG codesign, hardened-runtime, notarization/staple, Gatekeeper and architecture evidence. `MACOS_RELEASE_MODE=unsigned-pilot` is now explicit; Apple credentials remain absent, so no signed release acceptance is claimed;
+- DLV3-4404 — **COMPLETE**: #328 and #329 are merged; final main `cc612e83...` passed CI `34012124207` (19/19) and Coverage `34012124229`. The earlier Coverage failure at `706c432...` was closed by replacing concurrent `pnpm exec nx show projects` wrappers with the installed Nx Node CLI. Candidate `34012669026` passed; Release Publish `34012838428` correctly no-op'd because Release PR #322 (0.14.0) remains open/unmerged.
 
-**Recommendation:** Phase 3 is closed; preserve the accepted v0.13.3 production authority. DLV3-4401 and 4402 are closed; keep Static/Unit/Typecheck/Build physically split unless a future paired experiment overturns the measured wall-time regression. DLV3-4403 capability is implemented, while the current product decision is to remain `unsigned-pilot` until real Apple credentials are intentionally provisioned. Treat trusted-public macOS activation as a conditional future gate, not an active blocker. Complete DLV3-4404 observation closeout and archive Delivery Platform V3 after the 4403 implementation PR and its exact main CI are green.
+**Recommendation:** Delivery Platform V3 is closed and archived. Preserve v0.13.3 as the accepted production authority until a normal future release is deliberately selected; keep Static/Unit/Typecheck/Build physically split unless a future paired experiment overturns the measured wall-time regression. `MACOS_RELEASE_MODE=unsigned-pilot` remains the explicit product decision; trusted-public macOS is a future credentialed activation, not an Active Plan residual.
 
 ## 3. Core vNext — classify before implementing
 
@@ -108,22 +107,19 @@ Desktop
 
 ### Should implement for architecture completion
 
-3. **Delivery Platform V3 Phase 2 — COMPLETE (2026-09-05).** Candidate-set → exact-SHA images → coherent staging channel → GCP watcher is live.
-4. **Core `CLEAN-6302/6303`** — remove Reminder legacy semantics and raw ScheduleTask/SourceModule product/execution paths. This reduces dual-authority/maintenance risk and is a prerequisite for a meaningful scheduler-engine comparison.
-5. **Delivery Platform V3 Phase 4 hardening** — Phase 3 is complete in live production at v0.13.3; DLV3-4401 retained split after real measurement, DLV3-4402 Action SHA pinning is complete, and DLV3-4403 signed/notarized app+DMG capability is implemented with activation intentionally deferred until Apple credentials exist. Complete final observation/archive without reopening the closed production transaction.
+3. **Core `CLEAN-6302/6303`** — remove Reminder legacy semantics and raw ScheduleTask/SourceModule product/execution paths. This reduces dual-authority/maintenance risk and is a prerequisite for a meaningful scheduler-engine comparison.
 
 ### Audit/product decision before coding
 
-6. **MOBILE-6201/6202** — likely mostly complete; run a focused parity/capability audit and close or implement only concrete gaps.
-7. **ROUTINE-5302** — useful preset/method-library feature, but not a correctness blocker. Implement only if still desired by current Routine UX roadmap.
-8. **AI-6102/6103** — real missing capabilities, but product-scope dependent. Decide whether the MemoFlow assistant should mutate Routine and read Planner/Notifications before implementing.
-9. **CLEAN-6301** — most headline legacy UI is already gone; audit `ProgressBreakdown` and residual branded/test/public surfaces before deletion.
+4. **MOBILE-6201/6202** — likely mostly complete; run a focused parity/capability audit and close or implement only concrete gaps.
+5. **ROUTINE-5302** — useful preset/method-library feature, but not a correctness blocker. Implement only if still desired by current Routine UX roadmap.
+6. **AI-6102/6103** — real missing capabilities, but product-scope dependent. Decide whether the MemoFlow assistant should mutate Routine and read Planner/Notifications before implementing.
+7. **CLEAN-6301** — most headline legacy UI is already gone; audit `ProgressBreakdown` and residual branded/test/public surfaces before deletion.
 
 ### Decision / final closure
 
-10. **POC-6401 pg-boss** — not mandatory. Run only after `CLEAN-6302/6303`; a valid result is “keep current scheduler”.
-11. **HARD-7101~7105** — final failure matrix/governance/product acceptance/docs/archive after all chosen residual product work is settled.
-12. **Delivery Phase 4** — performance/supply-chain observation after Phase 2/3; macOS signing/notarization is conditional on trusted public macOS distribution.
+8. **POC-6401 pg-boss** — not mandatory. Run only after `CLEAN-6302/6303`; a valid result is “keep current scheduler”.
+9. **HARD-7101~7105** — final failure matrix/governance/product acceptance/docs/archive after all chosen residual product work is settled.
 
 ## 6. Anti-drift rule
 

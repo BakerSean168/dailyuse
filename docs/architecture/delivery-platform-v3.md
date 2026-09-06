@@ -313,3 +313,14 @@ false skipped required lanes: 0
 ```
 
 Performance optimization is accepted only from comparable run summaries; a single fast run is not sufficient.
+
+Final Phase-4 paired evidence used five identical `desktop-pr286` workloads on main `55f2825196008030ef390178e98cf6c6393168d6` and is versioned at `reports/ci-cd-platform/quality-shadow/2026-09-06/report-v1.json` (digest `7286921ed867531e478dbc0f93bac5718bd5e5f9c2ff4c40634fcde1515f84e9`):
+
+```text
+split wall P50/P95:          247.706s / 266.173s
+consolidated wall P50/P95:   458.639s / 473.372s
+split runner-min P50/P95:     11.108 / 11.207
+consolidated runner-min P50/P95: 7.644 / 7.890
+```
+
+The predeclared gate required non-regressing wall P50/P95 **and** improved runner-minutes. Consolidation saved runner cost but regressed wall time by about 3.5 minutes, so V3 **retains the physically split Static / Unit / Typecheck / Build topology**. Reconsider consolidation only with a new comparable paired experiment.

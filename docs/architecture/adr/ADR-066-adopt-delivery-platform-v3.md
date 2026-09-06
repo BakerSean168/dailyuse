@@ -8,12 +8,12 @@ tags:
   - desktop
 description: ADR-066 - 采用 MemoFlow Delivery Platform V3 与跨平台 build-once/promote-many 交付模型
 created: 2026-09-02T16:15:00+08:00
-updated: 2026-09-02T16:15:00+08:00
+updated: 2026-09-06T13:08:00+08:00
 ---
 
 # ADR-066: Adopt MemoFlow Delivery Platform V3
 
-**状态：** 已采纳，分阶段实施中  
+**状态：** 已采纳并实施完成
 **日期：** 2026-09-02  
 **影响范围：** GitHub Actions、Nx、Desktop、Docker、GCP Staging、Alibaba Production、Release Please、仓库治理
 
@@ -227,4 +227,4 @@ Rejected. Physical job consolidation may reduce runner overhead, but logical evi
 
 ## 6. Rollout
 
-Implementation follows `docs/plan/active/2026-09-02-delivery-platform-v3.md`. Each phase is reversible before authority cutover. Existing V2 workflows and manual production runbook remain fallback until V3 evidence proves parity.
+Implementation completed under the archived plan `docs/plan/archive/2026-09-02-delivery-platform-v3.md`. V3 is now the canonical candidate/staging/release/production authority; the historical V2/manual production path is emergency recovery context only. The accepted production proof is v0.13.3 with exact production-set/control-artifact identity and watcher-owned idempotent `DEPLOYED` state. Trusted-public macOS signing remains an explicit future credentialed policy activation; it is not required to keep the implemented V3 server/unsigned-pilot authority canonical.

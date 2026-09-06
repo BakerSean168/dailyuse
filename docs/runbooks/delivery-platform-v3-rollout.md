@@ -190,4 +190,4 @@ The selector is not a runtime writer. It never SSHes into Alibaba. The historica
 
 ## 7. Evidence closeout
 
-A phase is complete only when repository tests, GitHub workflow run, artifact identities and runtime state all agree. Update the active plan and infrastructure SSOT with exact IDs; then archive superseded V2 operational text.
+A phase is complete only when repository tests, GitHub workflow run, artifact identities and runtime state all agree. Update the canonical plan and infrastructure SSOT with exact IDs; when the plan itself is complete, move it to `docs/plan/archive/` and keep this runbook as the ongoing operational procedure.
