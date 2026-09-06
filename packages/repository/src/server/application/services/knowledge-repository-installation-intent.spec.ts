@@ -122,6 +122,59 @@ describe('knowledge repository installation intent', () => {
     ).resolves.toBeNull();
   });
 
+  it('renews only a recent verified unconsumed callback for authenticated retry', async () => {
+    const repository = new InMemoryKnowledgeRepositoryInstallationIntentRepository();
+    const state = await createIntent(repository, { expiresAt: NOW + 10 });
+    await repository.recordCallback({
+      stateHash: state.stateHash,
+      installationId: 'installation-1',
+      providerAccountId: 'github-account-1',
+      setupAction: 'update',
+      now: NOW + 1,
+    });
+
+    await expect(
+      repository.findLatestRecoverableVerified('identity-1', 'staging', NOW),
+    ).resolves.toMatchObject({
+      id: 'intent-1',
+      status: 'CallbackReceived',
+      installationId: 'installation-1',
+    });
+    await expect(
+      repository.findLatestRecoverableVerified('identity-1', 'staging', NOW + 2),
+    ).resolves.toBeNull();
+
+    const renewed = await repository.renewVerifiedForRetry({
+      identityId: 'identity-1',
+      intentId: 'intent-1',
+      installationId: 'installation-1',
+      providerAccountId: 'github-account-1',
+      notBefore: NOW,
+      expiresAt: NOW + 600_000,
+      now: NOW + 100,
+    });
+    expect(renewed).toMatchObject({
+      status: 'CallbackReceived',
+      expiresAt: NOW + 600_000,
+    });
+
+    await repository.markFinalized({
+      identityId: 'identity-1',
+      intentId: 'intent-1',
+      installationId: 'installation-1',
+      providerAccountId: 'github-account-1',
+      now: NOW + 101,
+    });
+    await repository.markConsumed({
+      identityId: 'identity-1',
+      intentId: 'intent-1',
+      now: NOW + 102,
+    });
+    await expect(
+      repository.findLatestRecoverableVerified('identity-1', 'staging', NOW),
+    ).resolves.toBeNull();
+  });
+
   it('fails closed when callback or finalize happens after expiry', async () => {
     const repository = new InMemoryKnowledgeRepositoryInstallationIntentRepository();
     const state = await createIntent(repository, { expiresAt: NOW + 10 });

@@ -79,6 +79,8 @@ export const StartKnowledgeRepositoryInstallationResponseSchema = z.object({
   intentId: z.string().min(1),
   installationUrl: z.string().url(),
   expiresAt: z.number(),
+  /** False when the server safely resumed a previously verified installation. */
+  requiresExternalBrowser: z.boolean().default(true),
 });
 
 // Residual 699: response dual body retired — OpenAPI + transport use ResponseSchema only.

@@ -648,14 +648,16 @@ async function startInstallation(): Promise<void> {
   }
 
   if (desktopBridge) {
-    try {
-      await desktopBridge.invoke(SystemChannels.OPEN_EXTERNAL_URL, {
-        url: result.data.installationUrl,
-      });
-    } catch {
-      errorMessage.value = t('setting.knowledgeRepository.startFailed');
-      busyAction.value = null;
-      return;
+    if (result.data.requiresExternalBrowser !== false) {
+      try {
+        await desktopBridge.invoke(SystemChannels.OPEN_EXTERNAL_URL, {
+          url: result.data.installationUrl,
+        });
+      } catch {
+        errorMessage.value = t('setting.knowledgeRepository.startFailed');
+        busyAction.value = null;
+        return;
+      }
     }
     void pollDesktopInstallationIntent(result.data.intentId, result.data.expiresAt);
     return;

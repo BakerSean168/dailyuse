@@ -48,6 +48,10 @@ describe('repository factories surface', () => {
     expect(set).toHaveProperty('auditRepository');
     const typed: RepositoryPrismaRepositorySet = set;
     expect(typeof typed.connectionRepository.findByIdForIdentity).toBe('function');
+    expect(typeof typed.installationIntentRepository.findLatestRecoverableVerified).toBe(
+      'function',
+    );
+    expect(typeof typed.installationIntentRepository.renewVerifiedForRetry).toBe('function');
   });
 
   it('createRepositoryPrismaRuntimeContributions is null-safe without githubApp', () => {

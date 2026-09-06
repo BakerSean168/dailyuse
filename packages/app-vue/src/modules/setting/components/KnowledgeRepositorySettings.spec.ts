@@ -436,6 +436,7 @@ describe('KnowledgeRepositorySettings', () => {
         installationUrl:
           'https://github.com/apps/memoflow/installations/new?state=mfi1.dev.desktop',
         expiresAt: Date.now() + 600_000,
+        requiresExternalBrowser: true,
       }),
     );
     const getKnowledgeRepositoryInstallationIntentStatus = vi.fn(async () =>
@@ -493,6 +494,69 @@ describe('KnowledgeRepositorySettings', () => {
     expect(wrapper.text()).toContain('owner/knowledge');
   });
 
+  it('resumes a verified Desktop installation without reopening GitHub', async () => {
+    const invoke = vi.fn(async () => ({ ok: true as const, data: { opened: true } }));
+    const startKnowledgeRepositoryInstallation = vi.fn(async () =>
+      ok({
+        intentId: 'intent-desktop-resumed',
+        installationUrl: 'https://github.com/apps/memoflow/installations/new',
+        expiresAt: Date.now() + 600_000,
+        requiresExternalBrowser: false,
+      }),
+    );
+    const getKnowledgeRepositoryInstallationIntentStatus = vi.fn(async () =>
+      ok({
+        intentId: 'intent-desktop-resumed',
+        status: 'CallbackReceived' as const,
+        clientKind: 'desktop' as const,
+        expiresAt: Date.now() + 600_000,
+        installationId: 'installation-1',
+      }),
+    );
+    const finalizeKnowledgeRepositoryInstallationIntent = vi.fn(async () =>
+      ok({
+        installationId: 'installation-1',
+        githubAccountId: '42',
+        returnUrl: 'https://app.example.test/settings?tab=repository',
+        repositories: [
+          {
+            id: 'repository-1',
+            nodeId: 'R_1',
+            fullName: 'owner/thought-forest',
+            ownerId: '42',
+            private: true,
+            archived: false,
+            disabled: false,
+            defaultBranch: 'main',
+            permissions: { admin: false, push: true, pull: true },
+          },
+        ],
+      }),
+    );
+    const wrapper = mountSettings(
+      createService({
+        startKnowledgeRepositoryInstallation,
+        getKnowledgeRepositoryInstallationIntentStatus,
+        finalizeKnowledgeRepositoryInstallationIntent,
+        getLocalVaultBinding: vi.fn(async () => ok(null)),
+      }),
+      { invoke },
+    );
+    await flushPromises();
+
+    await wrapper.get('[data-testid="github-repository-connect"]').trigger('click');
+    await flushPromises();
+
+    expect(invoke).not.toHaveBeenCalledWith(SystemChannels.OPEN_EXTERNAL_URL, expect.anything());
+    expect(getKnowledgeRepositoryInstallationIntentStatus).toHaveBeenCalledWith(
+      'intent-desktop-resumed',
+    );
+    expect(finalizeKnowledgeRepositoryInstallationIntent).toHaveBeenCalledWith(
+      'intent-desktop-resumed',
+    );
+    expect(wrapper.text()).toContain('owner/thought-forest');
+  });
+
   it('recovers the Desktop UI when opening the external GitHub installation page fails', async () => {
     const invoke = vi.fn(async () => {
       throw new Error('shell open failed');
@@ -500,8 +564,10 @@ describe('KnowledgeRepositorySettings', () => {
     const startKnowledgeRepositoryInstallation = vi.fn(async () =>
       ok({
         intentId: 'intent-desktop-failed-open',
-        installationUrl: 'https://github.com/apps/memoflow/installations/new?state=mfi1.dev.desktop',
+        installationUrl:
+          'https://github.com/apps/memoflow/installations/new?state=mfi1.dev.desktop',
         expiresAt: Date.now() + 600_000,
+        requiresExternalBrowser: true,
       }),
     );
     const getKnowledgeRepositoryInstallationIntentStatus = vi.fn();
@@ -520,7 +586,9 @@ describe('KnowledgeRepositorySettings', () => {
 
     expect(wrapper.text()).toContain('Start failed');
     expect(getKnowledgeRepositoryInstallationIntentStatus).not.toHaveBeenCalled();
-    expect(wrapper.get('[data-testid="github-repository-connect"]').attributes('disabled')).toBeUndefined();
+    expect(
+      wrapper.get('[data-testid="github-repository-connect"]').attributes('disabled'),
+    ).toBeUndefined();
   });
 
   it('completes the GitHub callback and connects a Contents-write repository without admin permission', async () => {
