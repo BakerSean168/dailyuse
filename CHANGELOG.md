@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.14.0](https://github.com/BakerSean168/memoflow/compare/v0.13.3...v0.14.0) (2026-09-06)
+
+
+### Features
+
+* **release:** add fail-closed macOS trust mode ([#328](https://github.com/BakerSean168/memoflow/issues/328)) ([706c432](https://github.com/BakerSean168/memoflow/commit/706c432cb4fb5bba83eaac5f07d869c3bd83095c))
+
+
+### Bug Fixes
+
+* **ci:** avoid concurrent pnpm scope discovery ([#329](https://github.com/BakerSean168/memoflow/issues/329)) ([cc612e8](https://github.com/BakerSean168/memoflow/commit/cc612e83c5781f6e09dfe63a34764eb5d67fed6d))
+* **delivery:** probe production through local Caddy ([64521cf](https://github.com/BakerSean168/memoflow/commit/64521cf122753a23c0d954b2a7c46a65b93ba028))
+* **delivery:** probe production through local Caddy ([f19b3c5](https://github.com/BakerSean168/memoflow/commit/f19b3c58c1af0edfa91e735a58fa877ff1cbfec7))
+* **delivery:** verify blocked rollback baseline ([3adafc2](https://github.com/BakerSean168/memoflow/commit/3adafc21ea60ae363468c3dac3da13b6db65d99a))
+* **delivery:** verify blocked rollback baseline ([e221714](https://github.com/BakerSean168/memoflow/commit/e2217147f9f396fcf45adec37c0778d5ce55d44a))
+* **desktop:** allow installation polling IPC ([#331](https://github.com/BakerSean168/memoflow/issues/331)) ([5a93423](https://github.com/BakerSean168/memoflow/commit/5a9342363385361d269cf4ae6ff8f127b52da984))
+
 ## [0.13.3](https://github.com/BakerSean168/memoflow/compare/v0.13.2...v0.13.3) (2026-09-05)
 
 
