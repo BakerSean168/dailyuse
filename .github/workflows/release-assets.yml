@@ -9,6 +9,10 @@ on:
       sha:
         required: true
         type: string
+      macos_signing_mode:
+        required: false
+        type: string
+        default: unsigned-pilot
   workflow_dispatch:
     inputs:
       tag:
@@ -19,6 +23,14 @@ on:
         description: Exact release SHA; empty resolves from the tag
         required: false
         type: string
+      macos_signing_mode:
+        description: macOS trust policy for this release
+        required: false
+        default: unsigned-pilot
+        type: choice
+        options:
+          - unsigned-pilot
+          - signed-notarized
 
 concurrency:
   group: release-assets-${{ inputs.tag }}
@@ -38,6 +50,7 @@ jobs:
     outputs:
       release_tag: ${{ steps.resolve.outputs.release_tag }}
       release_sha: ${{ steps.resolve.outputs.release_sha }}
+      macos_signing_mode: ${{ steps.resolve.outputs.macos_signing_mode }}
     steps:
       - name: Resolve exact tag and SHA
         id: resolve
@@ -45,10 +58,16 @@ jobs:
         env:
           RELEASE_TAG: ${{ inputs.tag }}
           RELEASE_SHA: ${{ inputs.sha }}
+          MACOS_SIGNING_MODE: ${{ inputs.macos_signing_mode }}
         with:
           script: |
             const tag = process.env.RELEASE_TAG;
             const requestedSha = process.env.RELEASE_SHA;
+            const macosSigningMode = process.env.MACOS_SIGNING_MODE || 'unsigned-pilot';
+            if (!['unsigned-pilot', 'signed-notarized'].includes(macosSigningMode)) {
+              core.setFailed(`unsupported macOS signing mode: ${macosSigningMode}`);
+              return;
+            }
             if (!tag) {
               core.setFailed('release tag is required');
               return;
@@ -73,6 +92,7 @@ jobs:
             }
             core.setOutput('release_tag', tag);
             core.setOutput('release_sha', tagSha);
+            core.setOutput('macos_signing_mode', macosSigningMode);
 
   build-release-assets:
     needs: prepare-release
@@ -100,14 +120,14 @@ jobs:
             platform: macos-x64
             platform_os: macos
             arch: x64
-            signing_state: unsigned-pilot
+            signing_state: macos-policy
             runtime_executable_kind: packaged-app
             builder_args: --mac dmg zip --x64
           - os: macos-15
             platform: macos-arm64
             platform_os: macos
             arch: arm64
-            signing_state: unsigned-pilot
+            signing_state: macos-policy
             runtime_executable_kind: packaged-app
             builder_args: --mac dmg zip --arm64
 
@@ -185,7 +205,32 @@ jobs:
             --platform "${{ matrix.platform_os }}" \
             --arch "${{ matrix.arch }}"
 
-      - name: Package desktop application
+      - name: Resolve Desktop signing policy
+        id: signing-policy
+        working-directory: release-source
+        shell: bash
+        env:
+          MACOS_SIGNING_MODE: ${{ needs.prepare-release.outputs.macos_signing_mode }}
+        run: >-
+          node ../release-tooling/tools/ci-cd-platform/release-tools/macos-signing-policy.mjs
+          resolve
+          "${{ matrix.platform_os }}"
+          "${{ matrix.signing_state }}"
+          "$MACOS_SIGNING_MODE"
+
+      - name: Prepare protected macOS signing credentials
+        if: steps.signing-policy.outputs.signed_mode == 'true'
+        working-directory: release-source
+        shell: bash
+        env:
+          MACOS_CSC_LINK: ${{ secrets.MACOS_CSC_LINK }}
+          MACOS_APPLE_API_KEY_P8: ${{ secrets.MACOS_APPLE_API_KEY_P8 }}
+          MACOS_APPLE_API_KEY_ID: ${{ secrets.MACOS_APPLE_API_KEY_ID }}
+          MACOS_APPLE_API_ISSUER: ${{ secrets.MACOS_APPLE_API_ISSUER }}
+        run: node ../release-tooling/tools/ci-cd-platform/release-tools/macos-signing-policy.mjs prepare
+
+      - name: Package unsigned/default desktop application
+        if: steps.signing-policy.outputs.signed_mode != 'true'
         working-directory: release-source/apps/desktop
         shell: bash
         env:
@@ -194,11 +239,56 @@ jobs:
           PYTHON: ${{ env.pythonLocation }}/python
           npm_config_python: ${{ env.pythonLocation }}/python
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: pnpm exec electron-builder ${{ matrix.builder_args }} --publish never --config ../../../release-tooling/apps/desktop/electron-builder.json5
+
+      - name: Package signed/notarized macOS application
+        if: steps.signing-policy.outputs.signed_mode == 'true'
+        working-directory: release-source/apps/desktop
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_OPTIONS: --require=${{ github.workspace }}/release-source/tools/ci/node-process-bootstrap.cjs
+          PYTHON: ${{ env.pythonLocation }}/python
+          npm_config_python: ${{ env.pythonLocation }}/python
+          CSC_IDENTITY_AUTO_DISCOVERY: 'true'
+          CSC_LINK: ${{ secrets.MACOS_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.MACOS_CSC_KEY_PASSWORD }}
+        run: pnpm exec electron-builder ${{ matrix.builder_args }} --publish never --config ../../../release-tooling/apps/desktop/electron-builder.macos-signed.json5
+
+      - name: Notarize and staple signed macOS DMG
+        if: steps.signing-policy.outputs.signed_mode == 'true'
+        working-directory: release-source/apps/desktop
+        shell: bash
+        run: >-
+          node ../../../release-tooling/tools/ci-cd-platform/release-tools/notarize-macos-dmg.mjs
+          dist-package
+
+      - name: Verify packaged Desktop runtime closure
+        working-directory: release-source/apps/desktop
+        shell: bash
         run: |
-          pnpm exec electron-builder ${{ matrix.builder_args }} --publish never --config ../../../release-tooling/apps/desktop/electron-builder.json5
           node ./scripts/verify-packaged-runtime-deps.mjs
           if [ "${{ matrix.platform_os }}" = macos ] && [ -f dist-package/latest-mac.yml ]; then
             mv dist-package/latest-mac.yml "dist-package/latest-mac-${{ matrix.arch }}.yml"
+          fi
+
+      - name: Verify signed/notarized macOS trust
+        if: steps.signing-policy.outputs.signed_mode == 'true'
+        working-directory: release-source/apps/desktop
+        shell: bash
+        run: >-
+          node ../../../release-tooling/tools/ci-cd-platform/release-tools/verify-macos-trust.mjs
+          dist-package
+          "${{ matrix.platform }}"
+          "${{ matrix.arch }}"
+          "${{ github.workspace }}/release-source/reports/ci-cd-platform/desktop-trust/${{ matrix.platform }}.json"
+
+      - name: Remove temporary macOS notarization key
+        if: always() && steps.signing-policy.outputs.signed_mode == 'true'
+        shell: bash
+        run: |
+          if [ -n "${APPLE_API_KEY:-}" ]; then
+            rm -f "$APPLE_API_KEY"
           fi
 
       - name: Resolve packaged Desktop executable
@@ -269,12 +359,13 @@ jobs:
           "${{ matrix.platform }}"
           "${{ matrix.platform_os }}"
           "${{ matrix.arch }}"
-          "${{ matrix.signing_state }}"
+          "${{ steps.signing-policy.outputs.signing_state }}"
           "${{ needs.prepare-release.outputs.release_tag }}"
           "${{ needs.prepare-release.outputs.release_sha }}"
           "passed"
           "packaged-electron-playwright"
           "${{ matrix.runtime_executable_kind }}"
+          "${{ steps.signing-policy.outputs.signed_mode == 'true' && format('{0}/release-source/reports/ci-cd-platform/desktop-trust/{1}.json', github.workspace, matrix.platform) || '' }}"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

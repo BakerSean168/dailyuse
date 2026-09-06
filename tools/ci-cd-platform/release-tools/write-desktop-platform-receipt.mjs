@@ -1,5 +1,6 @@
-import { readdir, writeFile } from 'node:fs/promises';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { validateMacosTrustReceipt } from './verify-macos-trust.mjs';
 
 const [
   root,
@@ -12,6 +13,7 @@ const [
   runtimeStatus,
   runtimeMethod,
   runtimeExecutableKind,
+  trustReceiptPath,
 ] = process.argv.slice(2);
 if (
   !root ||
@@ -26,7 +28,7 @@ if (
   !runtimeExecutableKind
 ) {
   throw new Error(
-    'usage: write-desktop-platform-receipt.mjs <artifact-root> <platform> <os> <arch> <signing-state> <tag> <git-sha> <runtime-status> <runtime-method> <runtime-executable-kind>',
+    'usage: write-desktop-platform-receipt.mjs <artifact-root> <platform> <os> <arch> <signing-state> <tag> <git-sha> <runtime-status> <runtime-method> <runtime-executable-kind> [macos-trust-receipt]',
   );
 }
 
@@ -102,6 +104,21 @@ if (os === 'macos' && assets.some((asset) => !architectureToken.test(asset))) {
   throw new Error(`${platform} assets must include an explicit ${arch} token`);
 }
 
+let trustValidation = null;
+if (signingState === 'signed-notarized') {
+  if (!trustReceiptPath) {
+    throw new Error(`signed-notarized ${platform} requires a macOS trust receipt`);
+  }
+  trustValidation = validateMacosTrustReceipt(
+    JSON.parse(await readFile(path.resolve(trustReceiptPath), 'utf8')),
+  );
+  if (trustValidation.platform !== platform || trustValidation.arch !== arch) {
+    throw new Error(`macOS trust receipt identity mismatch: ${platform}/${arch}`);
+  }
+} else if (trustReceiptPath) {
+  throw new Error(`trust receipt is only valid for signed-notarized macOS assets: ${platform}`);
+}
+
 const receipt = {
   schemaVersion: 2,
   kind: 'desktop-platform-receipt',
@@ -117,6 +134,7 @@ const receipt = {
     method: runtimeMethod,
     executableKind: runtimeExecutableKind,
   },
+  trustValidation,
   assets,
 };
 await writeFile(

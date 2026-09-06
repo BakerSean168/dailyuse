@@ -7,6 +7,10 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { createCandidateSet } from '../candidate-manifest.mjs';
 import { readReleaseContract } from '../release-tools/release-contract.mjs';
+import {
+  createMacosTrustReceipt,
+  validateMacosTrustObservation,
+} from '../release-tools/verify-macos-trust.mjs';
 
 function git(cwd, args) {
   return execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
@@ -195,8 +199,9 @@ test('release evidence builders bind Desktop assets to the exact server candidat
       platform: 'macos-arm64',
       os: 'macos',
       arch: 'arm64',
-      signing: 'unsigned-pilot',
+      signing: 'signed-notarized',
       runtimeKind: 'packaged-app',
+      trust: true,
       files: ['MemoFlow-macOS-arm64-1.2.3.dmg', 'MemoFlow-macOS-arm64-1.2.3.zip'],
     },
   ];
@@ -209,6 +214,31 @@ test('release evidence builders bind Desktop assets to the exact server candidat
           writeFile(path.join(directory, name), `${fixture.platform}:${name}`),
         ),
       );
+      let trustPath = '';
+      if (fixture.trust) {
+        const observation = validateMacosTrustObservation({
+          platform: fixture.platform,
+          arch: fixture.arch,
+          appCodesignOutput:
+            'Authority=Developer ID Application: MemoFlow Test (ABCDEF1234)\n' +
+            'TeamIdentifier=ABCDEF1234\nflags=0x10000(runtime)\n',
+          appStaplerOutput: 'The validate action worked!',
+          appGatekeeperOutput: 'MemoFlow.app: accepted\nsource=Notarized Developer ID',
+          binaryArchitectures: 'arm64',
+          dmgCodesignOutput: 'Authority=Developer ID Application: MemoFlow Test (ABCDEF1234)\n',
+          dmgStaplerOutput: 'The validate action worked!',
+          dmgGatekeeperOutput: 'MemoFlow.dmg: accepted\nsource=Notarized Developer ID',
+        });
+        const trust = createMacosTrustReceipt({
+          platform: fixture.platform,
+          arch: fixture.arch,
+          appBundle: 'MemoFlow.app',
+          dmg: fixture.files.find((name) => name.endsWith('.dmg')),
+          observation,
+        });
+        trustPath = path.join(artifacts, `${fixture.platform}-trust.json`);
+        await writeFile(trustPath, `${JSON.stringify(trust, null, 2)}\n`);
+      }
       execFileSync(
         process.execPath,
         [
@@ -223,6 +253,7 @@ test('release evidence builders bind Desktop assets to the exact server candidat
           'passed',
           'packaged-electron-playwright',
           fixture.runtimeKind,
+          trustPath,
         ],
         { cwd: repoRoot },
       );
@@ -272,6 +303,13 @@ test('release evidence builders bind Desktop assets to the exact server candidat
     assert.equal(manifest.ciRunId, 42);
     assert.equal(manifest.deliveryManifestDigest, digestFor('d'));
     assert.equal(manifest.candidateSet.digest, candidate.digest);
+    assert.equal(manifest.desktop.platforms['macos-x64'].signingState, 'unsigned-pilot');
+    assert.equal(manifest.desktop.platforms['macos-x64'].trustValidation, null);
+    assert.equal(manifest.desktop.platforms['macos-arm64'].signingState, 'signed-notarized');
+    assert.equal(
+      manifest.desktop.platforms['macos-arm64'].trustValidation.diskImage.gatekeeper.source,
+      'Notarized Developer ID',
+    );
     assert.equal(manifest.candidateSet.candidateTag, candidateTag);
     assert.match(manifest.candidateSet.manifestSha256, /^sha256:[a-f0-9]{64}$/u);
     assert.match(manifest.manifests.desktop.sha256, /^sha256:[a-f0-9]{64}$/u);
@@ -285,7 +323,7 @@ test('release evidence builders bind Desktop assets to the exact server candidat
     ]);
     assert.equal(manifest.desktop.schemaVersion, 2);
     assert.equal(manifest.desktop.assets.length, 10);
-    assert.equal(manifest.desktop.platforms['macos-arm64'].signingState, 'unsigned-pilot');
+    assert.equal(manifest.desktop.platforms['macos-arm64'].signingState, 'signed-notarized');
     assert.equal(manifest.desktop.platforms['linux-x64'].runtimeValidation.status, 'passed');
     assert.equal(
       manifest.desktop.platforms['linux-x64'].runtimeValidation.executableKind,

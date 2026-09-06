@@ -15,11 +15,11 @@ updated: 2026-09-06T11:27:00+08:00
 
 AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三份真实 Active Plan。没有第二份“完整设计后完全忘记实施”的计划，但两份存在显著 residual，一份只差实机验收。
 
-| Plan                               | Current truth                                           | What is actually left                                                                                                 |
-| ---------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Delivery Platform V3               | **Phase 3 COMPLETE; Phase 4 4401/4402 COMPLETE**        | macOS signing/notarization decision/implementation, then final observation/archive                                    |
-| Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only** | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
-| GitHub Durable Installation Intent | **implementation complete**                             | one Published Windows Desktop live external-browser + polling/finalize acceptance                                     |
+| Plan                               | Current truth                                                        | What is actually left                                                                                                 |
+| ---------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Delivery Platform V3               | **Phase 3 COMPLETE; Phase 4 4401/4402 complete, 4403 code-complete** | final observation/archive; trusted-public macOS activation remains a conditional Apple-credential gate                |
+| Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only**              | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
+| GitHub Durable Installation Intent | **implementation complete**                                          | one Published Windows Desktop live external-browser + polling/finalize acceptance                                     |
 
 ## 2. Delivery Platform V3 — still required
 
@@ -53,10 +53,10 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 
 - DLV3-4401 runner-consolidation experiment — **COMPLETE / RETAIN SPLIT**: five paired `desktop-pr286` runs on main `55f282...` all passed child parity; consolidated P50/P95 runner-minutes improved to 7.644/7.890 from 11.108/11.207, but wall P50/P95 regressed to 458.639s/473.372s from 247.706s/266.173s. The deterministic gate therefore retained the current split Static/Unit/Typecheck/Build topology. Durable samples/report live under `reports/ci-cd-platform/quality-shadow/2026-09-06/`;
 - DLV3-4402 repository-wide Action SHA pinning — **COMPLETE**: all workflow/composite-action third-party refs are immutable 40-hex SHAs with version comments and a global fail-closed governance audit;
-- DLV3-4403 macOS signing/notarization (only necessary before trusted public macOS distribution);
+- DLV3-4403 macOS signing/notarization — **CODE COMPLETE / ACTIVATION CONDITIONAL**: release policy has explicit `unsigned-pilot` vs `signed-notarized` modes; signed mode fail-closes on Developer ID/App Store Connect credentials and requires independent app+DMG codesign, hardened-runtime, notarization/staple, Gatekeeper and architecture evidence. GitHub currently has no Apple credentials or `MACOS_RELEASE_MODE`, so no signed release acceptance is claimed and `unsigned-pilot` remains intentional;
 - DLV3-4404 observation closeout/archive.
 
-**Recommendation:** Phase 3 is closed; preserve the accepted v0.13.3 production authority. DLV3-4401 and 4402 are closed. Keep Static/Unit/Typecheck/Build physically split unless a future paired experiment overturns the current wall-time regression. DLV3-4403 remains the public-macOS trust/signing gate; DLV3-4404 may archive only after the signing/trust decision and final observation/hardening closeout.
+**Recommendation:** Phase 3 is closed; preserve the accepted v0.13.3 production authority. DLV3-4401 and 4402 are closed; keep Static/Unit/Typecheck/Build physically split unless a future paired experiment overturns the measured wall-time regression. DLV3-4403 capability is implemented, while the current product decision is to remain `unsigned-pilot` until real Apple credentials are intentionally provisioned. Treat trusted-public macOS activation as a conditional future gate, not an active blocker. Complete DLV3-4404 observation closeout and archive Delivery Platform V3 after the 4403 implementation PR and its exact main CI are green.
 
 ## 3. Core vNext — classify before implementing
 
@@ -110,7 +110,7 @@ Desktop
 
 3. **Delivery Platform V3 Phase 2 — COMPLETE (2026-09-05).** Candidate-set → exact-SHA images → coherent staging channel → GCP watcher is live.
 4. **Core `CLEAN-6302/6303`** — remove Reminder legacy semantics and raw ScheduleTask/SourceModule product/execution paths. This reduces dual-authority/maintenance risk and is a prerequisite for a meaningful scheduler-engine comparison.
-5. **Delivery Platform V3 Phase 4 hardening** — Phase 3 is complete in live production at v0.13.3; DLV3-4401 measured and retained split quality runners, and DLV3-4402 Action SHA pinning is complete. Continue macOS signing/notarization decision/implementation and final observation/archive without reopening the closed production transaction.
+5. **Delivery Platform V3 Phase 4 hardening** — Phase 3 is complete in live production at v0.13.3; DLV3-4401 retained split after real measurement, DLV3-4402 Action SHA pinning is complete, and DLV3-4403 signed/notarized app+DMG capability is implemented with activation intentionally deferred until Apple credentials exist. Complete final observation/archive without reopening the closed production transaction.
 
 ### Audit/product decision before coding
 
