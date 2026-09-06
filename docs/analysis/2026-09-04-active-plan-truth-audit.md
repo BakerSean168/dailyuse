@@ -6,7 +6,7 @@ tags:
   - audit
 description: 2026-09-04 MemoFlow Active Plan 真值审计与剩余实施优先级
 created: 2026-09-04T23:25:00+08:00
-updated: 2026-09-06T21:38:22+08:00
+updated: 2026-09-06T22:43:34+08:00
 ---
 
 # MemoFlow Active Plan Truth Audit — 2026-09-04
@@ -15,9 +15,9 @@ updated: 2026-09-06T21:38:22+08:00
 
 Delivery Platform V3 与 GitHub Durable Installation Intent 均已于 2026-09-06 完成 live acceptance 并归档；`docs/plan/active/` 现在只剩 Core vNext residual umbrella。
 
-| Plan                | Current truth                                           | What is actually left                                                                                                 |
-| ------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Core vNext umbrella | **v0.11 Waves 0–5 primary scope closed; residual-only** | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
+| Plan                | Current truth                                           | What is actually left                                                                                                                          |
+| ------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Core vNext umbrella | **v0.11 Waves 0–5 primary scope closed; residual-only** | Routine method library, AI/Mobile parity, Reminder legacy cleanup, deferred Mobile raw-worker compatibility, pg-boss decision, final hardening |
 
 **GitHub Durable Installation Intent closure:** PR #335 shipped the bounded verified-callback retry; Published `v0.14.1 -> e2f793d7...` passed all release lanes, production selector `34035753020` deployed it through the canonical Alibaba watcher, and a real Windows v0.14.1 client recovered the already-installed two-repository GitHub App without opening the no-op configuration page. `BakerSean168/thought-forest` is now an `Active` connection and the authorizing intent is `Consumed`. The plan moved to `docs/plan/archive/2026-08-28-github-installation-intent-gateway.md`.
 
@@ -76,7 +76,7 @@ Goal/Task/Routine business semantics, EventBus, recurrence, scheduling identity/
 
 - `CLEAN-6301`: **partially complete**. GoalFolder/TaskDependencyGraph/TaskFolder product UI is gone, but residual branded IDs/test mocks and standalone Goal `ProgressBreakdown` API/client/component surfaces remain. Reconfirm whether ProgressBreakdown is still a desired product read model; delete only the dead/publicly exposed residuals.
 - `CLEAN-6302`: **clearly incomplete**. `ControlMode`, Reminder group-control APIs, `smartFrequencyEnabled`, overloaded `responseTime` snooze semantics and Reminder naming remain widely present. This is one of the largest remaining Core semantic-cleanup tasks.
-- `CLEAN-6303`: **clearly incomplete**. Raw ScheduleTask HTTP/IPC/client surfaces remain, Reminder projection still calls `ScheduleTask.create(...)`, and schedule orchestration retains a `SourceModule` fallback router.
+- `CLEAN-6303`: **Web/Desktop physical closure implemented; overall PARTIAL only because Mobile is deferred.** The `SourceModule` fallback router is gone, Reminder projection no longer creates `ScheduleTask`, Desktop handlers and IPC task client are mutation-free, and App Vue consumes `ScheduleProductClientPort`. Full raw worker mutation remains only in the HTTP/App React compatibility lane used by deferred Mobile; do not delete that seam until `MOBILE-6201/6202` is resumed or explicitly superseded.
 - `CLEAN-6304`: physical scheduler package split decision should wait until `CLEAN-6302/6303` remove the semantic ambiguity.
 - `HARD-7101~7105`: final failure matrix, residual governance locks, full acceptance, documentation truth closure and final review remain meaningful only after product residuals/cleanup are resolved.
 
@@ -84,44 +84,31 @@ Goal/Task/Routine business semantics, EventBus, recurrence, scheduling identity/
 
 - `POC-6401` pg-boss: current repository explicitly says “Keep now; later PoC”; pg-boss is not installed. Run the PoC only **after** business packages stop depending on legacy ScheduleTask seams. Evidence may legitimately conclude “keep current scheduler”.
 
-## 4. GitHub Installation Intent — verification, not implementation
+## 4. GitHub Installation Intent — archived
 
-All durable intent, setup gateway, status/finalize, environment routing and Web production acceptance code exists. The first real Published Windows Desktop attempt on v0.13.3 reached GitHub authorization and a production `CallbackReceived` intent, and the user successfully added `BakerSean168/thought-forest` to the production App installation. That live attempt exposed a real packaged preload defect: `STATUS` / `FINALIZE` were missing from the preload allowlist. #331 fixed the Desktop boundary. The subsequent immutable v0.14.0 Draft exposed a separate Windows CI/CD ESM entrypoint bug; #332 removed all 22 platform-unsafe `file://${process.argv[1]}` guards and recovered the same Draft. v0.14.0 is now Published with all four Desktop lanes green and 23 canonical assets.
-
-The only unchecked DoD is now:
-
-```text
-Published v0.14.0 Windows Desktop
-→ authenticated STATUS observes the existing/new callback
-→ authenticated FINALIZE
-→ repository inventory includes thought-forest
-→ connect selected repository
-```
-
-The v0.14.0 live journey proved STATUS polling/expiry works, but also proved GitHub does not emit a Setup callback when an existing installation's selected repositories are unchanged (`Save` is disabled). This is now one concrete correctness repair, not open-ended feature work: authenticated Desktop start may renew a same-identity/same-route `CallbackReceived|Finalized` proof from the last 24 hours only after fresh GitHub App inventory/account/Contents-write validation; `Pending`/`Consumed` are never recovered. After that corrective release is deployed, the Published Windows package must complete finalize → Thought Forest inventory/connect before the checkbox closes.
+This plan is no longer active. PR #335 shipped bounded same-identity verified-callback recovery; Published v0.14.1 was deployed through the canonical production selector/watcher, and real Windows v0.14.1 acceptance completed no-browser retry → FINALIZE → repository inventory/connect for `BakerSean168/thought-forest`. The authorizing intent is `Consumed`, the connection is `Active`, and the plan lives under `docs/plan/archive/2026-08-28-github-installation-intent-gateway.md`.
 
 ## 5. Recommended priority
 
 ### Must close / verify now
 
-1. **GitHub Desktop live acceptance** — no new feature work expected; smallest scope and closes an entire Active Plan.
-2. **AI-6101 contract cleanup** — remove the retired `folderId` from Task AI draft semantics and verify current labels/contribution mapping. This is a concrete contract inconsistency, not an optional feature.
+1. **AI-6101 contract cleanup** — remove the retired `folderId` from Task AI draft semantics and verify current labels/contribution mapping. This is a concrete contract inconsistency, not an optional feature.
 
 ### Should implement for architecture completion
 
-3. **Core `CLEAN-6302/6303`** — remove Reminder legacy semantics and raw ScheduleTask/SourceModule product/execution paths. This reduces dual-authority/maintenance risk and is a prerequisite for a meaningful scheduler-engine comparison.
+2. **Core `CLEAN-6302` + remaining CLEAN-6303 Mobile boundary** — remove Reminder legacy semantics next. Web/Desktop raw ScheduleTask execution/product paths are already physically closed; the only CLEAN-6303 remainder is the explicitly deferred Mobile HTTP compatibility seam, which must be migrated or formally retained before CLEAN-6304/pg-boss decisions.
 
 ### Audit/product decision before coding
 
-4. **MOBILE-6201/6202** — likely mostly complete; run a focused parity/capability audit and close or implement only concrete gaps.
-5. **ROUTINE-5302** — useful preset/method-library feature, but not a correctness blocker. Implement only if still desired by current Routine UX roadmap.
-6. **AI-6102/6103** — real missing capabilities, but product-scope dependent. Decide whether the MemoFlow assistant should mutate Routine and read Planner/Notifications before implementing.
-7. **CLEAN-6301** — most headline legacy UI is already gone; audit `ProgressBreakdown` and residual branded/test/public surfaces before deletion.
+3. **MOBILE-6201/6202** — likely mostly complete; run a focused parity/capability audit and close or implement only concrete gaps.
+4. **ROUTINE-5302** — useful preset/method-library feature, but not a correctness blocker. Implement only if still desired by current Routine UX roadmap.
+5. **AI-6102/6103** — real missing capabilities, but product-scope dependent. Decide whether the MemoFlow assistant should mutate Routine and read Planner/Notifications before implementing.
+6. **CLEAN-6301** — most headline legacy UI is already gone; audit `ProgressBreakdown` and residual branded/test/public surfaces before deletion.
 
 ### Decision / final closure
 
-8. **POC-6401 pg-boss** — not mandatory. Run only after `CLEAN-6302/6303`; a valid result is “keep current scheduler”.
-9. **HARD-7101~7105** — final failure matrix/governance/product acceptance/docs/archive after all chosen residual product work is settled.
+7. **POC-6401 pg-boss** — not mandatory. Run only after `CLEAN-6302/6303`; a valid result is “keep current scheduler”.
+8. **HARD-7101~7105** — final failure matrix/governance/product acceptance/docs/archive after all chosen residual product work is settled.
 
 ## 6. Anti-drift rule
 
