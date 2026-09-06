@@ -138,7 +138,7 @@ Pre-migration failure restores the previous exact runtime automatically. Once Mi
 
 ## 5. Production cutover
 
-Repository implementation is present, but this section remains a live acceptance gate until the first Published-release rollout succeeds.
+Repository implementation and the first canonical Published-release rollout are accepted. Keep these steps as the required procedure for subsequent production selections.
 
 1. Confirm GitHub Environment `production` still allows only `main`.
 2. Publish the real release under test; do not create a synthetic release solely for deployment acceptance.
@@ -150,6 +150,16 @@ Repository implementation is present, but this section remains a live acceptance
 8. Verify `production-deploy-state`, exact container image refs and migration result. The host watcher must validate API/Web/PowerSync through the canonical HTTPS Host/SNI routes forced to local Caddy (`--resolve <host>:443:127.0.0.1`) so the transaction is independent of Alibaba public DNS/hairpin behavior. Then verify true public ingress, GitHub App and PowerSync product flows from an independent external host (GCP Dev during acceptance).
 9. Run the service again and prove idempotent `already deployed` behavior without rerunning Migrator.
 10. Only then run the installer with `--enable` and verify the timer is enabled/active.
+
+**First canonical production acceptance — 2026-09-06**
+
+- Release: `v0.13.3 -> 4e24cffd64b2255a188d28dbe37308a1e2a3fe3a`;
+- control plane: `64521cf122753a23c0d954b2a7c46a65b93ba028`;
+- selector: `34005198389`; production-set `sha256:2ea3a1127ffc179e4f24deb1d518246a7f9522bbe4a2801e7ed6c8647f1ae0ae`; control artifact `sha256:4d9b493f41c330dd31fc6ecb183d8cc165851ab38cd226ed6da4daf0943175fa`;
+- live host: guarded recovery verified `runtime.prev` against all six live long-running services, took a new PostgreSQL backup, completed the offline Migrator, converged API -> PowerSync -> Web -> Caddy and committed `status=DEPLOYED`;
+- replay: `already deployed`, no additional backup, no Migrator rerun, deployment state unchanged;
+- independent public acceptance: after one retained transient Web timeout, three GCP rounds passed API/Web/PowerSync 9/9 HTTP 200;
+- timer: enabled/active; the first Persistent catch-up invocation returned `already deployed` and the timer scheduled the next two-minute run.
 
 The selector is not a runtime writer. It never SSHes into Alibaba. The historical `/opt/memoflow/docker-compose.prod.yml` is first-cutover rollback evidence/emergency tooling only; `deployment/production/` becomes canonical runtime authority after acceptance.
 

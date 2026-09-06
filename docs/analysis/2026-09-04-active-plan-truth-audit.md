@@ -6,7 +6,7 @@ tags:
   - audit
 description: 2026-09-04 MemoFlow Active Plan 真值审计与剩余实施优先级
 created: 2026-09-04T23:25:00+08:00
-updated: undefined
+updated: 2026-09-06T10:05:06+08:00
 ---
 
 # MemoFlow Active Plan Truth Audit — 2026-09-04
@@ -15,11 +15,11 @@ updated: undefined
 
 AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三份真实 Active Plan。没有第二份“完整设计后完全忘记实施”的计划，但两份存在显著 residual，一份只差实机验收。
 
-| Plan                               | Current truth                                                             | What is actually left                                                                                                 |
-| ---------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Delivery Platform V3               | **Phase 3 release/selector accepted; production transaction fail-closed** | ship Migrator Prisma engine closure as v0.13.3, then explicit Alibaba BLOCKED recovery -> replay -> timer enable      |
-| Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only**                   | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
-| GitHub Durable Installation Intent | **implementation complete**                                               | one Published Windows Desktop live external-browser + polling/finalize acceptance                                     |
+| Plan                               | Current truth                                           | What is actually left                                                                                                  |
+| ---------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Delivery Platform V3               | **Phase 3 COMPLETE in live production**                 | Phase 4 runner consolidation, repository-wide Action pinning, macOS signing/notarization and final observation/archive |
+| Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only** | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening  |
+| GitHub Durable Installation Intent | **implementation complete**                             | one Published Windows Desktop live external-browser + polling/finalize acceptance                                      |
 
 ## 2. Delivery Platform V3 — still required
 
@@ -39,7 +39,7 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 - `DLV3-2204`: GCP watcher owns migrator-first exact-digest rollout, rollback/BLOCKED semantics and idempotent timer execution;
 - `DLV3-2205`: canonical staging cut over to candidate `60859e470651ad775c936d9224654c1c85602d6b`; source-build staging is emergency-only.
 
-### Phase 3 implementation present — corrective release acceptance pending
+### Phase 3 completed in live production — 2026-09-06
 
 1. `DLV3-3301/3302`: merged in PR #310. Release Publish promotes the existing exact candidate digests without rebuilding Server images, and schema-v2 release evidence binds candidate-set/main-CI/delivery identity.
 2. `DLV3-3303`: `Deploy Production(vX.Y.Z)` plus `memoflow.production-set/v1` is implemented. The selector is manual, Published-release-only, main-control-plane-bound, verifies ACR/GHCR parity and moves one `production-selected` control artifact; GitHub Environment `production` exists with a `main` branch policy.
@@ -47,6 +47,7 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 4. #319 closed the Linux helper-authority/Secret Service defect and Published v0.13.2; its first Alibaba transaction then failed closed at Prisma engine acquisition and retained `BLOCKED` while the old exact runtime was operator-restored.
 5. #320 bundled and verified the locked Prisma 7.8.0 Schema Engine in the Migrator image. `v0.13.3 -> 4e24cffd64b2255a188d28dbe37308a1e2a3fe3a` is Published via Release Publish `33975023167`; all four Desktop lanes, exact Server promotion and postflight passed. The exact Migrator digest `sha256:e734a0eb...17ad3` passes offline Prisma resolution on Alibaba. Selector `33976296012` selected production-set `sha256:b48f087f...4a97b`.
 6. #321 merged the BLOCKED live-baseline guard as control-plane `3adafc21...`; full main CI passed. Selector `33978120212` re-selected the same Published v0.13.3 as set `sha256:50163b7b...ba1bb` / control artifact `sha256:65a0c04a...a2a22`. The exact bundle installed on Alibaba with timer still disabled; check-only is coherent, the retained v0.13.2 BLOCKED receipt remains, and `runtime.prev` still matches all six current live service refs. A final pre-force probe found Alibaba cannot reliably hairpin/resolve its own public production domains, while all three canonical HTTPS Host/SNI routes pass through local Caddy with `--resolve ...:127.0.0.1`. The next control-plane repair must make that local Caddy path the transaction probe; public Internet reachability stays an independent GCP acceptance check. Then re-select the same v0.13.3 again and complete force -> new backup -> exact state -> replay -> public probe -> timer enable.
+7. #323 merged local-Caddy transaction probing as `64521cf...`; main CI `33979229785` passed. Final selector `34005198389` re-selected immutable v0.13.3 as set `sha256:2ea3a112...ae0ae` / control artifact `sha256:4d9b493f...175fa`. Alibaba verified and installed that bundle, check-only was coherent, rollback baseline remained 6/6, and guarded `--force` produced a new backup before Migrator. The bundled Prisma engine completed `db push` and the remaining migration checks; API/PowerSync/Web/Caddy converged, local Caddy probes passed, and atomic state became `DEPLOYED` at `2026-09-06T02:02:12Z`. Replay and the canonical service returned `already deployed` with unchanged state/backup count and no Migrator rerun. Independent GCP probes passed 9/9 after one retained transient Web timeout. The timer is enabled/active and its first Persistent catch-up run also used the idempotent fast path.
 
 ### Later / conditional
 
@@ -55,7 +56,7 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 - DLV3-4403 macOS signing/notarization (only necessary before trusted public macOS distribution);
 - DLV3-4404 observation closeout/archive.
 
-**Recommendation:** do not create v0.13.4 for control-plane-only recovery work. v0.13.3 is already Published with the corrected Migrator. Merge the host-local Caddy probe repair, re-run `Deploy Production(v0.13.3)` so that control plane is bound into a fresh desired set, then perform coherent check-only -> deliberate `--force` + new backup -> exact state -> replay -> independent GCP public HTTPS probes -> timer enable.
+**Recommendation:** Phase 3 is closed; do not create a corrective release for the resolved incident chain. Preserve the accepted v0.13.3 production authority and move to Phase 4. DLV3-4401 should gather comparable runner samples without weakening logical receipts; DLV3-4402 should complete repository-wide third-party Action SHA pinning; DLV3-4403 remains the public-macOS trust/signing gate; DLV3-4404 may archive only after those observation/hardening decisions are closed.
 
 ## 3. Core vNext — classify before implementing
 
@@ -109,7 +110,7 @@ Desktop
 
 3. **Delivery Platform V3 Phase 2 — COMPLETE (2026-09-05).** Candidate-set → exact-SHA images → coherent staging channel → GCP watcher is live.
 4. **Core `CLEAN-6302/6303`** — remove Reminder legacy semantics and raw ScheduleTask/SourceModule product/execution paths. This reduces dual-authority/maintenance risk and is a prerequisite for a meaningful scheduler-engine comparison.
-5. **Delivery Platform V3 Phase 3 corrective acceptance** — implementation exists; `v0.13.0` and `v0.13.1` failed closed. Close `v0.13.2` Release -> selector -> Alibaba watcher transaction before claiming Phase 3 complete.
+5. **Delivery Platform V3 Phase 4 hardening** — Phase 3 is complete in live production at v0.13.3. Continue runner-consolidation observation, repository-wide Action SHA pinning, macOS signing/notarization decision/implementation and final observation/archive without reopening the closed production transaction.
 
 ### Audit/product decision before coding
 
