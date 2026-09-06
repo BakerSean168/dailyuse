@@ -211,6 +211,8 @@ POWERSYNC_IMAGE=<ACR>/memoflow-powersync@sha256:<digest>
 
 2026-09-06 的首个 canonical production acceptance 已完成：`v0.13.3 -> 4e24cffd...` 在 `controlPlaneSha=64521cf...` 下被 selector `34005198389` 选择为 production-set `sha256:2ea3a112...ae0ae` / control artifact `sha256:4d9b493f...175fa`。Alibaba `production-deploy-state` 已原子提交 `status=DEPLOYED`，API/Web/PowerSync/PostgreSQL/Redis/Caddy 均运行 exact digest；replay 返回 `already deployed` 且不重复 Migrator/backup。独立 GCP 公网验收在一次保留的瞬态 Web timeout 后连续 3 轮 API/Web/PowerSync 共 9/9 HTTP 200；production watcher timer 已 enabled/active。
 
+当前 production 已正常推进到 `v0.14.1 -> e2f793d7a1acb1efecbf007e7d7450e5065c25e3`。Selector `34035753020` 生成 production-set `sha256:8a220292dad54e0ddb1fb93254627e110ccedaf479fb612064393887dbbdf629` / control artifact `sha256:fdf929d6c862db304a081653e6319e263e229b4fae7ca0e3b61e88be212ece7c`；Alibaba watcher 自动消费 `production-selected`，创建一份非空 PostgreSQL backup，完成 Migrator → API → PowerSync → Web → Caddy，并于 `2026-09-06T13:23:24Z` 原子提交 `DEPLOYED`。Timer replay 返回 `already deployed`，v0.14.1 backup 数量保持 1；独立 GCP 公网验收在一次保留的瞬态 Web timeout 后再次连续 3 轮 API/Web/PowerSync 9/9 HTTP 200。
+
 更新 runtime dependency 时，应把它当作独立 dependency-upgrade 变更：先修改 digest pin、在非生产环境验证，再合并到 `main` 触发 mirror workflow；需要重试时再手工 dispatch。不要把“镜像分发优化”和“依赖升级”混成一次操作。
 
 ## 5. Legacy manual preflight（仅首次切换前 / emergency）

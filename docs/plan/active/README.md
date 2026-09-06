@@ -4,7 +4,7 @@ tags:
   - active
 description: 进行中的计划目录与当前状态
 created: 2026-04-26T00:00:00
-updated: 2026-09-06T17:20:00+08:00
+updated: 2026-09-06T21:38:22+08:00
 ---
 
 # Active Plans
@@ -13,16 +13,16 @@ updated: 2026-09-06T17:20:00+08:00
 
 ## 当前计划
 
-| 计划                                                                                                     | 当前状态                                                                                                                                                                                                                                                                                                                                                     |
-| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [MemoFlow Core vNext — Unified Refactor Orchestration](./2026-08-25-core-vnext-orchestration.md)         | **v0.11 milestone closed / residual-only active**：Wave 0–5 主产品面已完成；真实 residual 收敛为 Routine method library、AI parity、Mobile parity、ScheduleTask/SourceModule legacy cleanup、pg-boss 决策与最终 hardening。                                                                                                                                  |
-| [GitHub Durable Installation Intent + Setup Gateway](./2026-08-28-github-installation-intent-gateway.md) | **Implementation complete / existing-installation retry repair in progress**：v0.14.0 已证明 STATUS polling 与 expiry 正常，但真实 GitHub installation 已包含两个仓库且 Save disabled，因此 no-op 配置不会产生新的 Setup callback。正在实施同 identity verified-callback 的 24h bounded retry lease；发布并完成 Thought Forest finalize/connect 后即可归档。 |
+| 计划                                                                                             | 当前状态                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [MemoFlow Core vNext — Unified Refactor Orchestration](./2026-08-25-core-vnext-orchestration.md) | **v0.11 milestone closed / residual-only active**：Wave 0–5 主产品面已完成；真实 residual 收敛为 Routine method library、AI parity、Mobile parity、ScheduleTask/SourceModule legacy cleanup、pg-boss 决策与最终 hardening。 |
 
 ## 本轮已归档（2026-09-06）
 
-| 计划                                                                           | 结果                                                                                                                                                                                                                                                                                                                                                                            |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [MemoFlow Delivery Platform V3](../archive/2026-09-02-delivery-platform-v3.md) | Phase 1–4 全部闭环；v0.13.3 canonical production 已稳定 `DEPLOYED`，4401 五组 paired shadow 决定 retain-split，4402 全仓 Action immutable pinning，4403 app+DMG fail-closed macOS trust capability，4404 以 #328/#329、main CI `34012124207` 与 Coverage `34012124229` 完成最终观察并归档。当前 macOS policy 明确为 `unsigned-pilot`；trusted-public signing 仍是未来凭据条件。 |
+| 计划                                                                                                              | 结果                                                                                                                                                                                                                                                                                                                                                                            |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [MemoFlow Delivery Platform V3](../archive/2026-09-02-delivery-platform-v3.md)                                    | Phase 1–4 全部闭环；v0.13.3 canonical production 已稳定 `DEPLOYED`，4401 五组 paired shadow 决定 retain-split，4402 全仓 Action immutable pinning，4403 app+DMG fail-closed macOS trust capability，4404 以 #328/#329、main CI `34012124207` 与 Coverage `34012124229` 完成最终观察并归档。当前 macOS policy 明确为 `unsigned-pilot`；trusted-public signing 仍是未来凭据条件。 |
+| [GitHub Durable Installation Intent + Setup Gateway](../archive/2026-08-28-github-installation-intent-gateway.md) | v0.14.1 已 Published/production `DEPLOYED`；真实 Windows v0.14.0 证明 existing-installation backward-compatible recovery，v0.14.1 证明 no-browser retry；`BakerSean168/thought-forest` 已 `Active`，对应 intent 原子 `Consumed`，Desktop 最后一条 DoD 闭合。                                                                                                                    |
 
 ## 近期完成的基础计划
 

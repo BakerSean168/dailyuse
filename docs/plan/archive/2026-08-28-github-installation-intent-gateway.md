@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - github
   - repository
   - installation
@@ -9,13 +9,13 @@ tags:
   - staging
 description: MemoFlow GitHub App durable installation intent、环境路由与 Web/Desktop 安装完成闭环实施方案
 created: 2026-08-28T12:00:00+08:00
-updated: 2026-09-06T17:20:00+08:00
-status: active # implementation complete; one Windows Desktop live acceptance remains
+updated: 2026-09-06T21:38:22+08:00
+status: complete # archived after v0.14.1 Windows recovery/finalize/connect acceptance
 ---
 
 # GitHub App Durable Installation Intent + Setup Gateway
 
-> **Truth audit 2026-09-06:** implementation and automated contract coverage are complete. Production Web install/connect/webhook acceptance is complete. A real Published Windows Desktop attempt reached GitHub installation + Setup Gateway callback and exposed a packaged preload allowlist defect; #331 fixed `STATUS`/`FINALIZE`, and #332 fixed the cross-platform ESM CLI entrypoint bug found while recovering the same immutable v0.14.0 Draft. `v0.14.0` is now Published with all four Desktop lanes green. The plan remains Active for exactly one release-level acceptance: install Published v0.14.0 on Windows and complete authenticated polling/finalize → repository inventory/connect, then archive if it passes.
+> **Archived 2026-09-06:** the durable GitHub App installation flow is complete across Web and real Windows Desktop. Published `v0.14.1 -> e2f793d7a1acb1efecbf007e7d7450e5065c25e3` closed the existing-installation no-op gap with a bounded same-identity verified-callback retry lease. A real v0.14.0 client proved backward-compatible recovery/finalize without a new GitHub Save callback; the installed v0.14.1 client then proved the new no-browser recovery UX and connected `BakerSean168/thought-forest`. The production intent ended `Consumed` and the repository connection is `Active`. Production is also `DEPLOYED` at v0.14.1 under the canonical watcher.
 
 ## 0. Executive decision
 
@@ -571,7 +571,7 @@ Old in-memory store remains available only as a test/dev adapter while migration
 - [x] Raw GitHub installation state is never persisted.
 - [x] Setup callback cannot directly authorize `connect`.
 - [x] Web installation works through intent redirect/finalize.
-- [ ] Desktop installation works through external browser + polling/finalize.
+- [x] Desktop installation works through external browser + polling/finalize, including bounded existing-installation retry.
 - [x] dev/staging can share Dev Test App with route-key isolation and independent DBs.
 - [x] prod path is code-identical but credential/runtime-isolated.
 - [x] focused + package + integration tests green.
@@ -631,21 +631,25 @@ Old in-memory store remains available only as a test/dev adapter while migration
 - PR #332 replaced all 22 executable guards with self-contained `pathToFileURL(process.argv[1]).href` checks, added a repository-wide regression audit, added a real Windows signing-policy CLI output test, and made release signing-policy output fail fast in the workflow. CI/CD governance passed 126/126 and global governance passed.
 - Control-plane main `1739d230179e60c47d9b937bb0648b27e785c58d` passed full main CI + Coverage. The same immutable `v0.14.0 -> 460649320dc8d5fcf003204700a690363c860d2a` Draft was resumed rather than rewritten. Windows then proved `release-contract` executed, packaged smoke passed, and the platform receipt received explicit `signing-state=unsigned`. Linux x64, Windows x64, macOS x64 and macOS arm64 all passed; Release Postflight published v0.14.0 at `2026-09-06T08:39:29Z` with 23 canonical assets.
 
-### 16.3 Remaining acceptance gate
+### 16.3 Acceptance gate — CLOSED
 
-The only unchecked DoD remains unchanged in meaning but is now narrower:
+The final Desktop DoD was closed on 2026-09-06 with a real Published Windows package and the production GitHub App:
 
 ```text
-Published v0.14.0 Windows Desktop
-→ reuse the already-authorized MemoFlow Production installation
-→ START / external browser if needed
+v0.14.0 backward-compatibility probe
+→ authenticated START recovers the existing verified callback
 → STATUS observes CallbackReceived
-→ authenticated FINALIZE
-→ repository inventory includes thought-forest
-→ connect selected repository
-```
+→ FINALIZE succeeds without a new GitHub Save callback
+→ inventory contains thought-forest + the E2E fixture
 
-Do **not** mark the Desktop DoD complete from CI or server-side inventory alone. It closes only after the Published v0.14.0 Windows package completes this live journey.
+v0.14.1 UX probe
+→ authenticated START recovers the same unconsumed Finalized intent
+→ requiresExternalBrowser=false
+→ no GitHub configuration page opens
+→ inventory contains the same two repositories
+→ connect BakerSean168/thought-forest
+→ Active connection + Consumed intent
+```
 
 ### 16.4 Existing-installation no-op boundary found on v0.14.0
 
@@ -660,4 +664,15 @@ This is a provider-protocol gap rather than a user mistake. The corrective desig
 - new Desktop clients receive `requiresExternalBrowser=false`, skip `shell.openExternal()`, and continue directly through `STATUS -> FINALIZE`;
 - Web and first-install flows remain unchanged; raw state/tokens remain unpersisted.
 
-The existing production proof `knowledge-install-intent-12264374-...` belongs to the same MemoFlow identity as the v0.14.0 retries and is `CallbackReceived` for installation `157417810`; it is suitable for the post-deploy live recovery acceptance while inside the bounded retry window. The DoD stays unchecked until the corrected Published Windows package actually finalizes and connects Thought Forest.
+The existing production proof `knowledge-install-intent-12264374-...` belongs to the same MemoFlow identity as the v0.14.0 retries and is `CallbackReceived` for installation `157417810`; it is suitable for the post-deploy live recovery acceptance while inside the bounded retry window. The gap was closed by Published v0.14.1 as recorded in the final live acceptance below.
+
+### 16.5 Final v0.14.1 live acceptance and closure
+
+- Corrective PR #335 merged the bounded verified-installation retry as main `4ca0cad180c457f3b27ca9a2dbc2ca9288e47d5d`; PR CI completed 19/19 green. The final release PR #333 produced `v0.14.1 -> e2f793d7a1acb1efecbf007e7d7450e5065c25e3`.
+- Final release-commit CI `34033554560` completed 19/19 green and Coverage `34033554609` succeeded. Main Candidate `34034184268` succeeded; Release Publish `34034562405` completed all 13 jobs, including all four packaged Desktop lanes, server candidate promotion without rebuild, canonical manifest upload and postflight publish. The Published release owns 23 canonical assets.
+- Production selector `34035753020` selected v0.14.1 as production-set `sha256:8a220292dad54e0ddb1fb93254627e110ccedaf479fb612064393887dbbdf629` with control artifact `sha256:fdf929d6c862db304a081653e6319e263e229b4fae7ca0e3b61e88be212ece7c`. The Alibaba watcher took one non-empty PostgreSQL backup, completed Migrator, converged API → PowerSync → Web → Caddy, passed host-local canonical HTTPS probes, and atomically wrote `DEPLOYED` at `2026-09-06T13:23:24Z`. Automatic replay returned `already deployed` with the same state and one v0.14.1 backup; independent GCP probes then passed three consecutive API/Web/PowerSync rounds (9/9 HTTP 200) after one retained transient Web timeout.
+- Backward compatibility was proven first with the installed Published v0.14.0 Windows client. `START` reused the same-identity verified `CallbackReceived` proof for installation `157417810`, renewed its 10-minute live lease, and Desktop polling finalized it without a new Setup callback. The old client still opened GitHub `Confirm access`, as expected because it does not consume `requiresExternalBrowser`, but no Save/configuration change was required. Desktop displayed both `BakerSean168/thought-forest` and `BakerSean168/memoflow-github-app-e2e-fixture`.
+- The Windows installer `MemoFlow-Windows-0.14.1-Setup.exe` was downloaded from the Published release and matched `SHA256SUMS.txt` (`d0a6fdea036a564b4bd7805c09ced39de8662a6c6f7a2bac137ac2ee9a4f9613`). The installed executable reported `0.14.1.0`. Repeating `START` on v0.14.1 renewed the same unconsumed `Finalized` intent while Chrome/Edge top-level windows remained unchanged, proving `requiresExternalBrowser=false` suppresses the no-op GitHub page. The same two-repository inventory was returned.
+- The live user selected `BakerSean168/thought-forest`, not the E2E fixture. Desktop immediately displayed `已连接`. PostgreSQL then showed the installation intent as `Consumed` at `2026-09-06 13:37:09.089` and a same-time `Active` connection for `BakerSean168/thought-forest` with no lifecycle error. This is the final atomic connect/consume proof required by ADR-065.
+
+All Definition of Done items are now satisfied. This plan is archived.

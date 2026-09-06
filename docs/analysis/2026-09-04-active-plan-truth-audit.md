@@ -6,19 +6,20 @@ tags:
   - audit
 description: 2026-09-04 MemoFlow Active Plan 真值审计与剩余实施优先级
 created: 2026-09-04T23:25:00+08:00
-updated: 2026-09-06T17:20:00+08:00
+updated: 2026-09-06T21:38:22+08:00
 ---
 
 # MemoFlow Active Plan Truth Audit — 2026-09-04
 
 ## 1. Executive result
 
-Delivery Platform V3 于 2026-09-06 完成 Phase 4 并归档后，`docs/plan/active/` 只剩两份真实 Active Plan：Core vNext residual umbrella 与 GitHub Durable Installation Intent。前者仍有产品/清理 residual，后者只差正式 Windows Desktop 实机验收。
+Delivery Platform V3 与 GitHub Durable Installation Intent 均已于 2026-09-06 完成 live acceptance 并归档；`docs/plan/active/` 现在只剩 Core vNext residual umbrella。
 
-| Plan                               | Current truth                                           | What is actually left                                                                                                 |
-| ---------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only** | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
-| GitHub Durable Installation Intent | **v0.14.0 live found existing-installation no-op gap**  | ship bounded verified-callback retry, then complete Thought Forest polling/finalize/connect                           |
+| Plan                | Current truth                                           | What is actually left                                                                                                 |
+| ------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Core vNext umbrella | **v0.11 Waves 0–5 primary scope closed; residual-only** | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
+
+**GitHub Durable Installation Intent closure:** PR #335 shipped the bounded verified-callback retry; Published `v0.14.1 -> e2f793d7...` passed all release lanes, production selector `34035753020` deployed it through the canonical Alibaba watcher, and a real Windows v0.14.1 client recovered the already-installed two-repository GitHub App without opening the no-op configuration page. `BakerSean168/thought-forest` is now an `Active` connection and the authorizing intent is `Consumed`. The plan moved to `docs/plan/archive/2026-08-28-github-installation-intent-gateway.md`.
 
 ## 2. Delivery Platform V3 — archived 2026-09-06
 
