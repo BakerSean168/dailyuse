@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://memoflow.dev/schemas/quality-shadow-sample-v1.schema.json",
+  "type": "object",
+  "required": [
+    "kind",
+    "version",
+    "workload",
+    "controlPlaneSha",
+    "runId",
+    "status",
+    "children",
+    "split",
+    "consolidated",
+    "provenance",
+    "digest"
+  ],
+  "properties": {
+    "kind": { "const": "quality-shadow-sample-v1" },
+    "version": { "const": 1 },
+    "workload": { "type": "object" },
+    "controlPlaneSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "runId": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["success", "failure"] },
+    "children": { "type": "object" },
+    "split": { "type": "object" },
+    "consolidated": { "type": "object" },
+    "provenance": { "type": "object" },
+    "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "additionalProperties": true
+}
