@@ -16,6 +16,8 @@ const expected = [
   'run-summary-v1.schema.json',
   'timing-report-v1.schema.json',
   'fault-injection-report-v1.schema.json',
+  'quality-shadow-sample-v1.schema.json',
+  'quality-shadow-report-v1.schema.json',
 ];
 for (const file of expected) {
   const schema = JSON.parse(await readFile(path.join(root, file), 'utf8'));

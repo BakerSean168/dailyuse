@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://memoflow.dev/schemas/quality-shadow-report-v1.schema.json",
+  "type": "object",
+  "required": [
+    "kind",
+    "version",
+    "workload",
+    "sampleCount",
+    "decision",
+    "criteria",
+    "split",
+    "consolidated",
+    "delta",
+    "provenance",
+    "digest"
+  ],
+  "properties": {
+    "kind": { "const": "quality-shadow-report-v1" },
+    "version": { "const": 1 },
+    "workload": { "type": "object" },
+    "sampleCount": { "type": "integer", "minimum": 1 },
+    "decision": { "enum": ["promote-consolidated", "retain-split"] },
+    "criteria": { "type": "object" },
+    "split": { "type": "object" },
+    "consolidated": { "type": "object" },
+    "delta": { "type": "object" },
+    "provenance": { "type": "object" },
+    "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "additionalProperties": true
+}

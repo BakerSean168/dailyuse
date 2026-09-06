@@ -10393,6 +10393,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "tools/ci-cd-platform/__tests__/quality-shadow.test.mjs",
+      "primarySuite": "governance",
+      "collectors": [
+        "ci-cd-platform:test"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "tools/ci-cd-platform/__tests__/registry.test.mjs",
       "primarySuite": "governance",
       "collectors": [
@@ -10869,7 +10877,7 @@
       "type": "primary",
       "suite": "governance",
       "runner": "node-test",
-      "fileCount": 24
+      "fileCount": 25
     },
     {
       "id": "memoflow:test:governance",
@@ -11791,6 +11799,6 @@
     "boundary-main": 6,
     "e2e": 65,
     "perf": 1,
-    "governance": 45
+    "governance": 46
   }
 }

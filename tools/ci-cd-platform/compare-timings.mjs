@@ -43,16 +43,27 @@ function sampleFromSummary(summary) {
   };
 }
 
-export function compareTimings({ summaries, profile, minimumSamples = 5 }) {
-  if (!Array.isArray(summaries) || summaries.length < minimumSamples) {
+export function compareTimingSamples({ samples, profile, minimumSamples = 5 }) {
+  if (!Array.isArray(samples) || samples.length < minimumSamples) {
     throw new Error(`at least ${minimumSamples} comparable timing runs are required`);
   }
   if (!profile || typeof profile !== 'string') throw new Error('timing profile is required');
-  summaries.forEach(validateRunSummary);
-  const signatures = new Set(summaries.map(laneSignature));
+  for (const sample of samples) {
+    if (!sample.commit || typeof sample.commit !== 'string')
+      throw new Error('timing sample commit is required');
+    if (!Array.isArray(sample.lanes) || sample.lanes.some((lane) => typeof lane !== 'string'))
+      throw new Error('timing sample lanes are required');
+    for (const field of ['setupMs', 'executionMs', 'longestLaneMs']) {
+      if (!Number.isFinite(sample[field]) || sample[field] < 0)
+        throw new Error(`timing sample ${field} must be non-negative`);
+    }
+    for (const field of ['wallClockMs', 'runnerMinutes']) {
+      if (sample[field] !== null && (!Number.isFinite(sample[field]) || sample[field] < 0))
+        throw new Error(`timing sample ${field} must be non-negative or null`);
+    }
+  }
+  const signatures = new Set(samples.map((sample) => [...sample.lanes].sort().join(',')));
   if (signatures.size !== 1) throw new Error('timing runs do not have the same enabled lane set');
-
-  const samples = summaries.map(sampleFromSummary);
   const metrics = Object.fromEntries(
     METRICS.map(([field, allowNull]) => {
       const values = samples
@@ -87,6 +98,20 @@ export function compareTimings({ summaries, profile, minimumSamples = 5 }) {
   report.digest = digest(report);
   validateTimingReport(report);
   return report;
+}
+
+export function compareTimings({ summaries, profile, minimumSamples = 5 }) {
+  if (!Array.isArray(summaries) || summaries.length < minimumSamples) {
+    throw new Error(`at least ${minimumSamples} comparable timing runs are required`);
+  }
+  summaries.forEach(validateRunSummary);
+  const signatures = new Set(summaries.map(laneSignature));
+  if (signatures.size !== 1) throw new Error('timing runs do not have the same enabled lane set');
+  return compareTimingSamples({
+    samples: summaries.map(sampleFromSummary),
+    profile,
+    minimumSamples,
+  });
 }
 
 async function inputFiles(input) {
