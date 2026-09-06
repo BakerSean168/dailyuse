@@ -6,7 +6,7 @@ tags:
   - audit
 description: 2026-09-04 MemoFlow Active Plan 真值审计与剩余实施优先级
 created: 2026-09-04T23:25:00+08:00
-updated: 2026-09-06T13:08:00+08:00
+updated: 2026-09-06T16:44:18+08:00
 ---
 
 # MemoFlow Active Plan Truth Audit — 2026-09-04
@@ -18,7 +18,7 @@ Delivery Platform V3 于 2026-09-06 完成 Phase 4 并归档后，`docs/plan/act
 | Plan                               | Current truth                                           | What is actually left                                                                                                 |
 | ---------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only** | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
-| GitHub Durable Installation Intent | **implementation complete**                             | one Published Windows Desktop live external-browser + polling/finalize acceptance                                     |
+| GitHub Durable Installation Intent | **implementation complete; v0.14.0 Published**          | install Published v0.14.0 on Windows and complete polling/finalize → Thought Forest inventory/connect                 |
 
 ## 2. Delivery Platform V3 — archived 2026-09-06
 
@@ -85,18 +85,19 @@ Goal/Task/Routine business semantics, EventBus, recurrence, scheduling identity/
 
 ## 4. GitHub Installation Intent — verification, not implementation
 
-All durable intent, setup gateway, status/finalize, environment routing and Web production acceptance code exists. The only unchecked DoD is a Published Windows Desktop package live journey:
+All durable intent, setup gateway, status/finalize, environment routing and Web production acceptance code exists. The first real Published Windows Desktop attempt on v0.13.3 reached GitHub authorization and a production `CallbackReceived` intent, and the user successfully added `BakerSean168/thought-forest` to the production App installation. That live attempt exposed a real packaged preload defect: `STATUS` / `FINALIZE` were missing from the preload allowlist. #331 fixed the Desktop boundary. The subsequent immutable v0.14.0 Draft exposed a separate Windows CI/CD ESM entrypoint bug; #332 removed all 22 platform-unsafe `file://${process.argv[1]}` guards and recovered the same Draft. v0.14.0 is now Published with all four Desktop lanes green and 23 canonical assets.
+
+The only unchecked DoD is now:
 
 ```text
-Desktop
-→ external browser
-→ GitHub App installation
-→ API polling observes callback
-→ authenticated finalize
-→ repository inventory/connect
+Published v0.14.0 Windows Desktop
+→ authenticated STATUS observes the existing/new callback
+→ authenticated FINALIZE
+→ repository inventory includes thought-forest
+→ connect selected repository
 ```
 
-`v0.12.1` is Published and includes `MemoFlow-Windows-0.12.1-Setup.exe` and Setup zip, so the acceptance can now be executed. Do not write more orchestration code before attempting the live journey; only fix code if the live test finds a defect.
+Do not write more installation-orchestration feature code before this live journey. Do not close the checkbox from CI/server-side inventory alone; the Published v0.14.0 Windows package must complete the flow.
 
 ## 5. Recommended priority
 
