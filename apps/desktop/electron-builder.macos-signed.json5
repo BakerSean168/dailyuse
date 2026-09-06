@@ -1,0 +1,16 @@
+{
+  extends: './electron-builder.json5',
+  forceCodeSigning: true,
+  mac: {
+    hardenedRuntime: true,
+    notarize: true,
+    gatekeeperAssess: false,
+    type: 'distribution',
+  },
+  dmg: {
+    sign: true,
+    // The DMG is notarized/stapled after electron-builder finishes. Do not emit
+    // update metadata before that mutation or it would describe pre-staple bytes.
+    writeUpdateInfo: false,
+  },
+}

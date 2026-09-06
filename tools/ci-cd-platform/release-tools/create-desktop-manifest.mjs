@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { validateMacosTrustReceipt } from './verify-macos-trust.mjs';
 
 const [root, tag, gitSha, output] = process.argv.slice(2);
 if (!root || !tag || !gitSha || !output) {
@@ -50,6 +51,29 @@ for (const receiptFile of receiptFiles) {
     !receipt.runtimeValidation?.executableKind
   ) {
     throw new Error(`Desktop platform runtime validation missing or failed: ${receipt.platform}`);
+  }
+  if (receipt.os === 'macos' && receipt.signingState === 'signed-notarized') {
+    try {
+      const trust = validateMacosTrustReceipt(receipt.trustValidation);
+      if (trust.platform !== receipt.platform || trust.arch !== receipt.arch) {
+        throw new Error('trust receipt platform identity mismatch');
+      }
+    } catch (error) {
+      throw new Error(
+        `signed macOS platform trust validation missing or failed: ${receipt.platform}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+  }
+  if (
+    receipt.os === 'macos' &&
+    receipt.signingState === 'unsigned-pilot' &&
+    receipt.trustValidation
+  ) {
+    throw new Error(
+      `unsigned macOS pilot must not carry signed trust evidence: ${receipt.platform}`,
+    );
   }
   const directory = path.dirname(receiptFile);
   const actualNames = (await readdir(directory, { withFileTypes: true }))
@@ -103,6 +127,7 @@ const platformEvidence = Object.fromEntries(
         arch: receipt.arch,
         signingState: receipt.signingState,
         runtimeValidation: receipt.runtimeValidation,
+        trustValidation: receipt.trustValidation ?? null,
         assets: receipt.assets,
       },
     ];

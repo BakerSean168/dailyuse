@@ -209,6 +209,7 @@ jobs:
     with:
       tag: ${{ needs.resolve.outputs.tag }}
       sha: ${{ needs.resolve.outputs.sha }}
+      macos_signing_mode: ${{ vars.MACOS_RELEASE_MODE || 'unsigned-pilot' }}
     secrets: inherit
 
   publish-images:

@@ -119,17 +119,20 @@ Initial V3 pilot state:
 - Linux: unsigned package hashes are canonical;
 - macOS: unsigned/unnotarized artifacts may be used for internal/manual installation only and must be marked `signingState=unsigned-pilot`.
 
-Production-grade macOS distribution requires a separate credentialed gate:
+Production-grade macOS manual-download distribution uses an explicit credentialed gate. Release Publish reads `MACOS_RELEASE_MODE` (default `unsigned-pilot`); the only trusted-public value is `signed-notarized`. Signed mode requires a Developer ID Application certificate plus App Store Connect API-key credentials and fails closed if any required input is absent or malformed.
 
 ```text
 Developer ID Application certificate
-+ hardened runtime
-+ notarization
-+ stapling
-+ Gatekeeper verification
++ hardened-runtime app signing
++ app notarization + staple
++ Developer-ID-signed DMG
++ final-DMG notarization + staple
++ independent codesign/stapler/Gatekeeper verification of app + DMG
++ architecture proof
+= signed-notarized platform receipt
 ```
 
-No workflow should silently fall back from requested signed mode to unsigned output.
+The trust receipt is self-digested and bound into the Desktop platform evidence; canonical manifest construction revalidates it. No workflow may silently fall back from requested signed mode to unsigned output. Current GitHub configuration has no Apple credentials, so the active policy remains `unsigned-pilot`. macOS updater/feed readiness remains separate from trusted manual-download signing.
 
 ### 7.3 Asset identity
 

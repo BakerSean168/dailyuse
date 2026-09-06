@@ -78,6 +78,18 @@ Before publication:
 11. Confirm Published Release/tag SHA identity and asset coverage.
 12. Do not deploy production solely because the Release is Published.
 
+### macOS trusted-public activation
+
+Default policy is `unsigned-pilot`. Do not describe these macOS assets as Gatekeeper-ready public distribution. To activate `signed-notarized` for a future release:
+
+1. provision repository/environment secrets `MACOS_CSC_LINK`, `MACOS_APPLE_API_KEY_P8`, `MACOS_APPLE_API_KEY_ID`, `MACOS_APPLE_API_ISSUER` and, when needed, `MACOS_CSC_KEY_PASSWORD`;
+2. set repository variable `MACOS_RELEASE_MODE=signed-notarized`;
+3. verify both x64 and arm64 lanes pass credential preflight, app signing/notarization, final-DMG notarization, trust verification and packaged runtime smoke;
+4. inspect each embedded `macos-trust-receipt`: app + DMG Gatekeeper source must be `Notarized Developer ID`, their Developer ID authority must match, the app must prove hardened runtime and the expected architecture;
+5. publish only after the canonical Desktop manifest contains `signingState=signed-notarized` for both macOS identities.
+
+If trusted distribution is not being activated, leave `MACOS_RELEASE_MODE` unset (or explicitly `unsigned-pilot`) and keep the pilot labeling. Do not create placeholder Apple secrets.
+
 ### Failure handling
 
 - platform build failure: leave Draft; fix code/workflow in a new PR; retry the same Draft only if release SHA remains valid;
@@ -85,6 +97,7 @@ Before publication:
 - Git tag collision: stop; immutable tag must never move;
 - Server release-tag digest collision: stop before promotion; never overwrite a tag that points to a different candidate digest;
 - missing/expired candidate-set or candidate/main-CI mismatch: do not rebuild Server images; keep/resume the Draft only after the exact candidate evidence is restored;
+- requested `signed-notarized` mode with missing/invalid Apple credentials, non-Accepted notary result, missing staple, Developer ID drift or Gatekeeper rejection: leave Draft and fail closed; never downgrade that run to unsigned;
 - unsigned macOS policy mismatch: stop rather than dropping the platform silently.
 
 ## 4. Candidate/staging cutover

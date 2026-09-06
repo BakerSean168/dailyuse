@@ -45,6 +45,10 @@ test('release publish waits for exact candidate publication then resolves the bo
   assert.match(workflow, /candidateRun\.head_sha !== sha/u);
   assert.match(workflow, /candidateRun\.head_branch !== 'main'/u);
   assert.match(workflow, /release-assets\.yml/);
+  assert.match(
+    workflow,
+    /macos_signing_mode: \$\{\{ vars\.MACOS_RELEASE_MODE \|\| 'unsigned-pilot' \}\}/,
+  );
   assert.match(workflow, /publish-images\.yml/);
   assert.match(workflow, /draft:\s*true|draft: true/);
   assert.match(workflow, /release-manifest\.json/);
@@ -286,12 +290,16 @@ test('runtime dependencies are digest-pinned and mirrored to both China and glob
 });
 
 test('Desktop release matrix covers Windows, Linux, macOS Intel and Apple Silicon with fail-closed receipts', async () => {
-  const [workflow, builder, receipt, manifest] = await Promise.all([
-    readRepoFile('.github/workflows/release-assets.yml'),
-    readRepoFile('apps/desktop/electron-builder.json5'),
-    readRepoFile('tools/ci-cd-platform/release-tools/write-desktop-platform-receipt.mjs'),
-    readRepoFile('tools/ci-cd-platform/release-tools/create-desktop-manifest.mjs'),
-  ]);
+  const [workflow, builder, signedBuilder, receipt, manifest, signingPolicy, trustVerifier] =
+    await Promise.all([
+      readRepoFile('.github/workflows/release-assets.yml'),
+      readRepoFile('apps/desktop/electron-builder.json5'),
+      readRepoFile('apps/desktop/electron-builder.macos-signed.json5'),
+      readRepoFile('tools/ci-cd-platform/release-tools/write-desktop-platform-receipt.mjs'),
+      readRepoFile('tools/ci-cd-platform/release-tools/create-desktop-manifest.mjs'),
+      readRepoFile('tools/ci-cd-platform/release-tools/macos-signing-policy.mjs'),
+      readRepoFile('tools/ci-cd-platform/release-tools/verify-macos-trust.mjs'),
+    ]);
 
   for (const platform of ['windows-x64', 'linux-x64', 'macos-x64', 'macos-arm64']) {
     assert.match(workflow, new RegExp(`platform: ${platform}`));
@@ -299,13 +307,33 @@ test('Desktop release matrix covers Windows, Linux, macOS Intel and Apple Silico
   }
   assert.match(workflow, /os: macos-15-intel[\s\S]*?builder_args: --mac dmg zip --x64/);
   assert.match(workflow, /os: macos-15[\s\S]*?builder_args: --mac dmg zip --arm64/);
-  assert.match(workflow, /signing_state: unsigned-pilot/);
+  assert.match(workflow, /macos_signing_mode:[\s\S]*?default: unsigned-pilot/);
+  assert.match(workflow, /- signed-notarized/);
+  assert.match(workflow, /signing_state: macos-policy/);
+  assert.match(workflow, /Resolve Desktop signing policy/);
+  assert.match(workflow, /Prepare protected macOS signing credentials/);
+  assert.match(workflow, /MACOS_CSC_LINK: \$\{\{ secrets\.MACOS_CSC_LINK \}\}/);
+  assert.match(workflow, /MACOS_APPLE_API_KEY_P8: \$\{\{ secrets\.MACOS_APPLE_API_KEY_P8 \}\}/);
   assert.match(workflow, /CSC_IDENTITY_AUTO_DISCOVERY: 'false'/);
+  assert.match(workflow, /CSC_IDENTITY_AUTO_DISCOVERY: 'true'/);
+  assert.match(workflow, /electron-builder\.macos-signed\.json5/);
+  assert.match(workflow, /Verify signed\/notarized macOS trust/);
+  assert.match(workflow, /reports\/ci-cd-platform\/desktop-trust/);
   assert.match(workflow, /write-desktop-platform-receipt\.mjs/);
   assert.match(workflow, /resolve-desktop-release-assets\.mjs/);
   assert.match(workflow, /verify-desktop-release-assets\.mjs/);
   assert.match(builder, /\$\{productName\}-macOS-\$\{arch\}-\$\{version\}/);
+  assert.match(signedBuilder, /forceCodeSigning:\s*true/);
+  assert.match(signedBuilder, /hardenedRuntime:\s*true/);
+  assert.match(signedBuilder, /notarize:\s*true/);
+  assert.match(signingPolicy, /signed-notarized/);
+  assert.match(signingPolicy, /MACOS_APPLE_API_KEY_P8/);
+  assert.match(trustVerifier, /Developer ID Application/);
+  assert.match(trustVerifier, /Notarized Developer ID/);
+  assert.match(trustVerifier, /stapler/);
+  assert.match(trustVerifier, /spctl/);
   assert.match(receipt, /signed-notarized/);
+  assert.match(receipt, /macOS trust receipt/);
   assert.match(manifest, /missing required Desktop platform/);
   assert.match(manifest, /duplicate Desktop release asset name/);
 });
@@ -381,14 +409,24 @@ test('Desktop release runtime gates execute before receipts and cannot be bypass
     readRepoFile('apps/desktop/e2e/packaged-runtime/packaged-runtime.spec.ts'),
   ]);
 
-  const packageIndex = workflow.indexOf('- name: Package desktop application');
+  const unsignedPackageIndex = workflow.indexOf(
+    '- name: Package unsigned/default desktop application',
+  );
+  const signedPackageIndex = workflow.indexOf('- name: Package signed/notarized macOS application');
+  const dmgNotarizeIndex = workflow.indexOf('- name: Notarize and staple signed macOS DMG');
+  const trustIndex = workflow.indexOf('- name: Verify signed/notarized macOS trust');
+  const cleanupIndex = workflow.indexOf('- name: Remove temporary macOS notarization key');
   const packagedSmokeIndex = workflow.indexOf('- name: Run packaged Desktop runtime smoke');
   const diagnosticsIndex = workflow.indexOf('- name: Upload Desktop runtime diagnostics');
   const installDebIndex = workflow.indexOf('- name: Install Linux Debian package');
   const installedSmokeIndex = workflow.indexOf('- name: Run installed Linux Debian runtime smoke');
   const receiptIndex = workflow.indexOf('- name: Write Desktop platform receipt');
   const uploadIndex = workflow.indexOf('- name: Upload build artifacts');
-  assert.ok(packageIndex < packagedSmokeIndex);
+  assert.ok(unsignedPackageIndex < packagedSmokeIndex);
+  assert.ok(signedPackageIndex < dmgNotarizeIndex);
+  assert.ok(dmgNotarizeIndex < trustIndex);
+  assert.ok(trustIndex < cleanupIndex);
+  assert.ok(cleanupIndex < packagedSmokeIndex);
   assert.ok(packagedSmokeIndex < diagnosticsIndex);
   assert.ok(diagnosticsIndex < installDebIndex);
   assert.ok(installDebIndex < installedSmokeIndex);

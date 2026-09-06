@@ -76,17 +76,25 @@ Worker paths and native extensions that Electron unpacks must be resolved from `
 
 MemoFlow uses OS-backed Electron `safeStorage` when a secure provider is available. Linux rejects the Chromium `basic_text` backend and `v10` ciphertext for Profile keys and cloud sessions. On WSL, where a Linux Secret Service is commonly absent, MemoFlow may bridge to Windows CurrentUser DPAPI through WSL interoperability; that ciphertext has an explicit MemoFlow envelope and is never treated as the Linux `basic_text` fallback.
 
-## 5. macOS pilot policy
+## 5. macOS trust policy
 
-At implementation start the repository has no Apple signing/notarization secret. Therefore:
+MemoFlow supports two explicit release states:
 
-- macOS x64 and arm64 packages may be generated as **unsigned pilot artifacts**;
-- the release manifest must expose this state;
-- the release notes must not imply Gatekeeper-ready public distribution;
-- automatic macOS update metadata is withheld until signing and updater verification are implemented;
-- local manual acceptance covers extraction, app bundle architecture, startup and basic navigation on each architecture when a device/runner test is available.
+- `unsigned-pilot`: current default; x64/arm64 artifacts are for internal/manual installation only and the manifest must say so;
+- `signed-notarized`: opt-in trusted-public mode, activated only by explicit release policy plus protected Apple credentials.
 
-A later signing phase must fail closed if any requested certificate/notarization input is missing or invalid.
+The signed path is implemented, but as of 2026-09-06 the GitHub repository/environments contain no Apple Developer certificate/notarization secrets, so no signed/notarized release has been accepted. Absence of credentials must never masquerade as signed output.
+
+Signed mode proves the full download trust chain rather than only the inner app:
+
+1. Developer ID Application signs the app with hardened runtime;
+2. the app is notarized and stapled;
+3. the DMG is Developer-ID signed;
+4. the final DMG bytes are submitted to Apple notarization, must return `Accepted`, and are stapled;
+5. an independent verifier requires `codesign`, `stapler validate`, and Gatekeeper `Notarized Developer ID` acceptance for both app and DMG, plus the requested executable architecture;
+6. only then may the platform receipt declare `signingState=signed-notarized`.
+
+The DMG signed path disables pre-staple DMG update metadata because stapling mutates the disk-image bytes. macOS automatic updater/feed readiness remains a separate future acceptance; trusted manual-download signing does not implicitly enable auto-update.
 
 ## 6. Validation
 

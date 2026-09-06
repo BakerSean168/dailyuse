@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://memoflow.dev/schemas/macos-trust-receipt-v1.schema.json",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "kind",
+    "platform",
+    "arch",
+    "signingState",
+    "status",
+    "appBundle",
+    "dmg",
+    "application",
+    "diskImage",
+    "provenance",
+    "digest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "kind": { "const": "macos-trust-receipt" },
+    "platform": { "enum": ["macos-x64", "macos-arm64"] },
+    "arch": { "enum": ["x64", "arm64"] },
+    "signingState": { "const": "signed-notarized" },
+    "status": { "const": "passed" },
+    "appBundle": { "type": "string", "pattern": "\\.app$" },
+    "dmg": { "type": "string", "pattern": "\\.dmg$" },
+    "application": {
+      "type": "object",
+      "required": ["codesign", "hardenedRuntime", "notarization", "gatekeeper", "architecture"],
+      "properties": {
+        "codesign": {
+          "type": "object",
+          "required": ["status", "authority", "teamIdentifier"],
+          "properties": {
+            "status": { "const": "passed" },
+            "authority": { "type": "string", "pattern": "^Developer ID Application: " },
+            "teamIdentifier": { "type": "string", "pattern": "^[A-Z0-9]{10}$" }
+          },
+          "additionalProperties": false
+        },
+        "hardenedRuntime": {
+          "type": "object",
+          "required": ["status"],
+          "properties": { "status": { "const": "passed" } },
+          "additionalProperties": false
+        },
+        "notarization": {
+          "type": "object",
+          "required": ["status", "stapled"],
+          "properties": { "status": { "const": "passed" }, "stapled": { "const": true } },
+          "additionalProperties": false
+        },
+        "gatekeeper": {
+          "type": "object",
+          "required": ["status", "source"],
+          "properties": {
+            "status": { "const": "passed" },
+            "source": { "const": "Notarized Developer ID" }
+          },
+          "additionalProperties": false
+        },
+        "architecture": {
+          "type": "object",
+          "required": ["status", "executable"],
+          "properties": {
+            "status": { "const": "passed" },
+            "executable": { "enum": ["x86_64", "arm64"] }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "diskImage": {
+      "type": "object",
+      "required": ["codesign", "notarization", "gatekeeper"],
+      "properties": {
+        "codesign": {
+          "type": "object",
+          "required": ["status", "authority", "matchesApplicationAuthority"],
+          "properties": {
+            "status": { "const": "passed" },
+            "authority": { "type": "string", "pattern": "^Developer ID Application: " },
+            "matchesApplicationAuthority": { "const": true }
+          },
+          "additionalProperties": false
+        },
+        "notarization": {
+          "type": "object",
+          "required": ["status", "stapled"],
+          "properties": { "status": { "const": "passed" }, "stapled": { "const": true } },
+          "additionalProperties": false
+        },
+        "gatekeeper": {
+          "type": "object",
+          "required": ["status", "source"],
+          "properties": {
+            "status": { "const": "passed" },
+            "source": { "const": "Notarized Developer ID" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["verifier"],
+      "properties": { "verifier": { "const": "ci-cd-platform-v3/verify-macos-trust@1" } },
+      "additionalProperties": false
+    },
+    "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "additionalProperties": false
+}

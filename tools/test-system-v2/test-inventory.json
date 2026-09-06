@@ -10329,6 +10329,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "tools/ci-cd-platform/__tests__/macos-signing.test.mjs",
+      "primarySuite": "governance",
+      "collectors": [
+        "ci-cd-platform:test"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "tools/ci-cd-platform/__tests__/manifest.test.mjs",
       "primarySuite": "governance",
       "collectors": [
@@ -10877,7 +10885,7 @@
       "type": "primary",
       "suite": "governance",
       "runner": "node-test",
-      "fileCount": 25
+      "fileCount": 26
     },
     {
       "id": "memoflow:test:governance",
@@ -11799,6 +11807,6 @@
     "boundary-main": 6,
     "e2e": 65,
     "perf": 1,
-    "governance": 46
+    "governance": 47
   }
 }
