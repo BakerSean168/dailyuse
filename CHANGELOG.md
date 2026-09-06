@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.14.1](https://github.com/BakerSean168/memoflow/compare/v0.14.0...v0.14.1) (2026-09-06)
+
+
+### Bug Fixes
+
+* **cicd:** make ESM CLI entrypoints cross-platform ([#332](https://github.com/BakerSean168/memoflow/issues/332)) ([1739d23](https://github.com/BakerSean168/memoflow/commit/1739d230179e60c47d9b937bb0648b27e785c58d))
+* **repository:** resume verified github installation intent ([#335](https://github.com/BakerSean168/memoflow/issues/335)) ([4ca0cad](https://github.com/BakerSean168/memoflow/commit/4ca0cad180c457f3b27ca9a2dbc2ca9288e47d5d))
+
 ## [0.14.0](https://github.com/BakerSean168/memoflow/compare/v0.13.3...v0.14.0) (2026-09-06)
 
 
