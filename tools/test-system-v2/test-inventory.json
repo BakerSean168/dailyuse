@@ -10489,6 +10489,14 @@
       "measurementCollectors": []
     },
     {
+      "path": "tools/governance/__tests__/github-action-pinning.test.mjs",
+      "primarySuite": "governance",
+      "collectors": [
+        "tools/governance/vitest.config.ts"
+      ],
+      "measurementCollectors": []
+    },
+    {
       "path": "tools/governance/__tests__/local-docker-product-validation.test.mjs",
       "primarySuite": "governance",
       "collectors": [
@@ -10882,7 +10890,7 @@
       "type": "primary",
       "suite": "governance",
       "runner": "vitest",
-      "fileCount": 10
+      "fileCount": 11
     },
     {
       "id": "apps/api/vitest.integration.config.ts",
@@ -11783,6 +11791,6 @@
     "boundary-main": 6,
     "e2e": 65,
     "perf": 1,
-    "governance": 44
+    "governance": 45
   }
 }
