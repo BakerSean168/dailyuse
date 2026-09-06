@@ -6,7 +6,7 @@ tags:
   - audit
 description: 2026-09-04 MemoFlow Active Plan 真值审计与剩余实施优先级
 created: 2026-09-04T23:25:00+08:00
-updated: 2026-09-06T10:05:06+08:00
+updated: 2026-09-06T10:16:00+08:00
 ---
 
 # MemoFlow Active Plan Truth Audit — 2026-09-04
@@ -15,11 +15,11 @@ updated: 2026-09-06T10:05:06+08:00
 
 AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三份真实 Active Plan。没有第二份“完整设计后完全忘记实施”的计划，但两份存在显著 residual，一份只差实机验收。
 
-| Plan                               | Current truth                                           | What is actually left                                                                                                  |
-| ---------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Delivery Platform V3               | **Phase 3 COMPLETE in live production**                 | Phase 4 runner consolidation, repository-wide Action pinning, macOS signing/notarization and final observation/archive |
-| Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only** | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening  |
-| GitHub Durable Installation Intent | **implementation complete**                             | one Published Windows Desktop live external-browser + polling/finalize acceptance                                      |
+| Plan                               | Current truth                                           | What is actually left                                                                                                 |
+| ---------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Delivery Platform V3               | **Phase 3 COMPLETE in live production**                 | Phase 4 runner consolidation, macOS signing/notarization and final observation/archive                                |
+| Core vNext umbrella                | **v0.11 Waves 0–5 primary scope closed; residual-only** | Routine method library, AI/Mobile parity, legacy ScheduleTask/SourceModule cleanup, pg-boss decision, final hardening |
+| GitHub Durable Installation Intent | **implementation complete**                             | one Published Windows Desktop live external-browser + polling/finalize acceptance                                     |
 
 ## 2. Delivery Platform V3 — still required
 
@@ -52,11 +52,11 @@ AI Provider Onboarding V2 已完成并归档后，`docs/plan/active/` 只剩三�
 ### Later / conditional
 
 - DLV3-4401 runner-consolidation performance experiment;
-- DLV3-4402 repository-wide Action SHA pinning;
+- DLV3-4402 repository-wide Action SHA pinning — **COMPLETE**: all workflow/composite-action third-party refs are immutable 40-hex SHAs with version comments and a global fail-closed governance audit;
 - DLV3-4403 macOS signing/notarization (only necessary before trusted public macOS distribution);
 - DLV3-4404 observation closeout/archive.
 
-**Recommendation:** Phase 3 is closed; do not create a corrective release for the resolved incident chain. Preserve the accepted v0.13.3 production authority and move to Phase 4. DLV3-4401 should gather comparable runner samples without weakening logical receipts; DLV3-4402 should complete repository-wide third-party Action SHA pinning; DLV3-4403 remains the public-macOS trust/signing gate; DLV3-4404 may archive only after those observation/hardening decisions are closed.
+**Recommendation:** Phase 3 is closed; do not create a corrective release for the resolved incident chain. Preserve the accepted v0.13.3 production authority and move to Phase 4. DLV3-4402 is closed. DLV3-4401 should gather comparable runner samples without weakening logical receipts; DLV3-4403 remains the public-macOS trust/signing gate; DLV3-4404 may archive only after those observation/hardening decisions are closed.
 
 ## 3. Core vNext — classify before implementing
 
@@ -110,7 +110,7 @@ Desktop
 
 3. **Delivery Platform V3 Phase 2 — COMPLETE (2026-09-05).** Candidate-set → exact-SHA images → coherent staging channel → GCP watcher is live.
 4. **Core `CLEAN-6302/6303`** — remove Reminder legacy semantics and raw ScheduleTask/SourceModule product/execution paths. This reduces dual-authority/maintenance risk and is a prerequisite for a meaningful scheduler-engine comparison.
-5. **Delivery Platform V3 Phase 4 hardening** — Phase 3 is complete in live production at v0.13.3. Continue runner-consolidation observation, repository-wide Action SHA pinning, macOS signing/notarization decision/implementation and final observation/archive without reopening the closed production transaction.
+5. **Delivery Platform V3 Phase 4 hardening** — Phase 3 is complete in live production at v0.13.3 and DLV3-4402 Action SHA pinning is complete. Continue runner-consolidation observation, macOS signing/notarization decision/implementation and final observation/archive without reopening the closed production transaction.
 
 ### Audit/product decision before coding
 

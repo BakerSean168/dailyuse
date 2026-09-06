@@ -43,7 +43,7 @@ jobs:
       has_perf: ${{ steps.scope.outputs.has_perf }}
       has_web_flow: ${{ steps.scope.outputs.has_web_flow }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with: { node-version: '${{ env.NODE_VERSION }}', setup-python: 'false', setup-uv: 'false' }
@@ -54,7 +54,7 @@ jobs:
           NX_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
           DELIVERY_MANIFEST_OUTPUT: scope/delivery-manifest-v1.json
         run: node ./tools/ci-cd-platform/generate-delivery-manifest.mjs
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: delivery-manifest-v1
           path: scope/delivery-manifest-v1.json
@@ -66,7 +66,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with:
@@ -88,7 +88,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Aggregate Governance child
         env:
           ORACLE_INPUT: >-
@@ -101,7 +101,7 @@ jobs:
     if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_validate == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with:
@@ -121,7 +121,7 @@ jobs:
     if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_validate == 'true' && needs.scope-detector.outputs.has_unit == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with:
@@ -141,7 +141,7 @@ jobs:
     if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_validate == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with:
@@ -161,7 +161,7 @@ jobs:
     if: needs.scope-detector.result == 'success' && needs.scope-detector.outputs.lane_validate == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with:
@@ -199,7 +199,7 @@ jobs:
         if: ${{ hashFiles('apps/api/dist/**') != '' }}
         run: node ./tools/ci-cd-platform/create-runtime-closure.mjs --manifest scope/delivery-manifest-v1.json --output-dir api-runtime-closure --output reports/ci-cd-platform/api-runtime-closure-artifact-manifest.json
       - name: Upload immutable build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: ci-build-artifacts
           path: |
@@ -221,7 +221,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Aggregate Validate children
         env:
           ORACLE_INPUT: >-
@@ -254,7 +254,7 @@ jobs:
       JWT_SECRET: test-jwt-secret-not-for-production-use
       TZ: UTC
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with:
@@ -373,7 +373,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Aggregate Boundary children
         env:
           ORACLE_INPUT: >-
@@ -386,7 +386,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Aggregate Integration children
         env:
           ORACLE_INPUT: >-
@@ -410,7 +410,7 @@ jobs:
         ports: ['5433:5432']
         options: --health-cmd "pg_isready -U test_user -d memoflow_test" --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup-nx-affected-job
         with:
@@ -421,7 +421,7 @@ jobs:
           lane: web
           consume-delivery-manifest: 'true'
       - name: Download immutable build artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: ci-build-artifacts
           path: .
@@ -455,7 +455,7 @@ jobs:
         env:
           TEST_REPORT_NAME: web-ai-provider
           DELIVERY_LANE: web
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         if: always()
         with:
           name: web-flow-${{ strategy.job-index }}-results
@@ -463,7 +463,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
       - if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: web-flow-${{ strategy.job-index }}-failure
           path: |
@@ -482,7 +482,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Aggregate Web Flow shards
         env:
           ORACLE_INPUT: >-
@@ -495,7 +495,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Aggregate Coverage children
         env:
           ORACLE_INPUT: >-
@@ -508,7 +508,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Aggregate Performance children
         env:
           ORACLE_INPUT: >-
@@ -529,14 +529,14 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Download delivery manifest
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: delivery-manifest-v1
           path: scope
       - name: Download lane evidence
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           path: reports/run-evidence
       - name: Collect GitHub run metrics
@@ -550,7 +550,7 @@ jobs:
           DELIVERY_RUNNER_MINUTES: ${{ steps.run_metrics.outputs.runner_minutes }}
         run: node ./tools/ci-cd-platform/observe-run.mjs --manifest scope/delivery-manifest-v1.json --evidence reports/run-evidence --output reports/ci-cd-platform/run-summary-v1.json
       - name: Upload run summary
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: delivery-run-summary-${{ github.run_id }}
           path: reports/ci-cd-platform/run-summary-v1.json
