@@ -163,12 +163,12 @@ Release Lifecycle V3 当前发布面的完成点是：GitHub Release/桌面资�
 
 生产 rollout、migrator-first 更新、回滚和观察日志见 [deployment README](../../deployment/README.md)。
 
-## V3 后续 authority cutover
+## V3 canonical authority
 
 完整 V3 目标和实施状态以以下文档为准：
 
 - [`../../architecture/delivery-platform-v3.md`](../../architecture/delivery-platform-v3.md)；
 - [`../../architecture/release-lifecycle-v3.md`](../../architecture/release-lifecycle-v3.md)；
-- [`../../plan/active/2026-09-02-delivery-platform-v3.md`](../../plan/active/2026-09-02-delivery-platform-v3.md)。
+- [`../../plan/archive/2026-09-02-delivery-platform-v3.md`](../../plan/archive/2026-09-02-delivery-platform-v3.md)。
 
-在 Server candidate/staging/production watcher 尚未完成真实切换前，本文不会把它们表示成当前已部署事实。
+V3 authority cutover 已完成：candidate/staging/release/production 均有真实证据，Alibaba canonical production 由 exact `production-selected` control artifact + watcher 拥有。历史手工 SSH/legacy compose 只保留 emergency recovery 语义；macOS trusted-public signing 则由独立 `MACOS_RELEASE_MODE=signed-notarized` + Apple credentials 条件门控制。
