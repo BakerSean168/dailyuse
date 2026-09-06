@@ -55,15 +55,21 @@ describe('schedule source ownership surface', () => {
     );
   });
 
-  it('reminder projection requires identityId and never bare findById (residual 168)', () => {
+  it('reminder projection keeps identity in SchedulingOwner and uses identity-scoped lookup', () => {
     expect(reminderProjection).toContain(
-      'identityId: string,\n  ): Promise<ReminderScheduleProjectionPlan>;',
+      'buildTemplatePlan(\n    templateId: string,\n    identityId: string,\n  ): Promise<ReminderScheduleProjectionPlan>;',
     );
-    expect(reminderProjection).toContain('readonly identityId: string;');
+    expect(reminderProjection).toContain(
+      'return { identityId, type: REMINDER_SCHEDULING_OWNER_TYPE, id: templateId };',
+    );
+    expect(reminderProjection).toContain(
+      'export interface ReminderTemplateScheduledPayload {\n  readonly templateId: string;\n  readonly scheduledFor: number;\n}',
+    );
     expect(reminderProjection).toContain(
       'findByIdForIdentity(\n        identityId,\n        templateId,',
     );
     expect(reminderProjection).not.toContain('findById(templateId, {');
+    expect(reminderProjection).not.toContain('readonly identityId: string;');
   });
 
   it('reminder execution loads via findByIdForIdentity(task.identityId)', () => {
