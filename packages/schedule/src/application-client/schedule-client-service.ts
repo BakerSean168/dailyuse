@@ -24,7 +24,10 @@ import type {
   UpdateTaskMetadataRequest,
 } from '@memoflow/contracts/schedule';
 import type { IScheduleEventApiClient } from './ports/schedule-event-api-client.port';
-import type { IScheduleTaskApiClient } from './ports/schedule-task-api-client.port';
+import type {
+  IScheduleTaskApiClient,
+  IScheduleTaskQueryApiClient,
+} from './ports/schedule-task-api-client.port';
 import {
   ScheduleTask,
   ScheduleConfigVO,
@@ -78,12 +81,12 @@ function scheduleTaskFromDTO(dto: ScheduleTaskClientDTO): ScheduleTask {
   });
 }
 
-import type { ScheduleClientPort } from './schedule-client.port';
+import type { ScheduleClientPort, ScheduleProductClientPort } from './schedule-client.port';
 
-export class ScheduleClientService implements ScheduleClientPort {
+export class ScheduleProductClientService implements ScheduleProductClientPort {
   constructor(
     private readonly eventApi: IScheduleEventApiClient,
-    private readonly taskApi: IScheduleTaskApiClient,
+    protected readonly taskQueryApi: IScheduleTaskQueryApiClient,
   ) {
     this.createSchedule = this.createSchedule.bind(this);
     this.getSchedule = this.getSchedule.bind(this);
@@ -95,19 +98,10 @@ export class ScheduleClientService implements ScheduleClientPort {
     this.detectConflicts = this.detectConflicts.bind(this);
     this.createScheduleWithConflictDetection = this.createScheduleWithConflictDetection.bind(this);
     this.resolveConflict = this.resolveConflict.bind(this);
-    this.createTask = this.createTask.bind(this);
-    this.createTasksBatch = this.createTasksBatch.bind(this);
     this.getTasks = this.getTasks.bind(this);
     this.getTaskById = this.getTaskById.bind(this);
     this.getDueTasks = this.getDueTasks.bind(this);
     this.getTaskBySource = this.getTaskBySource.bind(this);
-    this.pauseTask = this.pauseTask.bind(this);
-    this.resumeTask = this.resumeTask.bind(this);
-    this.completeTask = this.completeTask.bind(this);
-    this.cancelTask = this.cancelTask.bind(this);
-    this.deleteTask = this.deleteTask.bind(this);
-    this.deleteTasksBatch = this.deleteTasksBatch.bind(this);
-    this.updateTaskMetadata = this.updateTaskMetadata.bind(this);
   }
 
   // ===== Schedule Event CRUD =====
@@ -184,6 +178,54 @@ export class ScheduleClientService implements ScheduleClientPort {
 
   // ===== Schedule Task CRUD =====
 
+  async getTasks(): Promise<Result<ScheduleTask[]>> {
+    const result = await this.taskQueryApi.getTasks();
+    return mapResult(result, (dtos) => dtos.map((dto) => scheduleTaskFromDTO(dto)));
+  }
+
+  async getTaskById(taskId: string): Promise<Result<ScheduleTask>> {
+    const result = await this.taskQueryApi.getTaskById(taskId);
+    return mapResult(result, (dto) => scheduleTaskFromDTO(dto));
+  }
+
+  async getDueTasks(params?: {
+    beforeTime?: string;
+    limit?: number;
+  }): Promise<Result<ScheduleTask[]>> {
+    const result = await this.taskQueryApi.getDueTasks(params);
+    return mapResult(result, (dtos) => dtos.map((dto) => scheduleTaskFromDTO(dto)));
+  }
+
+  async getTaskBySource(
+    sourceModule: SourceModule,
+    sourceEntityId: string,
+  ): Promise<Result<ScheduleTask[]>> {
+    const result = await this.taskQueryApi.getTaskBySource(sourceModule, sourceEntityId);
+    return mapResult(result, (dtos) => dtos.map((dto) => scheduleTaskFromDTO(dto)));
+  }
+}
+
+/** Full raw-worker mutation client retained for the deferred Mobile HTTP lane. */
+export class ScheduleClientService
+  extends ScheduleProductClientService
+  implements ScheduleClientPort
+{
+  constructor(
+    eventApi: IScheduleEventApiClient,
+    private readonly taskApi: IScheduleTaskApiClient,
+  ) {
+    super(eventApi, taskApi);
+    this.createTask = this.createTask.bind(this);
+    this.createTasksBatch = this.createTasksBatch.bind(this);
+    this.pauseTask = this.pauseTask.bind(this);
+    this.resumeTask = this.resumeTask.bind(this);
+    this.completeTask = this.completeTask.bind(this);
+    this.cancelTask = this.cancelTask.bind(this);
+    this.deleteTask = this.deleteTask.bind(this);
+    this.deleteTasksBatch = this.deleteTasksBatch.bind(this);
+    this.updateTaskMetadata = this.updateTaskMetadata.bind(this);
+  }
+
   async createTask(request: CreateScheduleTaskRequest): Promise<Result<ScheduleTask>> {
     const result = await this.taskApi.createTask(request);
     return mapResult(result, (dto) => scheduleTaskFromDTO(dto));
@@ -193,34 +235,6 @@ export class ScheduleClientService implements ScheduleClientPort {
     const result = await this.taskApi.createTasksBatch(tasks);
     return mapResult(result, (dtos) => dtos.map((dto) => scheduleTaskFromDTO(dto)));
   }
-
-  async getTasks(): Promise<Result<ScheduleTask[]>> {
-    const result = await this.taskApi.getTasks();
-    return mapResult(result, (dtos) => dtos.map((dto) => scheduleTaskFromDTO(dto)));
-  }
-
-  async getTaskById(taskId: string): Promise<Result<ScheduleTask>> {
-    const result = await this.taskApi.getTaskById(taskId);
-    return mapResult(result, (dto) => scheduleTaskFromDTO(dto));
-  }
-
-  async getDueTasks(params?: {
-    beforeTime?: string;
-    limit?: number;
-  }): Promise<Result<ScheduleTask[]>> {
-    const result = await this.taskApi.getDueTasks(params);
-    return mapResult(result, (dtos) => dtos.map((dto) => scheduleTaskFromDTO(dto)));
-  }
-
-  async getTaskBySource(
-    sourceModule: SourceModule,
-    sourceEntityId: string,
-  ): Promise<Result<ScheduleTask[]>> {
-    const result = await this.taskApi.getTaskBySource(sourceModule, sourceEntityId);
-    return mapResult(result, (dtos) => dtos.map((dto) => scheduleTaskFromDTO(dto)));
-  }
-
-  // ===== Schedule Task Status Management =====
 
   async pauseTask(taskId: string): Promise<Result<ScheduleTask>> {
     const result = await this.taskApi.pauseTask(taskId);
@@ -259,7 +273,12 @@ export class ScheduleClientService implements ScheduleClientPort {
   }
 }
 
-// ===== Factory =====
+export function createScheduleProductClientService(
+  eventApi: IScheduleEventApiClient,
+  taskApi: IScheduleTaskQueryApiClient,
+): ScheduleProductClientService {
+  return new ScheduleProductClientService(eventApi, taskApi);
+}
 
 export function createScheduleClientService(
   eventApi: IScheduleEventApiClient,

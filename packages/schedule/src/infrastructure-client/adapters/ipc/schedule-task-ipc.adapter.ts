@@ -1,36 +1,17 @@
 /**
- * Schedule Task IPC Adapter
+ * Read-only ScheduleTask IPC adapter for Electron desktop.
  *
- * IPC implementation of IScheduleTaskApiClient for Electron desktop apps.
- * Uses ResultIpcClient — all methods return Result<T> directly.
+ * Raw worker-job mutations are intentionally absent: business modules own
+ * scheduling writes through SchedulingPort. HTTP keeps temporary Mobile compatibility.
  */
 
 import type { Result } from '@memoflow/contracts/result';
 import { ScheduleChannels } from '@memoflow/contracts/electron';
-import type {
-  IResultIpcClient,
-  IScheduleTaskApiClient,
-} from '../types';
-import type { SourceModule } from '@memoflow/contracts/schedule';
-import type {
-  ScheduleTaskClientDTO,
-  ScheduleBatchOperationResponseDTO,
-  CreateScheduleTaskRequest,
-  UpdateTaskMetadataRequest,
-} from '@memoflow/contracts/schedule';
+import type { SourceModule, ScheduleTaskClientDTO } from '@memoflow/contracts/schedule';
+import type { IResultIpcClient, IScheduleTaskQueryApiClient } from '../types';
 
-export class ScheduleTaskIpcAdapter implements IScheduleTaskApiClient {
+export class ScheduleTaskIpcAdapter implements IScheduleTaskQueryApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
-
-  // ===== Schedule Task CRUD =====
-
-  async createTask(request: CreateScheduleTaskRequest): Promise<Result<ScheduleTaskClientDTO>> {
-    return this.ipcClient.invoke(ScheduleChannels.TASK_CREATE, request);
-  }
-
-  async createTasksBatch(tasks: CreateScheduleTaskRequest[]): Promise<Result<ScheduleTaskClientDTO[]>> {
-    return this.ipcClient.invoke(ScheduleChannels.TASK_CREATE_BATCH, tasks);
-  }
 
   async getTasks(): Promise<Result<ScheduleTaskClientDTO[]>> {
     return this.ipcClient.invoke(ScheduleChannels.TASK_LIST);
@@ -52,36 +33,6 @@ export class ScheduleTaskIpcAdapter implements IScheduleTaskApiClient {
     sourceEntityId: string,
   ): Promise<Result<ScheduleTaskClientDTO[]>> {
     return this.ipcClient.invoke(ScheduleChannels.TASK_GET_BY_SOURCE, sourceModule, sourceEntityId);
-  }
-
-  // ===== Schedule Task Status Management =====
-
-  async pauseTask(taskId: string): Promise<Result<ScheduleTaskClientDTO>> {
-    return this.ipcClient.invoke(ScheduleChannels.TASK_PAUSE, taskId);
-  }
-
-  async resumeTask(taskId: string): Promise<Result<ScheduleTaskClientDTO>> {
-    return this.ipcClient.invoke(ScheduleChannels.TASK_RESUME, taskId);
-  }
-
-  async completeTask(taskId: string, reason?: string): Promise<Result<ScheduleTaskClientDTO>> {
-    return this.ipcClient.invoke(ScheduleChannels.TASK_COMPLETE, taskId, reason);
-  }
-
-  async cancelTask(taskId: string, reason?: string): Promise<Result<ScheduleTaskClientDTO>> {
-    return this.ipcClient.invoke(ScheduleChannels.TASK_CANCEL, taskId, reason);
-  }
-
-  async deleteTask(taskId: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(ScheduleChannels.TASK_DELETE, taskId);
-  }
-
-  async deleteTasksBatch(taskIds: string[]): Promise<Result<ScheduleBatchOperationResponseDTO>> {
-    return this.ipcClient.invoke(ScheduleChannels.TASK_DELETE_BATCH, taskIds);
-  }
-
-  async updateTaskMetadata(taskId: string, metadata: UpdateTaskMetadataRequest): Promise<Result<ScheduleTaskClientDTO>> {
-    return this.ipcClient.invoke(ScheduleChannels.TASK_UPDATE_METADATA, taskId, metadata);
   }
 }
 
