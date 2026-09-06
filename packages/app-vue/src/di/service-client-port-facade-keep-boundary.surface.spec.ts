@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 927: I*Service = *ClientPort intentional DI facade keep-boundary.
+ * Residual 927: I*Service = package client capability intentional DI facade keep-boundary.
  * Facades are type aliases only (no second interface body). InjectionKeys bind
  * the I*Service names so hosts/composables stay DI-oriented without importing
  * every package client port at call sites.
@@ -24,7 +24,7 @@ describe('DI I*Service ClientPort facade keep-boundary (residual 927)', () => {
     ['IGoalService', 'GoalClientPort'],
     ['ILabelService', 'LabelClientPort'],
     ['ITaskService', 'TaskClientPort'],
-    ['IScheduleService', 'ScheduleClientPort'],
+    ['IScheduleService', 'ScheduleProductClientPort'],
     ['IReminderService', 'ReminderClientPort'],
     ['IRepositoryService', 'RepositoryClientPort'],
     ['INotificationService', 'NotificationClientPort'],
