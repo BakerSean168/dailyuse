@@ -14,7 +14,7 @@ status: superseded
 
 # GitHub App + MagicDNS 产品闭环与复审问题收敛
 
-> **Archived 2026-08-29:** the durable installation orchestration and remaining Desktop live acceptance are owned by `../active/2026-08-28-github-installation-intent-gateway.md`. Production Web install/connect/webhook acceptance is already recorded there.
+> **Archived 2026-08-29:** the durable installation orchestration and remaining Desktop live acceptance are owned by `../archive/2026-08-28-github-installation-intent-gateway.md`. Production Web install/connect/webhook acceptance is already recorded there.
 
 ## Outcome
 

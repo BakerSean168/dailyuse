@@ -254,3 +254,11 @@ The production rollout validated the ADR boundary with the separate `MemoFlow Pr
 The first push returned HTTP `401` because the external GitHub App hook secret and the production runtime secret had drifted. The repair synchronized the external hook config to the already-generated production secret; no application-code or trust-boundary change was required. A subsequent push was accepted with HTTP `202`, processed to the exact Git commit, and a GitHub redelivery was deduplicated by the durable delivery ledger.
 
 This deployment incident reinforces, rather than changes, the ADR: webhook secret ownership is environment-local production configuration and must be validated by a real signed delivery after rollout. Secrets, JWTs and private keys remain outside Git and outside acceptance evidence.
+
+## 8. Existing-installation retry live acceptance — 2026-09-06
+
+A real Windows acceptance exposed GitHub's no-op configuration behavior: the production installation already contained `thought-forest` plus the E2E fixture, so GitHub disabled Save and emitted no new Setup callback. The bounded retry lease added in v0.14.1 closed that provider-protocol gap without adding OAuth authority or weakening the one-time state boundary.
+
+Live evidence preserved both compatibility directions. Published v0.14.0, which does not understand `requiresExternalBrowser`, successfully recovered the recent same-identity `CallbackReceived` proof, finalized it and displayed the current two-repository inventory; it merely opened an unnecessary `Confirm access` browser page. After installing the SHA256-verified Published v0.14.1 package, the same unconsumed `Finalized` proof was revalidated and renewed while browser windows remained unchanged, proving the new client skipped the no-op GitHub page.
+
+The user then connected `BakerSean168/thought-forest`. Production PostgreSQL recorded the repository connection as `Active` with no lifecycle error and atomically advanced the authorizing intent to `Consumed` at the same timestamp. This closes the real Desktop requirement in Section 6 while preserving every security invariant in Section 3.
