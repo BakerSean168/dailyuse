@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import path from 'node:path';
 import test from 'node:test';
 import { buildDeliveryManifest } from '../generate-delivery-manifest.mjs';
+import { createNxShowProjectsInvocation } from '../lib/scope-detector.mjs';
 
 const scope = {
   version: 1,
@@ -105,4 +108,28 @@ test('push to main is an exhaustive full audit regardless of changed path', asyn
   });
   assert.equal(manifest.full, true);
   assert.ok(Object.values(manifest.lanes).every(Boolean));
+});
+
+test('scope discovery invokes the installed Nx CLI directly instead of racing pnpm exec wrappers', () => {
+  const root = path.resolve(import.meta.dirname, '../../..');
+  const invocation = createNxShowProjectsInvocation(['--with-target=test:integration'], root);
+  assert.equal(invocation.command, process.execPath);
+  assert.match(invocation.args[0], /node_modules[\\/]nx[\\/]dist[\\/]bin[\\/]nx\.js$/u);
+  assert.deepEqual(invocation.args.slice(1), [
+    'show',
+    'projects',
+    '--with-target=test:integration',
+  ]);
+  assert.ok(!invocation.args.includes('pnpm'));
+  assert.equal(invocation.bootstrap, path.join(root, 'tools/ci/node-process-bootstrap.cjs'));
+
+  const stdout = execFileSync(invocation.command, invocation.args, {
+    cwd: root,
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ''} --require=${invocation.bootstrap}`.trim(),
+    },
+  });
+  assert.match(stdout, /^api$/mu);
 });

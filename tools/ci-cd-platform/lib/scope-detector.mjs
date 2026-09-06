@@ -1,25 +1,49 @@
 import { execFile } from 'node:child_process';
+import { createRequire } from 'node:module';
 import { promisify } from 'node:util';
 import path from 'node:path';
 
 const exec = promisify(execFile);
-const bootstrap = path.resolve('tools/ci/node-process-bootstrap.cjs');
+const require = createRequire(import.meta.url);
 export const SCOPE_VERSION = 1;
 
+export function createNxShowProjectsInvocation(args, cwd) {
+  const root = path.resolve(cwd);
+  const nxCli = require.resolve('nx/bin/nx.js', { paths: [root] });
+  return {
+    command: process.execPath,
+    args: [nxCli, 'show', 'projects', ...args],
+    bootstrap: path.join(root, 'tools/ci/node-process-bootstrap.cjs'),
+  };
+}
+
 async function nxProjects(args, cwd) {
-  const { stdout } = await exec('pnpm', ['exec', 'nx', 'show', 'projects', ...args], {
-    cwd,
-    maxBuffer: 4 * 1024 * 1024,
-    env: {
-      ...process.env,
-      NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ''} --require=${bootstrap}`.trim(),
-    },
-  });
-  return stdout
-    .split(/\r?\n/u)
-    .map((value) => value.trim())
-    .filter(Boolean)
-    .sort();
+  const invocation = createNxShowProjectsInvocation(args, cwd);
+  try {
+    const { stdout } = await exec(invocation.command, invocation.args, {
+      cwd,
+      maxBuffer: 4 * 1024 * 1024,
+      env: {
+        ...process.env,
+        NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ''} --require=${invocation.bootstrap}`.trim(),
+      },
+    });
+    return stdout
+      .split(/\r?\n/u)
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .sort();
+  } catch (error) {
+    const detail = [error?.stderr, error?.stdout]
+      .filter((value) => typeof value === 'string' && value.trim())
+      .map((value) => value.trim())
+      .join('\n')
+      .slice(0, 4000);
+    throw new Error(
+      `Nx project scope query failed (${args.join(' ')}): ${detail || error?.message || 'unknown error'}`,
+      { cause: error },
+    );
+  }
 }
 
 export async function detectScope({
