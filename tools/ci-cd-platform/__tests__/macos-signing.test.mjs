@@ -48,6 +48,34 @@ function validCredentials(overrides = {}) {
   };
 }
 
+test('macOS signing policy CLI emits explicit Windows step outputs', async () => {
+  const temp = await mkdtemp(path.join(os.tmpdir(), 'memoflow-signing-policy-'));
+  try {
+    const output = path.join(temp, 'github-output.txt');
+    execFileSync(
+      process.execPath,
+      [
+        path.join(repoRoot, 'tools/ci-cd-platform/release-tools/macos-signing-policy.mjs'),
+        'resolve',
+        'windows',
+        'unsigned',
+        'unsigned-pilot',
+      ],
+      { env: { ...process.env, GITHUB_OUTPUT: output }, stdio: 'pipe' },
+    );
+    const values = Object.fromEntries(
+      (await readFile(output, 'utf8'))
+        .trim()
+        .split('\n')
+        .map((line) => line.split('=', 2)),
+    );
+    assert.equal(values.signing_state, 'unsigned');
+    assert.equal(values.signed_mode, 'false');
+  } finally {
+    await rm(temp, { recursive: true, force: true });
+  }
+});
+
 test('macOS signing policy preserves non-macOS state and accepts only explicit pilot/signed modes', () => {
   assert.equal(
     resolveDesktopSigningState({ os: 'windows', matrixState: 'unsigned', macosMode: 'bad' }),

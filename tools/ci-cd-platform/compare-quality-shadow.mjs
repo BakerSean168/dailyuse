@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+
+import { pathToFileURL } from 'node:url';
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { compareTimingSamples } from './compare-timings.mjs';
@@ -107,7 +109,7 @@ async function main() {
   );
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
     console.error(
       `[quality-shadow-compare] ${error instanceof Error ? error.message : String(error)}`,

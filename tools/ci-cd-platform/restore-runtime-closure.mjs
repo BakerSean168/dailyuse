@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from 'node:url';
 import { cp, readFile, readdir, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { createArtifactManifest } from './create-artifact-manifest.mjs';
@@ -106,7 +107,7 @@ export async function restoreRuntimeClosure({
   return entries.length;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [manifestFile, sourceArg, workspaceArg = '.', sourceManifestDigest] = process.argv.slice(2);
   if (!manifestFile || !sourceArg) {
     throw new Error(

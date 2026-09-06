@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+
+import { pathToFileURL } from 'node:url';
 import { appendFile, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -85,7 +87,7 @@ async function main() {
   );
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
     console.error(
       `[macos-signing-policy] ${error instanceof Error ? error.message : String(error)}`,

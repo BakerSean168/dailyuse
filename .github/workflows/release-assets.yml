@@ -211,12 +211,19 @@ jobs:
         shell: bash
         env:
           MACOS_SIGNING_MODE: ${{ needs.prepare-release.outputs.macos_signing_mode }}
-        run: >-
-          node ../release-tooling/tools/ci-cd-platform/release-tools/macos-signing-policy.mjs
-          resolve
-          "${{ matrix.platform_os }}"
-          "${{ matrix.signing_state }}"
-          "$MACOS_SIGNING_MODE"
+        run: |
+          node ../release-tooling/tools/ci-cd-platform/release-tools/macos-signing-policy.mjs \
+            resolve \
+            "${{ matrix.platform_os }}" \
+            "${{ matrix.signing_state }}" \
+            "$MACOS_SIGNING_MODE"
+          node --input-type=module <<'NODE'
+          import { readFile } from 'node:fs/promises';
+          const output = await readFile(process.env.GITHUB_OUTPUT, 'utf8');
+          if (!/^signing_state=.+$/mu.test(output) || !/^signed_mode=(?:true|false)$/mu.test(output)) {
+            throw new Error('Desktop signing policy did not emit explicit signing_state and signed_mode outputs');
+          }
+          NODE
 
       - name: Prepare protected macOS signing credentials
         if: steps.signing-policy.outputs.signed_mode == 'true'

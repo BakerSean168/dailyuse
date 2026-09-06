@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -64,7 +65,7 @@ export async function createArtifactManifest({
   return manifest;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const args = new Map();
   for (let index = 2; index < process.argv.length; index += 2)
     args.set(process.argv[index].replace(/^--/u, ''), process.argv[index + 1]);

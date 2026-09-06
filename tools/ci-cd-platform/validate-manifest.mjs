@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import {
   validateArtifactManifest,
@@ -30,7 +31,7 @@ export async function validateFile(file, kind) {
   return validator(value);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [file, kind] = process.argv.slice(2);
   if (!file)
     throw new Error(
