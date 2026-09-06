@@ -1,0 +1,54 @@
+{
+  "kind": "quality-shadow-sample-v1",
+  "version": 1,
+  "workload": {
+    "name": "desktop-pr286",
+    "base": "ee8472486377c30ecced3ef1ec07012fd8a06f24",
+    "head": "ca3970a4c536addfc48409db1c22ebb4e0ce9ae6"
+  },
+  "controlPlaneSha": "55f2825196008030ef390178e98cf6c6393168d6",
+  "runId": "34008548967",
+  "status": "success",
+  "children": {
+    "static": {
+      "split": "success",
+      "consolidated": "success"
+    },
+    "unit": {
+      "split": "success",
+      "consolidated": "success"
+    },
+    "typecheck": {
+      "split": "success",
+      "consolidated": "success"
+    },
+    "build": {
+      "split": "success",
+      "consolidated": "success"
+    }
+  },
+  "split": {
+    "commit": "55f2825196008030ef390178e98cf6c6393168d6",
+    "runId": "34008548967",
+    "lanes": ["build", "static", "typecheck", "unit"],
+    "setupMs": 103132,
+    "executionMs": 462287,
+    "longestLaneMs": 170924,
+    "wallClockMs": 209663,
+    "runnerMinutes": 10.01975
+  },
+  "consolidated": {
+    "commit": "55f2825196008030ef390178e98cf6c6393168d6",
+    "runId": "34008548967",
+    "lanes": ["build", "static", "typecheck", "unit"],
+    "setupMs": 30902,
+    "executionMs": 317374,
+    "longestLaneMs": 163991,
+    "wallClockMs": 357980,
+    "runnerMinutes": 5.966333333333333
+  },
+  "provenance": {
+    "generator": "ci-cd-platform-v3/quality-shadow@1"
+  },
+  "digest": "a72f5871a3aaa5700e3c195f1b23f8fbfed80bbef3fa07de0f8fba7e73b715fe"
+}
